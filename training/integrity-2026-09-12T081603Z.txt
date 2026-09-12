@@ -1,0 +1,17 @@
+
+  CLAIM INTEGRITY — EVIDENCE
+
+  Direction 1 — no false alarms (exhaustive over the bounded space)
+    5 probes x 3 statuses x 3 finding counts x 2 suppression states x 3 thresholds
+    reports enumerated : 354,294
+    integrity failures : 0
+    elapsed            : 15.4s
+    result             : EXHAUSTIVE over this space (Wilson lower bound if treated as sampling: 99.99892%)
+
+  Direction 2 — every invariant is enforced
+    invariants declared : 10
+    mutations tested    : 9
+    unenforced          : 0
+
+  Verdict: PASS
+
