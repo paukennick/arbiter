@@ -702,13 +702,30 @@ matter from the 475 that do not.
 every `CKV_AWS_*`, every bandit `B*` — against the same three-population
 corpus used for native rules, and assigns severity from the measured ratio:
 
-| Weighted ratio | Assigned |
+| Measured ratio | Assigned |
 |---|---|
-| ≥ 50× | high |
 | ≥ 10× | medium |
 | ≥ 3× | low |
 | < 3× | info — reported, zero weight |
 | fewer than 5 observations | nothing assigned; no claim made |
+| seen in only one repository | capped at low |
+
+Note the ceiling: **measurement cannot promote a check to `high`.**
+Discrimination measures *signal* — how much more often a check fires on broken
+code. Severity encodes *consequence* — how much it matters when the check is
+right. Those correlate and are not the same quantity.
+
+The example that forced the rule: "Ensure every security group and rule has a
+description" fires 33 times on deliberately broken Terraform and zero times on
+the well-maintained `terraform-aws-modules` repositories, which are meticulous
+about descriptions. The ratio is real, reproducible and stack-matched. It is
+also not a security finding, and grading it `high` would put a missing comment
+on the same footing as a public S3 bucket. So measurement may say "this
+carries signal" and may say "this carries none"; it may not manufacture a
+claim about consequence.
+
+On Terragoat, 477 findings of identical `medium` became 296 medium, 151 low
+and 30 info — 181 regraded from measurement.
 
 This does not breach the standing rule that learning never touches severity.
 For a native rule, severity is a deliberate policy statement and nothing may

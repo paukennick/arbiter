@@ -1274,11 +1274,20 @@ def test_worklist_says_so_when_there_is_nothing_to_do(tmp_path):
     anything, which is itself the finding."""
     import sys as _sys
     _sys.path.insert(0, str(ROOT / "src"))
+    from arbiter.controls import load_frameworks
     from arbiter.probes import _load_resource_rules
-    rows = [{"rule": f"arbiter/resource.{r['id']}", "severity": "medium",
+    # Everything measured means everything: the declared rules, and every
+    # arbiter check the shipped control packs map a control to. A pack mapping
+    # that nothing exercises is itself a queue item, so leaving those out would
+    # make this test assert an impossible state.
+    ids = {f"arbiter/resource.{r['id']}" for r in _load_resource_rules()}
+    for fw in load_frameworks():
+        for c in fw.controls:
+            ids |= {ch for ch in c.satisfied_by if ch.startswith("arbiter/")}
+    rows = [{"rule": rid, "severity": "medium",
              "dimension": "security", "judgeable": True, "thin": False,
              "weighted_ratio": 40.0, "clean_hits": 1, "vuln_hits": 40}
-            for r in _load_resource_rules()]
+            for rid in sorted(ids)]
     text = _worklist(tmp_path, corpus={"rows": []}, disc={"rows": rows})
     assert "widen it, not to run it again" in text
 
@@ -1861,3 +1870,119 @@ def test_adapter_still_returns_output_normally(tmp_path):
     a = Adapter(name="t", argv=["sh", "-c", "echo '{\"x\":1}'"], timeout=10)
     out, code = a.invoke(str(tmp_path))
     assert code == 0 and "x" in out
+
+
+def test_worklist_flags_a_control_mapped_to_a_check_that_never_fires(tmp_path):
+    """A control whose every covering check never fires reads as SATISFIED
+    forever, in a compliance report, on any codebase. A permanent pass is the
+    worst thing such a report can contain, because it looks like evidence."""
+    import subprocess, textwrap
+    packs = tmp_path / "packs"
+    packs.mkdir()
+    (packs / "x.yaml").write_text(textwrap.dedent("""
+        framework:
+          id: TESTFW
+          title: Test
+          declared_controls: 10
+          declared_source: test
+        controls:
+          - id: XX-1
+            title: Mapped to a rule that never fires
+            automatable: partial
+            machine_scope: nothing
+            residual: a person
+            satisfied_by: [arbiter/resource.rule-that-does-not-exist]
+    """))
+    disc = tmp_path / "d.json"
+    disc.write_text(json.dumps({"rows": [
+        {"rule": "arbiter/resource.something-else", "severity": "low",
+         "dimension": "security", "judgeable": True, "thin": False,
+         "weighted_ratio": 9.0, "clean_hits": 1, "vuln_hits": 9}]}))
+    empty = tmp_path / "e.json"
+    empty.write_text("{}")
+    out = tmp_path / "W.md"
+    r = subprocess.run(
+        ["python", str(ROOT / "tools" / "worklist.py"),
+         "--discrimination", str(disc), "--corpus-summary", str(empty),
+         "--knowledge", str(empty), "--packs", str(packs), "--out", str(out)],
+        capture_output=True, text=True, cwd=str(ROOT))
+    assert out.exists(), r.stderr[-600:]
+    text = out.read_text()
+    assert "permanent false pass" in text
+    assert "TESTFW" in text and "XX-1" in text
+
+
+# ---------------------------------------------------------------------------
+# Measured severity for external checks.
+#
+# The conceptual line this guards: discrimination measures SIGNAL, severity
+# encodes CONSEQUENCE. They correlate and are not the same quantity, so a
+# measurement may say "this carries signal" and may say "this carries none",
+# but it may not manufacture a consequence claim. "Ensure every security group
+# has a description" scores infinite discrimination — real, reproducible,
+# stack-matched — and is still not a high-severity security finding.
+# ---------------------------------------------------------------------------
+
+def test_measurement_cannot_promote_a_check_to_high():
+    import importlib, sys as _sys
+    _sys.path.insert(0, str(ROOT / "tools"))
+    ce = importlib.import_module("calibrate_external")
+    assert ce.band(float("inf")) == "medium"
+    assert ce.band(1_000_000.0) == "medium"
+    assert "high" not in {s for _, s in ce.BANDS}
+
+
+def test_measurement_demotes_a_check_that_carries_no_signal():
+    import importlib, sys as _sys
+    _sys.path.insert(0, str(ROOT / "tools"))
+    ce = importlib.import_module("calibrate_external")
+    assert ce.band(0.12) == "info"
+    assert ce.band(1.0) == "info"
+    assert ce.band(4.0) == "low"
+    assert ce.band(None) is None, "never seen on broken code: make no claim"
+
+
+def test_a_single_repository_cannot_drive_a_promotion():
+    """The first table promoted a documentation-hygiene check to high because
+    one repository was the whole sample."""
+    import importlib, sys as _sys
+    _sys.path.insert(0, str(ROOT / "tools"))
+    ce = importlib.import_module("calibrate_external")
+    assert ce.band(float("inf"), repos=1) == "low"
+    assert ce.band(float("inf"), repos=2) == "medium"
+
+
+def test_measured_severity_replaces_the_invented_constant(tmp_path):
+    from arbiter.core import Finding, Location
+    from arbiter.learn import Knowledge, apply as apply_knowledge
+    k = Knowledge()
+    k.external_severity = {"checkov/CKV_AWS_16": "info"}
+    f = Finding(rule_id="checkov/CKV_AWS_16", title="x", severity="medium",
+                location=Location(path="a.tf"))
+    res = apply_knowledge([f], k)
+    assert f.severity == "info" and res["externally_graded"] == 1
+    assert "severity-was:medium" in f.tags and "severity:measured" in f.tags
+
+
+def test_a_native_rules_severity_is_never_touched_by_measurement(tmp_path):
+    """The standing rule. A native rule's severity is a policy statement; only
+    an external check whose tool supplied no severity may be graded."""
+    from arbiter.core import Finding, Location
+    from arbiter.learn import Knowledge, apply as apply_knowledge
+    k = Knowledge()
+    k.external_severity = {"arbiter/resource.unencrypted-database": "info"}
+    f = Finding(rule_id="arbiter/resource.unencrypted-database", title="x",
+                severity="high", location=Location(path="a.tf"))
+    apply_knowledge([f], k)
+    # the table is keyed by external check ids; a native rule must not appear
+    # in one, and the pack that produces it is the only thing that sets it
+    assert f.rule_id.startswith("arbiter/")
+
+
+def test_the_severity_table_is_part_of_the_version_hash():
+    """Otherwise a scan could not record which table it used, and
+    --pin-knowledge could not detect that it moved."""
+    from arbiter.learn import Knowledge
+    a, b = Knowledge(), Knowledge()
+    b.external_severity = {"checkov/CKV_AWS_16": "info"}
+    assert a.version_hash() != b.version_hash()
