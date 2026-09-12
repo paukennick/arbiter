@@ -1614,3 +1614,14 @@ try:
     _register_authored()
 except Exception:  # noqa: BLE001
     pass
+
+
+# Contracts declared in one artifact and implemented in another: an OpenAPI
+# document against the routes actually registered, a migration against the code
+# that queries the column. The same idea as the cross-repo seam checks, moved
+# inside a single repository.
+try:
+    from .contract import register_contract as _register_contract
+    _register_contract()
+except Exception:  # noqa: BLE001
+    pass
