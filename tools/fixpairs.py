@@ -71,6 +71,29 @@ from arbiter.policy import load_config  # noqa: E402
 # it". A quality metric changing across a commit is refactoring, not a fix.
 INTERESTING = {"security", "compliance", "supply_chain"}
 
+# Words that, appearing in a commit message, corroborate a transition in the
+# matching rule family. This is a RANKING hint and never a verdict: the commit
+# message is not used to FIND pairs (see the module docstring for why), only to
+# put the ones a maintainer described first in the queue, so a person's first
+# few verdicts land on the clearest cases.
+CORROBORATING = {
+    "secrets": ("secret", "credential", "password", "token", "key", "remove",
+                "rotate", "leak", "uri", "connection string"),
+    "supply": ("pin", "sha", "version", "lock", "bump", "digest"),
+    "resource": ("security", "context", "privilege", "root", "capabilit",
+                 "encrypt", "harden", "policy", "limit", "readonly",
+                 "read-only", "nonroot", "non-root"),
+    "authored": ("tls", "verify", "insecure", "certificate"),
+}
+
+
+def corroborated(rule: str, subject: str) -> bool:
+    """True when the commit message describes the kind of change the rule is about."""
+    family = rule.split("/")[-1].split(".")[0]
+    words = CORROBORATING.get(family, ())
+    low = subject.lower()
+    return any(w in low for w in words)
+
 NATIVE = ["secrets", "resource_policy", "supply_chain", "authored"]
 
 # File kinds worth walking history for. Scanning every commit of a large
@@ -152,6 +175,7 @@ def mine(repo: Path, name: str, limit: int, cfg: dict, paths: list[str]) -> list
                 before, after = _scan(before_dir, cfg), _scan(after_dir, cfg)
             except Exception:  # noqa: BLE001
                 continue
+        subject = _git(repo, "log", "-1", "--format=%s", sha).strip()[:140]
         for key, f in before.items():
             if key in after or key[1] in deleted:
                 continue
@@ -167,7 +191,9 @@ def mine(repo: Path, name: str, limit: int, cfg: dict, paths: list[str]) -> list
                 "title": f.title,
                 "severity": f.severity,
                 "evidence": f.evidence[:160],
-                "subject": _git(repo, "log", "-1", "--format=%s", sha).strip()[:140],
+                "subject": subject,
+                # A hint for ordering the queue, not a verdict. See CORROBORATING.
+                "corroborated_by_message": corroborated(f.rule_id, subject),
                 "confirmed": None,   # a person decides; see the module docstring
             })
     return pairs
@@ -206,7 +232,10 @@ def main() -> int:
         print(f"  {name:<20}{len(pairs):>4} candidate pair(s){time.time() - t:>8.0f}s",
               flush=True)
 
+    # Clearest cases first: a person's first verdicts are worth the most.
+    all_pairs.sort(key=lambda p: (not p["corroborated_by_message"], p["repo"]))
     by_rule = Counter(p["rule"] for p in all_pairs)
+    strong = [p for p in all_pairs if p["corroborated_by_message"]]
     print(f"\n  {len(all_pairs)} candidate fix pairs from {len(names)} repositories "
           f"in {time.time() - t0:.0f}s")
     print("\n  RULES WITH REAL-WORLD EVIDENCE")
@@ -215,6 +244,13 @@ def main() -> int:
         print(f"    {n:>4}  {rule}")
     if not by_rule:
         print("    none yet — walk more commits, or repositories that deploy things")
+
+    if strong:
+        print(f"\n  {len(strong)} of these have a commit message describing exactly "
+              "the kind of change\n  the rule is about. Those are the clearest and "
+              "come first in the queue:")
+        for p in strong[:8]:
+            print(f"    {p['rule'].split('/')[-1]:<34}{p['subject'][:64]}")
 
     print("\n  Every pair is a CANDIDATE. A finding also disappears when the code "
           "around it\n  is rewritten for unrelated reasons, so each one needs a "

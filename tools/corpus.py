@@ -227,12 +227,45 @@ def main() -> int:
         crit = sum(x["critical"] for x in held) + sum(x["high"] for x in held)
         print(f"    critical or high on held-out well-maintained code: {crit}")
         if t:
-            ratio = h / t
-            verdict = ("the rules behave the same on code they have never seen"
-                       if ratio <= 1.5 else
-                       "the held-out rate is materially worse — the rules may be "
-                       "fitted to the\n    repositories they were tuned against")
-            print(f"    ratio {ratio:.2f}x — {verdict}")
+            print(f"    ratio {h / t:.2f}x")
+
+        # The number above is easy to over-read in either direction, so the
+        # caveats are printed with it rather than left to be remembered.
+        #
+        # A per-KLOC rate compares two SAMPLES OF REPOSITORIES, and with a
+        # handful on each side their composition dominates. One held-out
+        # repository carrying ten thousand Kubernetes test manifests moves this
+        # figure further than any amount of overfitting would, and no
+        # arithmetic here can tell the two apart. The honest reading is that a
+        # ratio near 1 is reassuring, a large one is a question, and neither is
+        # a verdict until the held-out side is big enough and matched by stack.
+        print(f"\n    Read that carefully. {len(held)} held-out repositories is a "
+              "small sample, and a\n    per-KLOC rate is as much about what those "
+              "repositories CONTAIN as about\n    whether the rules generalize. "
+              "The two cannot be separated at this size.")
+        crit_t = sum(x["critical"] for x in tuned) + sum(x["high"] for x in tuned)
+        print(f"    The figure that is comparable at any sample size is the one "
+              f"above it:\n    {crit} build-breaking findings on held-out "
+              f"well-maintained code, against\n    {crit_t} on the tuned set. That is "
+              "a count, not a rate, and zero means zero.")
+
+        by_stack_t: dict[str, list] = {}
+        by_stack_h: dict[str, list] = {}
+        for r in tuned:
+            by_stack_t.setdefault(r["stack_label"], []).append(r)
+        for r in held:
+            by_stack_h.setdefault(r["stack_label"], []).append(r)
+        shared = sorted(set(by_stack_t) & set(by_stack_h))
+        if shared:
+            print("\n    STACK-MATCHED, the only comparison that controls for "
+                  "composition:")
+            for stack in shared:
+                a, b = rate(by_stack_t[stack]), rate(by_stack_h[stack])
+                print(f"      {stack:<16}tuned {a:>6.2f}   held out {b:>6.2f}"
+                      f"   {b / a if a else 0:.2f}x")
+        else:
+            print("\n    No stack appears on both sides, so nothing here controls "
+                  "for composition.\n    That is a gap in the holdout, not a result.")
 
     print("\n  RULES THAT FIRE MOSTLY ON TEACHING MATERIAL")
     print("  (correct about the file, but not evidence of a noisy rule)")
