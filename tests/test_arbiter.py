@@ -2471,3 +2471,87 @@ def test_worklist_survives_a_malformed_results_file(tmp_path):
                        capture_output=True, text=True, cwd=str(ROOT))
     assert r.returncode == 0, r.stderr[-400:]
     assert "Incomplete" in out.read_text()
+
+
+# ---------------------------------------------------------------------------
+# Disabled-check false positives, found by the corpus run.
+#
+# Six high-severity findings on well-maintained code, which is the worst kind
+# of defect this tool can produce. Three causes, and the first is the same
+# mistake the import scanner made with docstrings, in a second place.
+# ---------------------------------------------------------------------------
+
+def test_commented_out_code_is_not_a_disabled_check(tmp_path):
+    """Traefik's healthcheck has a whole commented-out TLS block. It was
+    reported as a high-severity disabled check."""
+    (tmp_path / "a.go").write_text(
+        "func ping() {\n"
+        "\t// TODO Handle TLS on ping etc...\n"
+        "\t// tr := &http.Transport{\n"
+        "\t// \tTLSClientConfig: &tls.Config{InsecureSkipVerify: true},\n"
+        "\t// }\n"
+        "}\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["authored"],
+                   use_adapters=False)
+    assert not [f for f in rep.active() if "security-check-disabled" in f.rule_id]
+
+
+def test_a_comment_discussing_the_setting_is_not_the_setting(tmp_path):
+    (tmp_path / "a.py").write_text(
+        "# we could not connect even with verify=False, so the server is down\n"
+        "r = requests.get(url)\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["authored"],
+                   use_adapters=False)
+    assert not [f for f in rep.active() if "security-check-disabled" in f.rule_id]
+
+
+def test_an_opt_in_insecure_mode_is_downgraded_not_hidden(tmp_path):
+    """An insecure mode the operator has to ask for is a feature, not a
+    default. Still reported, because the mode existing is worth knowing."""
+    (tmp_path / "a.go").write_text(
+        "func client(insecure bool) *http.Client {\n"
+        "\tif insecure {\n"
+        "\t\tcfg := &tls.Config{InsecureSkipVerify: true}\n"
+        "\t\t_ = cfg\n\t}\n\treturn nil\n}\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["authored"],
+                   use_adapters=False)
+    hits = [f for f in rep.active() if "security-check-disabled" in f.rule_id]
+    assert hits, "still reported"
+    assert hits[0].severity == "low" and "opt-in-guarded" in hits[0].tags
+
+
+def test_pinned_ca_alongside_a_disabled_hostname_check_is_downgraded(tmp_path):
+    """Disabling the library's hostname check while pinning a CA is a
+    deliberate mutual-TLS arrangement, not an absence of verification. The
+    resource rules already honour compensating controls; this is the same idea
+    for code."""
+    (tmp_path / "a.go").write_text(
+        "transport := &dynamic.ServersTransport{\n"
+        "\tInsecureSkipVerify: true,\n"
+        "\tRootCAs:            c.getRoot(),\n"
+        "\tCertificates:       certs,\n}\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["authored"],
+                   use_adapters=False)
+    hits = [f for f in rep.active() if "security-check-disabled" in f.rule_id]
+    assert hits and hits[0].severity == "medium" and "compensated" in hits[0].tags
+
+
+def test_an_unguarded_uncompensated_disabled_check_still_reports_high(tmp_path):
+    """The three downgrades must not swallow the case the rule is for."""
+    (tmp_path / "a.py").write_text("r = requests.get(url, verify=False)\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["authored"],
+                   use_adapters=False)
+    hits = [f for f in rep.active() if "security-check-disabled" in f.rule_id]
+    assert hits and hits[0].severity == "high" and hits[0].confidence == "high"
+
+
+def test_no_criticals_or_highs_from_authored_on_well_maintained_go(tmp_path):
+    """The end state: the probe produces nothing build-breaking on Traefik,
+    which is the tuning-set repository that exposed two of the three causes."""
+    import os
+    traefik = "/tmp/corpus/traefik"
+    if not os.path.isdir(traefik):
+        pytest.skip("corpus not cloned")
+    rep = run_scan([traefik], load_config(None), only=["authored"], use_adapters=False)
+    bad = [f for f in rep.active() if f.severity in ("critical", "high")]
+    assert not bad, [(f.location.short(), f.rule_id) for f in bad]
