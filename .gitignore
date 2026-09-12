@@ -7,3 +7,5 @@ arbiter-ab/
 build/
 dist/
 training/*/
+training/
+!training/.gitkeep
