@@ -133,6 +133,12 @@ def build_parser() -> argparse.ArgumentParser:
                     help="read a marked review file back and record the verdicts")
     rv.add_argument("--note", default="", help="note stored with each verdict")
     rv.add_argument("--knowledge", help="path to knowledge.json")
+    rv.add_argument("--html", metavar="FILE", nargs="?", const="arbiter-out/review.html",
+                    help="write a self-contained review page instead of markdown")
+    rv.add_argument("--interactive", action="store_true",
+                    help="walk the findings in the terminal, one keypress each")
+    rv.add_argument("--repo", action="append", default=[],
+                    help="id=path, so the review can show code context; repeatable")
 
     ct = sub.add_parser("controls",
                         help="control coverage per framework, including what was NOT assessed")
@@ -429,6 +435,47 @@ def cmd_review(args) -> int:
         print("\n  Nothing left to review in this report — every finding here has "
               "already been adjudicated.")
         return EXIT_OK
+
+    # Where to read code context from. The report records each repository's
+    # path; --repo overrides it for a report produced somewhere else.
+    repo_paths = {r.id: r.path for r in report.repos}
+    for spec in args.repo:
+        rid, _, path = spec.partition("=")
+        repo_paths[rid or "root"] = path or rid
+
+    if args.interactive:
+        from .review_ui import run_terminal
+        from .learn import record
+        before = {r: st.observations for r, st in knowledge.rules.items()}
+        marks = run_terminal(picked, knowledge, repo_paths)
+        by_id = {f.id: f for f in picked}
+        recorded = 0
+        for fid, verdict in marks.items():
+            if record(knowledge, by_id[fid], verdict, args.note):
+                recorded += 1
+        version = knowledge.save(args.knowledge)
+        print(f"\n  {recorded} recorded of {len(marks)} marked")
+        for rule in newly_proven(knowledge, before):
+            print(f"  {rule} has reached {MIN_OBSERVATIONS} adjudications "
+                  "and is no longer reported as unproven.")
+        print(f"  knowledge is now {version}\n")
+        return EXIT_OK
+
+    if args.html:
+        from .review_ui import render_html
+        out = Path(args.html)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        cmd = f"arbiter review {args.report} --apply review.md"
+        out.write_text(render_html(picked, knowledge, repo_paths, cmd))
+        rules = {f.rule_id for f in picked}
+        print()
+        print(f"  wrote {out}")
+        print(f"  {len(picked)} findings across {len(rules)} rules. Open it in a "
+              "browser — it needs no server and no network.")
+        print("  Mark them, save the text it gives you as review.md, then:")
+        print(f"\n      arbiter review {args.report} --apply review.md")
+        return EXIT_OK
+
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(render(picked, knowledge, str(out)))
