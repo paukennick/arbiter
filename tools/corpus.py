@@ -44,6 +44,18 @@ CORPUS = {
     "nodegoat":         ("vulnerable", "node"),
     "kustomizegoat":    ("vulnerable", "kubernetes"),
     "nodejs-goof":      ("vulnerable", "node"),
+    # Added to give every stack a broken counterpart. Before these, eight of
+    # the thirteen languages had no vulnerable repository at all, so any rule
+    # covering them had nothing to be measured against.
+    "kubernetes-goat":  ("vulnerable", "kubernetes"),
+    "sadcloud":         ("vulnerable", "terraform"),
+    "cdkgoat":          ("vulnerable", "aws_cdk"),
+    "pygoat":           ("vulnerable", "python"),
+    "webgoat":          ("vulnerable", "java"),
+    "railsgoat":        ("vulnerable", "ruby"),
+    "dvwa":             ("vulnerable", "php"),
+    "juice-shop":       ("vulnerable", "typescript"),
+    "vulhub":           ("vulnerable", "docker"),
     # well-maintained — every finding here is a candidate false positive
     "tf-aws-s3-bucket": ("clean", "terraform"),
     "tf-aws-vpc":       ("clean", "terraform"),
@@ -62,6 +74,12 @@ CORPUS = {
     "php-guzzle":       ("clean", "php"),
     "r-stringr":        ("clean", "r"),
     "shell-nvm":        ("clean", "shell"),
+    # Splitting the teaching material out left Kubernetes and Docker with no
+    # well-maintained population at all. These are production projects that
+    # ship hardened manifests and compose files.
+    "k8s-metrics-srv":  ("clean", "kubernetes"),
+    "argo-cd":          ("clean", "kubernetes"),
+    "traefik":          ("clean", "docker"),
     # teaching material and starter templates — short on purpose, so findings
     # here are usually right about the file and wrong as a noise measurement
     "cfn-templates":    ("examples", "cloudformation"),

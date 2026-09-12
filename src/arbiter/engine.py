@@ -253,6 +253,10 @@ def run_scan(
         probes=outcomes,
         stacks=sorted(inv.stacks),
     )
+    for _fi in inv.text_files():
+        report.loc_by_language[_fi.language] = (
+            report.loc_by_language.get(_fi.language, 0) + _fi.lines)
+        report.loc_by_role[_fi.role] = report.loc_by_role.get(_fi.role, 0) + _fi.lines
     report.learning = {
         "knowledge_version": knowledge_version,
         "rules_with_feedback": len(knowledge.rules),

@@ -3,7 +3,9 @@
 ## Why this file exists
 
 Training makes the tool better over time. Each run plants known faults in real
-code, checks whether the rules catch them, and writes down what it learned.
+code, checks whether the rules catch them, measures every rule against both
+well-maintained and deliberately broken repositories, and writes down what it
+learned.
 
 The catch is that the sandbox I work in is thrown away when the session ends.
 Nothing survives. So every time we start, the tool knows exactly as much as it
@@ -15,17 +17,13 @@ each run picks up where the last one stopped.
 ## Why I could not do this part myself
 
 My sandbox can reach GitHub, but only for repositories that have been
-deliberately connected to it. Nothing is connected right now, and I have no way
-to connect one or to create a repository. I checked:
+deliberately made available to it. I checked, and every route was refused:
+creating a repository, listing yours, and reading a specific one — including
+your own. The refusal is the same each time, and it is about the sandbox, not
+about your permissions.
 
-- creating a repository — refused
-- listing your repositories — refused
-- reading any specific repository, including your own — refused
-
-The refusal message is the same each time: this session is limited to
-repositories that have been configured for it.
-
-So this is the one step that has to come from you. It takes about two minutes.
+So this part has to come from you. It takes about two minutes, and it needs a
+computer — not a phone.
 
 ## What you need to do
 
@@ -43,18 +41,23 @@ git remote add origin https://github.com/<your-username>/arbiter.git
 git push -u origin main
 ```
 
-The folder is already a git repository with everything committed, so this is
+The folder is already a git repository with everything committed, so that is
 the whole job.
 
-**3. Connect the repository to Claude.**
+**3. Install the Claude GitHub App on that repository.**
 
-In Claude, connect the new `arbiter` repository to this project or environment,
-the same way you would connect any repository you want me to work on. That is
-what tells my sandbox it is allowed to reach it.
+Go to https://github.com/apps/claude and install it, choosing only the
+`arbiter` repository. This is the step that lets a Claude session read and
+write the repository.
+
+There is no "connect this repo" button inside a chat session — I told you
+there was, earlier, and I was wrong. The GitHub App is the mechanism.
 
 **4. Tell me it is done.**
 
-I will set up the recurring training runs. After that they happen on their own.
+I will set up the recurring training runs from claude.ai/code, which is the
+surface that can act on a connected repository. After that they happen on
+their own.
 
 ## What happens once it is connected
 
@@ -62,18 +65,19 @@ Each run:
 
 1. downloads the practice repositories, if they are not already there
 2. runs every rule against them and records what it found
-3. plants known faults and checks the rules catch them
-4. checks the tool never claims to have checked something it skipped
-5. runs the test suite
-6. commits the results back to the repository
+3. measures each rule's ability to tell good code from broken code
+4. plants known faults and checks the rules catch them
+5. checks the tool never claims to have checked something it skipped
+6. runs the test suite
+7. commits the results back to the repository
 
-Because step 6 writes to the repository, the next run starts from everything
+Because step 7 writes to the repository, the next run starts from everything
 the previous runs learned. That is the whole point.
 
 To run a cycle by hand at any time:
 
 ```bash
-./tools/train_cycle.sh           # about ten minutes
+./tools/train_cycle.sh           # about fifteen minutes
 PUSH=1 ./tools/train_cycle.sh    # and save the results
 ```
 
@@ -91,13 +95,19 @@ mechanically. Only a person looking at a real finding tells you whether the
 things it flags in real life are worth flagging. Mixing the two would let a
 hundred thousand generated cases drown out ten real ones.
 
-## One thing to know about the numbers
+## Two things to know about the numbers
 
-Running more trials does not make the tool more trustworthy past a point.
+**Running more trials does not make the tool more trustworthy past a point.**
 Twenty thousand faults generated from fifteen patterns is closer to fifteen
 independent tests than to twenty thousand. What actually improves the evidence
-is more kinds of fault and more kinds of code, not more repetitions.
+is more kinds of fault and more kinds of code, not more repetitions. That is
+why the practice set spans thirteen languages and five infrastructure formats,
+and why every fault is planted into a real file rather than a made-up one.
 
-That is why the practice set spans thirteen languages and five infrastructure
-formats, and why every fault is planted into a real file rather than a
-made-up one.
+**Most of the real defects have come from widening, not from repeating.**
+Every time the practice set grew, it found something the previous set could
+not. Adding deliberately-broken repositories for languages that had none
+exposed a critical finding that fired on three literal dots in a documentation
+example, and two more that fired on TLS keys a project commits on purpose so
+its integration tests have something to serve. Neither could have been found by
+running the old set more times.

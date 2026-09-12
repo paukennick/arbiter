@@ -2,13 +2,21 @@
 #
 # Downloads the practice repositories used for training.
 #
-# Two groups, on purpose:
+# Three groups, on purpose:
 #   - repositories built to be insecure, where finding a lot is the right answer
 #   - repositories written carefully by people who know the tools, where almost
 #     anything found is the rule's fault, not the code's
+#   - reference templates and teaching samples, which are neither: they are
+#     short on purpose, so findings there are correct about the file and say
+#     nothing about how noisy a rule is
 #
 # Without the second group there is no way to tell "this rule works" apart from
-# "this rule fires on everything".
+# "this rule fires on everything". Without the third kept separate, the second
+# group's numbers are wrong -- teaching samples were four fifths of what looked
+# like noise.
+#
+# Every stack needs a repository in the first two groups. A rule covering a
+# language with no broken counterpart cannot be measured at all.
 #
 set -uo pipefail
 DEST="${1:-/tmp/corpus}"
@@ -30,11 +38,25 @@ get cfngoat          https://github.com/bridgecrewio/cfngoat.git
 get nodegoat         https://github.com/OWASP/NodeGoat.git
 get kustomizegoat    https://github.com/bridgecrewio/kustomizegoat.git
 get nodejs-goof      https://github.com/snyk-labs/nodejs-goof.git
+get kubernetes-goat  https://github.com/madhuakula/kubernetes-goat.git
+get sadcloud         https://github.com/nccgroup/sadcloud.git
+get cdkgoat          https://github.com/bridgecrewio/cdkgoat.git
+get pygoat           https://github.com/adeyosemanputra/pygoat.git
+get webgoat          https://github.com/WebGoat/WebGoat.git
+get railsgoat        https://github.com/OWASP/railsgoat.git
+get dvwa             https://github.com/digininja/DVWA.git
+get juice-shop       https://github.com/juice-shop/juice-shop.git
+get vulhub           https://github.com/vulhub/vulhub.git
 
-echo "Carefully maintained — infrastructure:"
+echo "Carefully maintained — infrastructure in production use:"
 get tf-aws-s3-bucket https://github.com/terraform-aws-modules/terraform-aws-s3-bucket.git
 get tf-aws-vpc       https://github.com/terraform-aws-modules/terraform-aws-vpc.git
 get tf-aws-iam       https://github.com/terraform-aws-modules/terraform-aws-iam.git
+get k8s-metrics-srv  https://github.com/kubernetes-sigs/metrics-server.git
+get argo-cd          https://github.com/argoproj/argo-cd.git
+get traefik          https://github.com/traefik/traefik.git
+
+echo "Teaching material and reference templates — reported, never scored:"
 get cfn-templates    https://github.com/aws-cloudformation/aws-cloudformation-templates.git
 get cdk-examples     https://github.com/aws-samples/aws-cdk-examples.git
 get k8s-examples     https://github.com/kubernetes/examples.git

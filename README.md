@@ -11,8 +11,8 @@ comparing configurations, tools, and builds of Arbiter itself.
 Status: **P0–P2 + claim integrity + calibration** — engine, policy, resource graph,
 cross-repo seam checks, Terraform plan reading, a machine-checked claim ledger and
 an offline learning loop.
-Tuned against a corpus of twenty-seven public repositories. Everything below
-works today.
+Tuned against a corpus of thirty-nine public repositories in three
+populations. Everything below works today.
 
 ```
 pip install -e .
@@ -447,8 +447,8 @@ observations are kept in a separate ledger from human adjudication and
 `arbiter learn` reports them apart. Calibration reads only the adjudicated
 ledger.
 
-Its real value is what it found. Training exposed six defects that breadth
-alone had not:
+Its real value is what it found. Training exposed defects that breadth alone
+had not:
 
 | Defect | Consequence |
 |---|---|
@@ -461,67 +461,123 @@ alone had not:
 | Unquoted values were invisible | `.env` files, Kubernetes Secrets, `docker-compose`, `export VAR=`, Dockerfile `ENV` and `.properties` — the formats where secrets most commonly leak — were **all** unreadable, because the pattern required quotes. |
 | Six rules had no controls | Recall was measured; false-alarm rate was not measured at all. |
 
+The two methods find different things, and neither substitutes for the other.
+Injection finds rules that fail *mechanically* — a pattern that cannot match
+what it claims to match. Breadth finds rules that work mechanically and are
+still wrong about real code, which is the harder failure to see: a critical
+finding on three literal dots passes every injection trial ever written,
+because the generator never thinks to plant a placeholder.
+
 ## Tuning evidence
 
-Rules are tuned against twenty-seven public repositories across thirteen
-languages and five infrastructure formats, split into **three** populations.
+Rules are tuned against **thirty-nine public repositories** across thirteen
+languages and five infrastructure formats, split into three populations.
 A rule that fires on `flask` is telling you about the rule, not about the code.
 
 | Population | Repos | Lines | Findings | Per KLOC | Critical | High |
 |---|---|---|---|---|---|---|
-| **Deliberately vulnerable** | 5 | 101,069 | 241 | 2.38 | 7 | 20 |
-| **Well-maintained production** | 17 | 839,751 | 693 | **0.83** | **0** | **0** |
+| **Deliberately vulnerable** | 14 | 661,814 | 1,091 | 1.65 | 16 | 71 |
+| **Well-maintained production** | 20 | 2,309,276 | 3,630 | 1.57 | **0** | **0** |
 | **Teaching material** | 5 | 596,206 | 2,211 | 3.71 | 0 | 14 |
 
-On the severities that gate a build, the separation is total: seven criticals
-and twenty highs across the vulnerable repositories, and **not one of either**
-across 839,751 lines of well-maintained production code.
+On the severities that gate a build, the separation is total: sixteen
+criticals and seventy-one highs across the broken repositories, and **not one
+of either** across 2.3 million lines of well-maintained production code in
+twenty projects.
 
-### Why teaching material is its own population
+The overall per-KLOC rates are almost identical between the first two
+populations, and that is not a failure — it is the point of the next section.
+Most findings are low-severity style and hygiene notes that any large codebase
+accumulates. What matters is not how often a rule speaks but how hard it
+pushes, and on that measure the populations are cleanly separated.
 
-Reference CloudFormation stacks, CDK samples, Helm charts, `docker-compose`
-collections and Kubernetes examples are written to be short and readable, not
-production-ready. They genuinely do lack resource limits, security contexts
-and pinned versions — so the findings are *correct about the file* and useless
-as a measure of false-positive rate.
+### Every stack needs a broken counterpart
 
-Counting them as well-maintained code made the noise rate look roughly four
-times worse than it is. 2,211 of what were reported as 2,904 "clean" findings
-came from five example repositories. Separating them moved the real number
-from 2.02 to **0.83 per KLOC**, and the rules did not change.
+The vulnerable population started at five repositories covering Terraform,
+CloudFormation, Node and Kubernetes. Eight of the thirteen languages had
+nothing broken to compare against at all, so any rule covering them could not
+be measured — it could only be asserted. Java, Ruby, PHP, Python, TypeScript,
+Docker, CDK and a second, larger Kubernetes project were added for that reason.
 
-The lesson generalizes: a corpus label is a claim about what the code is
-*for*. Getting it wrong corrupts every rate computed from it.
+Widening found defects that repetition could not. Running the old set a
+hundred more times would have found none of them:
 
-### Severity is earned by measurement
+| Defect | Consequence |
+|---|---|
+| A PEM header with a placeholder body counted as a key | Argo CD's operator manual shows how to register a credential; the key body in the example is **three literal dots**. Arbiter reported it as a critical, high-confidence leaked private key — the worst finding it can produce, on nothing. |
+| `integration/`, `e2e/` and `hack/` were not recognised as test paths | Traefik commits real TLS keys under `integration/resources/tls` so its integration suite has something to serve. Identical in kind to the keys under `psf/requests`' `tests/certs/`, which were already handled — a different word for the directory changed the verdict from medium to **critical**. |
+| A credential inside documentation counted as production | A key in a manual illustrates where the key goes. `role == "docs"` now downgrades the same way a test path does. |
 
-A rule's severity is set by how much more it fires on bad code than on good
-code, measured stack-for-stack — never by how serious the underlying idea
-sounds. Comparing a Kubernetes rule against the whole corpus is invalid when
-only one vulnerable repository is Kubernetes and it is 359 lines long.
+All three were criticals on well-maintained code. All three are now regression
+tests naming the repository they came from.
 
-| Rule | Good | Bad | Ratio | Severity |
-|---|---|---|---|---|
-| `k8s-no-resource-limits` | 0.38/kloc | 5.57/kloc | **14.5×** | medium |
-| `k8s-no-security-context` | 0.42/kloc | 5.57/kloc | **13.2×** | medium |
-| four more k8s hardening rules | — | — | **11.7×** | medium |
-| `supply.unpinned-action` (CloudFormation) | 0.00/kloc | 0.27/kloc | **219×** | low |
-| `supply.unpinned-action` (Node) | 0.06/kloc | 0.27/kloc | **4.3×** | low |
-| `supply.unpinned-npm-dep` | 0.68/kloc | 0.73/kloc | **1.1×** | **info** |
-| `supply.unpinned-python-dep` | — | 0.00/kloc | **0.0×** | **info** |
+### Severity is earned by measurement, not by intuition
 
-The last two were demoted on this evidence. A floating `^4.17.0` is still worth
-knowing about, so they still report — but `info` carries zero score weight, so
-a project is no longer graded down for something that turned out to be just as
-common in good code as in bad. `unpinned-action` stayed, because it separates.
+`tools/discriminate.py` measures every rule against both populations and
+reports whether its severity is supported. Three things about that measurement
+were wrong before the tool existed, and each one produced confident nonsense.
 
-The Kubernetes hardening rules stayed at medium for the same reason in
-reverse: they looked like noise (724 findings on "clean" code) only because
-the teaching repositories were mislabelled and the comparison was unmatched.
-Stack-matched, they are among the most discriminating rules in the tool.
+**The denominator.** A Kubernetes rule can only fire on Kubernetes manifests.
+Measured against whole-repository size it looks immaculate inside a
+400,000-line Go project containing forty lines of YAML — not because the rule
+is good, but because 399,960 lines were never eligible to fail. The denominator
+is now the lines written in the languages that rule actually fires on, counted
+separately in each population. Reports carry `loc_by_language` so this is
+computable from any saved scan.
+
+**The numerator.** Arbiter already knows a manifest under `testdata/` is not a
+deployment: it reports the finding, labels it, and drops its severity and
+confidence so it barely moves the grade. Counting that at full weight measures
+the rule against a claim the tool never made. In Argo CD, **195 of 203**
+findings for one rule were exactly this. Findings are now counted by what they
+are worth — severity weight times confidence factor, the same arithmetic the
+scorecard uses.
+
+**The comparison itself.** The broken repositories are broken in the *security*
+sense. Nobody publishes a repository that is deliberately badly documented, so
+for quality and drift rules there is no broken population and the ratio
+measures nothing. `ast.function-too-long` fires five times more per line on
+well-maintained code than on the goats — but the goats are small teaching apps
+and the well-maintained repositories are mature production codebases. That
+ratio is a statement about codebase age. Only security and compliance rules get
+a verdict; everything else gets its number printed and no conclusion drawn.
+
+With all three corrected, every scoring security rule separates the
+populations — the tool's own verdict line reads *"none — every scoring
+security rule with enough data separates the populations"*:
+
+| Rule | Weighted ratio | Severity |
+|---|---|---|
+| `secrets.aws-access-key` | 2457× | critical |
+| `resource.k8s-host-path-volume` | 704× | medium |
+| `resource.unencrypted-database` | 473× | high |
+| `secrets.private-key` | 14.2× | critical |
+| `secrets.jwt` | 10.7× | medium |
+| `secrets.assigned-credential` | 10.7× | high |
+| `supply.unpinned-action` | 10.5× | low |
+| `resource.k8s-no-security-context` | 7.6× | medium |
+| `resource.k8s-not-run-as-non-root` | 6.6× | medium |
+| `resource.k8s-privilege-escalation-not-disabled` | 6.5× | medium |
+| twelve rules that never fire on good code | ∞ | — |
+
+Three rules were demoted to `info` on this evidence, which reports them at zero
+score weight rather than deleting them:
+
+| Rule | Ratio | Why |
+|---|---|---|
+| `supply.unpinned-npm-dep` | 1.1× raw | Caret ranges are just as common in good Node as in bad. Libraries are *supposed* to declare ranges. |
+| `supply.unpinned-python-dep` | 0.0× | Fired only on well-maintained code. |
+| `supply.pull-request-target` (safe form) | 1.5× | The rule already separates the dangerous form — a workflow that checks out the PR head — and scores that `high`. The benign form appeared twelve times on good repositories and once on broken ones. Scoring it was the only reason this rule failed its own test. |
+
+The Kubernetes hardening rules were nearly demoted on the *raw* count, at
+1.5×. Weighted, they run 6.5× to 7.6×: almost every clean-code hit was a
+`testdata/` manifest the tool had already discounted. They stayed at medium,
+and the reason is now on record so the question is not reopened from the raw
+counts.
 
 ```
-python tools/corpus.py --root /tmp/corpus --out /tmp/corpus-out
+python tools/corpus.py         --root /tmp/corpus   # population summary
+python tools/discriminate.py   --root /tmp/corpus   # per-rule discrimination
 ```
 
 Each false positive that tuning removed has a regression test in

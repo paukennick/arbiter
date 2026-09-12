@@ -477,15 +477,21 @@ def test_env_var_in_a_config_section_is_checked(tmp_path):
     assert len(hits) == 1 and "GHOST_VAR" in hits[0].evidence
 
 
-def test_safe_pull_request_target_is_low(tmp_path):
+def test_safe_pull_request_target_is_informational(tmp_path):
     """All three terraform-aws-modules repos use this trigger safely for
-    PR-title linting. Flagging it high was a false positive."""
+    PR-title linting. Flagging it high was a false positive; flagging it "low"
+    still deducted score for something that appears twelve times on
+    well-maintained repositories and once on the deliberately vulnerable ones.
+    It reports, at zero weight."""
     found = _scan_text(tmp_path, ".github/workflows/pr-title.yml",
                        "on:\n  pull_request_target:\n    types: [opened]\njobs:\n  a:\n"
                        "    steps:\n      - uses: amannn/action-semantic-pull-request@v5\n",
                        ["supply_chain"])
     prt = [f for f in found if "pull-request-target" in f.rule_id]
-    assert prt and prt[0].severity == "low"
+    assert prt, "the safe form is still reported"
+    assert prt[0].severity == "info"
+    from arbiter.core import SEV_WEIGHT
+    assert SEV_WEIGHT[prt[0].severity] == 0.0
 
 
 def test_dangerous_pull_request_target_is_high(tmp_path):
@@ -1062,3 +1068,124 @@ def test_corpus_separates_teaching_material_from_production_code(tmp_path):
     # real production code must stay in the measurement group
     for production in ("requests", "flask", "express", "rust-ripgrep"):
         assert labels[production] == "clean"
+
+
+# ---------------------------------------------------------------------------
+# A report has to say what it looked at, not just what it found.
+#
+# Without per-language line counts the only denominator available is
+# whole-repository size, and that is how a Kubernetes rule scores a perfect
+# record inside a 400,000-line Go project containing forty lines of YAML: the
+# other 399,960 lines were never eligible to fail. Rates computed that way are
+# not wrong by a little, they are answering a different question.
+# ---------------------------------------------------------------------------
+
+def test_report_breaks_lines_down_by_language_and_role(tmp_path):
+    (tmp_path / "app.py").write_text("x = 1\ny = 2\n")
+    (tmp_path / "deploy.yaml").write_text("kind: Pod\nmetadata:\n  name: a\n")
+    (tmp_path / "README.md").write_text("# hi\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["quality"],
+                   use_adapters=False)
+
+    assert rep.loc_by_language.get("python") == 2
+    assert rep.loc_by_language.get("yaml") == 3
+    assert rep.loc_by_language.get("markdown") == 1
+    assert rep.loc_by_role.get("docs") == 1
+    # the breakdown must account for every line the whole-repo figure claims
+    assert sum(rep.loc_by_language.values()) == sum(rep.loc_by_role.values())
+    assert sum(rep.loc_by_language.values()) == sum(r.loc for r in rep.repos)
+
+
+def test_language_breakdown_survives_serialization(tmp_path):
+    (tmp_path / "app.py").write_text("x = 1\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["quality"],
+                   use_adapters=False)
+    d = json.loads(json.dumps(rep.to_dict()))
+    assert d["loc_by_language"]["python"] == 1
+    assert d["loc_by_role"]["source"] == 1
+
+
+# ---------------------------------------------------------------------------
+# Two false positives found by widening the corpus, both of them criticals on
+# well-maintained code -- the single worst kind of finding this tool can
+# produce, because a critical is what turns somebody's build red.
+# ---------------------------------------------------------------------------
+
+def test_pem_header_with_a_placeholder_body_is_not_a_key(tmp_path):
+    """Argo CD's operator manual shows how to register a repository
+    credential. The key body in that example is three literal dots. Matching
+    the BEGIN line alone reported it as a critical, high-confidence leaked
+    private key."""
+    doc = ("apiVersion: v1\nstringData:\n  sshPrivateKey: |\n"
+           "    -----BEGIN OPENSSH PRIVATE KEY-----\n"
+           "    ...\n"
+           "    -----END OPENSSH PRIVATE KEY-----\n")
+    assert not _scan_text(tmp_path, "manifests/creds.yaml", doc, ["secrets"])
+
+
+@pytest.mark.parametrize("body", [
+    "...", "<your-key-here>", "[REDACTED]", "xxxxxxxxxxxx", "{{ .Values.key }}",
+    "YOUR PRIVATE KEY", "paste your key", "snip",
+])
+def test_written_placeholders_are_not_keys(tmp_path, body):
+    doc = (f"-----BEGIN RSA PRIVATE KEY-----\n{body}\n-----END RSA PRIVATE KEY-----\n")
+    found = _scan_text(tmp_path, f"k{abs(hash(body))}.pem", doc, ["secrets"])
+    assert not [f for f in found if "private-key" in f.rule_id], \
+        f"{body!r} is a stand-in, not key material"
+
+
+def test_real_key_material_is_still_reported(tmp_path):
+    """The check must only reject what is demonstrably a stand-in. A real body,
+    including a deliberately truncated fixture one, still reports."""
+    real = ("-----BEGIN RSA PRIVATE KEY-----\n"
+            "MIICXAIBAAKBgQDVgc+zdNmcxwg4xqdoiy/WpnYj0WFvE7A/zy0EfvnUhxhLAXlC\n"
+            "bjQw5Sqxa8IwQVr4G/mR7wTTJtf/Nrt5bP+E2D4W9MtuL7tzZ9KS/7v3D3nninMP\n"
+            "-----END RSA PRIVATE KEY-----\n")
+    found = _scan_text(tmp_path, "deploy/server.key", real, ["secrets"])
+    assert [f for f in found if f.severity == "critical"]
+
+    short = "-----BEGIN PRIVATE KEY-----\nMIIBVQIBADAN\n-----END PRIVATE KEY-----\n"
+    assert _scan_text(tmp_path, "deploy/short.key", short, ["secrets"])
+
+
+def test_unterminated_pem_block_is_kept(tmp_path):
+    """A block with no END marker cannot be read, so it is treated as real.
+    The conservative direction is the one that keeps findings."""
+    doc = ("-----BEGIN RSA PRIVATE KEY-----\n"
+           "MIICXAIBAAKBgQDVgc+zdNmcxwg4xqdoiy/WpnYj0WFvE7A/zy0EfvnUhxhLAXlC\n")
+    assert _scan_text(tmp_path, "deploy/partial.key", doc, ["secrets"])
+
+
+@pytest.mark.parametrize("path", [
+    "integration/resources/tls/consul.key",   # traefik
+    "e2e/certs/server.key",
+    "acceptance/tls/key.pem",
+    "hack/certs/dev.key",
+    "docs/operator-manual/repo-creds.yaml",   # argo-cd
+])
+def test_non_deployment_paths_downgrade_real_keys(tmp_path, path):
+    """Traefik commits real TLS keys under integration/resources/tls so its
+    integration suite has something to serve. Same category as the keys under
+    psf/requests' tests/certs -- a different word for the directory should not
+    change the verdict from medium to critical."""
+    real = ("-----BEGIN RSA PRIVATE KEY-----\n"
+            "MIICXAIBAAKBgQDVgc+zdNmcxwg4xqdoiy/WpnYj0WFvE7A/zy0EfvnUhxhLAXlC\n"
+            "bjQw5Sqxa8IwQVr4G/mR7wTTJtf/Nrt5bP+E2D4W9MtuL7tzZ9KS/7v3D3nninMP\n"
+            "-----END RSA PRIVATE KEY-----\n")
+    found = [f for f in _scan_text(tmp_path, path, real, ["secrets"])
+             if "private-key" in f.rule_id]
+    assert found, "still reported — downgraded, never hidden"
+    assert found[0].severity == "medium" and found[0].confidence == "low"
+    assert "fixture" in found[0].title
+
+
+def test_production_paths_are_not_caught_by_the_widened_pattern(tmp_path):
+    """`integration` and `e2e` were added to the non-deployment paths. They
+    must match a directory, not a word inside a filename."""
+    real = ("-----BEGIN RSA PRIVATE KEY-----\n"
+            "MIICXAIBAAKBgQDVgc+zdNmcxwg4xqdoiy/WpnYj0WFvE7A/zy0EfvnUhxhLAXlC\n"
+            "-----END RSA PRIVATE KEY-----\n")
+    for path in ("src/integration_client.key", "deploy/e2e-gateway.pem"):
+        found = [f for f in _scan_text(tmp_path, path, real, ["secrets"])
+                 if "private-key" in f.rule_id]
+        assert found and found[0].severity == "critical", path

@@ -172,9 +172,55 @@ _PLACEHOLDER = re.compile(
 # fixture path are still reported, but at a severity that reflects what they
 # actually are. Suppressing them outright would hide a real leak in a test dir.
 _TEST_MATERIAL = re.compile(
-    r"(^|/)(tests?|testing|fixtures?|testdata|__tests__|examples?|samples?|mocks?|demo|benchmarks?)(/|$)"
+    r"(^|/)(tests?|testing|fixtures?|testdata|__tests__|examples?|samples?|mocks?|demo|benchmarks?"
+    # Added after Traefik reported two production-grade criticals for TLS keys
+    # under integration/resources/tls -- material committed on purpose so the
+    # integration suite has something to serve. Same category as the keys under
+    # psf/requests' tests/certs, different word for the directory.
+    r"|integration|e2e|acceptance|conformance|hack|scripts?/dev)(/|$)"
     r"|(^|/)[^/]*\.(test|spec)\.[a-z]+$"
 )
+
+# A PEM header with nothing behind it. Argo CD's operator manual shows how to
+# register a repository credential, and the key body in that example is three
+# literal dots. Matching the BEGIN line alone reported it as a critical,
+# high-confidence leaked private key -- the worst possible finding, on nothing.
+_PEM_END = re.compile(r"-----END [A-Z ]*PRIVATE KEY(?: BLOCK)?-----")
+_PEM_PLACEHOLDER = re.compile(
+    r"^(?:\.{2,}|<[^>\n]*>|\[[^\]\n]*\]|\{+[^}\n]*\}+|x+|y+|z+|\*+|"
+    r"(?:your|my|the|some|redacted|omitted|snip|truncated|placeholder|insert|paste|add)"
+    r"[ _-]?[a-z _-]*)$",
+    re.IGNORECASE,
+)
+# A PEM body is base64 by definition, so that -- not a length guess -- is the
+# test. A length threshold was tried first and was wrong: it rejected the
+# deliberately truncated keys that test suites commit as fixtures, which are
+# short but are still key-shaped and still worth reporting.
+_BASE64_BODY = re.compile(r"^[A-Za-z0-9+/=]+$")
+_MIN_PEM_BODY = 8
+
+
+def _pem_has_key_material(text: str, start: int) -> bool:
+    """True when an actual key body sits between the BEGIN and END markers.
+
+    Deliberately conservative in the direction that keeps findings: a PEM block
+    with no END marker at all, or one whose body cannot be read, is treated as
+    real. The only thing rejected is a block that is demonstrably a stand-in --
+    a body that is not base64, or is one of the usual written placeholders.
+    """
+    head_end = text.find("\n", start)
+    if head_end == -1:
+        return False
+    end = _PEM_END.search(text, head_end)
+    body = text[head_end + 1:end.start()] if end else text[head_end + 1:head_end + 4000]
+    stripped = "".join(body.split())
+    if len(stripped) < _MIN_PEM_BODY:
+        return False
+    if _PEM_PLACEHOLDER.match(stripped):
+        return False
+    # Header lines such as "Proc-Type: 4,ENCRYPTED" are legitimate PEM content
+    # and are not base64, so an encrypted key keeps its colon-bearing preamble.
+    return bool(_BASE64_BODY.match(stripped)) or ":" in stripped
 
 
 # Passwords that mean "this is a local dev stack", not "this is a secret".
@@ -286,10 +332,16 @@ def probe_secrets(ctx: ProbeContext) -> list[Finding]:
         text = _read(f)
         if not text:
             continue
-        test_material = bool(_TEST_MATERIAL.search(f.path)) or f.role == "test"
+        # role == "docs" joins this list because a credential inside a manual is
+        # an illustration of where the credential goes, not a leak. Argo CD's
+        # operator manual is the case: real-looking YAML, placeholder values.
+        test_material = (bool(_TEST_MATERIAL.search(f.path))
+                         or f.role in ("test", "docs"))
         for suffix, title, sev, pattern in SECRET_PATTERNS:
             for m in re.finditer(pattern, text):
                 val = m.group(0)
+                if suffix == "private-key" and not _pem_has_key_material(text, m.start()):
+                    continue
                 eff_sev, eff_conf = sev, "high"
                 note = ""
                 if suffix == "pg-url" and _trivial_db_credential(val):
@@ -834,7 +886,15 @@ def probe_supply_chain(ctx: ProbeContext) -> list[Finding]:
                            if checks_out_head else
                            "Workflow triggers on `pull_request_target`"),
                     dimension="security",
-                    severity="high" if checks_out_head else "low",
+                    # The benign form is "info", not "low". Measured across the
+                    # corpus, `pull_request_target` used safely -- for labelling
+                    # and PR-title workflows -- appears twelve times on
+                    # well-maintained repositories and once on the deliberately
+                    # vulnerable ones. Scoring it was the only reason this rule
+                    # failed its own discrimination test. It is still reported,
+                    # because it is worth knowing the trigger is in use before
+                    # somebody adds a checkout to that workflow.
+                    severity="high" if checks_out_head else "info",
                     confidence="high" if checks_out_head else "low",
                     repo_id=f.repo_id, probe="supply_chain",
                     location=Location(path=f.path, start_line=_line_of(text, idx)),
