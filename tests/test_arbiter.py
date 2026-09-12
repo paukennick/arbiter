@@ -7,6 +7,7 @@ only way to notice.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -2213,3 +2214,106 @@ def test_a_disabled_check_under_a_test_path_is_downgraded_not_hidden(tmp_path):
                    use_adapters=False)
     hits = [f for f in rep.active() if "security-check-disabled" in f.rule_id]
     assert hits and hits[0].severity == "low" and hits[0].confidence == "low"
+
+
+# ---------------------------------------------------------------------------
+# The adjudicator front ends.
+#
+# The interface is not a nicety here. Calibration reads exactly one ledger —
+# findings a person judged — and that ledger sat at zero for the tool's entire
+# life, in a tool built around calibration, because adjudicating meant copying
+# fingerprints one at a time.
+# ---------------------------------------------------------------------------
+
+def _review_page(tmp_path, n=3):
+    from arbiter.learn import Knowledge
+    from arbiter.review import select
+    from arbiter.review_ui import render_html
+    (tmp_path / "app.py").write_text("\n".join(f"line {i}" for i in range(1, 40)))
+    findings = [Finding(rule_id=f"arbiter/r{i}", title=f"Finding {i}",
+                        description="why this matters", remediation="do the thing",
+                        evidence=f"e{i}", location=Location(path="app.py", start_line=10 + i))
+                for i in range(n)]
+    k = Knowledge()
+    picked = select(findings, k, limit=n)
+    return render_html(picked, k, {"root": str(tmp_path)}, "arbiter review --apply review.md"), picked
+
+
+def test_review_page_is_self_contained(tmp_path):
+    """No server, no network, no build step. The reports worth adjudicating are
+    often the ones you cannot send anywhere."""
+    page, _ = _review_page(tmp_path)
+    assert "<script src=" not in page and "<link" not in page
+    assert "http://" not in page.replace("http://www.w3.org", "")
+    for host in ("cdn.", "googleapis", "unpkg", "jsdelivr"):
+        assert host not in page
+
+
+def test_review_page_embeds_code_context(tmp_path):
+    """Adjudicating from a list encourages skimming, and a skimmed verdict is
+    worse than none — this ledger is the only thing calibration reads."""
+    page, _ = _review_page(tmp_path)
+    payload = json.loads(re.search(r"window\.__FINDINGS__ = (\[.*?\]);", page, re.S).group(1))
+    assert payload and all(p["context"] for p in payload)
+    lines = {ln for p in payload for ln, _ in p["context"]}
+    assert payload[0]["line"] in lines, "the finding's own line must be shown"
+
+
+def test_review_page_survives_an_unreadable_file(tmp_path):
+    from arbiter.learn import Knowledge
+    from arbiter.review_ui import render_html
+    f = Finding(rule_id="arbiter/r", title="t", evidence="e",
+                location=Location(path="gone.py", start_line=3))
+    page = render_html([f], Knowledge(), {"root": str(tmp_path)}, "cmd")
+    payload = json.loads(re.search(r"window\.__FINDINGS__ = (\[.*?\]);", page, re.S).group(1))
+    assert payload[0]["context"] == [] and payload[0]["context_note"]
+
+
+def test_review_page_escapes_finding_text(tmp_path):
+    """Finding titles carry evidence lifted from the scanned repository, which
+    is not the tool's own text and must never reach the page as markup."""
+    from arbiter.learn import Knowledge
+    from arbiter.review_ui import render_html
+    f = Finding(rule_id="arbiter/r", title="<script>alert(1)</script>",
+                description="</textarea><img onerror=alert(1)>", evidence="e",
+                location=Location(path="a.py"))
+    page = render_html([f], Knowledge(), {"root": str(tmp_path)}, "cmd")
+    body = page.split("window.__FINDINGS__")[0]
+    assert "<script>alert(1)</script>" not in body
+    payload = json.loads(re.search(r"window\.__FINDINGS__ = (\[.*?\]);", page, re.S).group(1))
+    assert payload[0]["title"] == "<script>alert(1)</script>", "escaped at render, not mangled"
+
+
+def test_review_page_output_is_the_same_format_apply_reads(tmp_path):
+    """The page writes exactly what `arbiter review --apply` already parses, so
+    there is one format and one parser rather than two that can drift."""
+    from arbiter.learn import Knowledge
+    from arbiter.review import apply as apply_marks, parse
+    _, picked = _review_page(tmp_path)
+    text = "\n".join(f"[{'y' if i % 2 == 0 else 'n'}] {f.id}  {f.title}"
+                     for i, f in enumerate(picked))
+    assert len(parse(text)) == len(picked)
+    k = Knowledge()
+    assert apply_marks(text, picked, k)["recorded"] == len(picked)
+
+
+def test_terminal_review_records_the_same_verdicts(tmp_path, monkeypatch):
+    from arbiter.learn import Knowledge
+    from arbiter import review_ui
+    _, picked = _review_page(tmp_path, n=3)
+    keys = iter(["y", "n", "s"])
+    monkeypatch.setattr(review_ui, "_getch", lambda: next(keys))
+    marks = review_ui.run_terminal(picked, Knowledge(), {"root": str(tmp_path)})
+    assert marks[picked[0].id] == "true_positive"
+    assert marks[picked[1].id] == "false_positive"
+    assert picked[2].id not in marks, "skip records nothing"
+
+
+def test_terminal_review_can_go_back(tmp_path, monkeypatch):
+    from arbiter.learn import Knowledge
+    from arbiter import review_ui
+    _, picked = _review_page(tmp_path, n=2)
+    keys = iter(["y", "b", "n", "q"])
+    monkeypatch.setattr(review_ui, "_getch", lambda: next(keys))
+    marks = review_ui.run_terminal(picked, Knowledge(), {"root": str(tmp_path)})
+    assert marks[picked[0].id] == "false_positive", "going back must undo the mark"
