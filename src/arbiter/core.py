@@ -18,7 +18,19 @@ SEV_RANK = {s: i for i, s in enumerate(SEVERITIES)}
 SEV_WEIGHT = {"critical": 40.0, "high": 16.0, "medium": 5.0, "low": 1.5, "info": 0.0}
 CONFIDENCE_FACTOR = {"high": 1.0, "medium": 0.6, "low": 0.3}
 
-DIMENSIONS = ["security", "compliance", "quality", "drift", "interface", "supply_chain"]
+# "assurance" is its own dimension because it answers a different question from
+# all the others. Every other dimension asks whether the CODE is sound.
+# Assurance asks whether the CHECKING is: how much of this repository has been
+# excluded from analysis, how many findings have been silenced, and whether the
+# tests that are supposed to catch regressions actually assert anything.
+#
+# It has to be separate, because its findings are not defects and must not be
+# scored as though they were. A repository with four hundred `# noqa` comments
+# is not insecure; it is unmeasured, and a clean report from any other tool
+# means correspondingly less. That is a fact about the evidence, in the same
+# family as "not assessed" -- which is why it belongs to this tool.
+DIMENSIONS = ["security", "compliance", "quality", "drift", "interface",
+              "supply_chain", "assurance"]
 
 # SARIF only has error/warning/note/none
 SARIF_LEVEL = {

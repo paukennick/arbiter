@@ -1986,3 +1986,230 @@ def test_the_severity_table_is_part_of_the_version_hash():
     a, b = Knowledge(), Knowledge()
     b.external_severity = {"checkov/CKV_AWS_16": "info"}
     assert a.version_hash() != b.version_hash()
+
+
+# ---------------------------------------------------------------------------
+# Assurance: is the checking switched on?
+#
+# A clean report has two possible causes that look identical — the analyzers
+# ran and found nothing, or the analyzers were silenced. Every scanner honours
+# the suppression comments that hide findings from it, so the silencing is
+# invisible to the thing being silenced.
+# ---------------------------------------------------------------------------
+
+def test_blanket_suppression_is_separated_from_a_named_one(tmp_path):
+    (tmp_path / "a.py").write_text(
+        "import os  # noqa\n"           # blanket: silences everything
+        "import sys  # noqa: F401\n"    # named: a decision about one rule
+    )
+    found = _scan_text(tmp_path, "b.txt", "", ["assurance"])
+    blanket = [f for f in found if "blanket-suppression" in f.rule_id]
+    assert len(blanket) == 1 and blanket[0].location.start_line == 1
+
+
+def test_suppression_census_counts_every_tool(tmp_path):
+    (tmp_path / "a.py").write_text("x = 1  # noqa\ny = 2  # nosec\nz = 3  # type: ignore\n")
+    (tmp_path / "b.go").write_text("//nolint\nvar x = 1\n")
+    (tmp_path / "c.tf").write_text("# checkov:skip=CKV_AWS_1\nresource \"a\" \"b\" {}\n")
+    found = _scan_text(tmp_path, "d.txt", "", ["assurance"])
+    census = [f for f in found if "suppression-census" in f.rule_id]
+    assert len(census) == 1
+    assert "5 inline suppressions" in census[0].description
+    assert census[0].severity == "info", "a census is not a defect"
+
+
+def test_assurance_findings_carry_no_score_weight():
+    """A repository with four hundred noqa comments is not insecure — it is
+    unmeasured. Scoring the two the same way is the conflation this dimension
+    exists to expose."""
+    from arbiter.policy import DEFAULT_WEIGHTS
+    assert DEFAULT_WEIGHTS["assurance"] == 0.0
+
+
+def test_analyzer_ignore_file_is_reported(tmp_path):
+    (tmp_path / ".semgrepignore").write_text("# comment\nsrc/\nvendor/\n")
+    found = _scan_text(tmp_path, "a.py", "x = 1\n", ["assurance"])
+    ex = [f for f in found if "analysis-excluded" in f.rule_id]
+    assert ex and "semgrep" in ex[0].title and "2 path pattern" in ex[0].title
+
+
+def test_unconditionally_skipped_test_is_reported(tmp_path):
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_x.py").write_text(
+        "import pytest\n\n\n@pytest.mark.skip\ndef test_a():\n    assert 1\n")
+    found = _scan_text(tmp_path, "z.txt", "", ["assurance"])
+    assert [f for f in found if "permanently-skipped-test" in f.rule_id]
+
+
+def test_a_test_that_asserts_nothing_is_reported(tmp_path):
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_x.py").write_text(
+        "import mod\n\n\ndef test_smoke():\n    mod.thing()\n    mod.other()\n")
+    found = _scan_text(tmp_path, "z.txt", "", ["assurance"])
+    v = [f for f in found if "asserts-nothing" in f.rule_id]
+    assert v and v[0].confidence == "medium", \
+        "some are legitimate smoke tests, so this is never high confidence"
+
+
+@pytest.mark.parametrize("body,label", [
+    ("def test_a():\n    assert thing()\n", "plain assert"),
+    ("def test_a():\n    with pytest.raises(ValueError):\n        thing()\n", "raises"),
+    ("def test_a(self):\n    self.assertEqual(1, 1)\n", "unittest"),
+    ("func TestA(t *testing.T) {\n\trequire.NoError(t, err)\n}\n", "go require"),
+    ("func TestA(t *testing.T) {\n\tm.EXPECT().Init(nil).Once()\n}\n", "mock expectation"),
+    ("func TestA(t *testing.T) {\n\thelperThatChecks(t, input)\n}\n", "delegated to helper"),
+    ("func TestMain(m *testing.M) {\n\tos.Exit(m.Run())\n}\n", "harness entry point"),
+    ("it('works', () => {\n  expect(x).toBe(1)\n})\n", "jest expect"),
+])
+def test_real_assertions_are_not_called_vacuous(tmp_path, body, label):
+    """Three of this check's first four findings were false positives, all from
+    assuming an assertion must sit lexically inside the test body. A false
+    claim that somebody's test is worthless is worse than missing one."""
+    d = tmp_path / label.replace(" ", "_")
+    (d / "tests").mkdir(parents=True)
+    ext = "go" if "func Test" in body else ("js" if "it(" in body else "py")
+    (d / "tests" / f"test_x.{ext}").write_text(body)
+    rep = run_scan([str(d)], load_config(None), only=["assurance"], use_adapters=False)
+    v = [f for f in rep.active() if "asserts-nothing" in f.rule_id]
+    assert not v, f"{label} is an assertion: {[f.evidence for f in v]}"
+
+
+def test_generated_and_vendored_suppressions_are_ignored(tmp_path):
+    (tmp_path / "vendor").mkdir()
+    (tmp_path / "vendor" / "lib.py").write_text("x = 1  # noqa\n" * 20)
+    found = _scan_text(tmp_path, "a.py", "y = 2\n", ["assurance"])
+    assert not [f for f in found if "suppression" in f.rule_id]
+
+
+def test_assurance_dimension_is_registered():
+    from arbiter.core import DIMENSIONS
+    assert "assurance" in DIMENSIONS
+
+
+# ---------------------------------------------------------------------------
+# Machine-authored code defects.
+#
+# The awkward fact behind this probe: a model is the worst available reviewer
+# for its own hallucinated imports. Asked to check, it reads the import, finds
+# it plausible — it generated it precisely because it was plausible — and
+# passes. These failures are decidable, so they belong in a deterministic
+# probe rather than in the judgement pass.
+# ---------------------------------------------------------------------------
+
+def test_offline_cannot_tell_a_stale_manifest_from_an_invented_package(tmp_path):
+    """Offline, all this knows is that a manifest does not declare something.
+    Grading that as a security finding claims a distinction that was not
+    checked, so it reports at zero weight."""
+    (tmp_path / "requirements.txt").write_text("requests==2.31.0\n")
+    (tmp_path / "app.py").write_text("import requests\nimport some_other_thing\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["authored"],
+                   use_adapters=False)
+    u = [f for f in rep.active() if "undeclared-import" in f.rule_id]
+    assert u and u[0].severity == "info"
+    assert "connected profile" in u[0].description
+
+
+def test_prose_is_not_read_as_an_import(tmp_path):
+    """A line-anchored regex reads "import the module" in a docstring as an
+    import. The first run of this check reported a package called `the`,
+    lifted out of a docstring in psf/requests."""
+    (tmp_path / "requirements.txt").write_text("requests==2.31.0\n")
+    (tmp_path / "a.py").write_text(
+        '"""Usage:\n\nimport the library first, then\nimport nonexistentthing\n"""\n'
+        "import requests\n"
+        "# import alsonotreal\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["authored"],
+                   use_adapters=False)
+    names = {f.evidence.split(":")[-1] for f in rep.active()
+             if "undeclared" in f.rule_id}
+    assert not names & {"the", "nonexistentthing", "alsonotreal"}, names
+
+
+def test_an_optional_import_is_not_a_missing_dependency(tmp_path):
+    """try/except around an import is how an optional dependency is declared.
+    Its absence from the manifest is the point."""
+    (tmp_path / "requirements.txt").write_text("requests==2.31.0\n")
+    (tmp_path / "a.py").write_text(
+        "import requests\ntry:\n    import simplejson as json\nexcept ImportError:\n"
+        "    import json\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["authored"],
+                   use_adapters=False)
+    assert not [f for f in rep.active() if "simplejson" in f.evidence]
+
+
+def test_a_module_named_differently_from_its_package_is_not_reported(tmp_path):
+    (tmp_path / "requirements.txt").write_text("PyYAML==6.0\npyOpenSSL==24.0\n")
+    (tmp_path / "a.py").write_text("import yaml\nimport OpenSSL\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["authored"],
+                   use_adapters=False)
+    assert not [f for f in rep.active() if "undeclared" in f.rule_id]
+
+
+def test_a_monorepo_sibling_package_is_not_a_missing_dependency(tmp_path):
+    (tmp_path / "package.json").write_text(
+        '{"name": "juice-shop", "workspaces": ["frontend"], "dependencies": {}}')
+    (tmp_path / "a.ts").write_text("import { X } from '@juice-shop/models'\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["authored"],
+                   use_adapters=False)
+    assert not [f for f in rep.active() if "undeclared" in f.rule_id]
+
+
+def test_a_registry_failure_never_reads_as_absence(monkeypatch):
+    """None is load-bearing. A network problem must not become a critical
+    finding that a package does not exist."""
+    from arbiter import authored
+    authored._EXISTENCE_CACHE.clear()
+    import urllib.request
+    monkeypatch.setattr(urllib.request, "urlopen",
+                        lambda *a, **k: (_ for _ in ()).throw(OSError("no network")))
+    assert authored.package_exists("python", "anything") is None
+    f = authored._import_finding(
+        type("F", (), {"path": "a.py", "repo_id": "root"})(), "import anything\n",
+        "anything", "python", None)
+    assert f.severity == "info" and "nonexistent" not in f.rule_id
+
+
+def test_a_package_that_does_not_exist_is_critical():
+    from arbiter.authored import _import_finding
+    f = _import_finding(type("F", (), {"path": "a.py", "repo_id": "root"})(),
+                        "import made_up_thing\n", "made_up_thing", "python", exists=False)
+    assert f.severity == "critical"
+    assert "import-of-nonexistent-package" in f.rule_id
+    assert "unclaimed" in f.description
+
+
+def test_a_stub_on_a_security_path_outranks_a_stub_anywhere_else(tmp_path):
+    (tmp_path / "a.py").write_text(
+        "def verify_signature(sig, body):\n    return True  # TODO: implement\n\n\n"
+        "def render_footer():\n    pass\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["authored"],
+                   use_adapters=False)
+    by_name = {f.evidence.split(":")[1]: f for f in rep.active()
+               if "stub" in f.rule_id}
+    assert by_name["verify_signature"].severity == "high"
+    assert by_name["verify_signature"].dimension == "security"
+    assert by_name["render_footer"].severity == "low"
+
+
+@pytest.mark.parametrize("code,label", [
+    ("requests.get(url, verify=False)", "python tls"),
+    ("const a = {rejectUnauthorized: false}", "node tls"),
+    ("cfg := &tls.Config{InsecureSkipVerify: true}", "go tls"),
+    ("ssh -o StrictHostKeyChecking=no host", "ssh host key"),
+])
+def test_disabled_security_checks_are_caught(tmp_path, code, label):
+    d = tmp_path / label.replace(" ", "_")
+    d.mkdir()
+    (d / "app.py").write_text(code + "\n")
+    rep = run_scan([str(d)], load_config(None), only=["authored"], use_adapters=False)
+    hits = [f for f in rep.active() if "security-check-disabled" in f.rule_id]
+    assert hits, label
+
+
+def test_a_disabled_check_under_a_test_path_is_downgraded_not_hidden(tmp_path):
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "conftest.py").write_text("requests.get(u, verify=False)\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["authored"],
+                   use_adapters=False)
+    hits = [f for f in rep.active() if "security-check-disabled" in f.rule_id]
+    assert hits and hits[0].severity == "low" and hits[0].confidence == "low"
