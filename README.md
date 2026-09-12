@@ -578,7 +578,35 @@ counts.
 ```
 python tools/corpus.py         --root /tmp/corpus   # population summary
 python tools/discriminate.py   --root /tmp/corpus   # per-rule discrimination
+python tools/worklist.py       --out training/WORKLIST.md   # what to fix next
 ```
+
+### Training has two halves, and only one needs a person
+
+`.github/workflows/train.yml` runs the whole cycle nightly on GitHub's
+machines — corpus scan, discrimination, injection, claim integrity, tests —
+and commits the results back. It never edits a rule. It only measures.
+
+Deciding what a result *means* is the other half, and it is where every real
+defect has come from: whether a finding on a well-maintained repository is the
+rule's fault or the code's, whether a ratio is real or an artefact of how it
+was measured. `tools/worklist.py` is the handoff between the two. It reads
+what the cycle measured and writes a ranked queue, so the next session starts
+from a question rather than a pile of tables.
+
+Its six checks, in the order they have actually paid off:
+
+| Check | Why it is there |
+|---|---|
+| Critical or high on well-maintained code | The strongest signal available. Three real defects in one afternoon, including a critical on three literal dots. |
+| A severity the measurement does not support | A rule that fires no harder on broken code is describing a style, not detecting a defect. |
+| A rule with no controls | The dangerous state, because it looks perfect: recall reads 1.0000 whether the rule is precise or fires on everything. |
+| A rule nothing has ever exercised | An assertion wearing the costume of a measurement. |
+| A stack with no broken counterpart | Its rules cannot be measured at all. Closing eight of these is what found the three criticals above. |
+| No finding reviewed by a person | Calibration reads **only** the adjudicated ledger. No schedule can fill it, because it is a judgement about what you would act on. |
+
+An empty queue is itself a finding: it means the corpus has stopped teaching
+us anything, and the next useful move is to widen it, not to run it again.
 
 Each false positive that tuning removed has a regression test in
 `tests/test_arbiter.py` naming the repository it came from.

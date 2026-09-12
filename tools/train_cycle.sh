@@ -10,10 +10,15 @@
 # What it does, in order:
 #   1. makes sure the practice repositories are downloaded
 #   2. runs every rule against them and records what it found
-#   3. plants known faults and checks the rules catch them
-#   4. checks the tool never claims something it didn't actually check
-#   5. runs the test suite
-#   6. optionally saves the results back to the repo
+#   3. measures whether each rule tells good code from broken code
+#   4. plants known faults and checks the rules catch them
+#   5. checks the tool never claims something it didn't actually check
+#   6. runs the test suite, then writes training/WORKLIST.md -- what to look
+#      at next, and why
+#   7. optionally saves the results back to the repo
+#
+# It measures. It never edits a rule. Deciding what a result means is the part
+# that needs judgement, and WORKLIST.md is the handoff to whoever does that.
 #
 set -euo pipefail
 
@@ -53,6 +58,12 @@ python tools/integrity.py --probes 5 | tee "$RESULTS/integrity-$STAMP.txt" | tai
 
 echo "==> 6/7  test suite"
 python -m pytest tests/ -q | tail -3
+
+echo "==> 6b/7  working out what to do next"
+python tools/worklist.py \
+  --corpus-summary "$RESULTS/corpus-$STAMP/summary.json" \
+  --discrimination "$RESULTS/discriminate-$STAMP.json" \
+  --out "$RESULTS/WORKLIST.md"
 
 echo "==> 7/7  results"
 if [ "${PUSH:-0}" = "1" ]; then
