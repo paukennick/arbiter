@@ -3,7 +3,7 @@
 A repository evaluator that refuses to grade what it did not actually inspect.
 
 Arbiter scans one repository or a **system** of several, produces findings
-across six dimensions, and reports how much of its own rubric it was able to
+across seven dimensions, and reports how much of its own rubric it was able to
 run. It ships with native probes that need nothing installed, wraps external
 analyzers through declarative adapters, and includes an A/B harness for
 comparing configurations, tools, and builds of Arbiter itself.
@@ -11,8 +11,8 @@ comparing configurations, tools, and builds of Arbiter itself.
 Status: **P0–P2 + claim integrity + calibration** — engine, policy, resource graph,
 cross-repo seam checks, Terraform plan reading, a machine-checked claim ledger and
 an offline learning loop.
-Tuned against a corpus of thirty-nine public repositories in three
-populations. Everything below works today.
+Tuned against a corpus of forty-two public repositories in three populations,
+five of them held out and never tuned against. Everything below works today.
 
 ```
 pip install -e .
@@ -56,6 +56,8 @@ arbiter learn                                  # what has been learned, and what
 arbiter diff before.json after.json            # new / fixed / unchanged
 arbiter controls arbiter-out/report.json       # control coverage, including the gaps
 arbiter review arbiter-out/report.json         # adjudicate a batch in one pass
+arbiter review report.json --html              # ...as a page you can tap through
+arbiter review report.json --interactive       # ...or one keypress each, in the terminal
 arbiter review --apply arbiter-out/review.md   # record the verdicts
 ```
 
@@ -79,6 +81,9 @@ Exit codes: `0` pass, `1` gate failure, `2` error.
 | `doc_drift` | drift | nothing | Broken documentation links, files described in prose that do not exist, documented environment variables nothing reads |
 | `interface` | interface | 2+ repos | Six seam checks — see below |
 | `house_rules` | quality, drift | nothing | Your own rules from `arbiter.yaml` |
+| `assurance` | assurance | nothing | Whether the *checking* is switched on: silenced findings across fifteen tools' ignore syntaxes, configuration that excludes code from analysis, tests that cannot fail |
+| `authored` | supply chain, security | nothing | Defects characteristic of machine-drafted code: imports of packages nothing declares (and, connected, packages that do not exist), stubs on production paths, disabled security checks |
+| `judgement` | drift | a model | Claims in prose that the code contradicts. Inferred, never gates |
 
 Plus adapters for `ruff`, `bandit`, `checkov`, `semgrep` and `gitleaks`. Any
 that are not installed report as skipped with the binary named.
@@ -747,6 +752,119 @@ rules past the twenty-observation line — rules already close to the threshold
 first, spread across files so twenty instances of one mistake are not counted
 as twenty observations, never re-asking an adjudicated finding. Mark `[y]` or
 `[n]`, then `arbiter review --apply`.
+
+## Is the checking switched on?
+
+A clean report has two possible causes that look identical from the outside:
+the analyzers ran over everything and found nothing, or large parts of the
+tree were excluded, hundreds of findings were silenced by inline comments, and
+the tests that would have caught a regression assert nothing.
+
+Every scanner hands you the same green tick for both. They have to — they
+honour the suppression comments that hide findings from them, and a test that
+asserts nothing still passes. The silencing is invisible to the thing being
+silenced.
+
+Measured across ten corpus repositories: **445 suppression comments**, 169 in
+one project, and not one of them appears in any tool's output.
+
+The `assurance` dimension reports three things: inline suppressions across
+fifteen tools' ignore syntaxes (with the blanket ones — an ignore naming no
+rule — separated out), configuration that excludes parts of the tree from
+analysis, and tests that cannot fail. It carries **weight zero**. A repository
+with four hundred `# noqa` comments is not insecure, it is *unmeasured*, and
+scoring those the same way is the conflation the dimension exists to expose.
+
+## Machine-authored code
+
+A growing share of new code is drafted by a model, and model-drafted code
+fails in ways human-drafted code mostly does not: confident, fluent,
+plausible-looking code that refers to things which do not exist. A model is
+the worst available reviewer for this — asked to check its own hallucinated
+import, it reads the import, finds it plausible (it generated it precisely
+because it was plausible) and passes.
+
+These failures are decidable, so they are a deterministic probe rather than
+part of the judgement pass:
+
+| Check | What it catches |
+|---|---|
+| `undeclared-import` / `import-of-nonexistent-package` | A module nothing declares. See below. |
+| `stub-on-production-path` | `return True  # TODO`, `raise NotImplementedError`, a `pass` body. Severity keyed to whether the function name says it decides something: a stub in `verify_signature` is not an unfinished feature, it is an always-yes. |
+| `security-check-disabled` | `verify=False`, `InsecureSkipVerify: true`, `StrictHostKeyChecking=no`. Written to make an example work, then never removed. |
+| `docstring-promises-absent-behaviour` | A docstring saying the function validates or retries, in a body that does neither. |
+
+The import check ships in **two modes**, and the split is the honest part:
+
+- **Offline** it knows only that a manifest does not declare something. That
+  is mostly a stale manifest, so it reports at zero weight and says the
+  distinction needs a registry.
+- **Connected** it asks the registry whether the package exists at all. A name
+  that resolves to nothing is **critical** — the import cannot ever have
+  worked, so the name was invented, and an unclaimed package name sitting in a
+  shipped import is an invitation to whoever registers it first.
+
+```
+$ arbiter scan ./app --profile connected
+  critical  import-of-nonexistent-package  fastapi_auth_middleware_helper
+  critical  import-of-nonexistent-package  secure_token_validator
+```
+
+Zero false criticals across the 42-repo corpus.
+
+## Adjudicating
+
+```bash
+arbiter review report.json --html          # one self-contained page
+arbiter review report.json --interactive   # one keypress per finding
+arbiter review report.json --apply review.md
+```
+
+The page has no server, no network and no build step, so it works from a phone
+with the wifi off — which matters, because the reports worth adjudicating are
+often the ones you cannot send anywhere. One finding at a time with the code
+around it: adjudicating from a list encourages skimming, and a skimmed verdict
+is worse than none, because this ledger is the only thing calibration reads.
+
+Which twenty findings you see is the whole question, and they are chosen to
+move the most rules past the twenty-observation line — rules closest to the
+threshold first, spread across files, never re-asking an adjudicated finding.
+
+## Evidence the tool did not generate for itself
+
+Everything else Arbiter measures against, it made. Injection plants faults
+from patterns somebody chose. Corpus discrimination compares two populations
+that were also chosen. Both share a blind spot: a rule can pass all of it and
+still be wrong about real code.
+
+**Real fix pairs** (`tools/fixpairs.py`) close that. Walk a repository's
+history, scan each commit and its parent, and find a finding present in the
+parent and gone in the child at the same site. Somebody who knew the system
+decided something needed changing; nobody wrote that commit to be found by a
+scanner. A rule that fires on both sides of a commit that plainly fixed the
+thing is wrong, and nothing else in the pipeline would have said so.
+
+Commit messages are deliberately *not* the filter — libraries are full of
+feature commits mentioning encryption that fix nothing, and real remediations
+get committed as "update manifests". The finding appearing and then
+disappearing is the signal.
+
+**Disagreement mining** (`tools/disagree.py`) decides which findings are worth
+a person's attention. Where two independent analyzers looked at the same line
+and reached different conclusions, exactly one is wrong, so a verdict there
+resolves real uncertainty instead of confirming a settled one. Four buckets —
+contested, severity disagreement, corroborated (agreed, deliberately *not*
+queued) and coverage gap (an external tool checks something Arbiter has no
+rule for, which is a list of rules worth writing rather than a disagreement).
+
+**Held-out repositories.** Five repos, one of each population, never used to
+tune a rule. Every figure in this project was previously measured on
+repositories the rules were tuned against, which is how a tool ends up fitted
+to its own practice set. The corpus tool now reports both rates — and prints
+its own caveat, because a per-KLOC rate over two repositories is as much about
+what those repositories contain as about whether the rules generalize. The
+figure that survives a small sample is the count of build-breaking findings,
+and that one is zero.
 
 ## Not yet built
 

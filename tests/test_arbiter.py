@@ -1198,7 +1198,14 @@ def test_production_paths_are_not_caught_by_the_widened_pattern(tmp_path):
 # unattended cycle looks identical to a healthy one.
 # ---------------------------------------------------------------------------
 
-def _worklist(tmp_path, corpus=None, disc=None, knowledge=None) -> str:
+def _worklist(tmp_path, corpus=None, disc=None, knowledge=None,
+              empty_evidence=False) -> str:
+    """Run the worklist with every input under the test's control.
+
+    `empty_evidence` points the fix-pair and disagreement inputs at empty files;
+    without it the tool reads the repository's real ones and a test asserting
+    an empty queue depends on what the last training run happened to find.
+    """
     import subprocess
     paths = {}
     for name, data in (("corpus", corpus), ("disc", disc), ("knowledge", knowledge)):
@@ -1206,11 +1213,14 @@ def _worklist(tmp_path, corpus=None, disc=None, knowledge=None) -> str:
         p.write_text(json.dumps(data if data is not None else {}))
         paths[name] = str(p)
     out = tmp_path / "WORKLIST.md"
-    subprocess.run(
-        ["python", str(ROOT / "tools" / "worklist.py"),
-         "--corpus-summary", paths["corpus"], "--discrimination", paths["disc"],
-         "--knowledge", paths["knowledge"], "--out", str(out)],
-        check=True, capture_output=True, cwd=str(ROOT))
+    cmd = ["python", str(ROOT / "tools" / "worklist.py"),
+           "--corpus-summary", paths["corpus"], "--discrimination", paths["disc"],
+           "--knowledge", paths["knowledge"], "--out", str(out)]
+    if empty_evidence:
+        empty = tmp_path / "none.json"
+        empty.write_text("{}")
+        cmd += ["--fix-pairs", str(empty), "--disagreements", str(empty)]
+    subprocess.run(cmd, check=True, capture_output=True, cwd=str(ROOT))
     return out.read_text()
 
 
@@ -1289,7 +1299,8 @@ def test_worklist_says_so_when_there_is_nothing_to_do(tmp_path):
              "dimension": "security", "judgeable": True, "thin": False,
              "weighted_ratio": 40.0, "clean_hits": 1, "vuln_hits": 40}
             for rid in sorted(ids)]
-    text = _worklist(tmp_path, corpus={"rows": []}, disc={"rows": rows})
+    text = _worklist(tmp_path, corpus={"rows": []}, disc={"rows": rows},
+                     empty_evidence=True)
     assert "widen it, not to run it again" in text
 
 
@@ -2555,3 +2566,19 @@ def test_no_criticals_or_highs_from_authored_on_well_maintained_go(tmp_path):
     rep = run_scan([traefik], load_config(None), only=["authored"], use_adapters=False)
     bad = [f for f in rep.active() if f.severity in ("critical", "high")]
     assert not bad, [(f.location.short(), f.rule_id) for f in bad]
+
+
+def test_a_commit_message_ranks_a_fix_pair_but_never_confirms_it():
+    """Commit messages are not used to FIND pairs — libraries are full of
+    feature commits mentioning encryption that fix nothing. They only order the
+    queue so a person's first verdicts land on the clearest cases."""
+    import importlib, sys as _sys
+    _sys.path.insert(0, str(ROOT / "tools"))
+    fp = importlib.import_module("fixpairs")
+    assert fp.corroborated("arbiter/supply.unpinned-action",
+                           "chore: pin GitHub Actions to commit SHA")
+    assert fp.corroborated("arbiter/secrets.pg-url",
+                           "Remove MONGOLAB_URI and mlab connection string")
+    # a rewrite that removed the resource is NOT corroboration
+    assert not fp.corroborated("arbiter/resource.k8s-no-security-context",
+                               "Modernize manifest: replace ReplicationController")
