@@ -71,11 +71,33 @@ def register(p: Probe) -> Probe:
     return p
 
 
+# Every probe reads every file it cares about, and there are now a dozen
+# probes. On a 450,000-line repository that meant the same bytes coming off
+# disk and through the UTF-8 decoder twenty-odd times. The inventory is fixed
+# for the duration of a scan and files are capped at 2 MB, so caching by
+# absolute path is safe and bounded.
+#
+# Cleared between scans by clear_read_cache(), because a long-lived process
+# doing several scans (the corpus tool, the A/B harness, the fix-pair miner)
+# must not serve one repository's bytes for another's path.
+_READ_CACHE: dict[str, str] = {}
+
+
 def _read(f) -> str:
+    key = getattr(f, "abspath", "") or ""
+    cached = _READ_CACHE.get(key)
+    if cached is not None:
+        return cached
     try:
-        return Path(f.abspath).read_text(errors="replace")
+        text = Path(key).read_text(errors="replace")
     except OSError:
-        return ""
+        text = ""
+    _READ_CACHE[key] = text
+    return text
+
+
+def clear_read_cache() -> None:
+    _READ_CACHE.clear()
 
 
 def _line_of(text: str, idx: int) -> int:
