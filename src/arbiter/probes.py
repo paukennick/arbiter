@@ -111,8 +111,8 @@ SECRET_PATTERNS: list[tuple[str, str, str, str]] = [
 _ASSIGNED_SECRET = re.compile(
     r"""(?ix)
     ([A-Za-z0-9_]{0,24}
-      (?:password|passwd|pwd|secret|token|api[_-]?key|access[_-]?key|
-         client[_-]?secret|private[_-]?key|credential)
+      (?:password|passwd|pwd|secret|token|api[._-]?key|access[._-]?key|
+         client[._-]?secret|private[._-]?key|credential)
      [A-Za-z0-9_]{0,24})
     # `:=` must come before the single-character alternatives, or Go's short
     # variable declaration matches the colon and then fails on the equals.
@@ -124,6 +124,38 @@ _ASSIGNED_SECRET = re.compile(
     """
 )
 
+# Unquoted values. A .env file, a Kubernetes Secret, a docker-compose file, a
+# `export` line and a Dockerfile `ENV` all write secrets without quotes, and
+# those are the places secrets most commonly leak. The quoted pattern above saw
+# none of them.
+#
+# Unquoted is riskier, so the value is constrained hard: it must run to the end
+# of the line (a trailing comment aside), contain no whitespace and no quote
+# characters. That kills nearly all YAML-structure matches before the shared
+# filters even run.
+_ASSIGNED_SECRET_BARE = re.compile(
+    r"""(?ix)
+    (?:^|\n)[ \t]*
+    (?:export[ \t]+|env[ \t]+|set[ \t]+|-[ \t]+)?
+    ([A-Za-z0-9_.-]{0,24}
+      (?:password|passwd|pwd|secret|token|api[._-]?key|access[._-]?key|
+         client[._-]?secret|private[._-]?key|credential)
+     [A-Za-z0-9_.-]{0,24})
+    [ \t]*[:=][ \t]*
+    ([^\s"'`\#\n]{8,120})
+    [ \t]*(?:\#[^\n]*)?(?=\n|$)
+    """
+)
+
+# A symbol whose name ends this way holds a reference to a secret, not a
+# secret: `secretName`, `access_key_status`, `tokenUrl`, `secretKeyRef`.
+_NON_SECRET_SUFFIX = re.compile(
+    r"(_(?:status|state|id|name|arn|path|file|url|uri|type|enabled|required|"
+    r"expiry|expires|rotation|algorithm|version|ref|class|provider|manager|store|hash|selector|policy|config|template|format|scope|prefix|suffix)"
+    r"|(?:Status|State|Id|Name|Arn|Path|File|Url|Uri|Type|Enabled|Required|"
+    r"Expiry|Expires|Rotation|Algorithm|Version|Ref|Class|Provider|Manager|Store|Hash|Selector|Policy|Config|Template|Format|Scope|Prefix|Suffix))$"
+)
+
 _PLACEHOLDER = re.compile(
     r"(?i)^(|x{3,}|\*{3,}|\.{3,}|changeme|todo|none|null|test|dummy|"
     # `your-api-key-here` used to slip through because \w does not match a
@@ -132,7 +164,8 @@ _PLACEHOLDER = re.compile(
     r"your[-_\w]*|my[-_](?:secret|token|key|password)[-_\w]*|"
     r"[-_\w]*(?:here|placeholder|example|sample|redacted|omitted|fake|notreal)[-_\w]*|"
     r"\$\{\{?[^}]*\}\}?|\{\{[^}]*\}\}|<[^>]*>|process\.env\.[\w.]+|os\.environ.*|"
-    r"\$\([^)]*\)|%\([^)]*\)s|@[\w.]+@|\{[a-z_]+\})$"
+    r"\$\([^)]*\)|%\([^)]*\)s|@[\w.]+@|\{[a-z_]+\}|"
+    r"\$[A-Za-z_][\w]*|!+[^\s]*|~|nil|undefined|_+|-+)$"
 )
 
 # Material that exists to be committed: certificates and keys under a test or
@@ -171,6 +204,78 @@ def _entropy(s: str) -> float:
         counts[ch] = counts.get(ch, 0) + 1
     n = len(s)
     return -sum((c / n) * math.log2(c / n) for c in counts.values())
+
+
+def _credential_finding(f, text: str, offset: int, name: str, value: str,
+                        test_material: bool, quoted: bool) -> Finding | None:
+    """Shared judgement for a credential-shaped assignment.
+
+    Quoted and unquoted assignments differ only in how they are spotted; what
+    makes a value a credential is the same either way, so the filters live in
+    one place rather than being duplicated and drifting apart.
+    """
+    val_s = (value or "").strip()
+    if not val_s or _PLACEHOLDER.match(val_s):
+        return None
+    # `access_key_status = "Inactive"` and `secretName: tls-cert` hold a status
+    # and a reference. The keyword matched; the suffix says what it holds.
+    if _NON_SECRET_SUFFIX.search(name):
+        return None
+    # `secret_key = "secret_key"` — a literal echoing its own symbol.
+    if re.sub(r"[^a-z0-9]", "", val_s.lower()) == re.sub(r"[^a-z0-9]", "", name.lower()):
+        return None
+    # Real credentials do not contain spaces. Values that do are example
+    # passphrases ("keyboard cat") or prose, and were the largest source of
+    # false positives on well-maintained code.
+    if any(ch.isspace() for ch in val_s):
+        return None
+    if not quoted:
+        # A bare value that is a path, a URL or a version is structure.
+        if re.match(r"^(?:[./~]|[a-z][a-z0-9+.-]*://|v?\d+(?:\.\d+)+$)", val_s, re.I):
+            return None
+        # Brackets, parentheses and commas mean this is an expression being
+        # assigned, not a literal: `search_tokens=_get_search_tokens(`.
+        if any(ch in val_s for ch in "()[]{},"):
+            return None
+        # A purely alphabetic unquoted value is a word, not a credential. This
+        # is what `secretsmanager: GetSecretValue` is — an IAM action in a
+        # CloudFormation policy, which the colon made look like an assignment.
+        # Real secrets essentially always carry a digit or a symbol.
+        if val_s.isalpha():
+            return None
+    # Require mixed character classes: a lowercase English word is not a secret
+    # however long it is.
+    classes = sum([
+        any(c.islower() for c in val_s),
+        any(c.isupper() for c in val_s),
+        any(c.isdigit() for c in val_s),
+        any(not c.isalnum() for c in val_s),
+    ])
+    # Entropy is a weak gate on its own. Raising the floor to silence
+    # `keyboard cat` also dropped a real hardcoded Azure SQL password and a real
+    # API key, because weak credentials have low entropy by definition. The
+    # whitespace, placeholder and character-class filters do the discriminating.
+    ent = _entropy(val_s)
+    if ent < 2.6 or classes < 2:
+        return None
+    strong = ent >= 4.2 and classes >= 3 and not test_material
+    where = "unquoted " if not quoted else ""
+    return Finding(
+        rule_id="arbiter/secrets.assigned-credential",
+        title=f"Hardcoded credential assigned to `{name}`",
+        dimension="security",
+        severity="high" if strong else "medium",
+        confidence="high" if strong else "low",
+        repo_id=f.repo_id,
+        probe="secrets",
+        location=Location(path=f.path, start_line=_line_of(text, offset)),
+        description=(f"High-entropy {where}literal (H={ent:.2f}, {classes} character "
+                     f"classes) assigned to a credential-named symbol."),
+        remediation="Move the value to a secret manager and inject it at runtime.",
+        evidence=f"{name}={_mask(val_s)}",
+        controls=["NIST-800-53r5:IA-5"],
+        tags=["secret"] + ([] if quoted else ["unquoted"]),
+    )
 
 
 def probe_secrets(ctx: ProbeContext) -> list[Finding]:
@@ -213,57 +318,15 @@ def probe_secrets(ctx: ProbeContext) -> list[Finding]:
                     tags=["secret"],
                 ))
         for m in _ASSIGNED_SECRET.finditer(text):
-            name, val = m.group(1), m.group(3)
-            val_s = val.strip()
-            if _PLACEHOLDER.match(val_s):
-                continue
-            # `access_key_status = "Inactive"` is a status field, not a key.
-            # The symbol keyword matched, but the suffix says what it holds.
-            if re.search(r"_(status|state|id|name|arn|path|file|url|uri|type|enabled|"
-                         r"required|expiry|expires|rotation|algorithm|version)$", name, re.I):
-                continue
-            # `secret_key = "secret_key"` — a literal echoing its own symbol is
-            # a fixture value, not a credential.
-            if re.sub(r"[^a-z0-9]", "", val_s.lower()) == re.sub(r"[^a-z0-9]", "", name.lower()):
-                continue
-            # Real credentials do not contain spaces. Values that do are
-            # example passphrases ("keyboard cat") or prose, and were the
-            # largest source of false positives on well-maintained code.
-            if not val_s or any(ch.isspace() for ch in val_s):
-                continue
-            # Require mixed character classes: a lowercase English word is not
-            # a secret however long it is.
-            classes = sum([
-                any(c.islower() for c in val_s),
-                any(c.isupper() for c in val_s),
-                any(c.isdigit() for c in val_s),
-                any(not c.isalnum() for c in val_s),
-            ])
-            # Entropy is a weak gate on its own. Raising the floor to silence
-            # `keyboard cat` also dropped a real hardcoded Azure SQL password
-            # ("Aa12...") and a real API key, because weak credentials have low
-            # entropy by definition. The whitespace, placeholder and
-            # character-class filters above do the discriminating; entropy only
-            # has to exclude repeated or single-class filler.
-            ent = _entropy(val_s)
-            if ent < 2.6 or classes < 2:
-                continue
-            strong = ent >= 4.2 and classes >= 3 and not test_material
-            out.append(Finding(
-                rule_id="arbiter/secrets.assigned-credential",
-                title=f"Hardcoded credential assigned to `{name}`",
-                dimension="security",
-                severity="high" if strong else "medium",
-                confidence="high" if strong else "low",
-                repo_id=f.repo_id,
-                probe="secrets",
-                location=Location(path=f.path, start_line=_line_of(text, m.start())),
-                description=f"High-entropy literal (H={ent:.2f}, {classes} character classes) assigned to a credential-named symbol.",
-                remediation="Move the value to a secret manager and inject it at runtime.",
-                evidence=f"{name}={_mask(val)}",
-                controls=["NIST-800-53r5:IA-5"],
-                tags=["secret"],
-            ))
+            found = _credential_finding(f, text, m.start(), m.group(1), m.group(3),
+                                        test_material, quoted=True)
+            if found:
+                out.append(found)
+        for m in _ASSIGNED_SECRET_BARE.finditer(text):
+            found = _credential_finding(f, text, m.start(1), m.group(1), m.group(2),
+                                        test_material, quoted=False)
+            if found:
+                out.append(found)
     return out
 
 

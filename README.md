@@ -429,10 +429,16 @@ python tools/inject.py --trials 40000 --knowledge .arbiter/knowledge.json
 
 | | Result |
 |---|---|
-| Trials | 40,000 across 15 rules |
-| Recall | **19,999 / 20,000** |
-| Specificity | **20,000 / 20,000** |
-| Per-rule Wilson lower bound | 0.996 – 0.999 |
+| Trials | 30,000 across 15 rules |
+| Recall | **15,000 / 15,000** |
+| Specificity | **15,000 / 15,000** |
+| Rules with controls | **15 / 15** |
+| Per-rule Wilson lower bound | 0.995 – 0.999 |
+
+Every rule has controls. That row matters more than the other two: a rule with
+measured recall and no controls could be firing on everything and the numbers
+would still look perfect. Six rules were in exactly that state until controls
+were written for them.
 
 Read that honestly. It measures whether a rule detects defects drawn from a
 generator, against controls drawn from the same generator. It is evidence
@@ -452,6 +458,8 @@ alone had not:
 | Hyphenated placeholders | `your-api-key-here` was reported as a credential, because `\w` does not match a hyphen. |
 | Kubernetes PVCs scored by AWS properties | `unencrypted-volume` fired on every PersistentVolumeClaim in Kubernetes' own examples — 20 false positives. |
 | No rules for absent hardening | Kubernetes defaults are the insecure ones. A deliberately vulnerable Kubernetes repository produced **two** findings; it now produces twelve. |
+| Unquoted values were invisible | `.env` files, Kubernetes Secrets, `docker-compose`, `export VAR=`, Dockerfile `ENV` and `.properties` — the formats where secrets most commonly leak — were **all** unreadable, because the pattern required quotes. |
+| Six rules had no controls | Recall was measured; false-alarm rate was not measured at all. |
 
 ## Tuning evidence
 
