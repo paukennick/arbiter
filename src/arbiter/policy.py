@@ -35,6 +35,11 @@ DEFAULT_WEIGHTS = {
     "quality": 0.20,
     "drift": 0.10,
     "interface": 0.15,
+    # Weight zero, deliberately. Assurance findings say how much checking was
+    # switched off, not how bad the code is, and folding the two into one grade
+    # would be the exact conflation this dimension exists to expose. They are
+    # reported, counted, and never scored.
+    "assurance": 0.0,
 }
 
 DEFAULTS: dict[str, Any] = {

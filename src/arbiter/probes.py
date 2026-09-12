@@ -1596,3 +1596,21 @@ try:
     _register_judgement()
 except Exception:  # noqa: BLE001
     pass
+
+# Assurance asks whether the CHECKING is switched on, rather than whether the
+# code is sound. Separate module, separate dimension, weight zero.
+try:
+    from .assurance import register_assurance as _register_assurance
+    _register_assurance()
+except Exception:  # noqa: BLE001
+    pass
+
+
+# Defects characteristic of machine-authored code. Decidable ones only -- a
+# model is the worst available reviewer for its own hallucinated imports,
+# because it generated them precisely because they looked plausible.
+try:
+    from .authored import register_authored as _register_authored
+    _register_authored()
+except Exception:  # noqa: BLE001
+    pass
