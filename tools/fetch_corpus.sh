@@ -47,6 +47,8 @@ get railsgoat        https://github.com/OWASP/railsgoat.git
 get dvwa             https://github.com/digininja/DVWA.git
 get juice-shop       https://github.com/juice-shop/juice-shop.git
 get vulhub           https://github.com/vulhub/vulhub.git
+get govwa            https://github.com/0c34/govwa.git
+get go-test-bench    https://github.com/Contrast-Security-OSS/go-test-bench.git
 
 echo "Carefully maintained — infrastructure in production use:"
 get tf-aws-s3-bucket https://github.com/terraform-aws-modules/terraform-aws-s3-bucket.git

@@ -1189,3 +1189,124 @@ def test_production_paths_are_not_caught_by_the_widened_pattern(tmp_path):
         found = [f for f in _scan_text(tmp_path, path, real, ["secrets"])
                  if "private-key" in f.rule_id]
         assert found and found[0].severity == "critical", path
+
+
+# ---------------------------------------------------------------------------
+# The worklist is the handoff between the half of training that needs nobody
+# and the half that needs judgement. If it silently reports nothing, an
+# unattended cycle looks identical to a healthy one.
+# ---------------------------------------------------------------------------
+
+def _worklist(tmp_path, corpus=None, disc=None, knowledge=None) -> str:
+    import subprocess
+    paths = {}
+    for name, data in (("corpus", corpus), ("disc", disc), ("knowledge", knowledge)):
+        p = tmp_path / f"{name}.json"
+        p.write_text(json.dumps(data if data is not None else {}))
+        paths[name] = str(p)
+    out = tmp_path / "WORKLIST.md"
+    subprocess.run(
+        ["python", str(ROOT / "tools" / "worklist.py"),
+         "--corpus-summary", paths["corpus"], "--discrimination", paths["disc"],
+         "--knowledge", paths["knowledge"], "--out", str(out)],
+        check=True, capture_output=True, cwd=str(ROOT))
+    return out.read_text()
+
+
+def test_worklist_raises_a_critical_on_good_code_first(tmp_path):
+    corpus = {"rows": [
+        {"repo": "some-lib", "expectation": "clean", "stack_label": "python",
+         "loc": 50_000, "findings": 3, "critical": 1, "high": 0},
+        {"repo": "goat", "expectation": "vulnerable", "stack_label": "python",
+         "loc": 5_000, "findings": 40, "critical": 9, "high": 4},
+    ]}
+    text = _worklist(tmp_path, corpus=corpus, disc={"rows": []})
+    assert "HIGHEST" in text
+    assert "some-lib" in text
+    # a critical on the deliberately broken repo is the correct answer, not an item
+    assert "goat** (python): 9 critical" not in text
+
+
+def test_worklist_flags_a_severity_the_measurement_does_not_support(tmp_path):
+    disc = {"rows": [{
+        "rule": "arbiter/secrets.made-up", "severity": "high", "dimension": "security",
+        "judgeable": True, "thin": False, "weighted_ratio": 0.4,
+        "clean_hits": 90, "vuln_hits": 2,
+    }]}
+    text = _worklist(tmp_path, corpus={"rows": []}, disc=disc)
+    assert "arbiter/secrets.made-up" in text and "0.4x" in text
+
+
+def test_worklist_does_not_judge_a_quality_rule(tmp_path):
+    """There is no deliberately-badly-documented population, so a low ratio on
+    a quality rule is a statement about codebase age, not about the rule."""
+    disc = {"rows": [{
+        "rule": "arbiter/ast.function-too-long", "severity": "low",
+        "dimension": "quality", "judgeable": False, "thin": False,
+        "weighted_ratio": 0.2, "clean_hits": 800, "vuln_hits": 33,
+    }]}
+    text = _worklist(tmp_path, corpus={"rows": []}, disc=disc)
+    assert "function-too-long" not in text
+
+
+def test_worklist_flags_a_rule_with_no_controls(tmp_path):
+    know = {"rules": {
+        "arbiter/secrets.uncontrolled": {
+            "synthetic_positives": 500, "synthetic_negatives": 0},
+        "arbiter/secrets.controlled": {
+            "synthetic_positives": 500, "synthetic_negatives": 500},
+    }}
+    text = _worklist(tmp_path, corpus={"rows": []}, disc={"rows": []}, knowledge=know)
+    assert "arbiter/secrets.uncontrolled" in text
+    assert "arbiter/secrets.controlled" not in text
+
+
+def test_worklist_flags_rules_nothing_has_ever_exercised(tmp_path):
+    """A rule that fired on no repository and has no injection trials is an
+    assertion, not a measurement — and it is invisible in every other table."""
+    text = _worklist(tmp_path, corpus={"rows": []}, disc={"rows": []})
+    assert "nothing has ever exercised" in text.lower()
+
+
+def test_worklist_says_so_when_there_is_nothing_to_do(tmp_path):
+    """With every declared rule measured and every check clean, the queue is
+    empty — and an empty queue means the corpus has stopped teaching us
+    anything, which is itself the finding."""
+    import sys as _sys
+    _sys.path.insert(0, str(ROOT / "src"))
+    from arbiter.probes import _load_resource_rules
+    rows = [{"rule": f"arbiter/resource.{r['id']}", "severity": "medium",
+             "dimension": "security", "judgeable": True, "thin": False,
+             "weighted_ratio": 40.0, "clean_hits": 1, "vuln_hits": 40}
+            for r in _load_resource_rules()]
+    text = _worklist(tmp_path, corpus={"rows": []}, disc={"rows": rows})
+    assert "widen it, not to run it again" in text
+
+
+def test_worklist_reports_missing_input_rather_than_looking_clean(tmp_path):
+    """An unattended cycle that failed halfway must not produce a worklist that
+    reads like a clean bill of health."""
+    import subprocess
+    out = tmp_path / "W.md"
+    subprocess.run(
+        ["python", str(ROOT / "tools" / "worklist.py"),
+         "--corpus-summary", str(tmp_path / "nope.json"),
+         "--discrimination", str(tmp_path / "nope2.json"),
+         "--knowledge", str(tmp_path / "nope3.json"), "--out", str(out)],
+        check=True, capture_output=True, cwd=str(ROOT))
+    text = out.read_text()
+    assert "Incomplete" in text and "train_cycle.sh" in text
+
+
+def test_worklist_raises_the_gap_only_a_person_can_close(tmp_path):
+    """Calibration reads only the adjudicated ledger. With that ledger empty the
+    machinery is inert, and no amount of nightly running will fill it."""
+    know = {"rules": {"arbiter/x": {"synthetic_positives": 10, "synthetic_negatives": 10}},
+            "adjudicated": {}}
+    header = "No real finding has ever been reviewed by a person"
+    text = _worklist(tmp_path, corpus={"rows": []}, disc={"rows": []}, knowledge=know)
+    assert header in text and "arbiter feedback" in text
+
+    reviewed = dict(know, adjudicated={"f:abcd": {"verdict": "true_positive"}})
+    assert header not in _worklist(
+        tmp_path, corpus={"rows": []}, disc={"rows": []}, knowledge=reviewed)

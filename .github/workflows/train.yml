@@ -1,0 +1,107 @@
+# Nightly training.
+#
+# Training has two halves, and only one of them needs a person.
+#
+# The mechanical half is this file: download the practice repositories, run
+# every rule against them, measure whether each rule tells good code from
+# broken code, plant known faults and check they are caught, verify the tool
+# never claims to have checked something it skipped, run the tests, and write
+# all of it back to the repository. No judgement required, so it runs on a
+# schedule and needs nobody awake.
+#
+# The judgement half is deciding what the results mean -- whether a finding on
+# a well-maintained repository is the rule's fault, whether a ratio is real or
+# an artefact of how it was measured. That needs a session with the repository
+# open. `training/WORKLIST.md`, which this job regenerates every night, is the
+# handoff: it says what to look at first and why, so that session starts from
+# a question instead of a pile of tables.
+#
+# Nothing here writes to a rule. The job only measures and records.
+
+name: train
+
+on:
+  schedule:
+    - cron: "0 8 * * *"    # 08:00 UTC daily — about midnight Pacific
+  workflow_dispatch:
+    inputs:
+      trials:
+        description: "Injection trials"
+        default: "20000"
+
+permissions:
+  contents: write          # needed to commit the results back
+
+concurrency:
+  group: train
+  cancel-in-progress: false
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # The practice repositories are about a gigabyte and do not change often.
+      # Caching them is the difference between a four-minute job and a
+      # twenty-minute one. The key rotates weekly so the corpus is re-cloned
+      # occasionally rather than drifting years behind.
+      - name: Cache practice repositories
+        uses: actions/cache@v4
+        with:
+          path: /tmp/corpus
+          key: corpus-${{ hashFiles('tools/fetch_corpus.sh') }}-${{ github.run_number }}
+          restore-keys: |
+            corpus-${{ hashFiles('tools/fetch_corpus.sh') }}-
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest tree-sitter tree-sitter-language-pack || true
+
+      - name: Run a training cycle
+        env:
+          TRIALS: ${{ github.event.inputs.trials || '20000' }}
+        run: ./tools/train_cycle.sh "$TRIALS"
+
+      - name: Work out what to do next
+        if: always()
+        run: |
+          python tools/worklist.py \
+            --corpus-summary /tmp/corpus-out/summary.json \
+            --discrimination /tmp/discriminate.json \
+            --out training/WORKLIST.md
+
+      # Uploaded as well as committed, so a failed run still leaves the
+      # measurements somewhere readable.
+      - name: Keep the results even if something failed
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: training-${{ github.run_number }}
+          path: |
+            training/
+            .arbiter/knowledge.json
+          retention-days: 30
+
+      - name: Save what was learned
+        if: always()
+        run: |
+          git config user.name  "arbiter-training"
+          git config user.email "arbiter-training@users.noreply.github.com"
+          git add -A .arbiter training
+          if git diff --cached --quiet; then
+            echo "nothing changed"
+          else
+            git commit -m "training run ${{ github.run_number }}
+
+          Measurements only — no rule was changed by this job.
+          See training/WORKLIST.md for what the results raise."
+            git push
+          fi

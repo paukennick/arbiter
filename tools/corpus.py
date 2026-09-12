@@ -56,6 +56,19 @@ CORPUS = {
     "dvwa":             ("vulnerable", "php"),
     "juice-shop":       ("vulnerable", "typescript"),
     "vulhub":           ("vulnerable", "docker"),
+    # Added after tools/worklist.py reported Go as 811,194 lines of
+    # well-maintained code with 62 lines of broken code to compare against.
+    "govwa":            ("vulnerable", "go"),
+    "go-test-bench":    ("vulnerable", "go"),
+    #
+    # Still open, and deliberately left open: C++ and Rust have no broken
+    # counterpart. Two candidates were rejected rather than mislabelled --
+    # one was 1.1 GB of vendored fuzzing engine with a handful of C files
+    # attached, the other was an advisory database, which is metadata about
+    # vulnerabilities rather than vulnerable code. Labelling either would
+    # repeat the mistake that put teaching templates in the "clean" group and
+    # made the noise rate look four times worse than it was. The worklist
+    # will keep reporting this gap until a real one is found.
     # well-maintained — every finding here is a candidate false positive
     "tf-aws-s3-bucket": ("clean", "terraform"),
     "tf-aws-vpc":       ("clean", "terraform"),
