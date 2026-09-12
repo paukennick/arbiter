@@ -11,8 +11,8 @@ comparing configurations, tools, and builds of Arbiter itself.
 Status: **P0–P2 + claim integrity + calibration** — engine, policy, resource graph,
 cross-repo seam checks, Terraform plan reading, a machine-checked claim ledger and
 an offline learning loop.
-Tuned against a corpus of eleven public repositories. Everything below works
-today.
+Tuned against a corpus of twenty-seven public repositories. Everything below
+works today.
 
 ```
 pip install -e .
@@ -463,23 +463,62 @@ alone had not:
 
 ## Tuning evidence
 
-Rules were tuned against eleven public repositories in two populations:
-three built to be vulnerable (Terragoat, cfngoat, NodeGoat) and eight
-well-maintained ones (requests, flask, pipx, express, three
-`terraform-aws-modules` repos, `terraform-provider-random`). A rule that fires
-on `flask` is telling you about the rule, not about the code.
+Rules are tuned against twenty-seven public repositories across thirteen
+languages and five infrastructure formats, split into **three** populations.
+A rule that fires on `flask` is telling you about the rule, not about the code.
 
-| | Before tuning | After tuning |
-|---|---|---|
-| **Well-maintained** (188,698 lines) | 4 critical · 7 high · 131 medium | **0 critical · 0 high · 5 medium** |
-| **Deliberately vulnerable** (69,406 lines) | 7 critical · 27 high · 55 medium | **7 critical · 25 high · 11 medium** |
+| Population | Repos | Lines | Findings | Per KLOC | Critical | High |
+|---|---|---|---|---|---|---|
+| **Deliberately vulnerable** | 5 | 101,069 | 241 | 2.38 | 7 | 20 |
+| **Well-maintained production** | 17 | 839,751 | 693 | **0.83** | **0** | **0** |
+| **Teaching material** | 5 | 596,206 | 2,211 | 3.71 | 0 | 14 |
 
-Every critical and high on well-maintained code was eliminated without losing
-a single real defect in the vulnerable repositories. The five remaining
-mediums are honest: four private keys under `psf/requests`' `tests/certs/`
-and one unencrypted RDS instance in a `terraform-provider-random` example —
-reported, downgraded, and labelled as fixture and example material rather
-than hidden.
+On the severities that gate a build, the separation is total: seven criticals
+and twenty highs across the vulnerable repositories, and **not one of either**
+across 839,751 lines of well-maintained production code.
+
+### Why teaching material is its own population
+
+Reference CloudFormation stacks, CDK samples, Helm charts, `docker-compose`
+collections and Kubernetes examples are written to be short and readable, not
+production-ready. They genuinely do lack resource limits, security contexts
+and pinned versions — so the findings are *correct about the file* and useless
+as a measure of false-positive rate.
+
+Counting them as well-maintained code made the noise rate look roughly four
+times worse than it is. 2,211 of what were reported as 2,904 "clean" findings
+came from five example repositories. Separating them moved the real number
+from 2.02 to **0.83 per KLOC**, and the rules did not change.
+
+The lesson generalizes: a corpus label is a claim about what the code is
+*for*. Getting it wrong corrupts every rate computed from it.
+
+### Severity is earned by measurement
+
+A rule's severity is set by how much more it fires on bad code than on good
+code, measured stack-for-stack — never by how serious the underlying idea
+sounds. Comparing a Kubernetes rule against the whole corpus is invalid when
+only one vulnerable repository is Kubernetes and it is 359 lines long.
+
+| Rule | Good | Bad | Ratio | Severity |
+|---|---|---|---|---|
+| `k8s-no-resource-limits` | 0.38/kloc | 5.57/kloc | **14.5×** | medium |
+| `k8s-no-security-context` | 0.42/kloc | 5.57/kloc | **13.2×** | medium |
+| four more k8s hardening rules | — | — | **11.7×** | medium |
+| `supply.unpinned-action` (CloudFormation) | 0.00/kloc | 0.27/kloc | **219×** | low |
+| `supply.unpinned-action` (Node) | 0.06/kloc | 0.27/kloc | **4.3×** | low |
+| `supply.unpinned-npm-dep` | 0.68/kloc | 0.73/kloc | **1.1×** | **info** |
+| `supply.unpinned-python-dep` | — | 0.00/kloc | **0.0×** | **info** |
+
+The last two were demoted on this evidence. A floating `^4.17.0` is still worth
+knowing about, so they still report — but `info` carries zero score weight, so
+a project is no longer graded down for something that turned out to be just as
+common in good code as in bad. `unpinned-action` stayed, because it separates.
+
+The Kubernetes hardening rules stayed at medium for the same reason in
+reverse: they looked like noise (724 findings on "clean" code) only because
+the teaching repositories were mislabelled and the comparison was unmatched.
+Stack-matched, they are among the most discriminating rules in the tool.
 
 ```
 python tools/corpus.py --root /tmp/corpus --out /tmp/corpus-out
