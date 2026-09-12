@@ -99,7 +99,27 @@ MIN_REPOS_TO_PROMOTE = 2
 # ratio -> severity. Deliberately coarse: the measurement does not support
 # finer distinctions, and pretending otherwise is how severity tables become
 # fiction.
-BANDS = [(50.0, "high"), (10.0, "medium"), (3.0, "low")]
+#
+# Note the ceiling. Measurement CANNOT promote a check to "high", and the
+# reason is a distinction worth stating plainly: discrimination measures
+# SIGNAL -- how much more often a check fires on broken code than on working
+# code -- while severity is supposed to encode CONSEQUENCE, which is how much
+# it matters when the check is right. The two correlate and they are not the
+# same quantity.
+#
+# The example that forced this: "Ensure every security group and rule has a
+# description" fires 33 times on deliberately broken Terraform and zero times
+# on the well-maintained Terraform modules, which are meticulous about
+# descriptions. The ratio is real, reproducible, and stack-matched. It is also
+# not a security finding, and grading it "high" would put a missing comment on
+# the same footing as a public S3 bucket.
+#
+# So measurement is allowed to say "this carries signal" (up to medium) and
+# "this carries no signal" (info, zero weight). It is not allowed to
+# manufacture a claim about consequence out of a signal measurement. A check
+# reaches "high" only when the tool that owns it says so -- and checkov's open
+# build says nothing at all, which is what started this.
+BANDS = [(10.0, "medium"), (3.0, "low")]
 FLOOR = "info"
 
 EXTERNAL = ["checkov", "bandit", "ruff", "gitleaks", "semgrep"]

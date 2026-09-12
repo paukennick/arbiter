@@ -87,6 +87,8 @@ def main() -> int:
     ap.add_argument("--discrimination", default="/tmp/discriminate.json")
     ap.add_argument("--knowledge", default=".arbiter/knowledge.json")
     ap.add_argument("--out", default="")
+    ap.add_argument("--packs", action="append", default=[],
+                    help="extra control-pack directory; repeatable")
     args = ap.parse_args()
 
     corpus = _load(args.corpus_summary)
@@ -222,6 +224,35 @@ def main() -> int:
                         "of these gaps is what surfaced three false criticals that "
                         "had survived every injection trial ever run.")
             item("MEDIUM", "Stacks with no deliberately-broken counterpart", *body)
+
+    # ---- 5a. a control mapped to a check that never fires --------------------
+    if disc:
+        seen = {r["rule"] for r in disc["rows"]}
+        seen |= set(ledger)
+        try:
+            from arbiter.controls import load_frameworks
+            dead: dict[str, list[str]] = {}
+            for fw in load_frameworks(args.packs):
+                for c in fw.controls:
+                    missing = [ch for ch in c.satisfied_by
+                               if ch.startswith("arbiter/") and ch not in seen]
+                    if missing and len(missing) == len(c.satisfied_by):
+                        dead.setdefault(fw.id, []).append(f"{c.id} -> {', '.join(missing[:3])}")
+        except Exception:  # noqa: BLE001
+            dead = {}
+        if dead:
+            body = ["A control whose every covering check never fires anywhere in the "
+                    "corpus can never be reported as violated. It will read as "
+                    "SATISFIED forever, in a compliance report, on any codebase.\n"]
+            for fw, items in sorted(dead.items()):
+                body.append(f"- **{fw}**")
+                body += [f"    - {x}" for x in sorted(items)[:6]]
+            body.append("\nEither the check is dead and the mapping should go, or the "
+                        "check is alive and the corpus does not exercise it — in which "
+                        "case add a repository or an injection case that does. A "
+                        "permanent pass is the worst thing a compliance report can "
+                        "contain, because it looks exactly like evidence.")
+            item("HIGH", "Controls whose checks never fire — a permanent false pass", *body)
 
     # ---- 5b. nobody has adjudicated a real finding --------------------------
     adjudicated = know.get("adjudicated") or {}
