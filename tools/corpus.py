@@ -126,7 +126,7 @@ CORPUS = {
 
 NATIVE = ["secrets", "resource_policy", "quality", "ast_metrics",
           "supply_chain", "doc_drift", "house_rules", "house_rules_ast",
-          "assurance", "authored"]
+          "assurance", "authored", "contract"]
 
 
 def main() -> int:

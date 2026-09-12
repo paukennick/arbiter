@@ -83,6 +83,7 @@ Exit codes: `0` pass, `1` gate failure, `2` error.
 | `house_rules` | quality, drift | nothing | Your own rules from `arbiter.yaml` |
 | `assurance` | assurance | nothing | Whether the *checking* is switched on: silenced findings across fifteen tools' ignore syntaxes, configuration that excludes code from analysis, tests that cannot fail |
 | `authored` | supply chain, security | nothing | Defects characteristic of machine-drafted code: imports of packages nothing declares (and, connected, packages that do not exist), stubs on production paths, disabled security checks |
+| `contract` | drift | nothing | An OpenAPI path with no route registered, a dropped column still named in code — contracts declared in one artifact and implemented in another |
 | `judgement` | drift | a model | Claims in prose that the code contradicts. Inferred, never gates |
 
 Plus adapters for `ruff`, `bandit`, `checkov`, `semgrep` and `gitleaks`. Any
@@ -865,6 +866,28 @@ its own caveat, because a per-KLOC rate over two repositories is as much about
 what those repositories contain as about whether the rules generalize. The
 figure that survives a small sample is the count of build-breaking findings,
 and that one is zero.
+
+## Contracts between artifacts
+
+A repository usually holds two descriptions of the same thing, in different
+languages, maintained by different habits, and checked against each other by
+nobody: an OpenAPI document and the routes the server registers; a set of
+migrations and the model the application queries with. Each half is valid on
+its own terms — the spec parses, the routes compile, the migrations apply — and
+no linter compares them, because each tool sees one side. The failure shows up
+at runtime as a 404 against a documented endpoint.
+
+This is the cross-repo seam idea moved inside a single repository, and it is
+deterministic rather than a question for a model: a path is either in the route
+table or it is not.
+
+Every check is biased hard toward silence. Route parameters are normalized
+across five spellings (`{id}`, `:id`, `<int:id>`, `(?P<id>…)`), paths assembled
+from variables are skipped rather than guessed at, and a spec whose code side
+yields fewer than three recognisable routes reports **`spec-not-compared`** at
+`info` instead of declaring every path missing — because "the code implements
+none of the spec" is nearly always a parser limitation wearing the costume of a
+finding.
 
 ## Not yet built
 

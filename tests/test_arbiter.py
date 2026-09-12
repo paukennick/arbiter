@@ -2582,3 +2582,97 @@ def test_a_commit_message_ranks_a_fix_pair_but_never_confirms_it():
     # a rewrite that removed the resource is NOT corroboration
     assert not fp.corroborated("arbiter/resource.k8s-no-security-context",
                                "Modernize manifest: replace ReplicationController")
+
+
+# ---------------------------------------------------------------------------
+# Contracts declared in one artifact and implemented in another.
+#
+# A repository usually holds two descriptions of the same thing, in different
+# languages, checked against each other by nobody. Each half is valid on its
+# own terms — the spec parses, the routes compile — and no linter compares
+# them, because each tool sees one side.
+# ---------------------------------------------------------------------------
+
+def test_a_documented_route_with_no_registration_is_reported(tmp_path):
+    (tmp_path / "openapi.yaml").write_text(
+        "openapi: 3.0.0\npaths:\n"
+        "  /users:\n    get: {}\n"
+        "  /orders:\n    get: {}\n"
+        "  /health:\n    get: {}\n"
+        "  /items:\n    get: {}\n")
+    (tmp_path / "server.js").write_text(
+        "app.get('/users', h)\napp.get('/health', h)\napp.get('/items', h)\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["contract"],
+                   use_adapters=False)
+    hits = [f for f in rep.active() if "documented-route-not-registered" in f.rule_id]
+    assert len(hits) == 1 and hits[0].location.logical == "/orders"
+
+
+@pytest.mark.parametrize("spec,code,label", [
+    ("/users/{id}", "app.get('/users/:id', h)", "express colon param"),
+    ("/users/{id}", "@app.get('/users/<int:id>')", "flask angle param"),
+    ("/users/{id}", 'r.Get("/users/{id}", h)', "go brace param"),
+    ("/users/", "app.get('/users', h)", "trailing slash"),
+])
+def test_path_parameters_are_normalized_across_frameworks(tmp_path, spec, code, label):
+    """OpenAPI templates a parameter as {id}; frameworks spell the same thing
+    five ways. Without normalizing, every parameterized route looks missing."""
+    d = tmp_path / label.replace(" ", "_")
+    d.mkdir()
+    (d / "openapi.yaml").write_text(
+        f"openapi: 3.0.0\npaths:\n  {spec}:\n    get: {{}}\n"
+        "  /a:\n    get: {}\n  /b:\n    get: {}\n  /c:\n    get: {}\n")
+    ext = "py" if "@app" in code else ("go" if "r.Get" in code else "js")
+    (d / f"server.{ext}").write_text(
+        code + "\napp.get('/a', h)\napp.get('/b', h)\napp.get('/c', h)\n")
+    rep = run_scan([str(d)], load_config(None), only=["contract"], use_adapters=False)
+    missing = [f.location.logical for f in rep.active()
+               if "documented-route-not-registered" in f.rule_id]
+    assert not missing, f"{label}: {missing}"
+
+
+def test_an_unreadable_route_table_is_not_assessed_rather_than_all_missing(tmp_path):
+    """Saying 'the code implements none of the spec' would be a parser
+    limitation wearing the costume of a finding."""
+    (tmp_path / "openapi.yaml").write_text(
+        "openapi: 3.0.0\npaths:\n  /a:\n    get: {}\n  /b:\n    get: {}\n")
+    (tmp_path / "server.js").write_text(
+        "const base = '/api'\napp.get(`${base}/a`, h)\napp.get(base + '/b', h)\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["contract"],
+                   use_adapters=False)
+    assert not [f for f in rep.active() if "not-registered" in f.rule_id]
+    na = [f for f in rep.active() if "spec-not-compared" in f.rule_id]
+    assert na and na[0].severity == "info" and "NOT checked" in na[0].description
+
+
+def test_a_dropped_column_still_named_in_code_is_reported(tmp_path):
+    (tmp_path / "migrations").mkdir()
+    (tmp_path / "migrations" / "0002_drop.py").write_text(
+        "operations = [\n    migrations.RemoveField(model_name='faang', name='about'),\n]\n")
+    (tmp_path / "views.py").write_text("args = {'about': row.about}\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["contract"],
+                   use_adapters=False)
+    hits = [f for f in rep.active() if "dropped-column-still-referenced" in f.rule_id]
+    assert hits
+    assert hits[0].confidence == "low", \
+        "a bare name match cannot tell a column from a variable of the same name"
+    assert hits[0].related, "the finding must cite the migration as well"
+
+
+def test_a_column_dropped_then_re_added_is_not_reported(tmp_path):
+    (tmp_path / "migrations").mkdir()
+    (tmp_path / "migrations" / "0002_drop.py").write_text(
+        "migrations.RemoveField(model_name='faang', name='about')\n")
+    (tmp_path / "migrations" / "0003_back.py").write_text(
+        "migrations.AddField(model_name='faang', name='about')\n")
+    (tmp_path / "views.py").write_text("x = row.about\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["contract"],
+                   use_adapters=False)
+    assert not [f for f in rep.active() if "dropped-column" in f.rule_id]
+
+
+def test_a_repository_with_no_spec_produces_nothing(tmp_path):
+    (tmp_path / "server.js").write_text("app.get('/a', h)\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["contract"],
+                   use_adapters=False)
+    assert not rep.active()
