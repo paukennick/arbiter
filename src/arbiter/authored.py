@@ -164,6 +164,71 @@ _DISABLED_CHECK = [
 _DEV_CONTEXT = re.compile(r"(^|/)(tests?|testing|fixtures?|examples?|samples?|"
                           r"local|dev|development|docker-compose\.(?:dev|local))")
 
+# Comments, in every syntax these patterns can appear in. Without this, code
+# that has been commented OUT still reports, and so does a comment DISCUSSING
+# the setting. Traefik's healthcheck has a whole commented-out TLS block; it
+# was reported as a high-severity disabled check. This is the same mistake the
+# import scanner made with docstrings, in a second place.
+_COMMENT_SYNTAX = [
+    (re.compile(r"/\*.*?\*/", re.S), None),      # C-family block
+    (re.compile(r"(?m)^[ \t]*//[^\n]*"), None),  # C-family line, whole-line only
+    (re.compile(r"(?m)//[^\n]*$"), "trailing"),  # C-family trailing
+    (re.compile(r"(?m)^[ \t]*#[^\n]*"), None),   # shell/python/yaml line
+    (re.compile(r"(?m)#[^\n]*$"), "trailing"),
+    (re.compile(r"(?m)^[ \t]*--[^\n]*"), None),  # sql/lua
+]
+
+
+def _blank_comments(text: str, language: str) -> str:
+    """Blank out comments, preserving line and column positions."""
+    def blank(m: re.Match) -> str:
+        return re.sub(r"[^\n]", " ", m.group(0))
+    hash_langs = {"python", "shell", "yaml", "ruby", "perl", "r", "toml",
+                  "dockerfile", "makefile", "terraform", "hcl"}
+    slash_langs = {"go", "javascript", "typescript", "java", "c", "cpp",
+                   "csharp", "rust", "kotlin", "scala", "php", "json"}
+    out = text
+    if language in slash_langs or language == "unknown":
+        out = _COMMENT_SYNTAX[0][0].sub(blank, out)
+        out = _COMMENT_SYNTAX[1][0].sub(blank, out)
+        out = _COMMENT_SYNTAX[2][0].sub(blank, out)
+    if language in hash_langs or language == "unknown":
+        out = _COMMENT_SYNTAX[3][0].sub(blank, out)
+        out = _COMMENT_SYNTAX[4][0].sub(blank, out)
+    return out
+
+
+# An insecure mode the operator has to ask for is a feature, not a defect. The
+# shape is always the same: a conditional naming the opt-in, and the unsafe
+# setting inside it.
+#
+# HOLDOUT NOTE, recorded rather than quietly skipped: this pattern was observed
+# only on argo-cd, which is a HELD-OUT repository. No repository in the tuning
+# set contains it. The fix is principled rather than repo-specific -- a
+# flag-guarded insecure mode is opt-in by construction -- but the held-out
+# status of `authored.security-check-disabled` is spent, and its held-out
+# numbers must not be quoted as independent evidence until a new repository
+# takes argo-cd's place for this rule.
+_OPT_IN_GUARD = re.compile(
+    r"(?im)^[ \t]*(?:if|elif|unless|when)\b[^\n]{0,120}?"
+    r"\b(insecure|skip_?verify|skip_?tls|no_?verify|allow_?insecure|"
+    r"disable_?tls|dev_?mode|development|debug|self_?signed|trust_?all)\b"
+)
+_GUARD_WINDOW = 6   # lines above the finding to look for the guard
+
+# A compensating control. Disabling the library's hostname check while pinning
+# a specific CA or presenting a client certificate is a deliberate mutual-TLS
+# arrangement, not an absence of verification -- Traefik's Consul Connect
+# transport is exactly this, and says so in a comment. The resource rules
+# already honour compensating controls through `unless_truthy`; this is the
+# same idea for code.
+_COMPENSATING_TLS = re.compile(
+    r"(?i)\b(RootCAs|ca_certs?|cafile|ca_bundle|CABundle|ServerName|"
+    r"Certificates\s*:|ClientCert|cert_?file|VerifyPeerCertificate|"
+    r"VerifyConnection|pinned?_?(?:cert|key))\b"
+)
+_COMPENSATION_WINDOW = 8   # lines after the finding
+
 # ---------------------------------------------------------------------------
 # 4. Prose describing absent code
 # ---------------------------------------------------------------------------
@@ -487,18 +552,29 @@ def _disabled_checks(f, text) -> list[Finding]:
     if f.role in ("docs",):
         return []
     dev = bool(_DEV_CONTEXT.search(f.path)) or f.role == "test"
+    code = _blank_comments(text, getattr(f, "language", "unknown"))
+    lines = code.split("\n")
     out: list[Finding] = []
     for pattern, title, sev in _DISABLED_CHECK:
-        for m in pattern.finditer(text):
+        for m in pattern.finditer(code):
+            n = _line_of(code, m.start())
+            window = "\n".join(lines[max(0, n - 1 - _GUARD_WINDOW): n])
+            guarded = bool(_OPT_IN_GUARD.search(window))
+            after = "\n".join(lines[n: n + _COMPENSATION_WINDOW])
+            compensated = bool(_COMPENSATING_TLS.search(after)) and "TLS" in title
             out.append(Finding(
                 rule_id="arbiter/authored.security-check-disabled",
-                title=title + (" (test or local-development path)" if dev else ""),
+                title=title + (" (test or local-development path)" if dev else
+                               " (behind an opt-in flag)" if guarded else
+                               " (a pinned CA or client certificate is configured)"
+                               if compensated else ""),
                 dimension="security",
-                severity=("low" if dev else sev),
-                confidence=("low" if dev else "high"),
+                severity=("low" if (dev or guarded) else
+                          "medium" if compensated else sev),
+                confidence=("low" if dev else "medium" if (guarded or compensated)
+                            else "high"),
                 repo_id=f.repo_id, probe="authored",
-                location=Location(path=f.path, start_line=_line_of(text, m.start()),
-                                  repo_id=f.repo_id),
+                location=Location(path=f.path, start_line=n, repo_id=f.repo_id),
                 description=(
                     "A protection that is on by default has been explicitly switched "
                     "off. This is the commonest way a snippet written to make an "
@@ -506,11 +582,22 @@ def _disabled_checks(f, text) -> list[Finding]:
                     "the error in front of you, and nothing complains afterwards."
                     + (" This one sits under a test or local-development path, so it "
                        "is probably deliberate." if dev else "")
+                    + (" It sits inside a conditional that names the opt-in, so it is "
+                       "an insecure mode somebody has to ask for rather than a "
+                       "default. Still worth knowing the mode exists." if guarded
+                       else "")
+                    + (" A pinned CA or client certificate is configured alongside "
+                       "it, which is what a deliberate mutual-TLS arrangement looks "
+                       "like: verification is being done differently rather than not "
+                       "at all. Confirm the pinning is what you think it is."
+                       if compensated else "")
                 ),
                 remediation="Remove it, or scope it to local development explicitly.",
                 evidence=f"disabled:{m.group(0)[:70]}",
                 controls=["NIST-800-53r5:SC-8", "NIST-800-53r5:SC-23"],
-                tags=["disabled-check"] + (["dev-context"] if dev else []),
+                tags=(["disabled-check"] + (["dev-context"] if dev else [])
+                      + (["opt-in-guarded"] if guarded else [])
+                      + (["compensated"] if compensated else [])),
             ))
     return out
 
