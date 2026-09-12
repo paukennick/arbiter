@@ -474,17 +474,165 @@ def control_valid_link(seeds: Seeds) -> Case | None:
                        "[the readme](README.md).\n", False, baseline=text)
 
 
+
+# ---------------------------------------------------------------------------
+# Controls for rules that had none.
+#
+# A rule with measured recall and no controls is the dangerous kind: it could
+# be firing on everything and the numbers would look perfect. These six had
+# recall of 1.0 and no measurement of what they do to innocent code.
+# ---------------------------------------------------------------------------
+
+def control_aws_key_lookalike(seeds: Seeds) -> Case | None:
+    lang = rng.choice(("python", "js"))
+    seed = seeds.pick(lang)
+    if not seed:
+        return None
+    name, text = seed
+    value = rng.choice([
+        "AKIA" + "".join(rng.choices(ALNUM_UPPER, k=rng.randint(8, 14))),   # too short
+        ("akia" + "".join(rng.choices(string.ascii_lowercase, k=16))),      # lowercase
+        "${AWS_ACCESS_KEY_ID}",
+        "AKIA_PLACEHOLDER_VALUE",
+    ])
+    return Case("arbiter/secrets.aws-access-key", "secrets", name,
+                splice(text, assign(lang, "AWS_ACCESS_KEY_ID", value)), False, baseline=text)
+
+
+def control_gh_token_lookalike(seeds: Seeds) -> Case | None:
+    seed = seeds.pick("python")
+    if not seed:
+        return None
+    name, text = seed
+    value = rng.choice([
+        "ghp_" + "".join(rng.choices(ALNUM, k=rng.randint(6, 20))),         # too short
+        "${{ secrets.GITHUB_TOKEN }}",
+        "ghp_your_token_here",
+    ])
+    return Case("arbiter/secrets.gh-token", "secrets", name,
+                splice(text, assign("python", "GITHUB_TOKEN", value)), False, baseline=text)
+
+
+def control_public_key(seeds: Seeds) -> Case | None:
+    """A public key and a certificate are meant to be committed."""
+    kind = rng.choice(("PUBLIC KEY", "CERTIFICATE", "RSA PUBLIC KEY"))
+    body = "\n".join("".join(rng.choices(ALNUM + "+/", k=64)) for _ in range(rng.randint(2, 4)))
+    return Case("arbiter/secrets.private-key", "secrets",
+                rng.choice(("server.crt", "ca.pem", "id_rsa.pub")),
+                f"-----BEGIN {kind}-----\n{body}\n-----END {kind}-----\n", False)
+
+
+def control_unprivileged_container(seeds: Seeds) -> Case | None:
+    return Case("arbiter/resource.privileged-container", "resource_policy", "deploy.yaml",
+                _k8s_workload("        securityContext:\n          privileged: false\n"
+                              "          allowPrivilegeEscalation: false\n"
+                              "          runAsNonRoot: true\n"), False)
+
+
+def control_no_host_namespace(seeds: Seeds) -> Case | None:
+    n = rng.randint(1, 99999)
+    flag = rng.choice(("hostPID: false", "hostIPC: false", "hostNetwork: false"))
+    return Case("arbiter/resource.k8s-host-namespace", "resource_policy", "deploy.yaml",
+                f"apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: w{n}\n"
+                f"spec:\n  template:\n    spec:\n      {flag}\n      containers:\n"
+                f"      - name: app\n        image: app:1.0\n{HARDENED}", False)
+
+
+def control_safe_capability(seeds: Seeds) -> Case | None:
+    """Dropping ALL and adding back one harmless capability is the right shape."""
+    cap = rng.choice(("NET_BIND_SERVICE", "CHOWN", "SETGID", "SETUID"))
+    sec = ("        securityContext:\n          allowPrivilegeEscalation: false\n"
+           "          runAsNonRoot: true\n          readOnlyRootFilesystem: true\n"
+           f"          capabilities:\n            drop: [\"ALL\"]\n            add: [\"{cap}\"]\n"
+           "        resources:\n          limits:\n            cpu: \"1\"\n")
+    return Case("arbiter/resource.k8s-dangerous-capabilities", "resource_policy",
+                "deploy.yaml", _k8s_workload(sec), False)
+
+
+# ---------------------------------------------------------------------------
+# Unquoted values — the formats where secrets actually leak
+# ---------------------------------------------------------------------------
+
+UNQUOTED_SHAPES = [
+    (".env",         "{name}={value}\n",                       ""),
+    ("config.yaml",  "service:\n  {name}: {value}\n",          ""),
+    ("secret.yaml",  "apiVersion: v1\nkind: Secret\nmetadata:\n  name: s\ndata:\n  {name}: {value}\n", ""),
+    ("setup.sh",     "#!/bin/sh\nexport {name}={value}\n",      ""),
+    ("Dockerfile",   "FROM alpine:3.20\nENV {name}={value}\n",  ""),
+    ("app.properties", "{name}={value}\n",                      ""),
+    ("compose.yml",  "services:\n  web:\n    environment:\n      {name}: {value}\n", ""),
+]
+
+
+def case_unquoted_secret(seeds: Seeds) -> Case | None:
+    fname, shape, _ = rng.choice(UNQUOTED_SHAPES)
+    name = rng.choice(["API_KEY", "DB_PASSWORD", "client_secret", "api.key",
+                       "ACCESS_KEY", "auth_token", "servicePassword"])
+    value = strong_secret(rng.randint(12, 32))
+    return Case("arbiter/secrets.assigned-credential", "secrets", fname,
+                shape.format(name=name, value=value), True)
+
+
+def control_unquoted_lookalike(seeds: Seeds) -> Case | None:
+    """Name and value are paired coherently on purpose.
+
+    Pairing them at random produced cases like `client_secret=my-tls-cert-2024`
+    and counted the rule wrong for flagging it — but a credential-named symbol
+    holding a hyphenated alphanumeric really is a credential as far as anyone
+    can tell from the text. A control has to be something a careful reader
+    would also call harmless, or it measures the generator, not the rule.
+    """
+    pairs = [
+        ("secretName",         "my-tls-cert-2024"),
+        ("secretKeyRef",       "db-credentials"),
+        ("private_key_path",   "/etc/ssl/private/server.pem"),
+        ("token_endpoint",     "https://auth.example.com/oauth/v2"),
+        ("secret_version",     "1.24.3"),
+        ("access_key_status",  "Inactive"),
+        ("API_KEY",            "${AWS_SECRET}"),
+        ("DB_PASSWORD",        "$DB_PASSWORD"),
+        ("client_secret",      "${{ secrets.CLIENT_SECRET }}"),
+        ("api_key",            "your-api-key-here"),
+        ("password",           "changeme"),
+        ("client_secret",      "DescribeSecret"),
+        ("password",           "!vault|AES256abcdef"),
+        ("db_password",        "null"),
+        ("auth_token",         "_get_secret(name)"),
+        ("secretProvider",     "vault"),
+        ("token_format",       "jwt"),
+    ]
+    name, value = rng.choice(pairs)
+    fname, shape, _ = rng.choice(UNQUOTED_SHAPES)
+    return Case("arbiter/secrets.assigned-credential", "secrets", fname,
+                shape.format(name=name, value=value), False)
+
+
+def case_iam_action_is_not_a_secret(seeds: Seeds) -> Case | None:
+    """CloudFormation policies list `secretsmanager: GetSecretValue`. The colon
+    made it look like an assignment; it appeared eight times on AWS's own
+    template repository."""
+    action = rng.choice(("GetSecretValue", "DescribeSecret", "ListSecrets",
+                         "PutSecretValue", "RotateSecret"))
+    return Case("arbiter/secrets.assigned-credential", "secrets", "policy.yaml",
+                "Statement:\n  - Effect: Allow\n    Action:\n"
+                f"      - secretsmanager: {action}\n", False)
+
+
 POSITIVES = [case_aws_key, case_private_key, case_gh_token, case_db_url,
              case_assigned_credential, case_public_bucket, case_unencrypted_db,
              case_open_ingress, case_privileged_container, case_host_namespace,
              case_dangerous_capability, case_no_security_context,
              case_unpinned_action, case_dangerous_prt,
-             case_broken_link]
+             case_broken_link, case_unquoted_secret]
 
 CONTROLS = [control_placeholder, control_status_field, control_passphrase,
             control_trivial_db_url, control_self_referential, control_private_bucket,
             control_encrypted_db, control_closed_ingress, control_hardened_workload,
-            control_pinned_action, control_safe_prt, control_valid_link]
+            control_pinned_action, control_safe_prt, control_valid_link,
+            control_aws_key_lookalike, control_gh_token_lookalike,
+            control_public_key, control_unprivileged_container,
+            control_no_host_namespace, control_safe_capability,
+            control_unquoted_lookalike, case_iam_action_is_not_a_secret]
 
 SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"]
 

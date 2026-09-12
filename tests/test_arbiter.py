@@ -939,3 +939,56 @@ def test_cloudformation_and_kubernetes_are_not_labelled_terraform_source(tmp_pat
                        "apiVersion: v1\nkind: Service\nmetadata:\n  name: s\n"
                        "spec:\n  ports:\n  - port: 80\n", ["resource_policy"])
     assert not [f for f in found if "source-is-literal-hcl" in f.rule_id]
+
+
+# --------------------------------------------------------------------------
+# Unquoted values.
+#
+# A .env file, a Kubernetes Secret, a docker-compose file, an `export` line and
+# a Dockerfile `ENV` all write secrets without quotes — and those are the
+# places secrets most commonly leak. Every one of them was invisible.
+# --------------------------------------------------------------------------
+
+@pytest.mark.parametrize("name,content", [
+    ("dotenv",        "API_KEY=Zx91qKp4vWmTn83LcRd7\n"),
+    ("yaml",          "config:\n  api_key: Aa12QwErTy90ZxCv\n"),
+    ("k8s_secret",    "apiVersion: v1\nkind: Secret\nmetadata:\n  name: s\ndata:\n  password: cXVvYml0ZQ==\n"),
+    ("shell_export",  "#!/bin/sh\nexport DB_PASSWORD=c5nkQ2p9Lm4Tx\n"),
+    ("dockerfile_env","FROM alpine\nENV API_KEY=Zx91qKp4vWmTn83LcRd7\n"),
+    ("properties",    "api.key=Zx91qKp4vWmTn83LcRd7\n"),
+])
+def test_unquoted_secrets_are_found(tmp_path, name, content):
+    ext = {"dotenv": ".env", "yaml": ".yaml", "k8s_secret": ".yaml", "shell_export": ".sh",
+           "dockerfile_env": "Dockerfile", "properties": ".properties"}[name]
+    fname = ext if ext == "Dockerfile" else f"{name}{ext}"
+    found = _scan_text(tmp_path, fname, content, ["secrets"])
+    assert found, f"an unquoted secret in {name} must be found"
+
+
+@pytest.mark.parametrize("label,content", [
+    # An IAM action in a CloudFormation policy. The colon made it look like an
+    # assignment and `GetSecretValue` like a value.
+    ("iam_action",   "Statement:\n  - Action:\n      - secretsmanager: GetSecretValue\n"),
+    # An expression being assigned, not a literal.
+    ("code_expr",    "search_tokens=_get_search_tokens(text)\n"),
+    # References to a secret, not the secret.
+    ("secret_ref",   "volumes:\n  - secretName: my-tls-cert-2024\n"),
+    ("secret_path",  "private_key_path=/etc/ssl/private/server.pem\n"),
+    ("token_url",    "token_endpoint=https://auth.example.com/oauth/v2\n"),
+    # Substitution, not a value.
+    ("env_ref",      "API_KEY=${AWS_SECRET}\n"),
+    ("bare_env_ref", "API_KEY=$AWS_SECRET\n"),
+    ("yaml_tag",     "password: !vault|AES256abcdef\n"),
+    ("version",      "secret_version=1.24.3\n"),
+])
+def test_unquoted_look_alikes_stay_quiet(tmp_path, label, content):
+    found = _scan_text(tmp_path, f"{label}.yaml", content, ["secrets"])
+    assert not found, f"{label} is not a credential: {[f.evidence for f in found]}"
+
+
+def test_purely_alphabetic_unquoted_values_are_words(tmp_path):
+    """A real secret essentially always carries a digit or a symbol. Without
+    this, every `secretsmanager: DescribeSecret` in an IAM policy was a
+    finding."""
+    assert not _scan_text(tmp_path, "p.yaml", "  client_secret: DescribeSecret\n", ["secrets"])
+    assert _scan_text(tmp_path, "q.yaml", "  client_secret: DescribeSecret9\n", ["secrets"])
