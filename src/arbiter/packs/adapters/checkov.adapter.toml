@@ -1,0 +1,25 @@
+name = "checkov"
+dimensions = ["security", "compliance"]
+checks = 120
+selects = { stacks = ["terraform", "cloudformation", "aws_cdk", "kubernetes", "docker"] }
+
+[requires]
+binaries = ["checkov"]
+network = false
+timeout = 600
+
+[invoke]
+argv = ["checkov", "-d", "{workdir}", "-o", "json", "--compact", "--quiet"]
+version_argv = ["checkov", "--version"]
+parse = "json"
+ok_exit = [0, 1]
+
+[map]
+findings = "$.results.failed_checks[*]"
+rule_id = "check_id"
+title = "check_name"
+path = "file_path"
+line = "file_line_range.0"
+logical = "resource"
+severity_const = "medium"
+dimension = "security"

@@ -1,0 +1,286 @@
+"""The scan pipeline: acquire → inventory → plan → execute → normalize →
+correlate → score → report.
+
+Stages are separate so each is testable on its own and so a probe failure is
+contained: one probe erroring degrades to 'not assessed' for that probe and
+never fails the run.
+"""
+from __future__ import annotations
+
+import datetime as _dt
+import json
+import shutil
+import time
+from pathlib import Path
+
+from .core import Finding, ProbeOutcome, Report, RepoInfo
+from .graph import build_graph
+from .inventory import acquire_one, build_inventory
+from .policy import (
+    PROFILES,
+    apply_severity_overrides,
+    apply_suppressions,
+    compute_scorecard,
+    evaluate_gate,
+)
+from .probes import REGISTRY, ProbeContext, probe_by_name
+
+ARBITER_VERSION = "0.1.0"
+
+
+def _dedupe(findings: list[Finding]) -> list[Finding]:
+    """Two tools finding the same defect is one defect.
+
+    Exact fingerprint matches collapse. Different tools produce different
+    fingerprints for the same issue, so a second pass collapses findings that
+    share a repo, path, line and normalized title.
+    """
+    seen: dict[str, Finding] = {}
+    for f in findings:
+        if f.id not in seen:
+            seen[f.id] = f
+            continue
+        keep = seen[f.id]
+        if keep.severity != f.severity:
+            from .core import SEV_RANK
+            if SEV_RANK.get(f.severity, 99) < SEV_RANK.get(keep.severity, 99):
+                seen[f.id] = f
+    out = list(seen.values())
+
+    by_site: dict[tuple, Finding] = {}
+    final: list[Finding] = []
+    for f in out:
+        key = (
+            f.repo_id,
+            f.location.path,
+            f.location.start_line,
+            "".join(ch for ch in f.title.lower() if ch.isalnum())[:48],
+        )
+        if key[1] and key[2] and key in by_site:
+            existing = by_site[key]
+            if existing.probe != f.probe:
+                if f.probe not in existing.tags:
+                    existing.tags.append(f"also:{f.probe}")
+                continue
+        by_site[key] = f
+        final.append(f)
+    return final
+
+
+def apply_baseline(findings: list[Finding], baseline_path: str | None) -> None:
+    """Label each finding new / existing against a stored baseline."""
+    if not baseline_path:
+        return
+    p = Path(baseline_path)
+    if not p.is_file():
+        return
+    try:
+        known = set(json.loads(p.read_text()).get("ids", []))
+    except Exception:
+        return
+    for f in findings:
+        f.status = "existing" if f.id in known else "new"
+
+
+def write_baseline(report: Report, path: str) -> int:
+    ids = sorted({f.id for f in report.findings if not f.suppressed})
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    Path(path).write_text(json.dumps({
+        "schema_version": "1.0",
+        "created": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
+        "system": report.system,
+        "ids": ids,
+    }, indent=2))
+    return len(ids)
+
+
+def resolve_targets(targets: list[str], system_path: str | None) -> tuple[str, list[RepoInfo], list[str], dict]:
+    """Return (system_name, repos, tempdirs, system_manifest)."""
+    tempdirs: list[str] = []
+    if system_path:
+        from .policy import load_system
+        manifest = load_system(system_path)
+        repos: list[RepoInfo] = []
+        base = Path(system_path).parent
+        for entry in manifest.get("repos", []):
+            src = entry.get("source") or entry.get("path") or ""
+            if not src.startswith(("http", "git@", "ssh://")):
+                cand = Path(src)
+                if not cand.is_absolute():
+                    src = str((base / src).resolve())
+            info, tmp = acquire_one(
+                src, repo_id=entry.get("id", "repo"), role=entry.get("role", ""), ref=entry.get("ref", "")
+            )
+            repos.append(info)
+            if tmp:
+                tempdirs.append(tmp)
+        return manifest.get("system", "system"), repos, tempdirs, manifest
+
+    repos = []
+    for i, t in enumerate(targets):
+        rid = "root" if len(targets) == 1 else Path(t.rstrip("/")).name or f"repo{i}"
+        info, tmp = acquire_one(t, repo_id=rid)
+        repos.append(info)
+        if tmp:
+            tempdirs.append(tmp)
+    name = repos[0].id if len(repos) == 1 else "adhoc-system"
+    return name, repos, tempdirs, {}
+
+
+def run_scan(
+    targets: list[str],
+    config: dict,
+    system_path: str | None = None,
+    profile: str | None = None,
+    only: list[str] | None = None,
+    skip: list[str] | None = None,
+    baseline: str | None = None,
+    keep_workspace: bool = False,
+    use_adapters: bool = True,
+    plan_paths: list[str] | None = None,
+    knowledge_path: str | None = None,
+    pin_knowledge: str | None = None,
+) -> Report:
+    started = time.time()
+    if use_adapters:
+        # Registering is what makes an uninstalled tool count as "not assessed"
+        # instead of vanishing from the coverage denominator.
+        from .adapters import register_adapters
+        register_adapters()
+    profile_name = profile or config.get("profile") or "offline"
+    caps = PROFILES.get(profile_name, PROFILES["offline"])
+
+    system_name, repos, tempdirs, manifest = resolve_targets(targets, system_path)
+    inv = build_inventory(repos)
+    plans = list(plan_paths or [])
+    plans += [str(p) for p in ((config.get("terraform") or {}).get("plans") or [])]
+    graph = build_graph(inv, plan_paths=plans)
+    # A directory holding only a plan JSON has no .tf files to detect, but it
+    # is unambiguously Terraform and the resource probes must still apply.
+    if any(r.source in ("plan", "state") for r in graph):
+        inv.stacks.add("terraform")
+
+    # Learning is read here and nowhere else: one pinned version per run, with
+    # its hash recorded, so the same commit plus the same knowledge version
+    # always produces the same bytes.
+    from .learn import Knowledge, metrics_from_inventory, resolve_quality_config
+    knowledge = Knowledge.load(knowledge_path)
+    knowledge_version = knowledge.version_hash()
+    if pin_knowledge and pin_knowledge != knowledge_version:
+        raise RuntimeError(
+            f"knowledge version is {knowledge_version}, pinned to {pin_knowledge}. "
+            "Learning changed since this run was pinned; re-pin deliberately."
+        )
+
+    profiles = metrics_from_inventory(inv) if (config.get("quality") or {}).get("adaptive") else {}
+    run_config = dict(config)
+    if profiles:
+        run_config["quality"] = resolve_quality_config(config, profiles)
+
+    ctx = ProbeContext(repos=repos, inventory=inv, graph=graph, config=run_config, system=manifest)
+
+    disabled = set((config.get("probes") or {}).get("disable") or []) | set(skip or [])
+    enabled_only = set(only or []) or None
+
+    findings: list[Finding] = []
+    outcomes: list[ProbeOutcome] = []
+
+    for probe in REGISTRY:
+        oc = ProbeOutcome(
+            name=probe.name, dimensions=list(probe.dimensions),
+            checks=probe.checks, version=probe.version,
+        )
+        if enabled_only is not None and probe.name not in enabled_only:
+            oc.status, oc.reason = "skipped", "not selected on the command line"
+            outcomes.append(oc)
+            continue
+        if probe.name in disabled:
+            oc.status, oc.reason = "skipped", "disabled in configuration"
+            outcomes.append(oc)
+            continue
+        ok, why = probe.applicable(ctx)
+        if not ok:
+            oc.status, oc.reason = "skipped", why
+            outcomes.append(oc)
+            continue
+        missing = [b for b in probe.binaries if shutil.which(b) is None]
+        if missing:
+            oc.status, oc.reason = "skipped", f"missing binary: {', '.join(missing)}"
+            outcomes.append(oc)
+            continue
+        if probe.network and not caps["network"]:
+            oc.status, oc.reason = "skipped", f"profile '{profile_name}' forbids network access"
+            outcomes.append(oc)
+            continue
+        if probe.model and not caps["model"]:
+            oc.status, oc.reason = "skipped", f"profile '{profile_name}' forbids model calls"
+            outcomes.append(oc)
+            continue
+
+        t0 = time.time()
+        try:
+            produced = probe.run(ctx) or []
+            oc.status = "ran"
+            oc.finding_count = len(produced)
+            findings.extend(produced)
+        except Exception as exc:  # noqa: BLE001
+            oc.status = "error"
+            oc.reason = f"{type(exc).__name__}: {exc}"[:300]
+        oc.duration_s = round(time.time() - t0, 3)
+        outcomes.append(oc)
+
+    findings = _dedupe(findings)
+    from .learn import apply as apply_knowledge
+    calibration = apply_knowledge(findings, knowledge)
+    apply_severity_overrides(findings, config)
+    apply_baseline(findings, baseline)
+    apply_suppressions(findings, config)
+
+    report = Report(
+        system=system_name,
+        arbiter_version=ARBITER_VERSION,
+        profile=profile_name,
+        started_at=_dt.datetime.fromtimestamp(started, _dt.timezone.utc).isoformat(timespec="seconds"),
+        repos=repos,
+        findings=sorted(
+            findings,
+            key=lambda f: (
+                ["critical", "high", "medium", "low", "info"].index(f.severity)
+                if f.severity in ("critical", "high", "medium", "low", "info") else 9,
+                f.repo_id, f.location.path, f.location.start_line,
+            ),
+        ),
+        probes=outcomes,
+        stacks=sorted(inv.stacks),
+    )
+    report.learning = {
+        "knowledge_version": knowledge_version,
+        "rules_with_feedback": len(knowledge.rules),
+        "adjudicated_findings": len(knowledge.adjudicated),
+        "annotated": calibration["annotated"],
+        "recalibrated": calibration["recalibrated"],
+        "adaptive_thresholds": (run_config.get("quality") or {}).get("_adaptive_source", ""),
+        "profiles": {k: v for k, v in profiles.items() if v},
+    }
+    report.scorecard = compute_scorecard(
+        report.findings, outcomes, sum(r.loc for r in repos), config
+    )
+    report.gate = evaluate_gate(report, config)
+
+    # Record every assertion this report makes, then check that none of them
+    # outruns its basis. A report that fails its own integrity check is a bug
+    # in Arbiter, not a finding about the target.
+    from .claims import build_claims, verify
+    report.claims = [c.to_dict() for c in build_claims(report)]
+    violations = verify(report, config)
+    report.integrity = {
+        "checked": True,
+        "violations": [v.to_dict() for v in violations],
+        "ok": not violations,
+    }
+    report.duration_s = time.time() - started
+
+    if not keep_workspace:
+        for d in tempdirs:
+            shutil.rmtree(d, ignore_errors=True)
+    return report
