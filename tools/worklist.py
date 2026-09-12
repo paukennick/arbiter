@@ -50,6 +50,14 @@ that the next session starts from a question instead of from a pile of tables.
 
 6. TOO LITTLE EVIDENCE TO JUDGE. Not a defect: a gap. These rules need more
    or more varied code before any verdict about them means anything.
+
+7. REAL-WORLD FIX PAIRS WAITING FOR A VERDICT. A commit where a maintainer
+   changed code a rule fired on, after which it stopped firing. The only
+   evidence in the system the tool did not generate for itself.
+
+8. CONTESTED FINDINGS. Two analyzers, same line, different conclusions.
+   Exactly one is wrong, so a verdict there is worth more than twenty on
+   findings everyone already agrees about.
 """
 from __future__ import annotations
 
@@ -76,9 +84,29 @@ JUDGEABLE = {"security", "compliance"}
 
 def _load(path: str) -> dict | None:
     try:
-        return json.loads(Path(path).read_text())
+        doc = json.loads(Path(path).read_text())
     except Exception:
         return None
+    return doc if isinstance(doc, dict) else None
+
+
+def _rows(doc: dict | None, *required: str) -> list[dict] | None:
+    """Rows from a results file, or None when they are not the shape expected.
+
+    This runs unattended every night. A half-written or mismatched results file
+    must degrade to "that input is missing" rather than killing the queue,
+    because a missing worklist is indistinguishable from a clean one and that
+    is the failure this whole tool exists to prevent.
+    """
+    if not doc:
+        return None
+    rows = doc.get("rows")
+    if not isinstance(rows, list):
+        return None
+    if rows and not all(isinstance(r, dict) and all(k in r for k in required)
+                        for r in rows):
+        return None
+    return rows
 
 
 def main() -> int:
@@ -89,20 +117,32 @@ def main() -> int:
     ap.add_argument("--out", default="")
     ap.add_argument("--packs", action="append", default=[],
                     help="extra control-pack directory; repeatable")
+    ap.add_argument("--fix-pairs", default="training/fix-pairs.json")
+    ap.add_argument("--disagreements", default="training/disagreements.json")
     args = ap.parse_args()
 
     corpus = _load(args.corpus_summary)
     disc = _load(args.discrimination)
+    # Validate the shape before anything reads it.
+    if _rows(corpus, "expectation", "critical", "high") is None:
+        corpus = None
+    if _rows(disc, "rule", "severity") is None:
+        disc = None
     know = _load(args.knowledge) or {}
+    pairs = (_load(args.fix_pairs) or {}).get("pairs") or []
+    disagree = _load(args.disagreements) or {}
     missing = [n for n, d in (("corpus", corpus), ("discrimination", disc)) if d is None]
 
     L: list[str] = []
-    n = 0
+    # Deliberately not `n`: `item()` closes over this with nonlocal, so any
+    # loop variable of the same name inside main() silently resets the
+    # numbering. That happened, and the queue printed items 1, 2, 15, 2, 3.
+    item_count = 0
 
     def item(priority: str, title: str, *why: str) -> None:
-        nonlocal n
-        n += 1
-        L.append(f"### {n}. [{priority}] {title}\n")
+        nonlocal item_count
+        item_count += 1
+        L.append(f"### {item_count}. [{priority}] {title}\n")
         L.extend(why)
         L.append("")
 
@@ -275,6 +315,50 @@ def main() -> int:
              "stops calling it unproven. A dozen on the noisiest rules is worth more "
              "than another million trials.")
 
+    # ---- 5c. real-world pairs waiting for a verdict --------------------------
+    unconfirmed = [p for p in pairs if p.get("confirmed") is None]
+    if unconfirmed:
+        by_rule = Counter(p["rule"] for p in unconfirmed)
+        body = ["A commit where a maintainer changed code a rule fired on, after "
+                "which it stopped firing. This is the only evidence in the whole "
+                "system that the tool did not generate for itself — nobody wrote "
+                "these commits to be found by a scanner.\n"]
+        for rule, count in by_rule.most_common(8):
+            body.append(f"- `{rule}` — {count} candidate pair(s)")
+        body.append("\nEach one is a CANDIDATE: a finding also disappears when the "
+                    "code around it is rewritten for unrelated reasons. Confirm that "
+                    "the change addressed the finding, then it becomes a permanent "
+                    "regression case — this rule must fire on the parent commit and "
+                    "must not fire on the child, forever. A rule that fires on both "
+                    "sides of a commit that plainly fixed the thing is wrong, and "
+                    "nothing else in the pipeline would have told you.")
+        item("HIGH", f"{len(unconfirmed)} real-world fix pairs waiting for a verdict",
+             *body)
+
+    # ---- 5d. contested findings, the cheapest thing to learn ------------------
+    contested = disagree.get("contested") or []
+    gaps_by_family = Counter(r.get("family", "?") for r in (disagree.get("coverage_gap") or []))
+    if contested:
+        body = [f"{len(contested)} findings where both Arbiter and an external "
+                "analyzer cover the kind of defect, and only one of them fired. "
+                "Exactly one is wrong about that line, so a verdict there resolves a "
+                "real uncertainty instead of confirming a settled one.\n"]
+        only = Counter(r.get("only", "?") for r in contested)
+        for who, count in only.most_common():
+            body.append(f"- {count} where only **{who}** fired")
+        body.append("\nA batch is already prepared. Twenty of these are worth more "
+                    "than twenty random findings, because a finding two independent "
+                    "tools agree on is the least informative thing a person can spend "
+                    "a verdict on.")
+        item("HIGH", "Contested findings, ready to adjudicate", *body)
+    if gaps_by_family:
+        body = ["An external analyzer checks something Arbiter has no rule for at "
+                "all. This is not a disagreement and adjudicating it teaches nothing "
+                "— it is a list of rules worth writing.\n"]
+        for fam, count in gaps_by_family.most_common(8):
+            body.append(f"- **{fam}** — {count} finding(s) nothing native covers")
+        item("MEDIUM", "Kinds of defect only the external tools catch", *body)
+
     # ---- 6. too little evidence to judge ------------------------------------
     if disc:
         thin = [r for r in disc["rows"] if r["thin"] and r.get("judgeable")]
@@ -289,7 +373,7 @@ def main() -> int:
                         "not by trial count. These need more varied code.")
             item("LOW", "Rules with too little evidence to judge", *body)
 
-    if n == 0 and not missing:
+    if item_count == 0 and not missing:
         L.append("\nNothing queued. Every check came back clean, which means the "
                  "corpus has stopped telling us anything new — the next useful move "
                  "is to widen it, not to run it again.\n")
@@ -323,7 +407,7 @@ def main() -> int:
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(text)
-        print(f"  wrote {args.out} ({n} items queued)")
+        print(f"  wrote {args.out} ({item_count} items queued)")
     else:
         print(text)
     return 0

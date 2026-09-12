@@ -37,6 +37,28 @@ from arbiter.policy import load_config  # noqa: E402
 # material and are reported separately so they distort neither number.
 POPULATIONS = ("vulnerable", "clean", "examples")
 
+# Repositories never used to tune a rule, and never read while deciding one.
+#
+# Every figure in this project so far was measured on repositories the rules
+# were tuned against. That is how a tool ends up fitted to its own practice
+# set: each false positive gets a regression test naming the repository it came
+# from, the number improves, and nothing says whether the improvement
+# generalizes or was just memorised.
+#
+# These five are held out. They span the stacks that matter most here and
+# include one of each population, so the held-out numbers are comparable to
+# the tuned ones. The rule is simple and only works if it is kept: when a
+# finding on a held-out repository turns out to be a false positive, the fix
+# and its regression test must be driven by a repository from the tuning set,
+# or the holdout has been spent.
+HOLDOUT = frozenset({
+    "argo-cd",          # clean, kubernetes — large, production manifests
+    "php-guzzle",       # clean, php
+    "dvwa",             # vulnerable, php
+    "cdkgoat",          # vulnerable, aws_cdk
+    "compose-awesome",  # examples, docker
+})
+
 CORPUS = {
     # deliberately vulnerable — a high finding count is the correct answer
     "terragoat":        ("vulnerable", "terraform"),
@@ -103,7 +125,8 @@ CORPUS = {
 }
 
 NATIVE = ["secrets", "resource_policy", "quality", "ast_metrics",
-          "supply_chain", "doc_drift", "house_rules", "house_rules_ast"]
+          "supply_chain", "doc_drift", "house_rules", "house_rules_ast",
+          "assurance", "authored"]
 
 
 def main() -> int:
@@ -111,6 +134,9 @@ def main() -> int:
     ap.add_argument("--root", default="/tmp/corpus")
     ap.add_argument("--out", default="/tmp/corpus-out")
     ap.add_argument("--only", default=",".join(NATIVE))
+    ap.add_argument("--holdout", choices=["exclude", "only", "both"], default="both",
+                    help="exclude: tuning set only. only: the held-out set. "
+                         "both (default): everything, reported separately.")
     args = ap.parse_args()
 
     root = Path(args.root)
@@ -124,6 +150,10 @@ def main() -> int:
     loc_by_pop: Counter = Counter()
 
     for name, (expectation, stack_label) in CORPUS.items():
+        if args.holdout == "exclude" and name in HOLDOUT:
+            continue
+        if args.holdout == "only" and name not in HOLDOUT:
+            continue
         path = root / name
         if not path.is_dir():
             print(f"  skip {name}: not cloned")
@@ -148,6 +178,7 @@ def main() -> int:
             "seconds": round(elapsed, 2),
             "stacks": rep.stacks,
             "stack_label": stack_label,
+            "holdout": name in HOLDOUT,
         })
         (outdir / f"{name}.json").write_text(json.dumps(rep.to_dict(), indent=2))
 
@@ -179,6 +210,29 @@ def main() -> int:
     for rule, n in rule_counts["clean"].most_common(18):
         print(f"    {n:>6}{rule_counts['vulnerable'][rule]:>6}"
               f"{rule_counts['examples'][rule]:>9}   {rule}")
+
+    # The comparison that says whether the tuning generalized. If the
+    # well-maintained rate is much worse on repositories the rules never saw,
+    # the rules were fitted to the practice set rather than to good code.
+    tuned = [r for r in rows if not r["holdout"] and r["expectation"] == "clean"]
+    held = [r for r in rows if r["holdout"] and r["expectation"] == "clean"]
+    if tuned and held:
+        def rate(g):
+            lo = sum(x["loc"] for x in g) or 1
+            return sum(x["findings"] for x in g) / (lo / 1000)
+        t, h = rate(tuned), rate(held)
+        print("\n  DOES THE TUNING GENERALIZE?")
+        print(f"    well-maintained, tuned on ({len(tuned)} repos): {t:.2f} per KLOC")
+        print(f"    well-maintained, HELD OUT ({len(held)} repos): {h:.2f} per KLOC")
+        crit = sum(x["critical"] for x in held) + sum(x["high"] for x in held)
+        print(f"    critical or high on held-out well-maintained code: {crit}")
+        if t:
+            ratio = h / t
+            verdict = ("the rules behave the same on code they have never seen"
+                       if ratio <= 1.5 else
+                       "the held-out rate is materially worse — the rules may be "
+                       "fitted to the\n    repositories they were tuned against")
+            print(f"    ratio {ratio:.2f}x — {verdict}")
 
     print("\n  RULES THAT FIRE MOSTLY ON TEACHING MATERIAL")
     print("  (correct about the file, but not evidence of a noisy rule)")

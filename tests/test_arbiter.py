@@ -2317,3 +2317,157 @@ def test_terminal_review_can_go_back(tmp_path, monkeypatch):
     monkeypatch.setattr(review_ui, "_getch", lambda: next(keys))
     marks = review_ui.run_terminal(picked, Knowledge(), {"root": str(tmp_path)})
     assert marks[picked[0].id] == "false_positive", "going back must undo the mark"
+
+
+# ---------------------------------------------------------------------------
+# Disagreement mining.
+#
+# A person adjudicates maybe twenty findings before it becomes a chore, so
+# which twenty is the whole question. A random twenty confirms what is already
+# believed; the informative ones are where two independent tools looked at the
+# same line and disagreed, because exactly one of them is wrong.
+# ---------------------------------------------------------------------------
+
+def _dis():
+    import importlib, sys as _sys
+    _sys.path.insert(0, str(ROOT / "tools"))
+    return importlib.import_module("disagree")
+
+
+def test_an_external_check_arbiter_has_no_rule_for_is_a_gap_not_a_disagreement():
+    """The first version reported 238 'contested' findings on one repository,
+    nearly all of them checks Arbiter simply does not cover."""
+    d = _dis()
+    findings = [
+        Finding(rule_id="checkov/CKV_1", title="Ensure TLS 1.2 minimum",
+                location=Location(path="a.tf", start_line=3)),
+        Finding(rule_id="arbiter/resource.unencrypted-database",
+                title="Database storage is not encrypted",
+                location=Location(path="b.tf", start_line=1)),
+    ]
+    res = d.compare(findings)
+    gaps = {r["rule"] for r in res["coverage_gap"]}
+    assert "checkov/CKV_1" in gaps, "Arbiter has no tls rule here, so this is a gap"
+    assert not any(r["rule"] == "checkov/CKV_1" for r in res["contested"])
+
+
+def test_a_miss_where_arbiter_does_have_a_rule_is_contested():
+    d = _dis()
+    findings = [
+        # Arbiter covers encryption (it fires elsewhere) but not at a.tf
+        Finding(rule_id="arbiter/resource.unencrypted-database",
+                title="Database storage is not encrypted",
+                location=Location(path="b.tf", start_line=1)),
+        Finding(rule_id="checkov/CKV_2", title="Ensure RDS is encrypted",
+                location=Location(path="a.tf", start_line=3)),
+    ]
+    res = d.compare(findings)
+    assert any(r["rule"] == "checkov/CKV_2" for r in res["contested"])
+
+
+def test_agreement_is_never_queued():
+    d = _dis()
+    findings = [
+        Finding(rule_id="arbiter/resource.unencrypted-database", title="not encrypted",
+                severity="high", location=Location(path="a.tf", start_line=3)),
+        Finding(rule_id="checkov/CKV_3", title="Ensure encryption at rest",
+                severity="high", location=Location(path="a.tf", start_line=3)),
+    ]
+    res = d.compare(findings)
+    assert res["corroborated"] and not res["contested"]
+
+
+def test_a_wide_severity_gap_is_reported_separately():
+    d = _dis()
+    findings = [
+        Finding(rule_id="arbiter/resource.unencrypted-database", title="not encrypted",
+                severity="critical", location=Location(path="a.tf", start_line=3)),
+        Finding(rule_id="checkov/CKV_4", title="Ensure encryption at rest",
+                severity="low", location=Location(path="a.tf", start_line=3)),
+    ]
+    res = d.compare(findings)
+    assert res["severity_disagreement"] and not res["corroborated"]
+
+
+def test_a_finding_never_cites_itself_as_the_other_side():
+    d = _dis()
+    findings = [Finding(rule_id="semgrep/s3-public", title="public bucket",
+                        location=Location(path="a.tf", start_line=1))]
+    res = d.compare(findings)
+    rows = res["contested"] + res["coverage_gap"]
+    assert rows and all(r["rule"] not in r["other_side"] for r in rows)
+
+
+def test_log_is_not_matched_inside_unrelated_words():
+    """`log` as a family keyword matches login, logical, dialog and catalog.
+    It put a broken-documentation-link finding in the logging family."""
+    d = _dis()
+    assert d.family_of("arbiter/drift.broken-doc-link", "Broken documentation link") == ""
+    assert d.family_of("arbiter/resource.no-log-retention", "No retention period") == "logging"
+
+
+def test_the_holdout_is_real_and_spans_the_populations(tmp_path):
+    """Every figure in this project was measured on repositories the rules were
+    tuned against. That is how a tool ends up fitted to its own practice set."""
+    import importlib, sys as _sys
+    _sys.path.insert(0, str(ROOT / "tools"))
+    corpus = importlib.import_module("corpus")
+    importlib.reload(corpus)
+    assert len(corpus.HOLDOUT) >= 4
+    assert corpus.HOLDOUT <= set(corpus.CORPUS), "a held-out repo must be in the corpus"
+    pops = {corpus.CORPUS[h][0] for h in corpus.HOLDOUT}
+    assert pops == {"clean", "vulnerable", "examples"}, \
+        "the held-out numbers are only comparable if every population is represented"
+    tuned = set(corpus.CORPUS) - corpus.HOLDOUT
+    assert len(tuned) > 3 * len(corpus.HOLDOUT), "most of the corpus must remain for tuning"
+
+
+def test_worklist_items_are_numbered_consecutively(tmp_path):
+    """`item()` closes over the counter with nonlocal, so a loop variable of the
+    same name inside main() silently resets it. That happened, and the queue
+    printed items 1, 2, 15, 2, 3 — which reads as a broken tool and hides
+    whether anything was missed."""
+    import subprocess, re as _re
+    disc = tmp_path / "d.json"
+    disc.write_text(json.dumps({"rows": [
+        {"rule": "arbiter/resource.x", "severity": "high", "dimension": "security",
+         "judgeable": True, "thin": False, "weighted_ratio": 0.2,
+         "clean_hits": 90, "vuln_hits": 1}]}))
+    pairs = tmp_path / "p.json"
+    pairs.write_text(json.dumps({"pairs": [
+        {"repo": "r", "fixed_in": "abc", "rule": "arbiter/resource.y",
+         "path": "a.tf", "confirmed": None}]}))
+    dis = tmp_path / "dis.json"
+    dis.write_text(json.dumps({
+        "contested": [{"id": "f:1", "rule": "checkov/CKV_1", "only": "checkov",
+                       "family": "tls", "other_side": []}],
+        "coverage_gap": [{"family": "tls"}]}))
+    out = tmp_path / "W.md"
+    empty = tmp_path / "empty.json"
+    empty.write_text(json.dumps({"rows": []}))
+    subprocess.run(["python", str(ROOT / "tools" / "worklist.py"),
+                    "--discrimination", str(disc), "--corpus-summary", str(empty),
+                    "--knowledge", str(empty), "--fix-pairs", str(pairs),
+                    "--disagreements", str(dis), "--out", str(out)],
+                   check=True, capture_output=True, cwd=str(ROOT))
+    nums = [int(m) for m in _re.findall(r"^### (\d+)\.", out.read_text(), _re.M)]
+    assert nums == list(range(1, len(nums) + 1)), nums
+    assert len(nums) >= 4
+
+
+def test_worklist_survives_a_malformed_results_file(tmp_path):
+    """It runs unattended every night. A half-written results file must degrade
+    to "that input is missing" rather than killing the queue — a missing
+    worklist is indistinguishable from a clean one."""
+    import subprocess
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps({"rows": [{"unexpected": "shape"}]}))
+    truncated = tmp_path / "trunc.json"
+    truncated.write_text('{"rows": [{"repo": ')
+    out = tmp_path / "W.md"
+    r = subprocess.run(["python", str(ROOT / "tools" / "worklist.py"),
+                        "--corpus-summary", str(bad), "--discrimination", str(truncated),
+                        "--knowledge", str(bad), "--out", str(out)],
+                       capture_output=True, text=True, cwd=str(ROOT))
+    assert r.returncode == 0, r.stderr[-400:]
+    assert "Incomplete" in out.read_text()

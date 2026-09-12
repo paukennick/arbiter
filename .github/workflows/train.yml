@@ -51,6 +51,8 @@ jobs:
       # Caching them is the difference between a four-minute job and a
       # twenty-minute one. The key rotates weekly so the corpus is re-cloned
       # occasionally rather than drifting years behind.
+      # History is what the fix-pair miner reads. A shallow clone has none, so
+      # the cycle deepens what it can and reports the rest as unavailable.
       - name: Cache practice repositories
         uses: actions/cache@v4
         with:
