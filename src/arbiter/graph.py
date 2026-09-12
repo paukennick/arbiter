@@ -52,6 +52,62 @@ TF_KINDS = {
     "aws_cloudwatch_log_group": "log_group",
     "aws_opensearch_domain": "search",
     "aws_elasticsearch_domain": "search",
+
+    # ---- Azure ----------------------------------------------------------
+    # A normalized kind means an existing rule fires here, so each of these
+    # needs its provider's property names added to that rule's `any_of`. The
+    # Kubernetes PersistentVolumeClaim episode is the warning: a kind mapping
+    # without the matching property vocabulary produces a rule that is
+    # confidently wrong on an entire cloud.
+    "azurerm_storage_container": "object_store",
+    "azurerm_mssql_server": "database",
+    "azurerm_mssql_database": "database",
+    "azurerm_postgresql_flexible_server": "database",
+    "azurerm_mysql_server": "database",
+    "azurerm_mysql_flexible_server": "database",
+    "azurerm_cosmosdb_account": "database",
+    "azurerm_managed_disk": "block_store",
+    "azurerm_storage_share": "filesystem",
+    "azurerm_network_security_group": "firewall",
+    "azurerm_network_security_rule": "firewall_rule",
+    "azurerm_key_vault_key": "key",
+    "azurerm_key_vault": "key_store",
+    "azurerm_role_definition": "policy",
+    "azurerm_user_assigned_identity": "identity",
+    "azurerm_linux_function_app": "function",
+    "azurerm_windows_function_app": "function",
+    "azurerm_linux_virtual_machine": "compute",
+    "azurerm_windows_virtual_machine": "compute",
+    "azurerm_kubernetes_cluster": "compute",
+    "azurerm_lb": "load_balancer",
+    "azurerm_servicebus_queue": "queue",
+    "azurerm_servicebus_topic": "topic",
+    "azurerm_eventhub": "topic",
+    "azurerm_log_analytics_workspace": "log_group",
+    "azurerm_monitor_diagnostic_setting": "audit_log",
+    "azurerm_search_service": "search",
+
+    # ---- Google Cloud ---------------------------------------------------
+    "google_sql_database": "database",
+    "google_bigtable_instance": "database",
+    "google_spanner_database": "database",
+    "google_firestore_database": "database",
+    "google_compute_disk": "block_store",
+    "google_filestore_instance": "filesystem",
+    "google_compute_firewall": "firewall",
+    "google_kms_crypto_key": "key",
+    "google_kms_key_ring": "key_store",
+    "google_project_iam_custom_role": "policy",
+    "google_service_account": "identity",
+    "google_cloudfunctions_function": "function",
+    "google_cloudfunctions2_function": "function",
+    "google_compute_instance": "compute",
+    "google_container_cluster": "compute",
+    "google_cloud_run_v2_service": "compute",
+    "google_compute_forwarding_rule": "load_balancer",
+    "google_pubsub_topic": "topic",
+    "google_pubsub_subscription": "queue",
+    "google_logging_project_sink": "audit_log",
 }
 
 CFN_KINDS = {
@@ -205,7 +261,12 @@ def _match_brace(text: str, open_idx: int) -> int:
 
 
 _ASSIGN_RE = re.compile(r'^\s*([A-Za-z_][\w.-]*)\s*=\s*(.+?)\s*$')
-_SUBBLOCK_RE = re.compile(r'^\s*([A-Za-z_][\w-]*)\s*(?:=\s*)?\{\s*$')
+# The trailing `$` used to be mandatory, which silently dropped any block
+# written on one line: `disk_encryption_key { kms_key_self_link = ... }` was
+# not an assignment and not a sub-block, so it vanished, and a disk that WAS
+# encrypted got reported as unencrypted. _match_brace already handles nesting,
+# so the end of the block is found the same way either way.
+_SUBBLOCK_RE = re.compile(r'^\s*([A-Za-z_][\w-]*)\s*(?:=\s*)?\{')
 
 
 def _coerce(raw: str) -> Any:
@@ -226,9 +287,53 @@ def _coerce(raw: str) -> Any:
     return raw
 
 
+def _split_top_level(text: str, sep: str = ",") -> list[str]:
+    """Split on `sep`, ignoring separators inside quotes, braces or brackets."""
+    parts, buf, depth, quote = [], [], 0, ""
+    i = 0
+    while i < len(text):
+        c = text[i]
+        if quote:
+            if c == "\\":
+                buf.append(c)
+                i += 1
+                if i < len(text):
+                    buf.append(text[i])
+                    i += 1
+                continue
+            if c == quote:
+                quote = ""
+            buf.append(c)
+        elif c in "\"'":
+            quote = c
+            buf.append(c)
+        elif c in "{[(":
+            depth += 1
+            buf.append(c)
+        elif c in "}])":
+            depth -= 1
+            buf.append(c)
+        elif c == sep and depth == 0:
+            parts.append("".join(buf))
+            buf = []
+        else:
+            buf.append(c)
+        i += 1
+    parts.append("".join(buf))
+    return [p for p in (x.strip() for x in parts) if p]
+
+
 def _parse_hcl_body(body: str) -> dict:
     """Parse a brace-matched HCL body into a dict. Repeated blocks become lists."""
     out: dict[str, Any] = {}
+    # An inline object writes its entries on one line separated by commas:
+    # `tags = { Name = "x", Env = "prod" }`. Splitting on newlines alone reads
+    # that as a single assignment whose value is the rest of the line, so the
+    # second and later keys are swallowed into the first one's value.
+    if "\n" not in body.strip() and "," in body:
+        pieces = _split_top_level(body)
+        if len(pieces) > 1 and all("=" in p for p in pieces):
+            body = "\n".join(pieces)
     lines = body.split("\n")
     i = 0
     while i < len(lines):

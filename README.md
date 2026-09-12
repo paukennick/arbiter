@@ -54,6 +54,9 @@ arbiter verify arbiter-out/report.json         # does any claim outrun its basis
 arbiter feedback f:8c41 --false-positive       # adjudicate, so the tool calibrates
 arbiter learn                                  # what has been learned, and what it supports
 arbiter diff before.json after.json            # new / fixed / unchanged
+arbiter controls arbiter-out/report.json       # control coverage, including the gaps
+arbiter review arbiter-out/report.json         # adjudicate a batch in one pass
+arbiter review --apply arbiter-out/review.md   # record the verdicts
 ```
 
 Output formats: `--format json,sarif,html,markdown,console`. JSON is canonical
@@ -611,9 +614,126 @@ us anything, and the next useful move is to widen it, not to run it again.
 Each false positive that tuning removed has a regression test in
 `tests/test_arbiter.py` naming the repository it came from.
 
+## Control coverage
+
+Five government framework packs ship: NIST 800-53r5, NIST 800-171r2, NIST
+SSDF 800-218, FedRAMP Moderate Rev 5 and CMMC Level 2. Each is an
+**independent** pack — controls map straight to checks, never routed through a
+hub framework, because chaining two approximate crosswalks produces a
+compliance claim two translations removed from anything that ran.
+
+Every control resolves to one of five states, and the split between the last
+three is the entire point:
+
+| State | Meaning |
+|---|---|
+| `satisfied` | A covering check ran, applied, and found nothing. |
+| `violated` | A covering check fired. |
+| `not_assessed` | A check covers this on paper but did not run here — tool absent, value unknown until apply. **Not a pass.** |
+| `no_coverage` | Assessable in principle; Arbiter has no check for it. |
+| `not_automatable` | No static analyzer can ever assess this — personnel screening, physical access, incident-response exercises. A person must. |
+
+Plus `not_enumerated`: controls the pack does not list at all, counted against
+the framework's real published size so a pack covering twenty controls cannot
+report full coverage.
+
+```
+$ arbiter controls arbiter-out/report.json --framework FedRAMP-Moderate-r5
+
+       8  violated         a check fired
+       0  not_assessed     a check covers this but did not run — not a pass
+       0  no_coverage      assessable in principle; Arbiter has no check for it
+       5  satisfied        a check ran, applied, and found nothing
+       5  not_automatable  no static analyzer can assess this; a person must
+     305  not_enumerated   not in this pack; assess by other means
+     323  controls in this baseline
+
+    4.0% of the baseline carries evidence from this scan (13 of 323).
+```
+
+Four percent. No compliance product would print that number, which is why it
+is the right one: the other 96% is unevidenced by this scan, and a reader of
+an accreditation package needs to know which 96%.
+
+Every automatable control also carries a `residual` note saying what a person
+must still check even when the automated part passes — because encryption
+being switched on says nothing about who holds the key, and FedRAMP AU-11
+fixes a retention period a check confirming "some period is set" cannot see.
+
+## The judgement pass
+
+A model is worth adding only for questions with no definite shape: does the
+README describe behaviour the code no longer has, does a comment contradict
+the function under it. It is not here to re-find secrets — those have
+decidable answers, and swapping a decidable check for a probabilistic one is a
+downgrade dressed as an upgrade.
+
+```yaml
+profile: connected          # offline and ci forbid model calls outright
+judgement:
+  provider: anthropic       # reads ANTHROPIC_API_KEY from the environment
+  model: claude-sonnet-4-5
+```
+
+Three rules it obeys:
+
+- **Inferred findings never blend with deterministic ones.** Everything from
+  this pass is `provenance: inferred`, and the gate ignores inferred findings
+  unless `gate.gate_inferred` is set. A model's opinion should not turn a build
+  red on its own.
+- **No provider configured is *not assessed*, never a pass.** The easy
+  implementation returns an empty list when there is no key — and an empty list
+  is indistinguishable from "looked, found nothing". So the probe reports
+  skipped with the reason, and coverage drops by exactly what was not checked.
+- **A finding citing a file the model was not shown is discarded**, not
+  reported with a caveat. Secrets are masked before anything leaves the
+  machine, and model-stated confidence never reaches `high` — confidence
+  asserted by a model is a different quantity from confidence measured from
+  adjudicated outcomes, and sharing a scale would be a category error.
+
+## Calibrating somebody else's tool
+
+Checkov's open build reports `"severity": null` on every finding. Arbiter's
+adapter invented `medium` for all of them, so one Terraform repository
+produced 477 findings of identical weight and no way to tell the two that
+matter from the 475 that do not.
+
+`tools/calibrate_external.py` measures every individual external check —
+every `CKV_AWS_*`, every bandit `B*` — against the same three-population
+corpus used for native rules, and assigns severity from the measured ratio:
+
+| Weighted ratio | Assigned |
+|---|---|
+| ≥ 50× | high |
+| ≥ 10× | medium |
+| ≥ 3× | low |
+| < 3× | info — reported, zero weight |
+| fewer than 5 observations | nothing assigned; no claim made |
+
+This does not breach the standing rule that learning never touches severity.
+For a native rule, severity is a deliberate policy statement and nothing may
+move it. For an external check the tool supplied *no* severity — replacing an
+invented constant with a measured one is not drift. The table lives in the
+knowledge file, is part of its version hash, and `--pin-knowledge` still fails
+a run if it moved.
+
+## Adjudication, made cheap enough to happen
+
+Calibration reads one ledger: findings a person judged right or wrong. Not the
+injection trials, not the corpus discrimination — those measure whether a rule
+works mechanically and whether it separates populations, and neither answers
+whether the things it flags are things you would act on.
+
+That ledger sat at zero, because adjudicating meant copying fingerprints one
+at a time. `arbiter review` writes a file of findings chosen to move the most
+rules past the twenty-observation line — rules already close to the threshold
+first, spread across files so twenty instances of one mistake are not counted
+as twenty observations, never re-asking an adjudicated finding. Mark `[y]` or
+`[n]`, then `arbiter review --apply`.
+
 ## Not yet built
 
-Per the design spec, these are later phases: control-framework packs and the
-coverage matrix, the model-backed claim extraction behind docs-vs-code drift,
-the Claude skill, air-gapped bundles, and the dashboard. The interfaces they
-plug into exist; the implementations do not.
+Per the design spec: the Claude skill, air-gapped bundles, and the dashboard.
+Commercial control packs (PCI-DSS, HIPAA, SOC 2, CIS) are a data file each in
+the format the five government packs already use. The interfaces exist; the
+implementations do not.

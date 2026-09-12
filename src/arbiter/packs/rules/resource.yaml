@@ -18,7 +18,13 @@ rules:
     match_kinds: [database]
     assert: property_truthy
     any_of: [storage_encrypted, StorageEncrypted, encrypted, Encrypted, kms_key_id, KmsKeyId,
-             EncryptionAtRestOptions.Enabled, SSESpecification.SSEEnabled]
+             EncryptionAtRestOptions.Enabled, SSESpecification.SSEEnabled,
+             # Azure: transparent data encryption and infrastructure encryption
+             transparent_data_encryption_enabled, infrastructure_encryption_enabled,
+             customer_managed_key.key_vault_key_id, customer_managed_key,
+             # GCP: encryption is on by default, so the question is key custody
+             encryption_key_name, kms_key_name, encryption.kms_key_name,
+             disk_encryption_key.kms_key_name, encryption_config.kms_key_name]
     severity: high
     confidence: high
     dimension: security
@@ -31,7 +37,11 @@ rules:
     match_kinds: [object_store]
     assert: property_truthy
     any_of: [server_side_encryption_configuration, BucketEncryption, encryption,
-             sse_algorithm, encryption_config]
+             sse_algorithm, encryption_config,
+             # Azure storage encrypts by default; a declared key is the signal
+             customer_managed_key, infrastructure_encryption_enabled,
+             # GCP likewise
+             encryption.default_kms_key_name, default_kms_key_name]
     severity: medium
     confidence: medium
     dimension: security
@@ -51,7 +61,12 @@ rules:
     # every PersistentVolumeClaim in Kubernetes' own examples repository.
     exclude_providers: [k8s]
     assert: property_truthy
-    any_of: [encrypted, Encrypted, kms_key_id, KmsKeyId]
+    any_of: [encrypted, Encrypted, kms_key_id, KmsKeyId,
+             # Azure managed disks
+             disk_encryption_set_id, encryption_settings,
+             # GCP persistent disks and Filestore
+             disk_encryption_key, disk_encryption_key.kms_key_self_link,
+             kms_key_name]
     severity: high
     confidence: high
     dimension: security
@@ -63,7 +78,11 @@ rules:
     title: Queue or topic has no encryption configured
     match_kinds: [queue, topic]
     assert: property_truthy
-    any_of: [kms_master_key_id, KmsMasterKeyId, sqs_managed_sse_enabled, SqsManagedSseEnabled]
+    any_of: [kms_master_key_id, KmsMasterKeyId, sqs_managed_sse_enabled, SqsManagedSseEnabled,
+             # GCP Pub/Sub
+             kms_key_name,
+             # Azure Service Bus and Event Hubs
+             customer_managed_key, encryption]
     severity: medium
     confidence: medium
     dimension: security
@@ -89,7 +108,9 @@ rules:
     title: Database is reachable from the public internet
     match_kinds: [database]
     assert: property_absent_or_false
-    any_of: [publicly_accessible, PubliclyAccessible]
+    any_of: [publicly_accessible, PubliclyAccessible,
+             public_network_access_enabled,        # Azure
+             public_network_access]                # GCP / Azure variants
     severity: critical
     confidence: high
     dimension: security
@@ -125,7 +146,10 @@ rules:
     title: Log group has no retention period
     match_kinds: [log_group]
     assert: property_truthy
-    any_of: [retention_in_days, RetentionInDays]
+    any_of: [retention_in_days, RetentionInDays,
+             retention_in_days,                    # Azure Log Analytics
+             retention_policy.days,                # GCP logging bucket
+             retention_days]
     severity: low
     confidence: high
     dimension: compliance
@@ -137,7 +161,13 @@ rules:
     title: Object store has no access logging
     match_kinds: [object_store]
     assert: property_truthy
-    any_of: [logging, LoggingConfiguration, logging_config]
+    any_of: [logging, LoggingConfiguration, logging_config,
+             # Azure diagnostic settings are a separate resource; this catches
+             # the inline form only, which is why the rule stays at low
+             # confidence on that provider.
+             logs, enabled_log,
+             # GCP
+             log_config, logging_service]
     severity: low
     confidence: medium
     dimension: compliance
@@ -149,7 +179,10 @@ rules:
     title: Stateful resource has no deletion protection
     match_kinds: [database]
     assert: property_truthy
-    any_of: [deletion_protection, DeletionProtection, DeletionProtectionEnabled]
+    any_of: [deletion_protection, DeletionProtection, DeletionProtectionEnabled,
+             deletion_protection_enabled,          # GCP / newer Azure providers
+             prevent_deletion,
+             lifecycle.prevent_destroy]
     severity: low
     confidence: medium
     dimension: quality
