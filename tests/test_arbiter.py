@@ -992,3 +992,73 @@ def test_purely_alphabetic_unquoted_values_are_words(tmp_path):
     finding."""
     assert not _scan_text(tmp_path, "p.yaml", "  client_secret: DescribeSecret\n", ["secrets"])
     assert _scan_text(tmp_path, "q.yaml", "  client_secret: DescribeSecret9\n", ["secrets"])
+
+
+# ---------------------------------------------------------------------------
+# Severity by measured discrimination, not by intuition.
+#
+# A rule earns its severity by firing more on bad code than on good code. The
+# three dependency-pinning rules were all "low". Measured stack-for-stack
+# against the corpus, only one of them actually separates the two:
+#
+#   supply.unpinned-action       4.3x on Node, 219x on CloudFormation  -> low
+#   supply.unpinned-npm-dep      1.1x  (0.68/kloc good, 0.73/kloc bad) -> info
+#   supply.unpinned-python-dep   0.0x  (fires only on good code)       -> info
+#
+# "info" scores zero, so a repo is no longer graded down for something that
+# carries no evidence. The findings are still reported.
+# ---------------------------------------------------------------------------
+
+def test_unpinned_npm_dep_is_informational(tmp_path):
+    found = _scan_text(tmp_path, "package.json",
+                       '{"dependencies": {"lodash": "^4.17.0"}}\n', ["supply_chain"])
+    hits = [f for f in found if f.rule_id == "arbiter/supply.unpinned-npm-dep"]
+    assert hits, "the rule must still report"
+    assert hits[0].severity == "info"
+
+
+def test_unpinned_python_dep_is_informational(tmp_path):
+    found = _scan_text(tmp_path, "requirements.txt", "requests>=2.0\nflask\n",
+                       ["supply_chain"])
+    hits = [f for f in found if f.rule_id == "arbiter/supply.unpinned-python-dep"]
+    assert len(hits) == 2
+    assert all(f.severity == "info" for f in hits)
+
+
+def test_unpinned_action_keeps_its_severity(tmp_path):
+    """This is the one that discriminates, so it keeps scoring."""
+    wf = "jobs:\n  b:\n    steps:\n      - uses: actions/checkout@v4\n"
+    found = _scan_text(tmp_path, ".github/workflows/ci.yml", wf, ["supply_chain"])
+    hits = [f for f in found if f.rule_id == "arbiter/supply.unpinned-action"]
+    assert hits and hits[0].severity == "low"
+
+
+def test_informational_findings_do_not_move_the_grade(tmp_path):
+    """The point of the downgrade: a project full of caret ranges and nothing
+    else must not be scored as if it had real problems."""
+    from arbiter.core import SEV_WEIGHT
+    assert SEV_WEIGHT["info"] == 0.0
+    found = _scan_text(tmp_path, "package.json",
+                       '{"dependencies": {"a": "^1.0.0", "b": "~2.0.0", "c": "*"}}\n',
+                       ["supply_chain"])
+    assert found and all(SEV_WEIGHT[f.severity] == 0.0 for f in found)
+
+
+def test_corpus_separates_teaching_material_from_production_code(tmp_path):
+    """Example repositories are a third population. Counting starter templates
+    as well-maintained production code made the false-positive rate look about
+    four times worse than it is."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "arbiter_corpus", Path(__file__).resolve().parents[1] / "tools" / "corpus.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    assert set(mod.POPULATIONS) == {"clean", "vulnerable", "examples"}
+    labels = {name: exp for name, (exp, _) in mod.CORPUS.items()}
+    for teaching in ("cdk-examples", "k8s-examples", "cfn-templates",
+                     "compose-awesome", "helm-charts"):
+        assert labels[teaching] == "examples", f"{teaching} is teaching material"
+    # real production code must stay in the measurement group
+    for production in ("requests", "flask", "express", "rust-ripgrep"):
+        assert labels[production] == "clean"

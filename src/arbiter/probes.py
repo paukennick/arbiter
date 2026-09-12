@@ -756,7 +756,11 @@ def probe_supply_chain(ctx: ProbeContext) -> list[Finding]:
                     out.append(Finding(
                         rule_id="arbiter/supply.unpinned-python-dep",
                         title=f"Unpinned dependency `{pkg}`",
-                        dimension="supply_chain", severity="low", confidence="high",
+                        # Severity "info": measured on the corpus, this fires at
+                        # 0.0x on deliberately vulnerable Python relative to
+                        # well-maintained Python. It does not discriminate, so it
+                        # is reported for completeness and scores zero.
+                        dimension="supply_chain", severity="info", confidence="high",
                         repo_id=f.repo_id, probe="supply_chain",
                         location=Location(path=f.path, start_line=i),
                         description="An unpinned requirement makes builds non-reproducible. Note that "
@@ -780,7 +784,10 @@ def probe_supply_chain(ctx: ProbeContext) -> list[Finding]:
                         out.append(Finding(
                             rule_id="arbiter/supply.unpinned-npm-dep",
                             title=f"Floating version range on `{name}` ({spec})",
-                            dimension="supply_chain", severity="low", confidence="high",
+                            # Severity "info": 0.68/kloc on well-maintained Node
+                            # vs 0.73/kloc on deliberately vulnerable Node — a
+                            # ratio of 1.1x, which is no signal at all.
+                            dimension="supply_chain", severity="info", confidence="high",
                             repo_id=f.repo_id, probe="supply_chain",
                             location=Location(path=f.path, logical=f"{section}.{name}"),
                             description="A caret or tilde range resolves differently over time.",
@@ -798,6 +805,8 @@ def probe_supply_chain(ctx: ProbeContext) -> list[Finding]:
                 out.append(Finding(
                     rule_id="arbiter/supply.unpinned-action",
                     title=f"Action `{action}` pinned to a mutable ref (`{ref}`)",
+                    # Stays at "low": unlike the package-manager rules, this one
+                    # discriminates — 4.3x on Node, 219x on CloudFormation.
                     dimension="supply_chain", severity="low", confidence="high",
                     repo_id=f.repo_id, probe="supply_chain",
                     location=Location(path=f.path, start_line=_line_of(text, m.start())),
