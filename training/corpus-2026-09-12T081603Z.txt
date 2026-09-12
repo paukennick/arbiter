@@ -1,0 +1,56 @@
+
+  REPO                STACK          KIND            LOC  FIND CRIT HIGH  MED  LOW    SEC
+  cdk-examples        aws_cdk        clean        113823  1174    0    0   23 1151   7.73
+  cfn-templates       cloudformation clean         91581    50    0    0   23   27   3.07
+  cpp-json            cpp            clean        200229   145    0    0    8  137   8.56
+  compose-awesome     docker         clean        129791   117    0    2    0  115   1.01
+  go-cobra            go             clean         19922    34    0    0    0   34   0.37
+  tf-provider-rand    go             clean         22527    18    0    0    1   16    0.6
+  java-gson           java           clean         62262    27    0    0    3   24   1.71
+  express             javascript     clean         26703    40    0    0    0   40   0.54
+  k8s-examples        kubernetes     clean         25230   812    0   12  420  380   0.71
+  helm-charts         kubernetes     clean        235781    54    0    1   47    6  12.69
+  php-guzzle          php            clean         74752    12    0    0    1   11   1.76
+  requests            python         clean         19462    28    0    0    4   24   0.63
+  pipx                python         clean         42504    16    0    0    0   16   1.15
+  flask               python         clean         36647    10    0    0    0   10    0.5
+  r-stringr           r              clean         12596    20    0    0    0   20   0.15
+  ruby-sinatra        ruby           clean         31145    10    0    0    3    7   1.22
+  rust-ripgrep        rust           clean         77149    29    0    0    0   29   2.03
+  shell-nvm           shell          clean         28204    78    0    0    5   73   0.63
+  tf-aws-s3-bucket    terraform      clean          9298    15    0    0    0   14   0.14
+  tf-aws-iam          terraform      clean         12122    14    0    0    0   13   0.15
+  tf-aws-vpc          terraform      clean         19435    17    0    0    0   16   0.33
+  ts-zod              typescript     clean        144794   170    0    0    3  167   6.09
+  cfngoat             cloudformation vulnerable     2085     9    2    1    1    5    0.1
+  kustomizegoat       kubernetes     vulnerable      359    12    0    0    3    9   0.03
+  nodegoat            node           vulnerable    34375    42    1    0    3   38   0.19
+  nodejs-goof         node           vulnerable    31304    36    0    1    4   31   0.33
+  terragoat           terraform      vulnerable    32946   132    4   16   11  100   0.19
+
+  clean: 2890 findings over 1,435,957 lines = 2.01 per KLOC
+
+  vulnerable: 231 findings over 101,069 lines = 2.29 per KLOC
+
+  NOISIEST RULES ON WELL-MAINTAINED CODE
+  (every one of these is a candidate false positive)
+     1076 clean    119 vulnerable   arbiter/supply.unpinned-npm-dep
+      250 clean      0 vulnerable   arbiter/supply.unpinned-python-dep
+      146 clean     30 vulnerable   arbiter/supply.unpinned-action
+      139 clean      1 vulnerable   arbiter/ast.function-too-long
+      135 clean      2 vulnerable   arbiter/drift.broken-doc-link
+      130 clean      1 vulnerable   arbiter/ast.high-complexity
+      127 clean      2 vulnerable   arbiter/resource.k8s-privilege-escalation-not-disabled
+      127 clean      2 vulnerable   arbiter/resource.k8s-not-run-as-non-root
+      127 clean      2 vulnerable   arbiter/resource.k8s-writable-root-filesystem
+      127 clean      2 vulnerable   arbiter/resource.k8s-capabilities-not-dropped
+      113 clean      2 vulnerable   arbiter/resource.k8s-no-security-context
+      105 clean      2 vulnerable   arbiter/drift.doc-references-missing-file
+      103 clean      2 vulnerable   arbiter/resource.k8s-no-resource-limits
+       74 clean      0 vulnerable   arbiter/quality.file-too-long
+       24 clean      0 vulnerable   arbiter/ast.deep-nesting
+       16 clean     13 vulnerable   arbiter/secrets.assigned-credential
+       10 clean      0 vulnerable   arbiter/secrets.pg-url
+        8 clean      0 vulnerable   arbiter/supply.pull-request-target
+
+  wrote /home/claude/arbiter/training/corpus-2026-09-12T081603Z/summary.json
