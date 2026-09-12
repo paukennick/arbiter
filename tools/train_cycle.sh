@@ -31,7 +31,7 @@ STAMP="$(date -u +%Y-%m-%dT%H%M%SZ)"
 cd "$ROOT"
 mkdir -p "$RESULTS" .arbiter
 
-echo "==> 1/8  practice repositories"
+echo "==> 1/9  practice repositories"
 if [ ! -d "$CORPUS" ] || [ -z "$(ls -A "$CORPUS" 2>/dev/null)" ]; then
   echo "    downloading (first run only, a few minutes)"
   bash "$ROOT/tools/fetch_corpus.sh" "$CORPUS"
@@ -39,16 +39,16 @@ else
   echo "    already present: $(ls -1 "$CORPUS" | wc -l) repositories"
 fi
 
-echo "==> 2/8  running every rule against them"
+echo "==> 2/9  running every rule against them"
 python tools/corpus.py --root "$CORPUS" --out "$RESULTS/corpus-$STAMP" \
   | tee "$RESULTS/corpus-$STAMP.txt" | tail -20
 
-echo "==> 3/8  measuring whether each rule separates good code from broken code"
+echo "==> 3/9  measuring whether each rule separates good code from broken code"
 python tools/discriminate.py --root "$CORPUS" \
   --out "$RESULTS/discriminate-$STAMP.json" \
   | tee "$RESULTS/discriminate-$STAMP.txt" | tail -24
 
-echo "==> 3b/8  measuring the external tools' own checks"
+echo "==> 3b/9  measuring the external tools' own checks"
 # Only when the tools are actually installed. A missing analyzer is a coverage
 # fact the scan already records; it is not a reason to fail the cycle.
 if command -v checkov >/dev/null 2>&1 || command -v bandit >/dev/null 2>&1; then
@@ -60,24 +60,45 @@ else
   echo "    no external analyzers installed — skipped"
 fi
 
-echo "==> 4/8  planting known faults ($TRIALS trials)"
+echo "==> 4/9  planting known faults ($TRIALS trials)"
 python tools/inject.py --corpus "$CORPUS" --trials "$TRIALS" \
   --knowledge .arbiter/knowledge.json \
   | tee "$RESULTS/injection-$STAMP.txt" | tail -24
 
-echo "==> 5/8  checking the tool never overclaims"
+echo "==> 5/9  checking the tool never overclaims"
 python tools/integrity.py --probes 5 | tee "$RESULTS/integrity-$STAMP.txt" | tail -12
 
-echo "==> 6/8  test suite"
+echo "==> 6/9  test suite"
 python -m pytest tests/ -q | tail -3
 
-echo "==> 7/8  working out what to do next"
+echo "==> 6b/9  mining real before/after pairs from repository history"
+# The only ground truth in the whole system the tool did not generate itself:
+# a commit where a maintainer changed code a rule fired on, after which it
+# stopped firing. Bounded, because scanning history is slow.
+python tools/fixpairs.py --root "$CORPUS" --commits "${FIXPAIR_COMMITS:-30}" \
+  --out training/fix-pairs.json \
+  | tee "$RESULTS/fixpairs-$STAMP.txt" | tail -14 || true
+
+echo "==> 6c/9  finding where the tools disagree"
+# Where two independent analyzers looked at the same line and reached
+# different conclusions, exactly one is wrong -- which makes those the
+# highest-yield findings to put in front of a person.
+if command -v checkov >/dev/null 2>&1; then
+  python tools/disagree.py "$CORPUS"/terragoat "$CORPUS"/kubernetes-goat \
+    --out training/disagreements.json \
+    --queue "$RESULTS/contested-$STAMP.html" \
+    | tee "$RESULTS/disagree-$STAMP.txt" | tail -16 || true
+else
+  echo "    no external analyzers installed — nothing to disagree with"
+fi
+
+echo "==> 7/9  working out what to do next"
 python tools/worklist.py \
   --corpus-summary "$RESULTS/corpus-$STAMP/summary.json" \
   --discrimination "$RESULTS/discriminate-$STAMP.json" \
   --out "$RESULTS/WORKLIST.md"
 
-echo "==> 8/8  results"
+echo "==> 9/9  results"
 if [ "${PUSH:-0}" = "1" ]; then
   git add -A .arbiter training
   if git diff --cached --quiet; then
