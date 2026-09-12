@@ -1,0 +1,23 @@
+name = "gitleaks"
+dimensions = ["security"]
+checks = 150
+
+[requires]
+binaries = ["gitleaks"]
+network = false
+timeout = 300
+
+[invoke]
+argv = ["gitleaks", "detect", "--no-git", "--no-banner", "--report-format", "json", "--report-path", "/dev/stdout", "-s", "{workdir}"]
+version_argv = ["gitleaks", "version"]
+parse = "json"
+ok_exit = [0, 1]
+
+[map]
+findings = "$"
+rule_id = "RuleID"
+title = "Description"
+path = "File"
+line = "StartLine"
+severity_const = "critical"
+dimension = "security"

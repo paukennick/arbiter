@@ -1,0 +1,275 @@
+"""Core data model for Arbiter.
+
+Everything in the pipeline speaks Finding. Probes produce them, adapters
+normalize into them, reporters render them, and the A/B harness matches on
+their fingerprints.
+"""
+from __future__ import annotations
+
+import hashlib
+import re
+from dataclasses import dataclass, field, asdict
+from typing import Any
+
+SCHEMA_VERSION = "1.0"
+
+SEVERITIES = ["critical", "high", "medium", "low", "info"]
+SEV_RANK = {s: i for i, s in enumerate(SEVERITIES)}
+SEV_WEIGHT = {"critical": 40.0, "high": 16.0, "medium": 5.0, "low": 1.5, "info": 0.0}
+CONFIDENCE_FACTOR = {"high": 1.0, "medium": 0.6, "low": 0.3}
+
+DIMENSIONS = ["security", "compliance", "quality", "drift", "interface", "supply_chain"]
+
+# SARIF only has error/warning/note/none
+SARIF_LEVEL = {
+    "critical": "error",
+    "high": "error",
+    "medium": "warning",
+    "low": "note",
+    "info": "note",
+}
+
+
+def sev_at_least(sev: str, threshold: str) -> bool:
+    """True when `sev` is as severe as `threshold` or worse."""
+    if threshold not in SEV_RANK:
+        return False
+    return SEV_RANK.get(sev, 99) <= SEV_RANK[threshold]
+
+
+_WS = re.compile(r"\s+")
+
+
+def normalize_snippet(text: str) -> str:
+    """Collapse whitespace and case so cosmetic edits don't churn fingerprints.
+
+    Digits and punctuation are deliberately preserved: a changed port number or
+    CIDR is a different finding, not the same one moved.
+    """
+    return _WS.sub(" ", (text or "").strip()).lower()
+
+
+@dataclass
+class Location:
+    path: str = ""
+    start_line: int = 0
+    end_line: int = 0
+    start_col: int = 0
+    end_col: int = 0
+    logical: str = ""  # resource address, symbol, or logical ID
+    repo_id: str = ""  # set on cross-repo findings so related sites stay attributable
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+    def short(self) -> str:
+        prefix = f"{self.repo_id}:" if self.repo_id else ""
+        if not self.path:
+            return prefix + (self.logical or "-")
+        if self.start_line:
+            return f"{prefix}{self.path}:{self.start_line}"
+        return prefix + self.path
+
+
+@dataclass
+class Finding:
+    rule_id: str
+    title: str
+    dimension: str = "quality"
+    severity: str = "medium"
+    confidence: str = "high"
+    provenance: str = "deterministic"  # deterministic | inferred | hybrid
+    repo_id: str = "root"
+    location: Location = field(default_factory=Location)
+    description: str = ""
+    remediation: str = ""
+    evidence: str = ""
+    probe: str = ""
+    probe_version: str = ""
+    controls: list[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
+    related: list[Location] = field(default_factory=list)  # interface findings cite both sides
+    status: str = "new"  # new | existing | fixed
+    suppressed: bool = False
+    suppression_reason: str = ""
+    id: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.id:
+            self.id = self.fingerprint()
+
+    def fingerprint(self) -> str:
+        """Stable identity that survives line shifts.
+
+        Deliberately excludes line numbers. Reformatting a file must not
+        invalidate a baseline, or the 'new findings only' gate becomes noise
+        and people switch it off.
+        """
+        parts = [
+            self.rule_id,
+            self.repo_id,
+            self.location.path,
+            self.location.logical,
+            normalize_snippet(self.evidence)[:200],
+        ]
+        digest = hashlib.sha256("␟".join(parts).encode("utf-8")).hexdigest()
+        return "f:" + digest[:12]
+
+    def weight(self) -> float:
+        return SEV_WEIGHT.get(self.severity, 1.0) * CONFIDENCE_FACTOR.get(self.confidence, 1.0)
+
+    def to_dict(self) -> dict:
+        d = asdict(self)
+        d["location"] = self.location.to_dict()
+        d["related"] = [r.to_dict() if isinstance(r, Location) else r for r in self.related]
+        return d
+
+    @staticmethod
+    def from_dict(d: dict) -> "Finding":
+        loc = d.get("location") or {}
+        related = [Location(**r) for r in (d.get("related") or [])]
+        known = {
+            k: v
+            for k, v in d.items()
+            if k not in ("location", "related") and k in Finding.__dataclass_fields__
+        }
+        known["location"] = Location(**{k: v for k, v in loc.items() if k in Location.__dataclass_fields__})
+        known["related"] = related
+        return Finding(**known)
+
+
+@dataclass
+class ProbeOutcome:
+    """Why a probe did or did not contribute. Absence of findings is only a
+    pass when status == 'ran'."""
+
+    name: str
+    status: str = "ran"  # ran | skipped | error
+    reason: str = ""
+    version: str = ""
+    duration_s: float = 0.0
+    finding_count: int = 0
+    dimensions: list[str] = field(default_factory=list)
+    checks: int = 1  # declared rule classes, used for coverage accounting
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
+class RepoInfo:
+    id: str = "root"
+    path: str = ""
+    source: str = ""
+    role: str = ""
+    commit: str = ""
+    files: int = 0
+    loc: int = 0
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
+class DimensionScore:
+    dimension: str
+    score: float = 100.0
+    coverage: float = 0.0
+    findings: int = 0
+    checks_run: int = 0
+    checks_applicable: int = 0
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
+class Scorecard:
+    dimensions: dict[str, DimensionScore] = field(default_factory=dict)
+    overall: float | None = None
+    coverage: float = 0.0
+    withheld: bool = False
+    withheld_reason: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            "dimensions": {k: v.to_dict() for k, v in self.dimensions.items()},
+            "overall": self.overall,
+            "coverage": self.coverage,
+            "withheld": self.withheld,
+            "withheld_reason": self.withheld_reason,
+        }
+
+
+@dataclass
+class Report:
+    system: str = "default"
+    schema_version: str = SCHEMA_VERSION
+    arbiter_version: str = "0.1.0"
+    profile: str = "offline"
+    started_at: str = ""
+    duration_s: float = 0.0
+    repos: list[RepoInfo] = field(default_factory=list)
+    findings: list[Finding] = field(default_factory=list)
+    probes: list[ProbeOutcome] = field(default_factory=list)
+    scorecard: Scorecard = field(default_factory=Scorecard)
+    stacks: list[str] = field(default_factory=list)
+    gate: dict = field(default_factory=dict)
+    # Every assertion this report makes, with the basis it rests on, plus the
+    # result of checking them. See claims.py.
+    claims: list[dict] = field(default_factory=list)
+    integrity: dict = field(default_factory=dict)
+    # Which knowledge version this run used, and what it changed. Determinism
+    # is (commit, config, knowledge_version) -> identical bytes.
+    learning: dict = field(default_factory=dict)
+
+    def active(self) -> list[Finding]:
+        return [f for f in self.findings if not f.suppressed]
+
+    def to_dict(self) -> dict:
+        return {
+            "schema_version": self.schema_version,
+            "arbiter_version": self.arbiter_version,
+            "system": self.system,
+            "profile": self.profile,
+            "started_at": self.started_at,
+            "duration_s": round(self.duration_s, 3),
+            "stacks": self.stacks,
+            "repos": [r.to_dict() for r in self.repos],
+            "probes": [p.to_dict() for p in self.probes],
+            "scorecard": self.scorecard.to_dict(),
+            "gate": self.gate,
+            "claims": self.claims,
+            "integrity": self.integrity,
+            "learning": self.learning,
+            "findings": [f.to_dict() for f in self.findings],
+        }
+
+    @staticmethod
+    def from_dict(d: dict) -> "Report":
+        r = Report()
+        r.schema_version = d.get("schema_version", SCHEMA_VERSION)
+        r.arbiter_version = d.get("arbiter_version", "")
+        r.system = d.get("system", "default")
+        r.profile = d.get("profile", "")
+        r.started_at = d.get("started_at", "")
+        r.duration_s = d.get("duration_s", 0.0)
+        r.stacks = d.get("stacks", [])
+        r.repos = [RepoInfo(**x) for x in d.get("repos", [])]
+        r.probes = [ProbeOutcome(**x) for x in d.get("probes", [])]
+        r.findings = [Finding.from_dict(x) for x in d.get("findings", [])]
+        r.gate = d.get("gate", {})
+        r.claims = d.get("claims", [])
+        r.integrity = d.get("integrity", {})
+        r.learning = d.get("learning", {})
+        sc = d.get("scorecard") or {}
+        card = Scorecard(
+            overall=sc.get("overall"),
+            coverage=sc.get("coverage", 0.0),
+            withheld=sc.get("withheld", False),
+            withheld_reason=sc.get("withheld_reason", ""),
+        )
+        for k, v in (sc.get("dimensions") or {}).items():
+            card.dimensions[k] = DimensionScore(**v)
+        r.scorecard = card
+        return r

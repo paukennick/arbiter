@@ -1,0 +1,55 @@
+# Arbiter evaluating itself.
+version: 1
+profile: offline
+
+gate:
+  fail_on:
+    severity: critical
+    new: high
+  gate_on_inferred: false
+
+quality:
+  max_file_lines: 900
+  max_function_lines: 140
+
+suppress:
+  # The fixtures ARE the defects. Suppressing them here is the point of the
+  # feature: findings stay visible in the report, marked and attributed,
+  # rather than being deleted from the corpus.
+  - rule: "arbiter/*"
+    path: "fixtures/**"
+    reason: "planted defects — this is the golden-fixture test corpus"
+    expires: 2099-01-01
+  - rule: "checkov/*"
+    path: "fixtures/**"
+    reason: "planted defects — this is the golden-fixture test corpus"
+    expires: 2099-01-01
+  - rule: "arbiter/secrets.*"
+    path: "tests/**"
+    reason: "the test asserts on the AWS documentation example key, which is not live"
+    expires: 2099-01-01
+
+rules:
+  - id: readme-present
+    type: file_exists
+    paths: ["README.md"]
+    title: "README.md is required at the repository root"
+    severity: medium
+
+  - id: no-debug-prints-in-engine
+    type: content_match
+    files: "src/arbiter/engine.py"
+    pattern: "breakpoint\\(\\)"
+    forbid: true
+    title: "Debugger breakpoint left in the engine"
+    severity: high
+
+  - id: no-bare-except
+    type: ast_query
+    languages: [python]
+    files: "src/**/*.py"
+    query: "(except_clause) @hit"
+    title: "Bare or broad except clause"
+    description: "Structural check: catches the clause wherever it is formatted."
+    remediation: "Catch the specific exception, or re-raise after handling."
+    severity: low

@@ -1,0 +1,30 @@
+name = "bandit"
+dimensions = ["security"]
+checks = 35
+selects = { stacks = ["python"] }
+
+[requires]
+binaries = ["bandit"]
+network = false
+timeout = 300
+
+[invoke]
+argv = ["bandit", "-r", "{workdir}", "-f", "json", "-q"]
+version_argv = ["bandit", "--version"]
+parse = "json"
+ok_exit = [0, 1]
+
+[map]
+findings = "$.results[*]"
+rule_id = "test_id"
+title = "issue_text"
+path = "filename"
+line = "line_number"
+severity = "issue_severity"
+severity_default = "medium"
+dimension = "security"
+
+[map.severity_table]
+high = "high"
+medium = "medium"
+low = "low"

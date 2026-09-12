@@ -1,0 +1,24 @@
+name = "ruff"
+dimensions = ["quality"]
+checks = 40
+selects = { stacks = ["python"] }
+
+[requires]
+binaries = ["ruff"]
+network = false
+timeout = 240
+
+[invoke]
+argv = ["ruff", "check", "--output-format", "json", "--no-cache", "--exit-zero", "{workdir}"]
+version_argv = ["ruff", "--version"]
+parse = "json"
+ok_exit = [0, 1]
+
+[map]
+findings = "$"
+rule_id = "code"
+title = "message"
+path = "filename"
+line = "location.row"
+severity_const = "low"
+dimension = "quality"

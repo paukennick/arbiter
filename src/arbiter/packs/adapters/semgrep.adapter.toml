@@ -1,0 +1,29 @@
+name = "semgrep"
+dimensions = ["security", "quality"]
+checks = 60
+
+[requires]
+binaries = ["semgrep"]
+network = true
+timeout = 600
+
+[invoke]
+argv = ["semgrep", "scan", "--json", "--quiet", "--config", "auto", "{workdir}"]
+version_argv = ["semgrep", "--version"]
+parse = "json"
+ok_exit = [0, 1]
+
+[map]
+findings = "$.results[*]"
+rule_id = "check_id"
+title = "extra.message"
+path = "path"
+line = "start.line"
+severity = "extra.severity"
+severity_default = "medium"
+dimension = "security"
+
+[map.severity_table]
+error = "high"
+warning = "medium"
+info = "low"

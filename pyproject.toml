@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arbiter-eval"
+version = "0.1.0"
+description = "Polyglot repository and system evaluator: security, compliance, quality, drift and cross-repo interfaces"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+dependencies = [
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+ast = ["tree-sitter>=0.23", "tree-sitter-language-pack>=0.9"]
+tools = ["ruff", "bandit", "checkov", "semgrep"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+arbiter = "arbiter.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+arbiter = ["packs/**/*.yaml", "packs/**/*.toml", "packs/**/*.adapter.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
