@@ -214,6 +214,13 @@ class Report:
     probes: list[ProbeOutcome] = field(default_factory=list)
     scorecard: Scorecard = field(default_factory=Scorecard)
     stacks: list[str] = field(default_factory=list)
+    # Lines of code broken out by language, and by file role. Without this, the
+    # only available denominator is whole-repo size, which makes a rule that
+    # applies to Kubernetes manifests look spotless in a 400,000-line Go
+    # repository that happens to contain forty of them. A rate is only
+    # meaningful against the code the rule could have fired on.
+    loc_by_language: dict[str, int] = field(default_factory=dict)
+    loc_by_role: dict[str, int] = field(default_factory=dict)
     gate: dict = field(default_factory=dict)
     # Every assertion this report makes, with the basis it rests on, plus the
     # result of checking them. See claims.py.
@@ -235,6 +242,8 @@ class Report:
             "started_at": self.started_at,
             "duration_s": round(self.duration_s, 3),
             "stacks": self.stacks,
+            "loc_by_language": self.loc_by_language,
+            "loc_by_role": self.loc_by_role,
             "repos": [r.to_dict() for r in self.repos],
             "probes": [p.to_dict() for p in self.probes],
             "scorecard": self.scorecard.to_dict(),

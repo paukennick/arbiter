@@ -26,7 +26,7 @@ STAMP="$(date -u +%Y-%m-%dT%H%M%SZ)"
 cd "$ROOT"
 mkdir -p "$RESULTS" .arbiter
 
-echo "==> 1/6  practice repositories"
+echo "==> 1/7  practice repositories"
 if [ ! -d "$CORPUS" ] || [ -z "$(ls -A "$CORPUS" 2>/dev/null)" ]; then
   echo "    downloading (first run only, a few minutes)"
   bash "$ROOT/tools/fetch_corpus.sh" "$CORPUS"
@@ -34,22 +34,27 @@ else
   echo "    already present: $(ls -1 "$CORPUS" | wc -l) repositories"
 fi
 
-echo "==> 2/6  running every rule against them"
+echo "==> 2/7  running every rule against them"
 python tools/corpus.py --root "$CORPUS" --out "$RESULTS/corpus-$STAMP" \
   | tee "$RESULTS/corpus-$STAMP.txt" | tail -20
 
-echo "==> 3/6  planting known faults ($TRIALS trials)"
+echo "==> 3/7  measuring whether each rule separates good code from broken code"
+python tools/discriminate.py --root "$CORPUS" \
+  --out "$RESULTS/discriminate-$STAMP.json" \
+  | tee "$RESULTS/discriminate-$STAMP.txt" | tail -24
+
+echo "==> 4/7  planting known faults ($TRIALS trials)"
 python tools/inject.py --corpus "$CORPUS" --trials "$TRIALS" \
   --knowledge .arbiter/knowledge.json \
   | tee "$RESULTS/injection-$STAMP.txt" | tail -24
 
-echo "==> 4/6  checking the tool never overclaims"
+echo "==> 5/7  checking the tool never overclaims"
 python tools/integrity.py --probes 5 | tee "$RESULTS/integrity-$STAMP.txt" | tail -12
 
-echo "==> 5/6  test suite"
+echo "==> 6/7  test suite"
 python -m pytest tests/ -q | tail -3
 
-echo "==> 6/6  results"
+echo "==> 7/7  results"
 if [ "${PUSH:-0}" = "1" ]; then
   git add -A .arbiter training
   if git diff --cached --quiet; then
