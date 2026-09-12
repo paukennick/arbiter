@@ -1310,3 +1310,554 @@ def test_worklist_raises_the_gap_only_a_person_can_close(tmp_path):
     reviewed = dict(know, adjudicated={"f:abcd": {"verdict": "true_positive"}})
     assert header not in _worklist(
         tmp_path, corpus={"rows": []}, disc={"rows": []}, knowledge=reviewed)
+
+
+# ---------------------------------------------------------------------------
+# Control coverage.
+#
+# The failure mode this guards against is the one every compliance scanner
+# has: reporting "87% compliant" where most of that 87% is controls nothing
+# ever looked at. A control with no evidence must never read as a pass.
+# ---------------------------------------------------------------------------
+
+def _fw(tmp_path, controls, declared=100):
+    from arbiter.controls import load_pack
+    import yaml as _yaml
+    p = tmp_path / "f.yaml"
+    p.write_text(_yaml.safe_dump({
+        "framework": {"id": "TEST", "title": "Test", "declared_controls": declared},
+        "controls": controls,
+    }))
+    return load_pack(p)
+
+
+def _outcome(name, status="ran", applicable=True, reason=""):
+    from arbiter.core import ProbeOutcome
+    return ProbeOutcome(name=name, status=status, applicable=applicable, reason=reason)
+
+
+def test_a_control_nothing_checked_is_never_a_pass(tmp_path):
+    from arbiter.controls import NOT_ASSESSED, evaluate
+    fw = _fw(tmp_path, [{"id": "SC-28", "automatable": "partial",
+                         "satisfied_by": ["arbiter/resource.unencrypted-database"]}])
+    # the probe was prevented from running — not inapplicable, prevented
+    res = evaluate(fw, [], [_outcome("resource_policy", "skipped", applicable=True,
+                                     reason="missing binary")])
+    assert res["controls"][0]["state"] == NOT_ASSESSED
+    assert res["counts"]["satisfied"] == 0
+
+
+def test_a_control_whose_checks_ran_clean_is_satisfied(tmp_path):
+    from arbiter.controls import SATISFIED, evaluate
+    fw = _fw(tmp_path, [{"id": "SC-28", "automatable": "partial",
+                         "satisfied_by": ["arbiter/resource.unencrypted-database"]}])
+    res = evaluate(fw, [], [_outcome("resource_policy")])
+    assert res["controls"][0]["state"] == SATISFIED
+
+
+def test_a_fired_check_violates_its_control(tmp_path):
+    from arbiter.controls import VIOLATED, evaluate
+    fw = _fw(tmp_path, [{"id": "SC-28", "automatable": "partial",
+                         "satisfied_by": ["arbiter/resource.unencrypted-database"]}])
+    f = Finding(rule_id="arbiter/resource.unencrypted-database", title="x",
+                location=Location(path="a.tf"))
+    res = evaluate(fw, [f], [_outcome("resource_policy")])
+    assert res["controls"][0]["state"] == VIOLATED
+    assert res["controls"][0]["evidence"] == [f.id]
+
+
+def test_an_unknown_value_is_not_assessed_not_satisfied(tmp_path):
+    """A Terraform plan's after_unknown means the check could not conclude.
+    Treating that as a pass is exactly how a scanner reports an encrypted
+    bucket as compliant when it has no idea."""
+    from arbiter.controls import NOT_ASSESSED, evaluate
+    fw = _fw(tmp_path, [{"id": "SC-28", "automatable": "partial",
+                         "satisfied_by": ["arbiter/resource.unencrypted-database"]}])
+    na = Finding(rule_id="arbiter/resource.unencrypted-database.not-assessed",
+                 title="cannot evaluate", severity="info", location=Location(path="a.tf"))
+    res = evaluate(fw, [na], [_outcome("resource_policy")])
+    assert res["controls"][0]["state"] == NOT_ASSESSED
+    assert "undetermined" in res["controls"][0]["reason"]
+
+
+def test_an_inapplicable_check_is_not_a_gap(tmp_path):
+    """bandit not running against a Terraform-only repository is not a hole in
+    the assessment of 'review human-readable code'. There is no Python."""
+    from arbiter.controls import NO_COVERAGE, SATISFIED, evaluate
+    fw = _fw(tmp_path, [
+        {"id": "A", "automatable": "partial", "satisfied_by": ["bandit/B105"]},
+        {"id": "B", "automatable": "partial",
+         "satisfied_by": ["bandit/B105", "arbiter/resource.unencrypted-database"]},
+    ])
+    outcomes = [_outcome("bandit", "skipped", applicable=False, reason="no python detected"),
+                _outcome("resource_policy")]
+    states = {r["id"]: r["state"] for r in evaluate(fw, [], outcomes)["controls"]}
+    # every covering check inapplicable -> no coverage for this target
+    assert states["A"] == NO_COVERAGE
+    # one inapplicable, one ran clean -> satisfied on the applicable one
+    assert states["B"] == SATISFIED
+
+
+def test_procedural_controls_are_marked_not_automatable(tmp_path):
+    """Personnel screening is not a failure and not a pass. Reporting it as
+    either is dishonest; it belongs to a human assessor."""
+    from arbiter.controls import NOT_AUTOMATABLE, evaluate
+    fw = _fw(tmp_path, [{"id": "PS-3", "automatable": "none", "satisfied_by": []}])
+    r = evaluate(fw, [], [])["controls"][0]
+    assert r["state"] == NOT_AUTOMATABLE
+    assert "no static analyzer" in r["reason"]
+
+
+def test_coverage_is_measured_against_the_real_baseline_size(tmp_path):
+    """A pack that enumerates the three controls it covers must not report
+    100% coverage. The denominator is the framework's actual size."""
+    from arbiter.controls import evaluate
+    fw = _fw(tmp_path, [{"id": "SC-28", "automatable": "partial",
+                         "satisfied_by": ["arbiter/resource.unencrypted-database"]}],
+             declared=323)
+    res = evaluate(fw, [], [_outcome("resource_policy")])
+    assert res["declared_total"] == 323
+    assert res["not_enumerated"] == 322
+    assert res["assessed_fraction"] == round(1 / 323, 4)
+
+
+def test_shipped_packs_all_declare_a_real_baseline_size(tmp_path):
+    """Every pack must state how big its framework actually is, or its
+    coverage figure is meaningless."""
+    from arbiter.controls import load_frameworks
+    fws = load_frameworks()
+    assert len(fws) >= 5
+    for fw in fws:
+        assert fw.declared_controls > 0, f"{fw.id} declares no baseline size"
+        assert fw.declared_source, f"{fw.id} cites no source for its baseline size"
+        assert fw.enumerated <= fw.declared_controls, f"{fw.id} enumerates more than it declares"
+
+
+def test_shipped_packs_say_what_a_person_must_still_check(tmp_path):
+    """An automatable control that claims no residual is claiming a scan
+    fully discharges it, which is never true."""
+    from arbiter.controls import load_frameworks
+    for fw in load_frameworks():
+        for c in fw.controls:
+            assert c.residual, f"{fw.id}:{c.id} does not say what remains for a person"
+            if c.automatable != "none":
+                assert c.satisfied_by, f"{fw.id}:{c.id} claims automatable with no checks"
+                assert c.machine_scope, f"{fw.id}:{c.id} does not say what it can establish"
+
+
+def test_shipped_packs_reference_rules_that_exist(tmp_path):
+    """A mapping to a rule id that no longer exists silently becomes a control
+    that can never be violated — a permanent false pass."""
+    import sys as _sys
+    _sys.path.insert(0, str(ROOT / "src"))
+    from arbiter.controls import load_frameworks
+    from arbiter.probes import _load_resource_rules
+    known = {f"arbiter/resource.{r['id']}" for r in _load_resource_rules()}
+    # Several native rules are emitted directly from probes.py rather than
+    # declared in the YAML pack, so the rule pack alone is not the full set.
+    import re as _re
+    src = (ROOT / "src" / "arbiter" / "probes.py").read_text()
+    known |= set(_re.findall(r'rule_id=f?"(arbiter/[a-z_]+\.[a-z0-9.-]+)"', src))
+    src_seams = (ROOT / "src" / "arbiter" / "probes.py").read_text()
+    known |= set(_re.findall(r'"(arbiter/interface\.[a-z-]+)"', src_seams))
+    unknown = []
+    for fw in load_frameworks():
+        for c in fw.controls:
+            for ch in c.satisfied_by:
+                if ch.startswith("arbiter/resource.") and ch not in known:
+                    unknown.append(f"{fw.id}:{c.id} -> {ch}")
+    assert not unknown, f"control packs reference rules that do not exist: {unknown}"
+
+
+# ---------------------------------------------------------------------------
+# The judgement pass.
+#
+# The whole reason this module exists as more than a single API call is the
+# no-provider case. The easy implementation returns an empty list when there is
+# no key, and an empty list is indistinguishable from "the model looked and
+# found nothing" — so every unconfigured scan would silently report clean
+# documentation drift forever.
+# ---------------------------------------------------------------------------
+
+def test_no_provider_is_not_assessed_never_a_pass(tmp_path, monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    (tmp_path / "README.md").write_text("# App\nRuns on port 8080.\n")
+    (tmp_path / "app.py").write_text("PORT = 9090\n")
+    rep = run_scan([str(tmp_path)], dict(load_config(None), profile="connected"),
+                   only=["judgement"], use_adapters=False)
+    j = next(p for p in rep.probes if p.name == "judgement")
+    assert j.status == "skipped", "must not report as having run"
+    assert "ANTHROPIC_API_KEY" in j.reason, "must say why"
+    assert not [f for f in rep.findings if f.probe == "judgement"]
+
+
+def test_offline_profile_refuses_model_calls(tmp_path, monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-not-a-real-key")
+    (tmp_path / "README.md").write_text("# App\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["judgement"],
+                   use_adapters=False)
+    j = next(p for p in rep.probes if p.name == "judgement")
+    assert j.status == "skipped" and "forbids" in j.reason
+
+
+def test_judgement_probe_always_counts_against_coverage(tmp_path, monkeypatch):
+    """A probe that does not register never shows up as missing, which would
+    quietly flatter every scan that has no model configured."""
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    (tmp_path / "README.md").write_text("# App\n")
+    rep = run_scan([str(tmp_path)], dict(load_config(None), profile="connected"),
+                   use_adapters=False)
+    assert any(p.name == "judgement" for p in rep.probes)
+
+
+def test_inferred_findings_do_not_gate_by_default():
+    from arbiter.policy import evaluate_gate
+    from arbiter.core import Report, Scorecard
+    rep = Report()
+    rep.findings = [Finding(rule_id="arbiter/judgement.claim-contradicts-code",
+                            title="doc disagrees", severity="high",
+                            provenance="inferred", location=Location(path="README.md"))]
+    rep.scorecard = Scorecard(coverage=1.0, overall=90.0)
+    cfg = dict(load_config(None))
+    cfg["gate"] = dict(cfg.get("gate") or {}, max_severity="medium", min_coverage=0.0)
+    assert evaluate_gate(rep, cfg)["passed"], \
+        "a model's opinion must not turn a build red on its own"
+
+
+def test_a_model_naming_a_file_it_was_not_shown_is_discarded():
+    """The failure this guards is a model citing a path it half-remembers from
+    training. Such a finding points at evidence that does not exist here."""
+    from arbiter.judgement import _reconcile
+    raw = json.dumps({"findings": [
+        {"path": "README.md", "line": 3, "title": "port disagrees",
+         "detail": "README says 8080, code says 9090", "confidence": "high"},
+        {"path": "src/never/sent.py", "line": 1, "title": "invented",
+         "detail": "not a file we showed", "confidence": "high"},
+    ]})
+    out = _reconcile(raw, {"README.md"}, "root")
+    assert len(out) == 1 and out[0].location.path == "README.md"
+
+
+def test_model_confidence_never_reaches_high():
+    """Confidence stated by a model is not the same quantity as confidence
+    measured from adjudicated outcomes. Sharing a scale would be a category
+    error, so inferred findings are capped."""
+    from arbiter.judgement import _reconcile
+    raw = json.dumps({"findings": [{"path": "a.md", "title": "t", "detail": "d",
+                                    "confidence": "high"}]})
+    f = _reconcile(raw, {"a.md"}, "root")[0]
+    assert f.confidence != "high" and f.severity != "critical"
+    assert f.provenance == "inferred"
+
+
+def test_secrets_are_masked_before_leaving_the_machine():
+    from arbiter.judgement import _mask_secrets
+    text = ("aws_key = AKIAIOSFODNN7EXAMPLE\n"
+            "db_password = hunter2hunter2\n"
+            "-----BEGIN RSA PRIVATE KEY-----\nMIIC\n-----END RSA PRIVATE KEY-----\n")
+    out = _mask_secrets(text)
+    assert "AKIAIOSFODNN7EXAMPLE" not in out
+    assert "hunter2hunter2" not in out
+    assert "MIIC" not in out
+
+
+def test_malformed_model_output_yields_nothing_rather_than_crashing():
+    from arbiter.judgement import _reconcile
+    for raw in ("not json at all", "", "{", '{"findings": "wrong type"}',
+                '{"findings":[{"no_path":1}]}'):
+        assert _reconcile(raw, {"a.md"}, "root") == []
+
+
+# ---------------------------------------------------------------------------
+# Batch adjudication.
+#
+# Calibration reads the adjudicated ledger and nothing else, and that ledger
+# sat empty because adjudicating meant copying fingerprints one at a time.
+# These tests cover the sampling, which is the part that makes twenty
+# adjudications worth more than twenty random ones.
+# ---------------------------------------------------------------------------
+
+def _finding(rule, path="a.tf", line=1, evidence=""):
+    return Finding(rule_id=rule, title=f"{rule} here", evidence=evidence or f"{path}:{line}",
+                   location=Location(path=path, start_line=line))
+
+
+def test_review_prefers_rules_close_to_the_proven_threshold(tmp_path):
+    """Getting one rule from nineteen to twenty crosses a threshold. One
+    observation each on five rules crosses nothing."""
+    from arbiter.learn import Knowledge, MIN_OBSERVATIONS, RuleStats
+    from arbiter.review import select
+    k = Knowledge()
+    k.rules["arbiter/near"] = RuleStats(rule_id="arbiter/near",
+                                        true_positives=MIN_OBSERVATIONS - 1)
+    k.rules["arbiter/done"] = RuleStats(rule_id="arbiter/done",
+                                        true_positives=MIN_OBSERVATIONS + 5)
+    findings = ([_finding("arbiter/near", f"n{i}.tf") for i in range(5)]
+                + [_finding("arbiter/done", f"d{i}.tf") for i in range(5)])
+    picked = select(findings, k, limit=3)
+    assert all(f.rule_id == "arbiter/near" for f in picked), \
+        "an already-proven rule should not consume the budget"
+
+
+def test_review_spreads_across_rules_not_just_the_loudest(tmp_path):
+    from arbiter.learn import Knowledge
+    from arbiter.review import select
+    findings = ([_finding("arbiter/loud", f"l{i}.tf") for i in range(40)]
+                + [_finding("arbiter/quiet", "q.tf")])
+    picked = select(findings, Knowledge(), limit=6)
+    assert {f.rule_id for f in picked} == {"arbiter/loud", "arbiter/quiet"}
+
+
+def test_review_spreads_across_files_within_a_rule(tmp_path):
+    """Twenty samples of the same mistake in one file are not twenty
+    independent observations."""
+    from arbiter.learn import Knowledge
+    from arbiter.review import select
+    findings = ([_finding("arbiter/r", "same.tf", line=i) for i in range(10)]
+                + [_finding("arbiter/r", f"other{i}.tf") for i in range(3)])
+    picked = select(findings, Knowledge(), limit=4)
+    assert len({f.location.path for f in picked}) >= 4
+
+
+def test_review_never_re_asks_an_adjudicated_finding(tmp_path):
+    """One disputed finding must not move the statistics as many times as
+    somebody clicks."""
+    from arbiter.learn import Knowledge
+    from arbiter.review import select
+    f = _finding("arbiter/r")
+    k = Knowledge()
+    k.adjudicated[f.id] = "true_positive"
+    assert select([f], k, limit=5) == []
+
+
+def test_review_round_trip_records_marks(tmp_path):
+    from arbiter.learn import Knowledge
+    from arbiter.review import apply as apply_marks, render, select
+    findings = [_finding("arbiter/a", "a.tf"), _finding("arbiter/b", "b.tf"),
+                _finding("arbiter/c", "c.tf")]
+    k = Knowledge()
+    picked = select(findings, k, limit=3)
+    text = render(picked, k, "review.md")
+    marks = {picked[0].id: "y", picked[1].id: "n"}  # third left blank
+    out = []
+    for line in text.split("\n"):
+        for fid, mark in marks.items():
+            if line.startswith(f"[ ] {fid}"):
+                line = f"[{mark}]" + line[3:]
+        out.append(line)
+    res = apply_marks("\n".join(out), findings, k)
+    assert res["recorded"] == 2, "a blank mark must not be recorded either way"
+    assert k.rules["arbiter/a"].true_positives == 1
+    assert k.rules["arbiter/b"].false_positives == 1
+    assert "arbiter/c" not in k.rules
+
+
+def test_review_ignores_marks_for_findings_not_in_the_report(tmp_path):
+    from arbiter.learn import Knowledge
+    from arbiter.review import apply as apply_marks
+    res = apply_marks("[y] f:deadbeef1234\n", [_finding("arbiter/a")], Knowledge())
+    assert res["recorded"] == 0 and res["unknown"] == ["f:deadbeef1234"]
+
+
+def test_review_reports_which_rules_became_proven(tmp_path):
+    from arbiter.learn import Knowledge, MIN_OBSERVATIONS, RuleStats
+    from arbiter.review import apply as apply_marks, newly_proven
+    k = Knowledge()
+    k.rules["arbiter/a"] = RuleStats(rule_id="arbiter/a",
+                                     true_positives=MIN_OBSERVATIONS - 1)
+    f = _finding("arbiter/a")
+    before = {r: s.observations for r, s in k.rules.items()}
+    apply_marks(f"[y] {f.id}\n", [f], k)
+    assert newly_proven(k, before) == ["arbiter/a"]
+
+
+def test_review_can_adjudicate_external_tool_findings(tmp_path):
+    """Checkov ships no severities, so its checks are exactly the ones whose
+    precision most needs a human answer."""
+    from arbiter.learn import Knowledge
+    from arbiter.review import apply as apply_marks
+    f = _finding("checkov/CKV_AWS_16")
+    k = Knowledge()
+    apply_marks(f"[n] {f.id}\n", [f], k)
+    assert k.rules["checkov/CKV_AWS_16"].false_positives == 1
+
+
+# ---------------------------------------------------------------------------
+# Encryption by key reference.
+#
+# The worst false positive found so far: a volume encrypted with a
+# customer-managed KMS key was reported HIGH as unencrypted, because the
+# truthiness test only accepted the literal strings "true"/"yes"/"1" and a key
+# ARN is none of those. It affected every provider including AWS, and it had
+# survived every corpus run and every injection trial — the multi-cloud
+# fixture is what made it visible, because writing the CORRECT half of a
+# fixture is what exposes a rule that cannot recognise correctness.
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("tf,label", [
+    ('resource "aws_ebs_volume" "v" {\n  size = 10\n'
+     '  kms_key_id = aws_kms_key.main.arn\n}\n', "aws ebs + kms reference"),
+    ('resource "aws_db_instance" "d" {\n  storage_encrypted = true\n'
+     '  kms_key_id = "arn:aws-us-gov:kms:us-gov-west-1:1:key/abc"\n}\n', "aws rds + kms arn"),
+    ('resource "azurerm_managed_disk" "d" {\n  disk_size_gb = 10\n'
+     '  disk_encryption_set_id = azurerm_disk_encryption_set.m.id\n}\n', "azure disk"),
+    ('resource "google_compute_disk" "d" {\n  size = 10\n'
+     '  disk_encryption_key { kms_key_self_link = google_kms_crypto_key.m.id }\n}\n', "gcp disk"),
+    ('resource "google_pubsub_topic" "t" {\n'
+     '  kms_key_name = google_kms_crypto_key.m.id\n}\n', "gcp pubsub"),
+])
+def test_a_key_reference_counts_as_encryption(tmp_path, tf, label):
+    (tmp_path / "main.tf").write_text(tf)
+    found = [f for f in _scan_text(tmp_path, "x.txt", "", ["resource_policy"])
+             if "unencrypted" in f.rule_id]
+    assert not found, f"{label}: a wired-up key is what encryption looks like"
+
+
+def test_an_empty_key_reference_is_not_encryption(tmp_path):
+    """A reference to nothing wires nothing up."""
+    for val in ('""', '"none"', "null"):
+        d = tmp_path / val.strip('"')
+        d.mkdir(exist_ok=True)
+        (d / "main.tf").write_text(
+            f'resource "aws_ebs_volume" "v" {{\n  size = 10\n  kms_key_id = {val}\n}}\n')
+        found = [f for f in run_scan([str(d)], load_config(None), only=["resource_policy"],
+                                     use_adapters=False).active()
+                 if "unencrypted-volume" in f.rule_id]
+        assert found, f"kms_key_id = {val} is not a key"
+
+
+def test_a_boolean_from_a_variable_is_still_not_evidence(tmp_path):
+    """The distinction the fix has to preserve. A key reference is presence
+    evidence; a BOOLEAN read from a variable is not, because the variable may
+    be false. This is the original tfplan false positive and it must stay
+    fixed."""
+    (tmp_path / "main.tf").write_text(
+        'resource "aws_ebs_volume" "v" {\n  size = 10\n'
+        '  encrypted = var.encrypt_volumes\n}\n')
+    found = [f for f in run_scan([str(tmp_path)], load_config(None),
+                                 only=["resource_policy"], use_adapters=False).active()
+             if "unencrypted-volume" in f.rule_id]
+    assert found, "a boolean from a variable must not read as true"
+
+
+def test_multicloud_fixture_is_clean_where_it_should_be(tmp_path):
+    """The fixture's whole purpose: the correctly-configured half must produce
+    nothing. A kind mapping added without its provider's property vocabulary
+    fires on everything, and every recall number still looks perfect."""
+    rep = run_scan([str(ROOT / "fixtures" / "multicloud")], load_config(None),
+                   only=["resource_policy"], use_adapters=False)
+    wrong = [f for f in rep.active() if ".good" in f.location.logical]
+    assert not wrong, f"false positives on correct config: " \
+                      f"{[(f.location.logical, f.rule_id) for f in wrong]}"
+    broken = [f for f in rep.active() if ".bad" in f.location.logical]
+    assert len(broken) >= 8, "the deliberately-broken half must still be caught"
+    assert {f.location.logical.split("_")[0] for f in broken} >= {"azurerm", "google"}
+
+
+def test_azure_and_gcp_kinds_are_normalized():
+    from arbiter.graph import TF_KINDS
+    for native, kind in [("azurerm_managed_disk", "block_store"),
+                         ("azurerm_mssql_database", "database"),
+                         ("google_compute_disk", "block_store"),
+                         ("google_sql_database_instance", "database"),
+                         ("google_pubsub_topic", "topic")]:
+        assert TF_KINDS.get(native) == kind, native
+
+
+# ---------------------------------------------------------------------------
+# HCL forms that used to be dropped silently.
+#
+# Both of these are the same failure shape as the key-reference bug: correct
+# configuration written in a legal form the parser did not handle, discarded
+# without a word, and then reported as a missing setting. A parser that drops
+# input is worse than one that errors, because the result still looks like an
+# answer.
+# ---------------------------------------------------------------------------
+
+def test_single_line_block_is_parsed(tmp_path):
+    from arbiter.graph import parse_terraform
+    (tmp_path / "main.tf").write_text(
+        'resource "google_compute_disk" "d" {\n  size = 10\n'
+        '  disk_encryption_key { kms_key_self_link = google_kms_crypto_key.m.id }\n}\n')
+    r = parse_terraform(tmp_path / "main.tf", "main.tf", "root")[0]
+    assert r.get("disk_encryption_key.kms_key_self_link") == "google_kms_crypto_key.m.id"
+
+
+def test_inline_map_keeps_every_key(tmp_path):
+    """`tags = { Name = "x", Env = "prod" }` read as one assignment swallowed
+    every key after the first into the first one's value."""
+    from arbiter.graph import parse_terraform
+    (tmp_path / "main.tf").write_text(
+        'resource "aws_s3_bucket" "b" {\n  tags = { Name = "x", Env = "prod" }\n}\n')
+    r = parse_terraform(tmp_path / "main.tf", "main.tf", "root")[0]
+    assert r.get("tags") == {"Name": "x", "Env": "prod"}
+
+
+def test_a_comma_inside_a_string_does_not_split_it(tmp_path):
+    from arbiter.graph import parse_terraform
+    (tmp_path / "main.tf").write_text(
+        'resource "aws_s3_bucket" "b" {\n  tags = { Name = "a,b", Env = "prod" }\n}\n')
+    r = parse_terraform(tmp_path / "main.tf", "main.tf", "root")[0]
+    assert r.get("tags") == {"Name": "a,b", "Env": "prod"}
+
+
+def test_multi_line_blocks_and_lists_still_work(tmp_path):
+    """The relaxed sub-block pattern must not disturb the forms that worked."""
+    from arbiter.graph import parse_terraform
+    (tmp_path / "main.tf").write_text(
+        'resource "aws_security_group" "s" {\n'
+        '  ids = ["sg-1", "sg-2"]\n'
+        '  ingress {\n    from_port = 80\n  }\n'
+        '  ingress {\n    from_port = 443\n  }\n}\n')
+    r = parse_terraform(tmp_path / "main.tf", "main.tf", "root")[0]
+    assert r.get("ids") == ["sg-1", "sg-2"]
+    assert r.get("ingress") == [{"from_port": 80}, {"from_port": 443}]
+
+
+def test_every_report_carries_control_coverage(tmp_path):
+    """A compliance figure quoted without its denominator is the thing this
+    tool exists to stop doing, so the denominator ships in the report."""
+    (tmp_path / "main.tf").write_text(
+        'resource "aws_db_instance" "d" {\n  identifier = "x"\n}\n')
+    rep = run_scan([str(tmp_path)], load_config(None), only=["resource_policy"],
+                   use_adapters=False)
+    assert rep.controls, "no frameworks evaluated"
+    by_id = {c["framework"]: c for c in rep.controls}
+    fr = by_id["FedRAMP-Moderate-r5"]
+    assert fr["declared_total"] == 323
+    assert fr["not_enumerated"] > 250, "the unenumerated remainder must be visible"
+    assert fr["assessed_fraction"] < 0.2, \
+        "a handful of checks must never read as broad compliance"
+    d = json.loads(json.dumps(rep.to_dict()))
+    assert d["controls"][0]["counts"]["not_automatable"] >= 0
+
+
+def test_adapter_timeout_kills_the_whole_process_group(tmp_path):
+    """subprocess.run(timeout=) kills only the process it started. Checkov and
+    semgrep fan out with multiprocessing, so a timeout used to leave a pool of
+    orphaned workers competing for CPU with every scan that followed — observed
+    after checkov deadlocked on a one-million-line repository."""
+    import subprocess
+    from arbiter.adapters import Adapter
+
+    # A shell that spawns a child and then sleeps. If only the direct child is
+    # killed, the grandchild survives the timeout.
+    marker = tmp_path / "grandchild-alive"
+    # The grandchild writes a marker after two seconds. The adapter's budget is
+    # one second. If the process group really was killed the marker never
+    # appears; if only the direct child was killed, it does.
+    script = f"( sleep 2; touch {marker} ) & sleep 10"
+    a = Adapter(name="t", argv=["sh", "-c", script], timeout=1)
+    with pytest.raises(subprocess.TimeoutExpired):
+        a.invoke(str(tmp_path))
+
+    import time as _t
+    _t.sleep(3)
+    assert not marker.exists(), "a grandchild outlived the timeout and kept working"
+
+
+def test_adapter_still_returns_output_normally(tmp_path):
+    from arbiter.adapters import Adapter
+    a = Adapter(name="t", argv=["sh", "-c", "echo '{\"x\":1}'"], timeout=10)
+    out, code = a.invoke(str(tmp_path))
+    assert code == 0 and "x" in out

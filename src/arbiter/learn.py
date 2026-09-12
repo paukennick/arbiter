@@ -140,6 +140,20 @@ class Knowledge:
     profiles: dict[str, dict] = field(default_factory=dict)
     # Fingerprints a human adjudicated, so the same finding is never re-asked.
     adjudicated: dict[str, str] = field(default_factory=dict)
+    # Severities for individual checks of EXTERNAL tools, measured against the
+    # corpus by tools/calibrate_external.py.
+    #
+    # This does not breach the "learning never touches severity" rule above,
+    # and the distinction is the whole point. A native rule's severity is a
+    # deliberate policy statement and nothing here may move it. Checkov's open
+    # build reports `"severity": null` on every finding, so Arbiter was
+    # inventing `medium` for all 477 of them on a single repository. Replacing
+    # an invented constant with a measured one is not drift.
+    #
+    # It is part of the version hash like everything else, so a scan still
+    # records exactly which table it used and --pin-knowledge still fails a
+    # run if the table moved underneath it.
+    external_severity: dict[str, str] = field(default_factory=dict)
 
     # -- identity ---------------------------------------------------------
     def version_hash(self) -> str:
@@ -154,6 +168,7 @@ class Knowledge:
             "rules": {k: v.to_dict() for k, v in sorted(self.rules.items())},
             "profiles": self.profiles,
             "adjudicated": self.adjudicated,
+            "external_severity": self.external_severity,
         }
         if include_hash:
             d["version"] = self.version_hash()
@@ -166,6 +181,7 @@ class Knowledge:
             updated=d.get("updated", ""),
             profiles=d.get("profiles") or {},
             adjudicated=d.get("adjudicated") or {},
+            external_severity=d.get("external_severity") or {},
         )
         for rule_id, raw in (d.get("rules") or {}).items():
             k.rules[rule_id] = RuleStats(
@@ -270,7 +286,19 @@ def apply(findings: list[Finding], knowledge: Knowledge) -> dict:
     """
     changed = 0
     annotated = 0
+    graded = 0
     for f in findings:
+        # External checks first. These arrive carrying a severity Arbiter's
+        # adapter manifest invented, because the tool supplied none — every
+        # Checkov finding is "medium" whether it is a public S3 bucket or a
+        # missing transfer-acceleration setting. Where the corpus has measured
+        # the check, that measurement replaces the invention.
+        measured = knowledge.external_severity.get(f.rule_id)
+        if measured and measured != f.severity:
+            f.tags = list(f.tags) + [f"severity-was:{f.severity}", "severity:measured"]
+            f.severity = measured
+            graded += 1
+
         stats = knowledge.rules.get(f.rule_id)
         if stats is None or not stats.observations:
             continue
@@ -284,7 +312,8 @@ def apply(findings: list[Finding], knowledge: Knowledge) -> dict:
             f.tags.append(f"confidence-was:{f.confidence}")
             f.confidence = new_conf
             changed += 1
-    return {"annotated": annotated, "recalibrated": changed}
+    return {"annotated": annotated, "recalibrated": changed,
+            "externally_graded": graded}
 
 
 # ---------------------------------------------------------------------------

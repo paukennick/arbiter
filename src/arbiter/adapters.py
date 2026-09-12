@@ -117,14 +117,58 @@ class Adapter:
             return ""
 
     def invoke(self, workdir: str) -> tuple[str, int]:
+        """Run the tool, and make sure a timeout actually stops it.
+
+        `subprocess.run(timeout=...)` kills the process it started and nothing
+        else. Several of these analyzers fan out with multiprocessing, so a
+        timeout left a pool of orphaned workers alive. Observed after checkov
+        deadlocked on a one-million-line repository: the parent was killed on
+        timeout, and four workers were still resident twenty minutes later,
+        competing for CPU with every scan that followed.
+
+        Starting the tool in its own process group and signalling the group is
+        what makes the timeout mean what it says.
+        """
         argv = [a.replace("{workdir}", workdir) for a in self.argv]
         cwd = self.cwd.replace("{workdir}", workdir) if self.cwd else None
         env = dict(os.environ)
         env.setdefault("PYTHONIOENCODING", "utf-8")
-        r = subprocess.run(
-            argv, capture_output=True, text=True, timeout=self.timeout, cwd=cwd, env=env
+
+        popen_kwargs: dict = {}
+        if hasattr(os, "setsid"):
+            popen_kwargs["start_new_session"] = True
+        proc = subprocess.Popen(
+            argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            cwd=cwd, env=env, **popen_kwargs,
         )
-        return r.stdout, r.returncode
+        try:
+            out, _err = proc.communicate(timeout=self.timeout)
+            return out, proc.returncode
+        except BaseException:
+            self._kill_group(proc)
+            raise
+
+    @staticmethod
+    def _kill_group(proc: "subprocess.Popen") -> None:
+        """SIGTERM the whole group, then SIGKILL whatever ignored it."""
+        import signal as _signal
+        for sig in (_signal.SIGTERM, _signal.SIGKILL):
+            try:
+                if hasattr(os, "killpg"):
+                    os.killpg(os.getpgid(proc.pid), sig)
+                else:
+                    proc.send_signal(sig)
+            except (ProcessLookupError, PermissionError, OSError):
+                break
+            try:
+                proc.wait(timeout=5)
+                return
+            except subprocess.TimeoutExpired:
+                continue
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
 
     # -- normalize ---------------------------------------------------------
     def parse_output(self, out: str) -> list[Any]:

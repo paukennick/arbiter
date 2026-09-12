@@ -121,6 +121,32 @@ def build_parser() -> argparse.ArgumentParser:
     vf.add_argument("--config", help="arbiter.yaml, for the coverage threshold")
     vf.add_argument("--show-claims", action="store_true", help="print every claim, not just violations")
 
+    rv = sub.add_parser("review",
+                        help="adjudicate a batch of findings in one pass")
+    rv.add_argument("report", nargs="?", default="arbiter-out/report.json")
+    rv.add_argument("--out", default="arbiter-out/review.md",
+                    help="where to write the review file")
+    rv.add_argument("--limit", type=int, default=20,
+                    help="how many findings to put in front of you (default 20)")
+    rv.add_argument("--rule", help="only findings whose rule id contains this")
+    rv.add_argument("--apply", metavar="FILE",
+                    help="read a marked review file back and record the verdicts")
+    rv.add_argument("--note", default="", help="note stored with each verdict")
+    rv.add_argument("--knowledge", help="path to knowledge.json")
+
+    ct = sub.add_parser("controls",
+                        help="control coverage per framework, including what was NOT assessed")
+    ct.add_argument("report", nargs="?", default="arbiter-out/report.json")
+    ct.add_argument("--framework", action="append", default=[],
+                    help="limit to one framework id; repeatable")
+    ct.add_argument("--packs", action="append", default=[],
+                    help="extra directory of control packs; repeatable")
+    ct.add_argument("--state", action="append", default=[],
+                    help="show only controls in this state "
+                         "(violated, not_assessed, no_coverage, satisfied, not_automatable)")
+    ct.add_argument("--json", action="store_true", help="machine-readable output")
+    ct.add_argument("--list", action="store_true", help="list available frameworks and exit")
+
     ex = sub.add_parser("explain", help="show one finding in full")
     ex.add_argument("finding_id")
     ex.add_argument("--report", default="arbiter-out/report.json")
@@ -362,6 +388,143 @@ def cmd_verify(args) -> int:
     return EXIT_GATE_FAIL
 
 
+def cmd_review(args) -> int:
+    from .learn import Knowledge, MIN_OBSERVATIONS
+    from .review import apply as apply_marks, newly_proven, render, select
+
+    path = Path(args.report)
+    if not path.is_file():
+        print(f"arbiter: no report at {path}. Run `arbiter scan` first.", file=sys.stderr)
+        return EXIT_ERROR
+    report = Report.from_dict(json.loads(path.read_text()))
+    knowledge = Knowledge.load(args.knowledge)
+
+    if args.apply:
+        marked = Path(args.apply)
+        if not marked.is_file():
+            print(f"arbiter: no review file at {marked}", file=sys.stderr)
+            return EXIT_ERROR
+        before = {r: s.observations for r, s in knowledge.rules.items()}
+        res = apply_marks(marked.read_text(), report.findings, knowledge, args.note)
+        version = knowledge.save(args.knowledge)
+        print()
+        print(f"  {res['marked']} marked, {res['recorded']} recorded"
+              + (f", {res['already_adjudicated']} already adjudicated"
+                 if res["already_adjudicated"] else ""))
+        for rule, counts in sorted(res["per_rule"].items()):
+            print(f"    {rule:<48}{counts['true']:>3} real  {counts['false']:>3} not")
+        if res["unknown"]:
+            print(f"    {len(res['unknown'])} id(s) not in this report — ignored")
+        proven = newly_proven(knowledge, before)
+        for rule in proven:
+            print(f"\n  {rule} has reached {MIN_OBSERVATIONS} adjudications "
+                  "and is no longer reported as unproven.")
+        if not res["recorded"]:
+            print("\n  Nothing recorded. Marks go inside the brackets: [y] or [n].")
+        print(f"\n  knowledge is now {version}")
+        return EXIT_OK
+
+    picked = select(report.findings, knowledge, limit=args.limit, rule=args.rule)
+    if not picked:
+        print("\n  Nothing left to review in this report — every finding here has "
+              "already been adjudicated.")
+        return EXIT_OK
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(render(picked, knowledge, str(out)))
+    rules = {f.rule_id for f in picked}
+    print()
+    print(f"  wrote {out}")
+    print(f"  {len(picked)} findings across {len(rules)} rules, chosen to move the "
+          "most rules past")
+    print(f"  the {MIN_OBSERVATIONS}-observation line. Mark them, then:")
+    print(f"\n      arbiter review --apply {out}")
+    return EXIT_OK
+
+
+def cmd_controls(args) -> int:
+    """Control coverage, reported so the gap is as visible as the passes.
+
+    The ordering is deliberate and is the whole point of the command. Violated
+    and not-assessed come first, because a control nothing checked is the thing
+    a reader most needs to know and the thing every other compliance report
+    buries. Satisfied comes last.
+    """
+    from .controls import (NOT_ASSESSED, NOT_AUTOMATABLE, NO_COVERAGE, SATISFIED,
+                           STATES, STATE_MEANING, VIOLATED, evaluate_all,
+                           load_frameworks)
+    from .core import Finding
+
+    if args.list:
+        for fw in load_frameworks(args.packs):
+            print(f"  {fw.id:<24}{fw.enumerated:>4} enumerated of "
+                  f"{fw.declared_controls:<5} {fw.title}")
+        return EXIT_OK
+
+    path = Path(args.report)
+    if not path.is_file():
+        print(f"arbiter: no report at {path}. Run `arbiter scan` first.", file=sys.stderr)
+        return EXIT_ERROR
+    doc = json.loads(path.read_text())
+    findings = [Finding.from_dict(f) for f in doc.get("findings", [])]
+    outcomes = [_outcome_from_dict(o) for o in doc.get("probes", [])]
+
+    results = evaluate_all(findings, outcomes, only=args.framework, extra_dirs=args.packs)
+    if not results:
+        print("arbiter: no control packs matched", file=sys.stderr)
+        return EXIT_ERROR
+
+    if args.json:
+        print(json.dumps(results, indent=2))
+        return EXIT_OK
+
+    wanted = {s.lower() for s in args.state}
+    for res in results:
+        fw, counts = res["framework"], res["counts"]
+        print(f"\n  {fw['title']}")
+        print(f"  {fw['id']}  baseline {fw['baseline'] or '-'}")
+        print(f"  {'-' * 72}")
+        for state in STATES:
+            print(f"    {counts[state]:>4}  {state:<17}{STATE_MEANING[state]}")
+        if res["not_enumerated"]:
+            print(f"    {res['not_enumerated']:>4}  not_enumerated   "
+                  "not in this pack; assess by other means")
+        print(f"  {'-' * 72}")
+        print(f"    {res['declared_total']:>4}  controls in this baseline "
+              f"({fw['declared_source'].strip()[:60]})")
+        pct = res["assessed_fraction"] * 100
+        print(f"\n    {pct:.1f}% of the baseline carries evidence from this scan "
+              f"({counts[SATISFIED] + counts[VIOLATED]} of {res['declared_total']}).")
+        print("    Every other control is unevidenced here. That is a statement "
+              "about\n    this tool's reach, not about the system's security.")
+
+        rows = [r for r in res["controls"]
+                if not wanted or r["state"] in wanted]
+        order = {s: i for i, s in enumerate(STATES)}
+        rows.sort(key=lambda r: (order.get(r["state"], 9), r["id"]))
+        shown = [r for r in rows if r["state"] in (VIOLATED, NOT_ASSESSED, NO_COVERAGE)] \
+            if not wanted else rows
+        if shown:
+            print()
+            for r in shown:
+                print(f"    [{r['state'].upper()}] {r['id']}  {r['title']}")
+                if r.get("reason"):
+                    print(f"        {r['reason'][:100]}")
+                if r["state"] in (VIOLATED, SATISFIED) and r.get("residual"):
+                    print(f"        still needs a person: {r['residual'].strip()[:100]}")
+    return EXIT_OK
+
+
+def _outcome_from_dict(d: dict):
+    from .core import ProbeOutcome
+    return ProbeOutcome(
+        name=d.get("name", ""), dimensions=d.get("dimensions", []),
+        checks=int(d.get("checks", 0)), status=d.get("status", "skipped"),
+        reason=d.get("reason", ""), version=d.get("version", ""),
+        applicable=bool(d.get("applicable", True)),
+    )
+
+
 def cmd_explain(args) -> int:
     report = Report.from_dict(json.loads(Path(args.report).read_text()))
     for f in report.findings:
@@ -409,6 +572,10 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_feedback(args)
         if args.cmd == "learn":
             return cmd_learn(args)
+        if args.cmd == "review":
+            return cmd_review(args)
+        if args.cmd == "controls":
+            return cmd_controls(args)
         if args.cmd == "explain":
             return cmd_explain(args)
     except KeyboardInterrupt:

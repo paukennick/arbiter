@@ -201,6 +201,7 @@ def run_scan(
         ok, why = probe.applicable(ctx)
         if not ok:
             oc.status, oc.reason = "skipped", why
+            oc.applicable = False
             outcomes.append(oc)
             continue
         missing = [b for b in probe.binaries if shutil.which(b) is None]
@@ -224,8 +225,15 @@ def run_scan(
             oc.finding_count = len(produced)
             findings.extend(produced)
         except Exception as exc:  # noqa: BLE001
-            oc.status = "error"
-            oc.reason = f"{type(exc).__name__}: {exc}"[:300]
+            from .judgement import Unavailable
+            if isinstance(exc, Unavailable):
+                # A probe that could not be configured is NOT-ASSESSED, which
+                # is a coverage fact, not an error. Reporting it as an error
+                # would be noisy; reporting it as a clean pass would be a lie.
+                oc.status, oc.reason = "skipped", str(exc)[:300]
+            else:
+                oc.status = "error"
+                oc.reason = f"{type(exc).__name__}: {exc}"[:300]
         oc.duration_s = round(time.time() - t0, 3)
         outcomes.append(oc)
 
@@ -263,12 +271,33 @@ def run_scan(
         "adjudicated_findings": len(knowledge.adjudicated),
         "annotated": calibration["annotated"],
         "recalibrated": calibration["recalibrated"],
+        "externally_graded": calibration.get("externally_graded", 0),
+        "external_checks_measured": len(knowledge.external_severity),
         "adaptive_thresholds": (run_config.get("quality") or {}).get("_adaptive_source", ""),
         "profiles": {k: v for k, v in profiles.items() if v},
     }
     report.scorecard = compute_scorecard(
         report.findings, outcomes, sum(r.loc for r in repos), config
     )
+    # Control coverage. Summary only; the per-control detail is one command
+    # away. Failing to evaluate frameworks must never fail a scan.
+    try:
+        from .controls import evaluate_all
+        wanted = (config.get("controls") or {}).get("frameworks") or []
+        extra = (config.get("controls") or {}).get("packs") or []
+        for res in evaluate_all(report.findings, outcomes, only=wanted, extra_dirs=extra):
+            report.controls.append({
+                "framework": res["framework"]["id"],
+                "title": res["framework"]["title"],
+                "baseline": res["framework"]["baseline"],
+                "counts": res["counts"],
+                "declared_total": res["declared_total"],
+                "not_enumerated": res["not_enumerated"],
+                "assessed_fraction": res["assessed_fraction"],
+            })
+    except Exception:  # noqa: BLE001
+        pass
+
     report.gate = evaluate_gate(report, config)
 
     # Record every assertion this report makes, then check that none of them

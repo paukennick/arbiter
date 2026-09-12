@@ -151,6 +151,12 @@ class ProbeOutcome:
     finding_count: int = 0
     dimensions: list[str] = field(default_factory=list)
     checks: int = 1  # declared rule classes, used for coverage accounting
+    # False when the probe could never have applied here — no Python in the
+    # tree, a single repo so there are no seams. This is a different fact from
+    # "the probe was prevented from running", and conflating them makes a
+    # control look unassessed forever in a codebase the check has no business
+    # touching. Coverage accounting is unaffected; the control matrix reads it.
+    applicable: bool = True
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -221,6 +227,12 @@ class Report:
     # meaningful against the code the rule could have fired on.
     loc_by_language: dict[str, int] = field(default_factory=dict)
     loc_by_role: dict[str, int] = field(default_factory=dict)
+    # Per-framework control coverage: how many controls carry evidence from
+    # this scan and how many do not. Summary only -- `arbiter controls` prints
+    # the per-control detail. It lives in every report because a compliance
+    # figure quoted without its denominator is the thing this tool exists to
+    # stop doing.
+    controls: list[dict] = field(default_factory=list)
     gate: dict = field(default_factory=dict)
     # Every assertion this report makes, with the basis it rests on, plus the
     # result of checking them. See claims.py.
@@ -244,6 +256,7 @@ class Report:
             "stacks": self.stacks,
             "loc_by_language": self.loc_by_language,
             "loc_by_role": self.loc_by_role,
+            "controls": self.controls,
             "repos": [r.to_dict() for r in self.repos],
             "probes": [p.to_dict() for p in self.probes],
             "scorecard": self.scorecard.to_dict(),

@@ -405,6 +405,48 @@ def _truthy(v: Any) -> bool:
     return bool(v)
 
 
+# Properties whose VALUE is an identifier rather than a boolean: a key ARN, a
+# key resource reference, an encryption-set id. For these, presence is the
+# evidence -- wiring a KMS key into a resource is what "encrypted with a
+# customer-managed key" looks like in every provider's schema.
+#
+# This matters because _truthy above only accepts literal "true"/"yes"/"1",
+# which is correct for a boolean and silently wrong for an identifier. Until
+# this existed, `kms_key_id = aws_kms_key.main.arn` was read as false, and a
+# volume encrypted with a customer-managed key was reported HIGH as
+# unencrypted -- a high-severity false positive on exactly the configuration
+# the rule is asking for. It affected every provider, including AWS; the
+# multi-cloud fixture is what made it visible.
+#
+# The distinction is real and has to be kept. A boolean set from a variable
+# (`encrypted = var.encrypt_volumes`) is NOT evidence of encryption, because
+# the variable may be false; that case stays exactly as it was.
+_REFERENCE_PROPERTY = re.compile(
+    r"(?i)(^|[._])(kms_key_id|kms_key_arn|kms_key_name|kms_key_self_link|"
+    r"kms_master_key_id|key_vault_key_id|encryption_key_name|"
+    r"disk_encryption_set_id|disk_encryption_key|customer_managed_key|"
+    r"encryption_settings|default_kms_key_name|encryption_config|"
+    r"server_side_encryption_configuration|bucketencryption)$"
+)
+
+# A reference to nothing is not evidence. An empty string, an explicit null, or
+# a placeholder does not wire a key into anything.
+_EMPTY_REFERENCE = {"", "none", "null", "nil", "false", "0", "-", "n/a"}
+
+
+def _reference_present(name: str, value: Any) -> bool:
+    """True when an identifier-valued property actually points at something."""
+    if not _REFERENCE_PROPERTY.search(name or ""):
+        return False
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return value.strip().lower() not in _EMPTY_REFERENCE
+    if isinstance(value, (list, dict)):
+        return bool(value)
+    return bool(value)
+
+
 SATISFIED, VIOLATED, UNKNOWN = "satisfied", "violated", "unknown"
 
 INGRESS_KEYS = ("ingress", "Ingress", "SecurityGroupIngress", "ingress_rules", "cidr_blocks", "type")
@@ -444,7 +486,8 @@ def _eval_assert(res: Resource, rule: dict) -> str:
 
     if kind == "property_truthy":
         for p in referenced:
-            if _truthy(res.get(p)):
+            val = res.get(p)
+            if _truthy(val) or _reference_present(p, val):
                 return SATISFIED
         return inconclusive(VIOLATED)
     if kind == "property_absent_or_false":
@@ -1542,3 +1585,14 @@ def probe_by_name(name: str) -> Probe | None:
         if p.name == name:
             return p
     return None
+
+
+# The judgement probe is defined in judgement.py so that the only module able
+# to make a network call stays separate and easy to audit. It registers here so
+# that it always counts against coverage: an unconfigured provider must show up
+# as not-assessed, and a probe that never registers never shows up at all.
+try:
+    from .judgement import register_judgement as _register_judgement
+    _register_judgement()
+except Exception:  # noqa: BLE001
+    pass
