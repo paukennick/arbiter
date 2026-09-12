@@ -2676,3 +2676,22 @@ def test_a_repository_with_no_spec_produces_nothing(tmp_path):
     rep = run_scan([str(tmp_path)], load_config(None), only=["contract"],
                    use_adapters=False)
     assert not rep.active()
+
+
+def test_the_read_cache_never_serves_one_scans_bytes_for_another(tmp_path):
+    """A dozen probes each read every file, so reads are cached by absolute
+    path. A long-lived process doing several scans — the corpus tool, the A/B
+    harness, the fix-pair miner — must not get the previous repository's
+    contents for a path that has since changed on disk."""
+    from arbiter.probes import _READ_CACHE
+    a = tmp_path / "a"
+    a.mkdir()
+    (a / "app.py").write_text("PASSWORD = 'first-scan-value-123'\n")
+    r1 = run_scan([str(a)], load_config(None), only=["secrets"], use_adapters=False)
+    assert [f for f in r1.active()]
+
+    # same path, different contents — as happens when the fix-pair miner
+    # exports two commits into the same temporary directory
+    (a / "app.py").write_text("x = 1\n")
+    r2 = run_scan([str(a)], load_config(None), only=["secrets"], use_adapters=False)
+    assert not [f for f in r2.active()], "stale bytes were served from the cache"

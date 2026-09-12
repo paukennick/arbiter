@@ -150,6 +150,11 @@ def run_scan(
     profile_name = profile or config.get("profile") or "offline"
     caps = PROFILES.get(profile_name, PROFILES["offline"])
 
+    # One scan, one view of the files. A previous scan's bytes must never be
+    # served for this one's paths.
+    from .probes import clear_read_cache
+    clear_read_cache()
+
     system_name, repos, tempdirs, manifest = resolve_targets(targets, system_path)
     inv = build_inventory(repos)
     plans = list(plan_paths or [])
