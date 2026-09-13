@@ -91,6 +91,65 @@
           "CHANGELOG.md"
         ],
         "risk_notes": []
+      },
+      {
+        "id": "REQ-008",
+        "title": "Correct path normalization in the doc-reference drift rule",
+        "description": "probes.py:1150 normalizes a backtick-quoted path with lstrip('./'), which strips a character set rather than a prefix, so '.ai/context-brief.md' becomes 'ai/context-brief.md' and neither membership test can match. Every dotted path in the repository is reported as missing. Measured over tracked markdown: 211 findings now, 28 with the sibling rule's _normalize_relative(). The rule is unusable for calibration until this is fixed, because adjudicating it would spend irreplaceable observations on artifacts of the defect.",
+        "priority": "high",
+        "status": "completed",
+        "minimum_access_scope": [
+          "src/arbiter/probes.py",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "the backtick-path rule uses _normalize_relative() and skips paths that escape the repository root",
+          "a regression test covers a dotted path that exists on disk and is not reported",
+          "a regression test covers a genuinely missing file that is still reported",
+          "the suite is green"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest -q"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md",
+          ".ai/project-context.md"
+        ],
+        "risk_notes": [
+          "the corrected rule yields 28 findings against MIN_OBSERVATIONS of 20",
+          "so the calibration queue fills with little margin"
+        ]
+      },
+      {
+        "id": "REQ-009",
+        "title": "Write and read arbiter's own artifacts as UTF-8",
+        "description": "Thirteen write_text() calls across cli.py, report.py, engine.py and learn.py omit encoding=, so on Windows every report, PR comment, review queue and the knowledge ledger are written in the console codepage. Observed: arbiter-out/self-scan/review-queue.md is undecodable as UTF-8 (byte 0x97, an em dash written as cp1252). Reports are meant for accreditation packages and PR comments, so they cross machines. Scope is arbiter's own artifacts, not the readers in graph.py that parse scanned target files, which is a separate question about input decoding.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          "src/arbiter/cli.py",
+          "src/arbiter/report.py",
+          "src/arbiter/engine.py",
+          "src/arbiter/learn.py",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "every write of an arbiter-authored artifact specifies encoding='utf-8'",
+          "the matching reads of those artifacts specify encoding='utf-8'",
+          "a test writes and reads back a report containing non-ASCII text",
+          "the suite is green"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest -q"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md",
+          ".ai/project-context.md"
+        ],
+        "risk_notes": [
+          "CI is ubuntu-latest with no matrix",
+          "so this class of defect is invisible there and must be checked on Windows by hand"
+        ]
       }
     ],
     "documentation": [

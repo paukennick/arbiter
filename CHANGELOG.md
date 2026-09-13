@@ -38,6 +38,22 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   exact failure the process-group path exists to prevent. Timeouts now fall back
   to `taskkill /T /F`, which walks the child tree from the parent PID. POSIX
   behaviour is unchanged. (REQ-006)
+- Fixed the drift rule that reports a file named in prose as missing. It
+  normalized the path with `lstrip("./")`, which strips a character set rather
+  than a prefix, so `` `.ai/context-brief.md` `` collapsed to
+  `ai/context-brief.md` and matched nothing on disk — every dotted path in the
+  repository read as missing. It now uses `_normalize_relative()`, the helper
+  the sibling link rule already used, and skips paths that escape the
+  repository root. Measured by scanning Arbiter with itself before and after,
+  the rule goes from 187 findings to 28. (REQ-008)
+- Made Arbiter write and read its own artifacts as UTF-8 rather than the
+  platform default. Thirteen `write_text()` calls omitted `encoding=`, so on
+  Windows the HTML, markdown, PR-comment and review-queue renderings were
+  written in the console codepage; a generated `review-queue.md` here was
+  undecodable as UTF-8. Reports are meant to travel into accreditation packages
+  and pull requests, so they cross machines. Files belonging to the scanned
+  repository are untouched — those are decoded with `errors="replace"` by
+  design. (REQ-009)
 
 Six commits (`8775017`…`54f9a13`) landed from an offline bundle without
 changelog entries. Recorded here after the fact, written from their diffs.
