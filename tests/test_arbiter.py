@@ -79,6 +79,25 @@ def test_dot_github_is_not_skipped(legacy_report):
     assert any(p.startswith(".github/") for p in paths), "CI config must be inventoried"
 
 
+def test_output_directory_is_not_scanned(tmp_path):
+    """A scan reads the working tree and --out defaults to `arbiter-out`
+    inside it, so the second run reported on the first run's rendering: 28 of
+    101 unsuppressed findings, 24 of them in the very rule being adjudicated."""
+    (tmp_path / "app.py").write_text("x = 1\n")
+    out = tmp_path / "arbiter-out"
+    out.mkdir()
+    (out / "review.md").write_text("A blanket suppression  # noqa\n")
+    cfg = dict(load_config(None))
+
+    # The control: without out_dir the previous run's output is read back.
+    # Without this assertion the test below could pass for any reason.
+    leaked = run_scan([str(tmp_path)], cfg, only=["assurance"]).active()
+    assert [f for f in leaked if f.location.path.startswith("arbiter-out")]
+
+    kept = run_scan([str(tmp_path)], cfg, only=["assurance"], out_dir=str(out)).active()
+    assert not [f for f in kept if f.location.path.startswith("arbiter-out")]
+
+
 def test_terraform_parses_nested_blocks():
     resources = parse_terraform(LEGACY / "infra" / "main.tf", "infra/main.tf", "root")
     by_addr = {r.address: r for r in resources}
@@ -484,6 +503,26 @@ def test_prose_path_escaping_the_repository_is_not_checked(tmp_path):
     found = _scan_text(tmp_path, "README.md",
                        "See `../../other/thing.py` in the sibling repo.\n", ["doc_drift"])
     assert not [f for f in found if "doc-references-missing-file" in f.rule_id]
+
+
+def test_documented_file_in_a_skipped_directory_is_not_missing(tmp_path):
+    """`.arbiter` is in SKIP_DIRS, so its tracked files never enter the
+    inventory. Checking prose against the inventory alone called every one of
+    them missing: 9 of 31 doc-drift findings when arbiter scanned itself."""
+    (tmp_path / ".arbiter").mkdir()
+    (tmp_path / ".arbiter" / "knowledge.json").write_text("{}\n")
+    found = _scan_text(tmp_path, "README.md",
+                       "Calibration lives in `.arbiter/knowledge.json`.\n", ["doc_drift"])
+    assert not [f for f in found if "doc-references-missing-file" in f.rule_id]
+
+
+def test_link_into_a_skipped_directory_is_not_broken(tmp_path):
+    """The sibling link rule had the identical defect fifteen lines away."""
+    (tmp_path / ".arbiter").mkdir()
+    (tmp_path / ".arbiter" / "baseline.json").write_text("{}\n")
+    found = _scan_text(tmp_path, "README.md",
+                       "See [the baseline](.arbiter/baseline.json).\n", ["doc_drift"])
+    assert not [f for f in found if "broken-doc-link" in f.rule_id]
 
 
 def test_env_vars_only_checked_inside_a_config_section(tmp_path):
@@ -1641,6 +1680,20 @@ def test_text_artifacts_are_written_as_utf8(tmp_path):
     for path in written.values():
         # the assertion is that this does not raise UnicodeDecodeError
         Path(path).read_bytes().decode("utf-8")
+
+
+def test_evidence_from_a_utf8_source_file_is_not_mangled(tmp_path):
+    """Files belonging to the target were read with errors='replace' and no
+    encoding, so the codec was the platform default. cp1252 decodes almost
+    every byte without erroring, so it did not fail loudly, it mis-decoded
+    silently: an em dash reached a generated review queue as `â€”`."""
+    (tmp_path / "app.py").write_bytes(
+        "# static analysis — silenced here  # noqa\n".encode("utf-8"))
+    cfg = dict(load_config(None))
+    found = run_scan([str(tmp_path)], cfg, only=["assurance"]).active()
+    evidence = " ".join(f.evidence or "" for f in found)
+    assert "—" in evidence
+    assert "â" not in evidence
 
 
 def test_review_prefers_rules_close_to_the_proven_threshold(tmp_path):

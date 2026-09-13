@@ -132,12 +132,19 @@ def classify(rel: str, language: str) -> str:
     return "source"
 
 
-def walk_repo(root: Path, repo_id: str) -> list[FileInfo]:
+def walk_repo(root: Path, repo_id: str, exclude: set[str] | None = None) -> list[FileInfo]:
     out: list[FileInfo] = []
     root = root.resolve()
+    # Resolved, because the caller passes the output directory as it was typed
+    # and `arbiter-out` is relative to the working directory, not to the root.
+    excluded = {str(Path(p).resolve()) for p in (exclude or ())}
     for dirpath, dirnames, filenames in os.walk(root):
         # .git is skipped; .github is emphatically not — CI config is a target.
-        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+        dirnames[:] = [
+            d for d in dirnames
+            if d not in SKIP_DIRS
+            and str((Path(dirpath) / d).resolve()) not in excluded
+        ]
         for name in filenames:
             ap = Path(dirpath) / name
             try:
@@ -209,7 +216,7 @@ def detect_stacks(files: list[FileInfo]) -> set[str]:
     for f in files:
         if f.language == "yaml" and not f.binary and f.size < 200_000:
             try:
-                head = Path(f.abspath).read_text(errors="replace")[:2000]
+                head = Path(f.abspath).read_text(encoding="utf-8", errors="replace")[:2000]
             except OSError:
                 continue
             if re.search(r"^apiVersion:", head, re.M) and re.search(r"^kind:", head, re.M):
@@ -261,10 +268,10 @@ def acquire_one(source: str, repo_id: str = "root", role: str = "", ref: str = "
     return RepoInfo(id=repo_id, path=str(p), source=str(p), role=role, commit=_git_commit(p)), None
 
 
-def build_inventory(repos: list[RepoInfo]) -> Inventory:
+def build_inventory(repos: list[RepoInfo], exclude: set[str] | None = None) -> Inventory:
     inv = Inventory()
     for r in repos:
-        files = walk_repo(Path(r.path), r.id)
+        files = walk_repo(Path(r.path), r.id, exclude)
         inv.by_repo[r.id] = files
         inv.files.extend(files)
         r.files = len(files)

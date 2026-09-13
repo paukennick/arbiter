@@ -150,6 +150,69 @@
           "CI is ubuntu-latest with no matrix",
           "so this class of defect is invisible there and must be checked on Windows by hand"
         ]
+      },
+      {
+        "id": "REQ-011",
+        "title": "Exclude the scan's own output directory from the walk",
+        "description": "A scan reads the working tree, and the output directory defaults to the relative path arbiter-out inside that tree, so a second run reads the first run's report. Measured on this repository: 28 of 101 unsuppressed findings were located inside arbiter-out, 27.7 percent, of which 24 were assurance.blanket-suppression -- the rule then being adjudicated. Thread the resolved output directory through run_scan and build_inventory into walk_repo and skip it. Excluding rather than refusing, because the documented default is inside the tree.",
+        "priority": "high",
+        "status": "completed",
+        "minimum_access_scope": [],
+        "acceptance_criteria": [
+          "walk_repo skips the resolved output directory",
+          "Two consecutive scans into the default output path produce identical unsuppressed findings",
+          "No finding is ever located inside the output directory"
+        ],
+        "validation_required": [
+          "pytest",
+          "Two back-to-back self-scans compared"
+        ],
+        "documentation_required": [
+          "changelog"
+        ],
+        "risk_notes": []
+      },
+      {
+        "id": "REQ-012",
+        "title": "Decode scanned files as UTF-8 rather than the platform default",
+        "description": "Ten call sites read files belonging to the scanned repository with read_text(errors='replace') and no encoding argument, so the codec is the platform default -- cp1252 on Windows. errors='replace' governs failure handling, not codec choice, and cp1252 decodes almost every byte without erroring, so it does not mis-decode loudly, it mis-decodes silently. A UTF-8 em dash in a scanned file reached a generated review queue as the mojibake sequence a-circumflex-euro-quotation. REQ-009 fixed arbiter's own artifacts and deliberately excluded these sites on the incorrect reasoning that errors='replace' was the design intent; the design intent is never crashing on a target file, which encoding='utf-8' preserves.",
+        "priority": "high",
+        "status": "completed",
+        "minimum_access_scope": [],
+        "acceptance_criteria": [
+          "All target-file reads pass encoding='utf-8' with errors='replace' retained",
+          "Evidence snippets from a UTF-8 source file are byte-correct",
+          "No target file causes a scan to raise UnicodeDecodeError"
+        ],
+        "validation_required": [
+          "pytest",
+          "Self-scan review queue inspected for mojibake"
+        ],
+        "documentation_required": [
+          "changelog"
+        ],
+        "risk_notes": []
+      },
+      {
+        "id": "REQ-013",
+        "title": "Check documented paths against disk, not only the walked inventory",
+        "description": "The doc-reference drift rule tests a path named in prose against ctx.inventory.files. Directories in SKIP_DIRS are absent from that inventory, so tracked files there read as missing: .arbiter/knowledge.json, .arbiter/baseline.json and .arbiter/external-severity.json account for 9 of 31 doc-drift findings on this repository, all false. The question the rule asks is whether a documented file exists, which is a question about disk rather than about what the probes were shown. Confirm existence on disk before reporting. The remaining 22 findings are genuine and independently confirmed by omni doctor, so the rule keeps its yield.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [],
+        "acceptance_criteria": [
+          "A documented path inside a SKIP_DIRS directory is not reported missing",
+          "A genuinely absent documented path is still reported",
+          "Paths escaping the repository root are still refused"
+        ],
+        "validation_required": [
+          "pytest",
+          "Self-scan doc-drift count compared before and after"
+        ],
+        "documentation_required": [
+          "changelog"
+        ],
+        "risk_notes": []
       }
     ],
     "documentation": [

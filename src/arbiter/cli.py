@@ -194,6 +194,7 @@ def cmd_scan(args, gate_mode: bool = False) -> int:
         pin_knowledge=getattr(args, "pin_knowledge", None),
         changed_since=getattr(args, "changed", None),
         only_files=[s for s in (getattr(args, "only_files", "") or "").split(",") if s],
+        out_dir=args.out,
     )
 
     formats = _formats(args.format)

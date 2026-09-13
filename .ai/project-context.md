@@ -335,3 +335,54 @@ deliver it.
 is that it is the one signal the system did not generate; an automated caller
 marking verdicts would convert measured precision into the tool's opinion of
 itself, at machine speed.
+
+## 2026-09-12 — Three defects found while preparing to adjudicate (REQ-011, REQ-012, REQ-013)
+
+**How they surfaced.** Building the first real adjudication queue, not running
+the rules against anything. Preparing to measure the tool has now produced more
+tool defects than any scan of a target, because it is the first occasion on
+which someone reads the output closely enough to disbelieve it.
+
+**REQ-011, the expensive one.** A scan reads the working tree, and `--out`
+defaults to the relative path `arbiter-out`, which for a self-scan sits inside
+that tree. Two identical commands, the second reading the first's output: 28 of
+101 unsuppressed findings located inside the output directory, 27.7%. Twenty-four
+of those were `assurance.blanket-suppression` — the exact rule queued for
+adjudication. A rendered report is full of the strings the suppression rules
+search for, so this contamination is not uniform noise; it lands hardest on the
+rule being measured. Had the queue been built from a default-path scan, most of
+it would have been the previous run's HTML, and twenty adjudications would have
+calibrated the rule against Arbiter's own output — a precision figure derived
+from a person marking the tool's echo.
+
+**REQ-012, and a reasoning error worth recording.** Nine sites read target files
+with `read_text(errors="replace")` and no encoding. REQ-009 excluded them
+deliberately, reasoning that `errors="replace"` was the design intent. The
+design intent is never crashing on a target file; `errors=` governs failure
+handling and says nothing about which codec is used. cp1252 decodes nearly every
+byte without raising, so the exclusion did not preserve robustness, it preserved
+silent corruption — an em dash surfaced in a review queue as mojibake. The
+mistake was not an oversight but a stated justification that had not been
+checked, which is the harder kind to catch.
+
+**REQ-013, and the rule's yield.** `.arbiter` is in `SKIP_DIRS`, so its tracked
+files never entered the inventory and prose naming them read as drift: 8 of 31
+findings. Fixed by asking disk instead. Two findings for `.arbiter/baseline.json`
+survive and are correct — it is documented but genuinely absent — which is the
+evidence that the fix is precise rather than blanket. The remaining 22 name
+AGENTS.md, LLM_CONTEXT.md, TRADEMARKS.md and the two rulepack JSON files under
+.ai/rules, every one of which omni doctor independently reports missing. Two
+tools with no shared code agreeing is the strongest available evidence that this
+rule earns its place. (Those filenames are deliberately not in backticks here:
+backticking a list of known-absent files would manufacture fresh drift findings
+in the next scan.)
+
+**What the numbers did.** 75 unsuppressed findings before, 69 after. The suite
+went from 311 to 315. `assurance.blanket-suppression` rose from 21 to 23,
+entirely because the new regression tests contain two `# noqa` fixtures —
+Arbiter detecting its own test data. That is the same self-reference the queue is
+already full of, and a standing reminder that this repository is an
+unrepresentative target for the suppression rules specifically.
+
+**Still not adjudicated.** The ledger holds 15 rules and zero observations. No
+verdict has been recorded by anyone, and none was recorded here.

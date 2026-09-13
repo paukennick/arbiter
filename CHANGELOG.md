@@ -65,6 +65,34 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   after. This closes L-2 and L-8, and L-1 provisionally; REQ-005 stays open
   because L-3 follows from decisions only the owner can make and the L-6
   redistribution review is untouched. (REQ-005)
+- Stopped a scan from reading its own output. `--out` defaults to
+  `arbiter-out`, a relative path inside the tree being scanned, and the walk
+  knew nothing about it, so every run after the first reported on the previous
+  run's rendering. Measured here: 28 of 101 unsuppressed findings were located
+  inside `arbiter-out` — 27.7% — and 24 of those were
+  `assurance.blanket-suppression`, the rule that was about to be adjudicated,
+  inflated by a report that is naturally full of the term it searches for.
+  `run_scan` now takes `out_dir` and `walk_repo` skips it. Two consecutive
+  scans into the default path produce identical findings, none of them inside
+  the output directory. (REQ-011)
+- Read files belonging to the scanned repository as UTF-8. Nine call sites used
+  `read_text(errors="replace")` with no encoding, so the codec was the platform
+  default — cp1252 on Windows. `errors=` governs what happens on failure, and
+  cp1252 decodes almost every byte without failing, so it never errored, it
+  silently produced wrong characters: an em dash in a scanned file reached a
+  generated review queue as `â€”`. REQ-009 fixed Arbiter's own artifacts and
+  deliberately excluded these sites, reasoning that `errors="replace"` was the
+  design intent. That reasoning was wrong — the intent is never crashing on a
+  target file, which `encoding="utf-8"` preserves. (REQ-012)
+- Checked documented paths against disk rather than only against the walked
+  inventory. Directories in `SKIP_DIRS` never enter the inventory, so tracked
+  files under `.arbiter` read as missing: 8 of 31 doc-drift findings here.
+  Whether a documented file exists is a question about disk, not about what the
+  probes were shown. The sibling broken-link rule had the identical defect
+  fifteen lines away and got the same fix. `.arbiter/baseline.json` still
+  reports, correctly — it is documented but genuinely absent. The other 22
+  findings are untouched, and `omni doctor` independently confirms them.
+  (REQ-013)
 
 Six commits (`8775017`…`54f9a13`) landed from an offline bundle without
 changelog entries. Recorded here after the fact, written from their diffs.
