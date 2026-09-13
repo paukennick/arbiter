@@ -41,7 +41,7 @@ def counts_by_severity(findings: list[Finding]) -> dict[str, int]:
 
 def write_json(report: Report, path: str) -> None:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
-    Path(path).write_text(json.dumps(report.to_dict(), indent=2))
+    Path(path).write_text(json.dumps(report.to_dict(), indent=2), encoding="utf-8")
 
 
 def write_sarif(report: Report, path: str) -> None:
@@ -106,7 +106,7 @@ def write_sarif(report: Report, path: str) -> None:
         }],
     }
     Path(path).parent.mkdir(parents=True, exist_ok=True)
-    Path(path).write_text(json.dumps(doc, indent=2))
+    Path(path).write_text(json.dumps(doc, indent=2), encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -399,12 +399,12 @@ def write_all(report: Report, outdir: str, formats: list[str]) -> dict[str, str]
         p = str(Path(outdir) / "report.sarif"); write_sarif(report, p); written["sarif"] = p
     if "html" in formats:
         p = str(Path(outdir) / "report.html")
-        Path(p).write_text(render_html(report)); written["html"] = p
+        Path(p).write_text(render_html(report), encoding="utf-8"); written["html"] = p
     if "markdown" in formats or "md" in formats:
         p = str(Path(outdir) / "REPORT.md")
-        Path(p).write_text(render_markdown(report)); written["markdown"] = p
+        Path(p).write_text(render_markdown(report), encoding="utf-8"); written["markdown"] = p
     if "pr-comment" in formats:
         from .diff import render_pr_comment
         p = str(Path(outdir) / "pr-comment.md")
-        Path(p).write_text(render_pr_comment(report)); written["pr-comment"] = p
+        Path(p).write_text(render_pr_comment(report), encoding="utf-8"); written["pr-comment"] = p
     return written

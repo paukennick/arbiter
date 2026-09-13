@@ -204,7 +204,7 @@ class Knowledge:
         if not p.is_file():
             return Knowledge()
         try:
-            return Knowledge.from_dict(json.loads(p.read_text()))
+            return Knowledge.from_dict(json.loads(p.read_text(encoding="utf-8")))
         except Exception:
             return Knowledge()
 
@@ -212,7 +212,7 @@ class Knowledge:
         p = Path(path or DEFAULT_PATH)
         p.parent.mkdir(parents=True, exist_ok=True)
         self.updated = _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
-        p.write_text(json.dumps(self.to_dict(), indent=2, sort_keys=True))
+        p.write_text(json.dumps(self.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
         return self.version_hash()
 
 

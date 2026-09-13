@@ -75,7 +75,7 @@ def apply_baseline(findings: list[Finding], baseline_path: str | None) -> None:
     if not p.is_file():
         return
     try:
-        known = set(json.loads(p.read_text()).get("ids", []))
+        known = set(json.loads(p.read_text(encoding="utf-8")).get("ids", []))
     except Exception:
         return
     for f in findings:
@@ -90,7 +90,7 @@ def write_baseline(report: Report, path: str) -> int:
         "created": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
         "system": report.system,
         "ids": ids,
-    }, indent=2))
+    }, indent=2), encoding="utf-8")
     return len(ids)
 
 

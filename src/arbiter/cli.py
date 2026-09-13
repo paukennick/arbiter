@@ -242,8 +242,8 @@ def cmd_ab(args) -> int:
     print(render_ab_console(result))
     outdir = Path(args.out)
     outdir.mkdir(parents=True, exist_ok=True)
-    (outdir / "ab.json").write_text(json.dumps(result.to_dict(), indent=2))
-    (outdir / "ab.html").write_text(render_ab_html(result))
+    (outdir / "ab.json").write_text(json.dumps(result.to_dict(), indent=2), encoding="utf-8")
+    (outdir / "ab.html").write_text(render_ab_html(result), encoding="utf-8")
     print(f"  wrote json: {outdir / 'ab.json'}")
     print(f"  wrote html: {outdir / 'ab.html'}\n")
 
@@ -285,7 +285,7 @@ def cmd_probes(args) -> int:
 
 
 def cmd_baseline(args) -> int:
-    report = Report.from_dict(json.loads(Path(args.report).read_text()))
+    report = Report.from_dict(json.loads(Path(args.report).read_text(encoding="utf-8")))
     n = write_baseline(report, args.out)
     print(f"  baseline written: {args.out} ({n} finding ids)")
     return EXIT_OK
@@ -293,8 +293,8 @@ def cmd_baseline(args) -> int:
 
 def cmd_diff(args) -> int:
     from .diff import diff_reports, render_diff_console, render_pr_comment
-    before = Report.from_dict(json.loads(Path(args.before).read_text()))
-    after = Report.from_dict(json.loads(Path(args.after).read_text()))
+    before = Report.from_dict(json.loads(Path(args.before).read_text(encoding="utf-8")))
+    after = Report.from_dict(json.loads(Path(args.after).read_text(encoding="utf-8")))
     d = diff_reports(before, after)
     formats = _formats(args.format)
 
@@ -304,10 +304,10 @@ def cmd_diff(args) -> int:
         outdir = Path(args.out)
         outdir.mkdir(parents=True, exist_ok=True)
         if "json" in formats:
-            (outdir / "diff.json").write_text(json.dumps(d.to_dict(), indent=2))
+            (outdir / "diff.json").write_text(json.dumps(d.to_dict(), indent=2), encoding="utf-8")
             print(f"  wrote json: {outdir / 'diff.json'}")
         if "pr-comment" in formats or "markdown" in formats:
-            (outdir / "pr-comment.md").write_text(render_pr_comment(after, d))
+            (outdir / "pr-comment.md").write_text(render_pr_comment(after, d), encoding="utf-8")
             print(f"  wrote pr-comment: {outdir / 'pr-comment.md'}")
     elif "pr-comment" in formats or "markdown" in formats:
         print(render_pr_comment(after, d))
@@ -316,7 +316,7 @@ def cmd_diff(args) -> int:
 
 def cmd_feedback(args) -> int:
     from .learn import Knowledge, record
-    report = Report.from_dict(json.loads(Path(args.report).read_text()))
+    report = Report.from_dict(json.loads(Path(args.report).read_text(encoding="utf-8")))
     by_id = {f.id: f for f in report.findings}
     knowledge = Knowledge.load(args.knowledge)
     verdict = "false_positive" if args.false_positive else "true_positive"
@@ -378,7 +378,7 @@ def cmd_learn(args) -> int:
 
 def cmd_verify(args) -> int:
     from .claims import INVARIANTS, build_claims, verify
-    report = Report.from_dict(json.loads(Path(args.report).read_text()))
+    report = Report.from_dict(json.loads(Path(args.report).read_text(encoding="utf-8")))
     config = load_config(args.config) if args.config else {}
     claims = build_claims(report)
     violations = verify(report, config)
@@ -411,7 +411,7 @@ def cmd_review(args) -> int:
     if not path.is_file():
         print(f"arbiter: no report at {path}. Run `arbiter scan` first.", file=sys.stderr)
         return EXIT_ERROR
-    report = Report.from_dict(json.loads(path.read_text()))
+    report = Report.from_dict(json.loads(path.read_text(encoding="utf-8")))
     knowledge = Knowledge.load(args.knowledge)
 
     if args.apply:
@@ -420,7 +420,7 @@ def cmd_review(args) -> int:
             print(f"arbiter: no review file at {marked}", file=sys.stderr)
             return EXIT_ERROR
         before = {r: s.observations for r, s in knowledge.rules.items()}
-        res = apply_marks(marked.read_text(), report.findings, knowledge, args.note)
+        res = apply_marks(marked.read_text(encoding="utf-8"), report.findings, knowledge, args.note)
         version = knowledge.save(args.knowledge)
         print()
         print(f"  {res['marked']} marked, {res['recorded']} recorded"
@@ -475,7 +475,7 @@ def cmd_review(args) -> int:
         out = Path(args.html)
         out.parent.mkdir(parents=True, exist_ok=True)
         cmd = f"arbiter review {args.report} --apply review.md"
-        out.write_text(render_html(picked, knowledge, repo_paths, cmd))
+        out.write_text(render_html(picked, knowledge, repo_paths, cmd), encoding="utf-8")
         rules = {f.rule_id for f in picked}
         print()
         print(f"  wrote {out}")
@@ -487,7 +487,7 @@ def cmd_review(args) -> int:
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(render(picked, knowledge, str(out)))
+    out.write_text(render(picked, knowledge, str(out)), encoding="utf-8")
     rules = {f.rule_id for f in picked}
     print()
     print(f"  wrote {out}")
@@ -521,7 +521,7 @@ def cmd_controls(args) -> int:
     if not path.is_file():
         print(f"arbiter: no report at {path}. Run `arbiter scan` first.", file=sys.stderr)
         return EXIT_ERROR
-    doc = json.loads(path.read_text())
+    doc = json.loads(path.read_text(encoding="utf-8"))
     findings = [Finding.from_dict(f) for f in doc.get("findings", [])]
     outcomes = [_outcome_from_dict(o) for o in doc.get("probes", [])]
 
@@ -582,7 +582,7 @@ def _outcome_from_dict(d: dict):
 
 
 def cmd_explain(args) -> int:
-    report = Report.from_dict(json.loads(Path(args.report).read_text()))
+    report = Report.from_dict(json.loads(Path(args.report).read_text(encoding="utf-8")))
     for f in report.findings:
         if f.id == args.finding_id or f.id.endswith(args.finding_id):
             print()
