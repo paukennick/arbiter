@@ -8,7 +8,8 @@ version = "0.1.0"
 description = "Polyglot repository and system evaluator: security, compliance, quality, drift and cross-repo interfaces"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "Proprietary" }
+license = { file = "LICENSE" }
+authors = [{ name = "Nicholas J Pauken" }]
 dependencies = [
     "PyYAML>=6.0",
 ]

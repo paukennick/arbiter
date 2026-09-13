@@ -276,3 +276,62 @@ same family, worth a separate look.
 `ubuntu-latest` with no matrix — the same reason the REQ-006 timeout crash lived
 as long as it did. Three platform defects have now been found by hand on this
 machine. A Windows job in CI would have caught all three.
+
+## 2026-09-12 — Licensing taken as far as engineering can take it (REQ-005)
+
+**What changed.** `LICENSE`, `CONTRIBUTING.md`, a `license = { file = "LICENSE" }`
+reference and an `authors` entry in `pyproject.toml`, and a README section that
+cites the licence instead of apologising for its absence. L-2 and L-8 are closed;
+L-1 is closed provisionally.
+
+**Why an interim notice rather than waiting for the real one.** L-3 — the grant
+itself — follows from two decisions counsel cannot make: who owns the copyright,
+and whether the model is per-seat, per-repository or site. Until those are
+answered, the best available instrument is one that asserts ownership and refuses
+permission. That is a worse licence than none only if someone mistakes it for a
+grant, which is why the file says three times that it is not one.
+
+**The one clause drafted in full.** L-4, ownership of scan output, is stated
+now rather than deferred, because it only gives rights away: it can be written
+without knowing the commercial model, it cannot become more generous later, and
+the product is unusable for its stated purpose — accreditation packages,
+pull-request comments — if ownership of the output is ambiguous. It is marked as
+intended to survive into the operative licence unchanged.
+
+**A problem the git history creates.** All 33 commits are authored
+`Claude Opus 5 <noreply@anthropic.com>`; no human appears anywhere in the record,
+and `pyproject.toml` had no `authors` field. L-2 asks the owner to assert
+copyright while the repository's own evidence attests that a model wrote it. The
+ordinary position is that the person directing the work is the author and that
+purely machine-generated material is not copyrightable at all, but the record
+points the wrong way and should be raised with counsel alongside questions 1 and
+2. Future commits should carry the owner as author with the model as
+co-author, which is the accurate description of both.
+
+## 2026-09-12 — MCP before a Python API (REQ-010)
+
+**The decision.** Expose Arbiter as an MCP server that shells out to the
+`arbiter` console script, ahead of stabilising a Python API.
+
+**Why this order, having first argued the opposite.** The initial reasoning was
+that an MCP server would import the package, so a designed API had to come first.
+That dependency does not exist: the console script at `pyproject.toml:22` is
+already a published surface documented in `docs/cli.md`, and shelling out to it
+keeps the process isolation the scanner relies on. Meanwhile
+`src/arbiter/__init__.py` exports only `__version__` and `run_scan` takes twelve
+parameters, so stabilising the API first means freezing a surface before anything
+has used it. Better to let observed MCP traffic shape it.
+
+**Why not a hosted API.** Hosting requires customer source to leave the customer's
+machine, which contradicts the `offline` and `ci` profiles that declare
+`network: False`, and it is the one distribution scenario `docs/licensing.md`
+marks as needing counsel — LGPL obligations differ again for network use. MCP
+relocates the installation rather than removing it, which is worth saying out
+loud, because "no local install" is what was asked for and MCP does not strictly
+deliver it.
+
+**The constraint that matters most.** No MCP tool may record an adjudication.
+`arbiter review --apply` is deliberately outside the surface. The ledger's value
+is that it is the one signal the system did not generate; an automated caller
+marking verdicts would convert measured precision into the tool's opinion of
+itself, at machine speed.
