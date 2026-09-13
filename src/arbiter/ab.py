@@ -207,7 +207,7 @@ def run_arm(arm: Arm, targets: list[str], system_path: str | None, base_config: 
                         f"{(proc.stderr or proc.stdout)[-300:]}"
                     )
                 else:
-                    rep = Report.from_dict(json.loads(rp.read_text()))
+                    rep = Report.from_dict(json.loads(rp.read_text(encoding="utf-8")))
                     res.findings = rep.active()
                     res.coverage = rep.scorecard.coverage
                     res.probes_ran = sum(1 for p in rep.probes if p.status == "ran")
