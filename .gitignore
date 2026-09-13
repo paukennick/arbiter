@@ -9,3 +9,6 @@ dist/
 training/*/
 training/
 !training/.gitkeep
+
+# Claude Code local settings (Headroom hooks, machine-specific paths)
+.claude/settings.local.json
