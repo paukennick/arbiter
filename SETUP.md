@@ -27,22 +27,30 @@ computer — not a phone.
 
 ## What you need to do
 
-**1. Make an empty repository on GitHub.**
-
-Call it `arbiter`. Private is fine. Do not let GitHub add a README or a
-licence — it should be completely empty, or the first push will be rejected.
-
-**2. Push the code I built.**
-
-Unpack the archive I sent you, then from inside that folder:
+**1. Unpack the archive and run one command.**
 
 ```bash
-git remote add origin https://github.com/<your-username>/arbiter.git
-git push -u origin main
+./tools/bootstrap_repo.sh
 ```
 
-The folder is already a git repository with everything committed, so that is
-the whole job.
+It creates the repository, pushes this history to it, and tells you what is
+left. With the GitHub CLI installed and logged in (`gh auth login`) that is the
+whole job. Without it, the script prints the two commands to run by hand.
+
+It is safe to run twice. It never force-pushes and never rewrites history, and
+if the repository already exists with commits in it, it stops and says so
+rather than guessing which side should win. `--dry-run` prints what it would do
+and changes nothing.
+
+**2. Install the analyzers, if you want the external tools measured too.**
+
+```bash
+./tools/install_tools.sh
+```
+
+Checkov, semgrep, bandit, ruff and gitleaks, at pinned versions. Optional: a
+missing analyzer is recorded as *not assessed* with the binary named, and the
+coverage figure drops accordingly. Nothing here fails a build.
 
 **3. Install the Claude GitHub App on that repository.**
 

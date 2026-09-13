@@ -66,10 +66,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
           pip install pytest tree-sitter tree-sitter-language-pack || true
-          # The external analyzers. Each one that installs widens what the
-          # cycle can measure; each one that does not is recorded as a
-          # coverage gap rather than failing the run.
-          pip install checkov bandit ruff || true
+
+      # Pinned, and in a script rather than inline, so the same five analyzers
+      # install the same way here, on a laptop, and in the sandbox. An
+      # analyzer that changes underneath you changes your findings.
+      - name: External analyzers
+        run: ./tools/install_tools.sh
 
       - name: Run a training cycle
         env:

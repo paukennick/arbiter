@@ -2695,3 +2695,73 @@ def test_the_read_cache_never_serves_one_scans_bytes_for_another(tmp_path):
     (a / "app.py").write_text("x = 1\n")
     r2 = run_scan([str(a)], load_config(None), only=["secrets"], use_adapters=False)
     assert not [f for f in r2.active()], "stale bytes were served from the cache"
+
+
+# ---------------------------------------------------------------------------
+# The setup scripts.
+#
+# These exist because two things that were done by hand in a sandbox had no
+# reproducible form in the repository: installing the five external analyzers,
+# and creating the GitHub repository. Both are tested here for the properties
+# that matter — the installer must never fail a build, and the bootstrap must
+# never destroy history.
+# ---------------------------------------------------------------------------
+
+def test_install_script_never_fails_a_build(tmp_path):
+    """A missing analyzer is a coverage fact, not an error: Arbiter records it
+    as not assessed and the coverage figure drops. Exiting non-zero here would
+    turn an honest gap into a broken pipeline."""
+    import subprocess
+    r = subprocess.run(["bash", str(ROOT / "tools" / "install_tools.sh"), "nosuchtool"],
+                       capture_output=True, text=True, cwd=str(ROOT), timeout=180)
+    assert r.returncode == 0, r.stderr[-400:]
+
+
+def test_install_script_pins_every_version():
+    text = (ROOT / "tools" / "install_tools.sh").read_text()
+    for tool in ("CHECKOV", "SEMGREP", "BANDIT", "RUFF", "GITLEAKS"):
+        assert re.search(rf"{tool}_VERSION:-\d+\.\d+", text), f"{tool} is not pinned"
+
+
+def test_bootstrap_refuses_when_it_is_not_a_repository(tmp_path):
+    import subprocess, shutil
+    (tmp_path / "tools").mkdir()
+    shutil.copy(ROOT / "tools" / "bootstrap_repo.sh", tmp_path / "tools")
+    r = subprocess.run(["bash", "tools/bootstrap_repo.sh", "--dry-run"],
+                       capture_output=True, text=True, cwd=str(tmp_path), timeout=60)
+    assert r.returncode == 1 and "No .git" in r.stdout
+
+
+def test_bootstrap_never_force_pushes_or_rewrites_history():
+    """The whole risk in a script like this is that it resolves a conflict by
+    discarding one side."""
+    text = (ROOT / "tools" / "bootstrap_repo.sh").read_text()
+    for dangerous in ("--force", "-f ", "push -f", "reset --hard", "filter-branch",
+                      "rebase --onto", "git rm"):
+        assert dangerous not in text, f"bootstrap contains {dangerous!r}"
+
+
+def test_bootstrap_is_idempotent_about_an_existing_remote(tmp_path):
+    import subprocess, shutil
+    subprocess.run(["git", "init", "-q"], cwd=str(tmp_path), check=True)
+    (tmp_path / "f.txt").write_text("x")
+    (tmp_path / "tools").mkdir()
+    shutil.copy(ROOT / "tools" / "bootstrap_repo.sh", tmp_path / "tools")
+    for cmd in (["git", "add", "-A"],
+                ["git", "-c", "user.email=t@t", "-c", "user.name=t",
+                 "commit", "-q", "-m", "init"],
+                ["git", "remote", "add", "origin", "https://example.com/pre.git"]):
+        subprocess.run(cmd, cwd=str(tmp_path), check=True)
+    r = subprocess.run(["bash", "tools/bootstrap_repo.sh", "--dry-run"],
+                       capture_output=True, text=True, cwd=str(tmp_path), timeout=60)
+    assert "Leaving it alone" in r.stdout
+    url = subprocess.run(["git", "remote", "get-url", "origin"], cwd=str(tmp_path),
+                         capture_output=True, text=True).stdout.strip()
+    assert url == "https://example.com/pre.git", "an existing remote was modified"
+
+
+def test_the_workflow_installs_the_analyzers_from_the_script():
+    """Inline pip lines in CI drift from what a laptop installs. One script."""
+    wf = (ROOT / ".github" / "workflows" / "train.yml").read_text()
+    assert "tools/install_tools.sh" in wf
+    assert "pip install checkov" not in wf, "CI must not install analyzers inline"
