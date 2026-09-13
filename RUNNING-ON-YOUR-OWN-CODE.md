@@ -90,12 +90,13 @@ This is the step that makes the tool yours.
 arbiter review .arbiter/first-run/report.json --html .arbiter/review.html
 ```
 
-Open the file. It is self-contained — no server, no network, no build step. It
-shows one finding at a time with its evidence, and you press a key: real, not
-real, or skip. When you are done it gives you a JSON file to feed back:
+Open the file. It is self-contained — no server, no network, no build step,
+nothing loaded from a CDN. It shows one finding at a time with its evidence and
+you mark it: real, not real, or skip. When you are done it gives you a block of
+text to copy. Save it as `review.md` and feed it back:
 
 ```bash
-arbiter review .arbiter/first-run/report.json --apply ~/Downloads/verdicts.json
+arbiter review .arbiter/first-run/report.json --apply review.md
 ```
 
 Or stay in the terminal:
@@ -152,6 +153,17 @@ job is the one whose result may be quoted as being about the repository.
 Measured on Traefik, 171 changed files out of 2,293: 59 seconds to 6 seconds,
 and the file-scoped findings are identical to the full scan's on the files both
 read — 158 and 158, nothing missing and nothing extra.
+
+### One thing to know about the pull-request report
+
+Arbiter reads a few files the change did not touch — manifests, lockfiles, CI
+workflows, Terraform — because its rules genuinely reason across them. Findings
+that land in those files are real, and they are not this change's fault, so
+they are tagged `outside-this-change` and the console says how many there are.
+
+The baseline is what stops them reaching the gate: once a finding is in the
+baseline it is `existing`, and the `new: high` rule ignores it. That is why
+step 3 comes before step 5.
 
 ### Try it locally first
 

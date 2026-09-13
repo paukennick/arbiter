@@ -136,6 +136,11 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
                         f"({ss.get('fraction_read', 0):.0%} of lines) — {ss.get('basis', '')}"))
         L.append(_color(color, "dim",
                         "  checks that read across files were not run; see NOT ASSESSED"))
+        outside = sum(1 for f in active if "outside-this-change" in f.tags)
+        if outside:
+            L.append(_color(color, "dim",
+                            f"  {outside} finding(s) are in context files this change did "
+                            "not touch (tagged outside-this-change)"))
     L.append("")
 
     head = "  " + "  ".join(
