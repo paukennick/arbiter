@@ -702,12 +702,107 @@ def case_iam_action_is_not_a_secret(seeds: Seeds) -> Case | None:
                 f"      - secretsmanager: {action}\n", False)
 
 
+# ---------------------------------------------------------------------------
+# Provider-issued tokens
+#
+# The prefix is assigned by the issuer, so the value carries its own evidence
+# and the symbol name is irrelevant. That is the point of the family: the
+# assigned-credential heuristic needs a credential-ish name, and a pull-request
+# rehearsal walked straight past `STRIPE_KEY = "sk_live_..."` because a bare
+# "key" is not credential-ish (sort_key, cache_key, primary_key).
+#
+# The controls are the part that matters. A prefix rule looks unfalsifiable
+# until you ask what else in a real repository starts with `sk-`.
+# ---------------------------------------------------------------------------
+
+PROVIDER_TOKENS = [
+    ("stripe-key",     lambda: rng.choice(("sk_live_", "rk_live_")) + "".join(rng.choices(ALNUM, k=rng.randint(24, 32)))),
+    ("openai-key",     lambda: "sk-" + rng.choice(("", "proj-")) + "".join(rng.choices(ALNUM, k=rng.randint(40, 48)))),
+    ("anthropic-key",  lambda: "sk-ant-api03-" + "".join(rng.choices(ALNUM + "_-", k=rng.randint(32, 64)))),
+    ("google-api-key", lambda: "AIza" + "".join(rng.choices(ALNUM + "_-", k=35))),
+    ("gitlab-token",   lambda: "glpat-" + "".join(rng.choices(ALNUM + "_-", k=rng.randint(20, 26)))),
+    ("npm-token",      lambda: "npm_" + "".join(rng.choices(ALNUM, k=36))),
+    ("sendgrid-key",   lambda: "SG." + "".join(rng.choices(ALNUM + "_-", k=22)) + "." + "".join(rng.choices(ALNUM + "_-", k=43))),
+    ("pypi-token",     lambda: "pypi-AgEIcHlwaS5vcmc" + "".join(rng.choices(ALNUM + "_-", k=rng.randint(55, 80)))),
+]
+
+
+def case_provider_token(seeds: Seeds) -> Case | None:
+    rule, make = rng.choice(PROVIDER_TOKENS)
+    lang = rng.choice(("python", "js", "go"))
+    seed = seeds.pick(lang)
+    if not seed:
+        return None
+    name, text = seed
+    # Deliberately an innocuous symbol name. If the harness wrote API_SECRET
+    # it would be testing the assigned-credential rule instead, and this family
+    # would look like it worked when it had never been exercised.
+    symbol = rng.choice(("STRIPE_KEY", "client", "CFG", "AUTH", "provider_key",
+                         "settings", "DEFAULT", "billing"))
+    return Case(f"arbiter/secrets.{rule}", "secrets", name,
+                splice(text, assign(lang, symbol, make())), True, baseline=text)
+
+
+def case_slack_webhook(seeds: Seeds) -> Case | None:
+    seed = seeds.pick(rng.choice(("python", "js")))
+    if not seed:
+        return None
+    name, text = seed
+    url = ("https://hooks.slack.com/services/T"
+           + "".join(rng.choices(ALNUM_UPPER, k=8)) + "/B"
+           + "".join(rng.choices(ALNUM_UPPER, k=8)) + "/"
+           + "".join(rng.choices(ALNUM, k=24)))
+    return Case("arbiter/secrets.slack-webhook", "secrets", name,
+                splice(text, assign("python", "NOTIFY_URL", url)), True, baseline=text)
+
+
+def control_provider_token_lookalike(seeds: Seeds) -> Case | None:
+    """Things that start like a provider token and are not one.
+
+    `sk-` is the dangerous prefix: it is three characters and it is also how
+    people write scikit identifiers, Slovak locale keys and hyphenated slugs.
+    """
+    lang = rng.choice(("python", "js", "go"))
+    seed = seeds.pick(lang)
+    if not seed:
+        return None
+    name, text = seed
+    value = rng.choice([
+        "sk_live_" + "".join(rng.choices(ALNUM, k=rng.randint(4, 12))),  # too short
+        "sk_test_" + "".join(rng.choices(ALNUM, k=32)),                  # test mode, not live
+        "AIza" + "".join(rng.choices(ALNUM, k=rng.randint(8, 20))),      # wrong length
+        "npm_" + "".join(rng.choices(ALNUM, k=rng.randint(8, 20))),      # wrong length
+        "glpat-your-token-here",
+        "${STRIPE_SECRET_KEY}",
+        "sk-" + "".join(rng.choices(string.ascii_lowercase, k=rng.randint(4, 20))),
+        "pypi-token-goes-here",
+    ])
+    return Case(f"arbiter/secrets.{rng.choice([r for r, _ in PROVIDER_TOKENS])}",
+                "secrets", name, splice(text, assign(lang, "CONFIG", value)),
+                False, baseline=text)
+
+
+def control_slack_webhook_placeholder(seeds: Seeds) -> Case | None:
+    seed = seeds.pick("python")
+    if not seed:
+        return None
+    name, text = seed
+    url = rng.choice([
+        "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+        "https://hooks.slack.com/services/T000/B000/XXXX",
+        "https://slack.com/api/chat.postMessage",
+    ])
+    return Case("arbiter/secrets.slack-webhook", "secrets", name,
+                splice(text, assign("python", "NOTIFY_URL", url)), False, baseline=text)
+
+
 POSITIVES = [case_aws_key, case_private_key, case_gh_token, case_db_url,
              case_assigned_credential, case_public_bucket, case_unencrypted_db,
              case_open_ingress, case_privileged_container, case_host_namespace,
              case_dangerous_capability, case_no_security_context,
              case_unpinned_action, case_dangerous_prt,
-             case_broken_link, case_unquoted_secret]
+             case_broken_link, case_unquoted_secret,
+             case_provider_token, case_slack_webhook]
 
 CONTROLS = [control_placeholder, control_status_field, control_passphrase,
             control_trivial_db_url, control_self_referential, control_private_bucket,
@@ -720,7 +815,9 @@ CONTROLS = [control_placeholder, control_status_field, control_passphrase,
             case_database_allows_plaintext, control_database_requires_tls,
             case_weak_tls_version, control_modern_tls_version,
             case_no_https_redirect, control_https_only,
-            control_provider_does_not_express_tls]
+            control_provider_does_not_express_tls,
+            control_provider_token_lookalike,
+            control_slack_webhook_placeholder]
 
 SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"]
 

@@ -155,6 +155,36 @@ SECRET_PATTERNS: list[tuple[str, str, str, str]] = [
     ("gh-token", "GitHub token committed", "critical", r"\bgh[pousr]_[A-Za-z0-9]{36,}\b"),
     ("slack-token", "Slack token committed", "high", r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b"),
     ("jwt", "Hardcoded JWT", "medium", r"\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{5,}\b"),
+    # Provider-issued tokens. These are the highest-confidence secrets there
+    # are: the prefix is assigned by the issuer, not chosen by the developer,
+    # so a match is a token from that provider or a deliberate imitation of
+    # one. They were missing until a pull-request rehearsal planted a live
+    # Stripe key in a billing module and the scan came back clean -- the
+    # symbol was STRIPE_KEY, and the assigned-credential heuristic does not
+    # treat a bare "key" as credential-ish because sort_key and cache_key are
+    # everywhere. The name was never the evidence here; the value is.
+    ("stripe-key", "Stripe live secret key committed", "critical",
+     r"\b[sr]k_live_[0-9A-Za-z]{20,}\b"),
+    ("openai-key", "OpenAI API key committed", "critical",
+     r"(?<![A-Za-z0-9_-])sk-(?:proj-)?[A-Za-z0-9_-]{32,}(?![A-Za-z0-9_-])"),
+    # These end with an explicit lookahead rather than \b: the charset is
+    # base64url, and a token ending in "-" has no word boundary after it, so
+    # \b silently drops it. Injection put google-api-key at 0.9091 recall
+    # until that showed up in the missed-defect list.
+    ("anthropic-key", "Anthropic API key committed", "critical",
+     r"(?<![A-Za-z0-9_-])sk-ant-(?:api|sid)[0-9]{2}-[A-Za-z0-9_-]{24,}(?![A-Za-z0-9_-])"),
+    ("google-api-key", "Google API key committed", "critical",
+     r"(?<![A-Za-z0-9_-])AIza[0-9A-Za-z_-]{35}(?![A-Za-z0-9_-])"),
+    ("gitlab-token", "GitLab token committed", "critical",
+     r"(?<![A-Za-z0-9_-])glpat-[0-9A-Za-z_-]{20,}(?![A-Za-z0-9_-])"),
+    ("npm-token", "npm access token committed", "critical",
+     r"\bnpm_[0-9A-Za-z]{36}\b"),
+    ("sendgrid-key", "SendGrid API key committed", "critical",
+     r"(?<![A-Za-z0-9_-])SG\.[0-9A-Za-z_-]{16,}\.[0-9A-Za-z_-]{16,}(?![A-Za-z0-9_-])"),
+    ("pypi-token", "PyPI upload token committed", "critical",
+     r"(?<![A-Za-z0-9_-])pypi-AgEIcHlwaS5vcmc[0-9A-Za-z_-]{50,}(?![A-Za-z0-9_-])"),
+    ("slack-webhook", "Slack incoming webhook URL committed", "high",
+     r"https://hooks\.slack\.com/services/T[0-9A-Za-z_-]{6,}/B[0-9A-Za-z_-]{6,}/[0-9A-Za-z]{16,}"),
     ("pg-url", "Database URL with inline credentials", "high",
      r"\b(?:postgres(?:ql)?|mysql|mongodb)://[^\s:@/]+:[^\s@/]+@[^\s/]+"),
 ]

@@ -35,7 +35,7 @@ recording which checks support each assertion and which abstained.
 4. **One core, many languages.** Language support arrives as probes and
    adapters, not core changes.
 5. **No claim outruns its basis.** Every assertion carries the checks that
-   support it and the checks that abstained, and ten invariants are
+   support it and the checks that abstained, and eleven invariants are
    machine-checked before the report is written.
 6. **Adaptation is deliberate, never ambient.** Learning accumulates offline; a
    scan reads one pinned knowledge version and records its hash.
@@ -100,6 +100,7 @@ Full installation, optional extras and training setup: **[SETUP.md](SETUP.md)**.
 
 ```bash
 arbiter scan ./repo                            # analyze and report
+arbiter scan ./repo --changed origin/main      # only what changed; skips what needs the whole tree
 arbiter scan --system arbiter-system.yaml      # several repos, one verdict
 arbiter gate ./repo --baseline .arbiter/baseline.json   # exit 1 on policy failure
 arbiter probes ./repo                          # what can run here, and why not
@@ -173,6 +174,15 @@ first; every other format is a rendering of it.
 
 The action uploads SARIF so findings render inline on pull requests. A GitLab
 template is in `ci/gitlab/`. → **[docs/ci.md](docs/ci.md)**
+
+A ready-made two-job workflow — a fast blocking check on pull requests, a
+full scan nightly — is in `examples/pull-request-gate/`, and
+`RUNNING-ON-YOUR-OWN-CODE.md` walks through putting it on a real repository.
+
+`arbiter scan --changed REF` reads only what a branch touched and records the
+checks that need the whole tree as not assessed. Traefik: 59s → 6s, with the
+file-scoped findings identical to a full scan on the files both read.
+→ **[docs/ci.md](docs/ci.md#scanning-only-what-changed)**
 
 ### Testing
 
