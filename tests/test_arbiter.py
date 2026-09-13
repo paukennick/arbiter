@@ -2679,10 +2679,9 @@ def test_a_repository_with_no_spec_produces_nothing(tmp_path):
 
 
 def test_the_read_cache_never_serves_one_scans_bytes_for_another(tmp_path):
-    """A dozen probes each read every file, so reads are cached by absolute
-    path. A long-lived process doing several scans — the corpus tool, the A/B
-    harness, the fix-pair miner — must not get the previous repository's
-    contents for a path that has since changed on disk."""
+    """A dozen probes each read every file, so reads are cached. A long-lived
+    process doing several scans must not get the previous contents for a path
+    that has since changed on disk."""
     from arbiter.probes import _READ_CACHE
     a = tmp_path / "a"
     a.mkdir()
@@ -2765,3 +2764,198 @@ def test_the_workflow_installs_the_analyzers_from_the_script():
     wf = (ROOT / ".github" / "workflows" / "train.yml").read_text()
     assert "tools/install_tools.sh" in wf
     assert "pip install checkov" not in wf, "CI must not install analyzers inline"
+
+
+# ---------------------------------------------------------------------------
+# The holdout comparison, corrected.
+#
+# It reported Kubernetes as 2.09x worse on held-out code. Three things were
+# wrong with that and all three had already been fixed elsewhere in this
+# project: it stack-matched on the repository LABEL (Argo CD is labelled
+# kubernetes and is 52% Go), it counted findings rather than weighting them
+# (1,099 of Argo CD's 1,152 Kubernetes findings are discounted testdata), and
+# one repository per side is not a sample. Corrected, the held-out side is
+# quieter than the tuned one. The whole signal was the measurement.
+# ---------------------------------------------------------------------------
+
+def _corpus_module():
+    import importlib, sys as _sys
+    _sys.path.insert(0, str(ROOT / "tools"))
+    m = importlib.import_module("corpus")
+    importlib.reload(m)
+    return m
+
+
+def test_corpus_rows_carry_weight_and_language_breakdown(tmp_path):
+    """Without these the holdout comparison can only count findings and match
+    on a repository label, which is what produced the wrong answer."""
+    import subprocess, json as _json
+    (tmp_path / "repo").mkdir()
+    src = tmp_path / "repo" / "requests.txt"
+    src.write_text("x\n")
+    m = _corpus_module()
+    # The fields the comparison depends on must exist on every row.
+    required = {"weight", "weight_by_language", "loc_by_language", "holdout"}
+    code = (ROOT / "tools" / "corpus.py").read_text()
+    for field in required:
+        assert f'"{field}"' in code, f"rows do not carry {field}"
+
+
+def test_holdout_report_is_weighted_not_a_raw_count():
+    code = (ROOT / "tools" / "corpus.py").read_text()
+    assert "SEV_WEIGHT" in code and "CONFIDENCE_FACTOR" in code, \
+        "the holdout comparison must weight findings by what they are worth"
+    assert "weight_by_language" in code, \
+        "language-matched comparison needs per-language weight"
+
+
+def test_holdout_report_matches_on_language_not_repository_label():
+    """A repository label says nothing about what is in the repository."""
+    code = (ROOT / "tools" / "corpus.py").read_text()
+    assert "LANGUAGE-MATCHED" in code
+    assert "stack_label" not in code.split("DOES THE TUNING GENERALIZE")[1], \
+        "the comparison still matches on the repo label"
+
+
+def test_holdout_report_says_when_one_repo_is_not_a_sample():
+    code = (ROOT / "tools" / "corpus.py").read_text()
+    assert "not a comparison" in code
+
+
+def test_the_read_cache_is_correct_without_anyone_clearing_it(tmp_path):
+    """The regression this exists for.
+
+    The first version of the cache keyed on path alone and relied on every
+    caller clearing it between scans. The injection harness does not call
+    run_scan — it invokes probes directly and writes all twenty thousand
+    generated cases to the SAME path — so case two was served case one's bytes,
+    recall on four rules fell from 1.0000 to 0.0000, and the harness reported
+    those numbers without complaint. It would have invalidated every piece of
+    training evidence in the project.
+
+    So this calls _read directly, with no scan and no clearing, exactly as the
+    harness does."""
+    from arbiter.probes import _read
+    import time as _t
+
+    class F:
+        def __init__(self, p):
+            self.abspath = str(p)
+
+    target = tmp_path / "case.tf"
+    f = F(target)
+
+    target.write_text("first")
+    assert _read(f) == "first"
+
+    # Same path, new content — and nothing clears anything.
+    _t.sleep(0.01)
+    target.write_text("second")
+    assert _read(f) == "second", "stale bytes served for a changed file"
+
+    # Same length, different bytes, to catch a size-only key.
+    _t.sleep(0.01)
+    target.write_text("thirdX"[:6])
+    target.write_text("fourth")
+    assert _read(f) == "fourth"
+
+
+def test_a_missing_file_reads_as_empty_not_as_a_crash(tmp_path):
+    from arbiter.probes import _read
+
+    class F:
+        abspath = str(tmp_path / "nope.tf")
+
+    assert _read(F()) == ""
+
+
+# ---------------------------------------------------------------------------
+# The TLS rules, written from what the coverage-gap analysis actually named.
+#
+# Ten checkov checks that Arbiter had no counterpart for, on four providers,
+# reduced to three provider-neutral rules. The fixture's correct half is the
+# half that matters: a rule that cannot recognise a properly configured
+# resource fires on everything and still reads 1.0000 recall.
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("tf,should_fire,label", [
+    ('resource "azurerm_postgresql_server" "d" {\n  sku_name = "GP_Gen5_2"\n}\n',
+     True, "azure pg without enforcement"),
+    ('resource "azurerm_postgresql_server" "d" {\n  sku_name = "GP_Gen5_2"\n'
+     '  ssl_enforcement_enabled = true\n}\n', False, "azure pg enforcing"),
+    ('resource "google_sql_database_instance" "d" {\n  settings {\n'
+     '    ip_configuration {\n      require_ssl = true\n    }\n  }\n}\n',
+     False, "gcp requiring ssl"),
+    ('resource "google_sql_database_instance" "d" {\n  settings {\n'
+     '    tier = "db-f1-micro"\n  }\n}\n', True, "gcp not requiring ssl"),
+])
+def test_database_plaintext_connection_rule(tmp_path, tf, should_fire, label):
+    d = tmp_path / label.replace(" ", "_")
+    d.mkdir()
+    (d / "main.tf").write_text(tf)
+    rep = run_scan([str(d)], load_config(None), only=["resource_policy"],
+                   use_adapters=False)
+    hits = [f for f in rep.active() if "database-allows-plaintext" in f.rule_id]
+    assert bool(hits) == should_fire, label
+
+
+def test_a_provider_that_cannot_express_the_control_is_excluded(tmp_path):
+    """Azure SQL enforces TLS unconditionally and has no property saying so. A
+    rule looking for one reports every Azure SQL database ever written — the
+    PersistentVolumeClaim mistake, one level finer than provider."""
+    (tmp_path / "main.tf").write_text(
+        'resource "azurerm_mssql_database" "d" {\n  server_id = "x"\n}\n')
+    rep = run_scan([str(tmp_path)], load_config(None), only=["resource_policy"],
+                   use_adapters=False)
+    assert not [f for f in rep.active() if "database-allows-plaintext" in f.rule_id]
+
+
+@pytest.mark.parametrize("version,should_fire", [
+    ("TLS1_0", True), ("TLS1_1", True), ("1.0", True),
+    ("Policy-Min-TLS-1-0-2019-07", True),
+    ("TLS1_2", False), ("1.3", False), ("Policy-Min-TLS-1-2-2019-07", False),
+])
+def test_weak_tls_version_rule(tmp_path, version, should_fire):
+    d = tmp_path / version.replace(".", "_").replace("-", "_")
+    d.mkdir()
+    (d / "main.tf").write_text(
+        f'resource "azurerm_storage_account" "s" {{\n'
+        f'  customer_managed_key = k.id\n  min_tls_version = "{version}"\n}}\n')
+    rep = run_scan([str(d)], load_config(None), only=["resource_policy"],
+                   use_adapters=False)
+    hits = [f for f in rep.active() if "weak-tls-version" in f.rule_id]
+    assert bool(hits) == should_fire, version
+
+
+def test_https_redirect_rule(tmp_path):
+    (tmp_path / "bad.tf").write_text(
+        'resource "azurerm_app_service" "b" {\n  name = "w"\n}\n')
+    (tmp_path / "good.tf").write_text(
+        'resource "azurerm_app_service" "g" {\n  name = "w"\n  https_only = true\n}\n')
+    rep = run_scan([str(tmp_path)], load_config(None), only=["resource_policy"],
+                   use_adapters=False)
+    hits = {f.location.logical for f in rep.active()
+            if "no-https-redirect" in f.rule_id}
+    assert "azurerm_app_service.b" in hits
+    assert "azurerm_app_service.g" not in hits
+
+
+def test_exclude_native_scopes_finer_than_provider():
+    from arbiter.probes import _load_resource_rules
+    rules = {r["id"]: r for r in _load_resource_rules()}
+    assert rules["database-allows-plaintext-connections"].get("exclude_native")
+    # rules that over-applied to Azure until the multicloud fixture caught them
+    assert "azure" in rules["no-deletion-protection"].get("exclude_providers", [])
+    assert "azure" in rules["no-object-store-logging"].get("exclude_providers", [])
+
+
+def test_the_multicloud_fixture_correct_half_stays_clean_for_every_rule(tmp_path):
+    """A fixture whose correct half is only correct about the rules that
+    existed when it was written quietly stops being able to catch the next
+    false positive."""
+    rep = run_scan([str(ROOT / "fixtures" / "multicloud")], load_config(None),
+                   only=["resource_policy"], use_adapters=False)
+    wrong = [f for f in rep.active() if "good" in f.location.logical]
+    assert not wrong, [(f.location.logical, f.rule_id) for f in wrong]
+    broken = [f for f in rep.active() if "bad" in f.location.logical]
+    assert len(broken) >= 15

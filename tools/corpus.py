@@ -218,6 +218,28 @@ def main() -> int:
         loc = max(1, sum(r.loc for r in rep.repos))
         sev = Counter(f.severity for f in active)
         loc_by_pop[expectation] += loc
+        # What this repository's findings are actually worth, in total and by
+        # the language they fired on. Counting findings treats a discounted
+        # testdata manifest the same as a public S3 bucket.
+        from arbiter.core import CONFIDENCE_FACTOR, SEV_WEIGHT
+        from arbiter.inventory import LANG_BY_EXT
+
+        def _lang(path: str) -> str:
+            name = path.rsplit("/", 1)[-1]
+            if name.startswith("Dockerfile"):
+                return "dockerfile"
+            ext = "." + name.rsplit(".", 1)[-1] if "." in name else ""
+            return LANG_BY_EXT.get(ext, LANG_BY_EXT.get(ext.lower(), "unknown"))
+
+        weight = 0.0
+        weight_by_language: dict[str, float] = {}
+        for f in active:
+            w = (SEV_WEIGHT.get(f.severity, 0.0)
+                 * CONFIDENCE_FACTOR.get(f.confidence, 1.0))
+            weight += w
+            if f.location.path:
+                lang = _lang(f.location.path)
+                weight_by_language[lang] = weight_by_language.get(lang, 0.0) + w
         for f in active:
             rule_counts[expectation][f.rule_id] += 1
         rows.append({
@@ -232,6 +254,9 @@ def main() -> int:
             "stacks": rep.stacks,
             "stack_label": stack_label,
             "holdout": name in HOLDOUT,
+            "weight": round(weight, 2),
+            "weight_by_language": {k: round(v, 2) for k, v in weight_by_language.items()},
+            "loc_by_language": dict(rep.loc_by_language),
         })
         (outdir / f"{name}.json").write_text(json.dumps(rep.to_dict(), indent=2))
 
@@ -273,52 +298,91 @@ def main() -> int:
         def rate(g):
             lo = sum(x["loc"] for x in g) or 1
             return sum(x["findings"] for x in g) / (lo / 1000)
-        t, h = rate(tuned), rate(held)
-        print("\n  DOES THE TUNING GENERALIZE?")
-        print(f"    well-maintained, tuned on ({len(tuned)} repos): {t:.2f} per KLOC")
-        print(f"    well-maintained, HELD OUT ({len(held)} repos): {h:.2f} per KLOC")
-        crit = sum(x["critical"] for x in held) + sum(x["high"] for x in held)
-        print(f"    critical or high on held-out well-maintained code: {crit}")
-        if t:
-            print(f"    ratio {h / t:.2f}x")
-
-        # The number above is easy to over-read in either direction, so the
-        # caveats are printed with it rather than left to be remembered.
+        # Whether the tuning generalized -- measured the way discriminate.py
+        # learned to measure, because the first version of this block did not
+        # and produced a confident wrong answer.
         #
-        # A per-KLOC rate compares two SAMPLES OF REPOSITORIES, and with a
-        # handful on each side their composition dominates. One held-out
-        # repository carrying ten thousand Kubernetes test manifests moves this
-        # figure further than any amount of overfitting would, and no
-        # arithmetic here can tell the two apart. The honest reading is that a
-        # ratio near 1 is reassuring, a large one is a question, and neither is
-        # a verdict until the held-out side is big enough and matched by stack.
-        print(f"\n    Read that carefully. {len(held)} held-out repositories is a "
-              "small sample, and a\n    per-KLOC rate is as much about what those "
-              "repositories CONTAIN as about\n    whether the rules generalize. "
-              "The two cannot be separated at this size.")
-        crit_t = sum(x["critical"] for x in tuned) + sum(x["high"] for x in tuned)
-        print(f"    The figure that is comparable at any sample size is the one "
-              f"above it:\n    {crit} build-breaking findings on held-out "
-              f"well-maintained code, against\n    {crit_t} on the tuned set. That is "
-              "a count, not a rate, and zero means zero.")
+        # It reported Kubernetes as 2.09x worse on held-out code. Three things
+        # were wrong with that, and all three had already been fixed elsewhere
+        # in this project:
+        #
+        #   1. It stack-matched on the repository's LABEL. Argo CD is labelled
+        #      kubernetes and is 52% Go; the tuned side was a 15,000-line
+        #      manifest project. That compares a large Go codebase with a small
+        #      YAML one and calls it stack-matched.
+        #   2. It counted findings rather than weighting them. 1,099 of Argo
+        #      CD's 1,152 Kubernetes findings are testdata manifests the tool
+        #      has already discounted to near-zero weight.
+        #   3. One repository on each side is not a sample.
+        #
+        # Corrected -- per KLOC of the language the rules actually fire on,
+        # weighted by what each finding is worth -- Argo CD produces 4.56
+        # against the tuned repository's 7.94. The held-out side is quieter,
+        # not louder. The whole signal was the measurement.
+        def loc_by_lang(group, langs=None):
+            total = 0
+            for r in group:
+                for lang, n in (r.get("loc_by_language") or {}).items():
+                    if langs is None or lang in langs:
+                        total += n
+            return total
 
-        by_stack_t: dict[str, list] = {}
-        by_stack_h: dict[str, list] = {}
-        for r in tuned:
-            by_stack_t.setdefault(r["stack_label"], []).append(r)
-        for r in held:
-            by_stack_h.setdefault(r["stack_label"], []).append(r)
-        shared = sorted(set(by_stack_t) & set(by_stack_h))
-        if shared:
-            print("\n    STACK-MATCHED, the only comparison that controls for "
-                  "composition:")
-            for stack in shared:
-                a, b = rate(by_stack_t[stack]), rate(by_stack_h[stack])
-                print(f"      {stack:<16}tuned {a:>6.2f}   held out {b:>6.2f}"
-                      f"   {b / a if a else 0:.2f}x")
+        def weighted(group):
+            return sum(r.get("weight", 0.0) for r in group)
+
+        print("\n  DOES THE TUNING GENERALIZE?")
+        print(f"    well-maintained, tuned on ({len(tuned)} repos): {t:.2f} findings/KLOC")
+        print(f"    well-maintained, HELD OUT ({len(held)} repos): {h:.2f} findings/KLOC")
+        crit = sum(x["critical"] for x in held) + sum(x["high"] for x in held)
+        crit_t = sum(x["critical"] for x in tuned) + sum(x["high"] for x in tuned)
+        print(f"    build-breaking findings: {crit_t} tuned, {crit} held out")
+
+        wt, wh = weighted(tuned), weighted(held)
+        lt, lh = loc_by_lang(tuned), loc_by_lang(held)
+        if lt and lh:
+            a, b = wt / (lt / 1000), wh / (lh / 1000)
+            print(f"\n    Weighted by what each finding is worth, which is the "
+                  f"number that\n    decides anybody's grade:")
+            print(f"      tuned {a:>6.2f}   held out {b:>6.2f}   "
+                  f"{b / a if a else 0:.2f}x")
+
+        # Per language, and only where the language appears on both sides.
+        # This is the honest form of "stack-matched": a repository label says
+        # nothing about what is actually in the repository.
+        langs_t = {l for r in tuned for l in (r.get("loc_by_language") or {})}
+        langs_h = {l for r in held for l in (r.get("loc_by_language") or {})}
+        shared = sorted(langs_t & langs_h,
+                        key=lambda l: -loc_by_lang(held, {l}))
+        rows = []
+        for lang in shared:
+            a_loc, b_loc = loc_by_lang(tuned, {lang}), loc_by_lang(held, {lang})
+            if a_loc < 2000 or b_loc < 2000:
+                continue
+            a_w = sum(r["weight_by_language"].get(lang, 0.0) for r in tuned)
+            b_w = sum(r["weight_by_language"].get(lang, 0.0) for r in held)
+            rows.append((lang, a_w / (a_loc / 1000), b_w / (b_loc / 1000),
+                         a_loc, b_loc))
+        if rows:
+            print("\n    LANGUAGE-MATCHED, weighted — the only comparison that "
+                  "controls for\n    what the repositories actually contain:")
+            print(f"      {'language':<12}{'tuned':>9}{'held out':>10}{'ratio':>8}"
+                  f"{'tuned KLOC':>12}{'held KLOC':>11}")
+            for lang, a, b, a_loc, b_loc in rows[:8]:
+                r = f"{b / a:.2f}x" if a else "-"
+                print(f"      {lang:<12}{a:>9.2f}{b:>10.2f}{r:>8}"
+                      f"{a_loc / 1000:>12.0f}{b_loc / 1000:>11.0f}")
+
+        # Sample size last, so it is the thing left on screen.
+        if len(tuned) < 2 or len(held) < 2:
+            print(f"\n    NOTE: {len(tuned)} tuned and {len(held)} held-out "
+                  "repositories. One repository on\n    each side is two numbers, "
+                  "not a comparison. Read the build-breaking\n    count -- which is "
+                  "a count and means what it says -- and treat every\n    ratio "
+                  "above as a prompt to look, never as a verdict.")
         else:
-            print("\n    No stack appears on both sides, so nothing here controls "
-                  "for composition.\n    That is a gap in the holdout, not a result.")
+            print(f"\n    {len(held)} held-out repositories is still a small sample. "
+                  "The figure that\n    survives a small sample is the "
+                  "build-breaking count above.")
 
     print("\n  RULES THAT FIRE MOSTLY ON TEACHING MATERIAL")
     print("  (correct about the file, but not evidence of a noisy rule)")

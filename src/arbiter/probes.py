@@ -12,6 +12,7 @@ silent pass.
 from __future__ import annotations
 
 import math
+import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -77,21 +78,39 @@ def register(p: Probe) -> Probe:
 # for the duration of a scan and files are capped at 2 MB, so caching by
 # absolute path is safe and bounded.
 #
-# Cleared between scans by clear_read_cache(), because a long-lived process
-# doing several scans (the corpus tool, the A/B harness, the fix-pair miner)
-# must not serve one repository's bytes for another's path.
-_READ_CACHE: dict[str, str] = {}
+# The key includes the file's modification time and size, not just its path.
+#
+# The first version keyed on path alone and relied on every caller clearing the
+# cache between scans. That lasted about an hour. The injection harness does
+# not call run_scan -- it invokes probes directly and writes every one of
+# twenty thousand generated cases to the SAME path -- so case two was served
+# case one's bytes, and recall on four rules fell from 1.0000 to 0.0000 while
+# the harness reported the numbers with a straight face. It bought a 20%
+# speedup and would have quietly invalidated every piece of training evidence.
+#
+# A cache that cannot be wrong is worth more than one that is faster and
+# depends on callers remembering something. stat() is cheap next to reading and
+# decoding the file, and no caller has to know this exists.
+_READ_CACHE: dict[tuple[str, int, int], str] = {}
+_READ_CACHE_MAX = 20_000
 
 
 def _read(f) -> str:
-    key = getattr(f, "abspath", "") or ""
+    path = getattr(f, "abspath", "") or ""
+    try:
+        st = os.stat(path)
+        key = (path, st.st_mtime_ns, st.st_size)
+    except OSError:
+        return ""
     cached = _READ_CACHE.get(key)
     if cached is not None:
         return cached
     try:
-        text = Path(key).read_text(errors="replace")
+        text = Path(path).read_text(errors="replace")
     except OSError:
         text = ""
+    if len(_READ_CACHE) >= _READ_CACHE_MAX:
+        _READ_CACHE.clear()
     _READ_CACHE[key] = text
     return text
 
@@ -587,6 +606,12 @@ def probe_resource_policy(ctx: ProbeContext) -> list[Finding]:
     for rule in rules:
         kinds = set(rule.get("match_kinds", []))
         natives = set(rule.get("match_native", []))
+        # Some resources of a provider simply do not express the control. Azure
+        # SQL always enforces TLS and has no property saying so, so a rule that
+        # looks for one reports every Azure SQL database ever written. This is
+        # the same shape as the Kubernetes PersistentVolumeClaim episode, one
+        # level finer: not the provider, the specific resource type.
+        excluded_natives = set(rule.get("exclude_native", []))
         # Provider scoping exists because a normalized kind can hide a
         # different property model. A Kubernetes PersistentVolumeClaim is a
         # block_store, but encryption lives on its StorageClass, so an AWS
@@ -601,6 +626,8 @@ def probe_resource_policy(ctx: ProbeContext) -> list[Finding]:
             if providers and res.provider not in providers:
                 continue
             if res.provider in excluded:
+                continue
+            if res.native in excluded_natives:
                 continue
             verdict = _eval_assert(res, rule)
             if verdict == SATISFIED:

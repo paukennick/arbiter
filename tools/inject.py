@@ -406,6 +406,90 @@ def control_hardened_workload(seeds: Seeds) -> Case | None:
                 _k8s_workload(HARDENED), False)
 
 
+# -- TLS in transit ---------------------------------------------------------
+#
+# Each of these has a control that is the SAME resource correctly configured.
+# A rule that cannot recognise the correct form fires on everything, and the
+# recall number still reads 1.0000 -- which is the state six rules were in
+# before controls were written for them.
+
+_PLAINTEXT_DB = [
+    ('azurerm_postgresql_server', 'sku_name = "GP_Gen5_2"'),
+    ('azurerm_mysql_server', 'sku_name = "GP_Gen5_2"'),
+    ('google_sql_database_instance', 'database_version = "POSTGRES_15"'),
+]
+
+
+def case_database_allows_plaintext(seeds: Seeds) -> Case | None:
+    native, body = rng.choice(_PLAINTEXT_DB)
+    return Case("arbiter/resource.database-allows-plaintext-connections",
+                "resource_policy", "db.tf",
+                f'resource "{native}" "d{rng.randint(1, 9999)}" {{\n'
+                f'  name = "app-db"\n  {body}\n}}\n', True)
+
+
+def control_database_requires_tls(seeds: Seeds) -> Case | None:
+    native, body = rng.choice(_PLAINTEXT_DB)
+    if native == "google_sql_database_instance":
+        extra = ("  settings {\n    tier = \"db-f1-micro\"\n"
+                 "    ip_configuration {\n      require_ssl = true\n    }\n  }\n")
+    else:
+        extra = "  ssl_enforcement_enabled = true\n"
+    return Case("arbiter/resource.database-allows-plaintext-connections",
+                "resource_policy", "db.tf",
+                f'resource "{native}" "d{rng.randint(1, 9999)}" {{\n'
+                f'  name = "app-db"\n  {body}\n{extra}}}\n', False)
+
+
+_WEAK_TLS = ["TLS1_0", "TLS1_1", "1.0", "1.1",
+             "Policy-Min-TLS-1-0-2019-07", "Policy-Min-TLS-1-1-2019-07"]
+_STRONG_TLS = ["TLS1_2", "TLS1_3", "1.2", "1.3", "Policy-Min-TLS-1-2-2019-07"]
+
+
+def case_weak_tls_version(seeds: Seeds) -> Case | None:
+    return Case("arbiter/resource.weak-tls-version", "resource_policy", "st.tf",
+                f'resource "azurerm_storage_account" "s{rng.randint(1, 9999)}" {{\n'
+                f'  name = "stacct"\n'
+                f'  customer_managed_key = azurerm_key_vault_key.k.id\n'
+                f'  min_tls_version = "{rng.choice(_WEAK_TLS)}"\n}}\n', True)
+
+
+def control_modern_tls_version(seeds: Seeds) -> Case | None:
+    return Case("arbiter/resource.weak-tls-version", "resource_policy", "st.tf",
+                f'resource "azurerm_storage_account" "s{rng.randint(1, 9999)}" {{\n'
+                f'  name = "stacct"\n'
+                f'  customer_managed_key = azurerm_key_vault_key.k.id\n'
+                f'  min_tls_version = "{rng.choice(_STRONG_TLS)}"\n}}\n', False)
+
+
+def case_no_https_redirect(seeds: Seeds) -> Case | None:
+    return Case("arbiter/resource.no-https-redirect", "resource_policy", "app.tf",
+                f'resource "azurerm_app_service" "a{rng.randint(1, 9999)}" {{\n'
+                f'  name = "webapp"\n'
+                f'  app_service_plan_id = azurerm_app_service_plan.p.id\n}}\n', True)
+
+
+def control_https_only(seeds: Seeds) -> Case | None:
+    return Case("arbiter/resource.no-https-redirect", "resource_policy", "app.tf",
+                f'resource "azurerm_app_service" "a{rng.randint(1, 9999)}" {{\n'
+                f'  name = "webapp"\n'
+                f'  app_service_plan_id = azurerm_app_service_plan.p.id\n'
+                f'  https_only = true\n}}\n', False)
+
+
+# The control that matters most for the TLS work: a resource type whose
+# provider does not express the control at all. Azure SQL always enforces TLS
+# and has no property saying so, so a rule looking for one reports every Azure
+# SQL database ever written -- the PersistentVolumeClaim mistake, one level
+# finer.
+def control_provider_does_not_express_tls(seeds: Seeds) -> Case | None:
+    return Case("arbiter/resource.database-allows-plaintext-connections",
+                "resource_policy", "sql.tf",
+                f'resource "azurerm_mssql_database" "d{rng.randint(1, 9999)}" {{\n'
+                f'  name = "app-db"\n  server_id = azurerm_mssql_server.s.id\n'
+                f'  transparent_data_encryption_enabled = true\n}}\n', False)
+
+
 # -- CI ---------------------------------------------------------------------
 
 ACTIONS = ["actions/checkout", "actions/setup-python", "actions/setup-node",
@@ -632,7 +716,11 @@ CONTROLS = [control_placeholder, control_status_field, control_passphrase,
             control_aws_key_lookalike, control_gh_token_lookalike,
             control_public_key, control_unprivileged_container,
             control_no_host_namespace, control_safe_capability,
-            control_unquoted_lookalike, case_iam_action_is_not_a_secret]
+            control_unquoted_lookalike, case_iam_action_is_not_a_secret,
+            case_database_allows_plaintext, control_database_requires_tls,
+            case_weak_tls_version, control_modern_tls_version,
+            case_no_https_redirect, control_https_only,
+            control_provider_does_not_express_tls]
 
 SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"]
 
