@@ -3222,3 +3222,32 @@ def test_no_output_format_reprints_a_secret(tmp_path):
         assert value not in Path(path).read_text(), f"{kind} reprinted the secret"
     from arbiter.report import render_console
     assert value not in render_console(rep, color=False)
+
+
+def test_findings_in_untouched_context_files_are_tagged(tmp_path):
+    """A pull request must not be blamed for a lockfile it did not touch.
+
+    Context files are read so the file-scoped probes can reason, not because
+    anybody asked about them. Findings landing there are real and stay in the
+    report; they are tagged so a reader -- and anyone tuning a gate -- can tell
+    them apart from what the change introduced.
+    """
+    root = tmp_path / "r"
+    base = _git_repo(root, {
+        "infra/main.tf": 'resource "aws_s3_bucket" "b" {\n  bucket = "x"\n}\n',
+        "src/a.py": CLEAN_PY,
+    }, {"src/b.py": LEAKY_PY})
+    rep = run_scan([str(root)], load_config(None), use_adapters=False,
+                   changed_since=base)
+    tagged = {f.location.path for f in rep.active() if "outside-this-change" in f.tags}
+    untagged = {f.location.path for f in rep.active() if "outside-this-change" not in f.tags}
+    assert "src/b.py" in untagged, untagged
+    assert all(p != "src/b.py" for p in tagged), tagged
+    assert any(p.startswith("infra/") for p in tagged), tagged
+
+
+def test_a_full_scan_tags_nothing_as_outside_the_change(tmp_path):
+    (tmp_path / "a.py").write_text(LEAKY_PY)
+    rep = run_scan([str(tmp_path)], load_config(None), use_adapters=False)
+    assert rep.scan_scope["mode"] == "full"
+    assert not any("outside-this-change" in f.tags for f in rep.findings)

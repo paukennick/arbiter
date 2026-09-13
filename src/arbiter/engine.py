@@ -188,6 +188,12 @@ def run_scan(
                     )
                 selected.setdefault(r.id, set()).update(paths)
         inv, stats = narrow(inv, selected)
+        # Remembered so findings landing in a context file -- read so the
+        # probes could reason, not because anybody asked about it -- can be
+        # told apart from findings in the change itself. Blaming a pull
+        # request for a pre-existing issue in an unchanged lockfile is how
+        # gates lose the room.
+        changed_set = {rid: set(v) for rid, v in selected.items()}
         scan_scope = {"mode": "partial", **stats}
         scan_scope["basis"] = (f"changed since {changed_since}" if changed_since
                                else "an explicit file list")
@@ -287,6 +293,11 @@ def run_scan(
         outcomes.append(oc)
 
     findings = _dedupe(findings)
+    if scan_scope["mode"] == "partial":
+        for f in findings:
+            if f.location.path and f.location.path not in changed_set.get(f.repo_id, set()):
+                f.tags.append("outside-this-change")
+
     from .learn import apply as apply_knowledge
     calibration = apply_knowledge(findings, knowledge)
     apply_severity_overrides(findings, config)
