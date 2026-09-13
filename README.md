@@ -17,6 +17,9 @@ five of them held out and never tuned against. Everything below works today.
 ```
 pip install -e .
 arbiter scan ./my-repo
+
+./tools/install_tools.sh     # optional: the five external analyzers, pinned
+./tools/bootstrap_repo.sh    # create the GitHub repo and push, in one command
 ```
 
 ---

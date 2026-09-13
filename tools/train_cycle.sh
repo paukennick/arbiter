@@ -31,6 +31,13 @@ STAMP="$(date -u +%Y-%m-%dT%H%M%SZ)"
 cd "$ROOT"
 mkdir -p "$RESULTS" .arbiter
 
+echo "==> 0/9  external analyzers"
+# Pinned versions, idempotent, never fails the cycle. A missing analyzer is
+# recorded as "not assessed" in the scan, which is the honest outcome.
+if [ -x "$ROOT/tools/install_tools.sh" ]; then
+  "$ROOT/tools/install_tools.sh" 2>&1 | sed -n '1,8p'
+fi
+
 echo "==> 1/9  practice repositories"
 if [ ! -d "$CORPUS" ] || [ -z "$(ls -A "$CORPUS" 2>/dev/null)" ]; then
   echo "    downloading (first run only, a few minutes)"
