@@ -125,6 +125,17 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
     L.append(_color(color, "dim", f"  {len(report.repos)} repo(s): {repo_line}"))
     if report.stacks:
         L.append(_color(color, "dim", f"  stacks: {', '.join(report.stacks)}"))
+    ss = report.scan_scope or {}
+    if ss.get("mode") == "partial":
+        # Loud, and above the findings. Somebody scrolling to the counts must
+        # not be able to reach them without passing this line.
+        L.append("")
+        L.append(_color(color, "high", "  PARTIAL SCAN — this is not a report about the repository"))
+        L.append(_color(color, "dim",
+                        f"  read {ss.get('files_read', 0)} of {ss.get('files_total', 0)} file(s) "
+                        f"({ss.get('fraction_read', 0):.0%} of lines) — {ss.get('basis', '')}"))
+        L.append(_color(color, "dim",
+                        "  checks that read across files were not run; see NOT ASSESSED"))
     L.append("")
 
     head = "  " + "  ".join(
@@ -139,9 +150,18 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
     L.append("")
 
     if sc.dimensions:
+        # In a partial scan a dimension can reach 100% check coverage -- every
+        # probe carrying it ran -- while having read a third of the files.
+        # The claim ledger already scopes those claims partial; the console
+        # must not read more confidently than the ledger does.
+        mark = "*" if (report.scan_scope or {}).get("mode") == "partial" else " "
         L.append(_color(color, "bold", "  DIMENSION        SCORE   COVERAGE   FINDINGS"))
         for name, d in sorted(sc.dimensions.items()):
-            L.append(f"  {name:<15}  {d.score:>5.1f}   {d.coverage:>7.0%}   {d.findings:>8}")
+            L.append(f"  {name:<15}  {d.score:>5.1f}   {d.coverage:>6.0%}{mark}   {d.findings:>8}")
+        if mark == "*":
+            L.append(_color(color, "dim",
+                            "  * share of CHECKS that ran, not of the repository: "
+                            "these checks read only the changed files"))
         L.append("")
 
     shown = [f for f in active][:limit]

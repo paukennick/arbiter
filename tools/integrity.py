@@ -130,6 +130,13 @@ def break_invariant(name: str, report: Report):
         report.gate = {"passed": True, "reasons": []}
         report.integrity = {}
         return "gate-complete"
+    elif name == "CI-11":
+        # A scan that read part of the repository, with every probe clean and
+        # nothing else missing. Without CI-11 this report would assert
+        # "probe ran and found nothing" at complete scope about a repository
+        # it barely opened.
+        report.scan_scope = {"mode": "partial", "files_total": 2000,
+                             "files_read": 4, "basis": "changed since main"}
     return None
 
 

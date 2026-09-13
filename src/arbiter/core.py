@@ -239,6 +239,11 @@ class Report:
     # meaningful against the code the rule could have fired on.
     loc_by_language: dict[str, int] = field(default_factory=dict)
     loc_by_role: dict[str, int] = field(default_factory=dict)
+    # Whether this scan read the whole repository or only part of it, and on
+    # what basis. {"mode": "full"} or {"mode": "partial", ...}. A partial scan
+    # adds an abstention naming the files it did not read, so no claim built
+    # on it can be scoped complete. See incremental.py.
+    scan_scope: dict = field(default_factory=lambda: {"mode": "full"})
     # Per-framework control coverage: how many controls carry evidence from
     # this scan and how many do not. Summary only -- `arbiter controls` prints
     # the per-control detail. It lives in every report because a compliance
@@ -266,6 +271,7 @@ class Report:
             "started_at": self.started_at,
             "duration_s": round(self.duration_s, 3),
             "stacks": self.stacks,
+            "scan_scope": self.scan_scope,
             "loc_by_language": self.loc_by_language,
             "loc_by_role": self.loc_by_role,
             "controls": self.controls,
@@ -289,6 +295,7 @@ class Report:
         r.started_at = d.get("started_at", "")
         r.duration_s = d.get("duration_s", 0.0)
         r.stacks = d.get("stacks", [])
+        r.scan_scope = d.get("scan_scope", {"mode": "full"})
         r.repos = [RepoInfo(**x) for x in d.get("repos", [])]
         r.probes = [ProbeOutcome(**x) for x in d.get("probes", [])]
         r.findings = [Finding.from_dict(x) for x in d.get("findings", [])]

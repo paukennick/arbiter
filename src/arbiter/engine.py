@@ -140,6 +140,8 @@ def run_scan(
     plan_paths: list[str] | None = None,
     knowledge_path: str | None = None,
     pin_knowledge: str | None = None,
+    changed_since: str | None = None,
+    only_files: list[str] | None = None,
 ) -> Report:
     started = time.time()
     if use_adapters:
@@ -159,6 +161,39 @@ def run_scan(
     inv = build_inventory(repos)
     plans = list(plan_paths or [])
     plans += [str(p) for p in ((config.get("terraform") or {}).get("plans") or [])]
+
+    # Incremental scanning. The full walk still happens -- it costs 0.2s on a
+    # 452,000-line repository, and the stack set and the line counts must be
+    # facts about the repository rather than about the diff. What narrows is
+    # which files the probes are shown. See incremental.py.
+    scan_scope: dict = {"mode": "full"}
+    if changed_since or only_files:
+        from .incremental import git_changed, narrow
+        selected: dict[str, set[str]] = {}
+        notes: list[str] = []
+        if only_files:
+            want = {str(x).replace("\\", "/").lstrip("./") for x in only_files}
+            for r in repos:
+                selected[r.id] = set(want)
+        if changed_since:
+            for r in repos:
+                paths, note = git_changed(r.path, changed_since)
+                if note:
+                    # An empty diff and a failed diff look identical downstream,
+                    # and one of them would produce a clean partial scan of
+                    # nothing. Refuse rather than report.
+                    raise RuntimeError(
+                        f"cannot scan {r.id} incrementally: {note}. "
+                        "Run a full scan, or give a ref that exists."
+                    )
+                selected.setdefault(r.id, set()).update(paths)
+        inv, stats = narrow(inv, selected)
+        scan_scope = {"mode": "partial", **stats}
+        scan_scope["basis"] = (f"changed since {changed_since}" if changed_since
+                               else "an explicit file list")
+        if changed_since and only_files:
+            scan_scope["basis"] = f"changed since {changed_since}, plus an explicit file list"
+
     graph = build_graph(inv, plan_paths=plans)
     # A directory holding only a plan JSON has no .tf files to detect, but it
     # is unambiguously Terraform and the resource probes must still apply.
@@ -201,6 +236,15 @@ def run_scan(
             continue
         if probe.name in disabled:
             oc.status, oc.reason = "skipped", "disabled in configuration"
+            outcomes.append(oc)
+            continue
+        if scan_scope["mode"] == "partial" and probe.scope != "file":
+            # Not run against a subset, because the answer would be wrong
+            # rather than merely incomplete. Recorded as not-assessed so it
+            # stays in the coverage denominator.
+            oc.status = "skipped"
+            oc.reason = (f"partial scan ({scan_scope['basis']}): this check reads "
+                         "relationships between files and cannot answer from a subset")
             outcomes.append(oc)
             continue
         ok, why = probe.applicable(ctx)
@@ -265,6 +309,7 @@ def run_scan(
         ),
         probes=outcomes,
         stacks=sorted(inv.stacks),
+        scan_scope=scan_scope,
     )
     for _fi in inv.text_files():
         report.loc_by_language[_fi.language] = (
@@ -282,8 +327,28 @@ def run_scan(
         "profiles": {k: v for k, v in profiles.items() if v},
     }
     report.scorecard = compute_scorecard(
-        report.findings, outcomes, sum(r.loc for r in repos), config
+        report.findings, outcomes,
+        # Density denominator: what was read, not what exists. A partial scan
+        # measured against whole-repo size would look artificially sparse.
+        (scan_scope.get("lines_read") if scan_scope["mode"] == "partial"
+         else sum(r.loc for r in repos)),
+        config,
     )
+    if scan_scope["mode"] == "partial":
+        # A partial scan may pass a gate and may not carry a grade. The gate is
+        # a question about the findings in front of it ("did anything cross a
+        # threshold"), which a subset can answer. A grade is a summary of the
+        # repository, and a number that looks like one but describes a diff is
+        # precisely the thing this tool exists not to produce. Coverage stays
+        # reported, because coverage is what makes the withholding legible.
+        report.scorecard.withheld = True
+        report.scorecard.overall = None
+        report.scorecard.withheld_reason = (
+            f"partial scan ({scan_scope['basis']}): "
+            f"{scan_scope['files_read']} of {scan_scope['files_total']} file(s) read. "
+            "A grade would describe the changed files while reading as though "
+            "it described the repository."
+        )
     # Control coverage. Summary only; the per-control detail is one command
     # away. Failing to evaluate frameworks must never fail a scan.
     try:

@@ -62,9 +62,28 @@ class Violation:
 # Deriving the claims a report makes
 # ---------------------------------------------------------------------------
 
+def unread_files_abstention(report: Report) -> str:
+    """The abstention a partial scan carries, or "" for a full scan.
+
+    A partial scan did not read most of the repository. That is not a probe
+    failure -- the probes that ran did their job -- but it is still something
+    the report did not look at, and every claim built on it must say so. One
+    entry is enough: it flows into the gate, the grade and every dimension.
+    """
+    sc = report.scan_scope or {}
+    if sc.get("mode") != "partial":
+        return ""
+    read = sc.get("files_read", 0)
+    total = sc.get("files_total", 0)
+    return f"scan:{total - read} of {total} file(s) not read ({sc.get('basis', 'partial scan')})"
+
+
 def abstentions(report: Report) -> list[str]:
     """Every check that did not run and conclude, named."""
     out: list[str] = []
+    unread = unread_files_abstention(report)
+    if unread:
+        out.append(unread)
     for p in report.probes:
         if p.status != "ran":
             out.append(f"probe:{p.name}")
@@ -116,25 +135,36 @@ def build_claims(report: Report) -> list[Claim]:
             f"probe:{p.name}" for p in report.probes
             if p.status != "ran" and name in (p.dimensions or [])
         ]
+        # A dimension can reach full probe coverage in a partial scan -- if
+        # every probe carrying that dimension is file-scoped, they all ran.
+        # They ran on half the files. The score is a fact about those files
+        # and not about the repository, so the unread files abstain here too.
+        if unread_files_abstention(report):
+            dim_abst.append(unread_files_abstention(report))
         claims.append(Claim(
             id=f"dimension:{name}",
             kind=DIMENSION,
             statement=f"{name} scores {dim.score} with {dim.findings} finding(s)",
-            scope=COMPLETE if dim.coverage >= 1.0 else PARTIAL,
+            scope=COMPLETE if (dim.coverage >= 1.0 and not dim_abst) else PARTIAL,
             basis=[f"probe:{p.name}" for p in report.probes
                    if p.status == "ran" and name in (p.dimensions or [])],
             abstained=sorted(set(dim_abst)),
         ))
 
+    unread = unread_files_abstention(report)
     for p in report.probes:
         if p.status == "ran" and p.finding_count == 0:
+            # In a partial scan this probe read a subset. "Found nothing" is
+            # true of what it was given and false of the repository, so the
+            # claim is narrowed rather than deleted.
             claims.append(Claim(
                 id=f"probe_clean:{p.name}",
                 kind=PROBE_CLEAN,
-                statement=f"{p.name} ran and found nothing",
-                scope=COMPLETE,
+                statement=(f"{p.name} ran and found nothing" if not unread else
+                           f"{p.name} found nothing in the files it was given"),
+                scope=COMPLETE if not unread else PARTIAL,
                 basis=[f"probe:{p.name}"],
-                abstained=[],
+                abstained=[] if not unread else [unread],
             ))
 
     # The coverage figure is a measurement *about* the abstentions, not a
@@ -170,6 +200,7 @@ INVARIANTS = {
     "CI-8": "checks recorded as not-assessed must appear in the abstention list",
     "CI-9": "coverage may never exceed 1.0 or fall below 0.0",
     "CI-10": "a passing gate with abstentions must be scoped partial, not complete",
+    "CI-11": "a partial scan may make no complete-scope claim about the repository",
 }
 
 
@@ -235,6 +266,22 @@ def verify(report: Report, config: dict | None = None) -> list[Violation]:
     gate_claim = by_id.get("gate")
     if gate_claim and (report.gate or {}).get("passed") and absts and gate_claim.scope == COMPLETE:
         out.append(Violation("CI-10", "gate", "passing gate scoped complete despite abstentions"))
+
+    # CI-11. The one that makes incremental scanning safe to ship: a scan that
+    # read four files of a repository must not produce a single sentence a
+    # reader could quote as being about the repository.
+    if (report.scan_scope or {}).get("mode") == "partial":
+        for c in claims:
+            if c.kind == COVERAGE:
+                continue  # a measurement ABOUT the incompleteness; see above
+            if c.kind == GATE and not (report.gate or {}).get("passed"):
+                # "a threshold was violated" is an existence claim. Finding one
+                # defect proves it whatever else went unread, so completeness
+                # is not part of what is being asserted.
+                continue
+            if c.scope == COMPLETE:
+                out.append(Violation("CI-11", c.id,
+                                     "partial scan asserted a complete-scope claim"))
 
     return out
 

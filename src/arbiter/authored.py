@@ -653,6 +653,10 @@ def register_authored() -> None:
     from .probes import Probe, register
     register(Probe(
         name="authored",
+        # File-scoped only because a partial inventory always retains every
+        # manifest and workspace file (see inventory.CONTEXT_ALWAYS). Without
+        # that guarantee this probe would invent undeclared imports.
+        scope="file",
         dimensions=["supply_chain", "security", "quality", "drift"],
         checks=4,
         run=probe_authored,

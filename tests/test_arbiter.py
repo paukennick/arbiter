@@ -2959,3 +2959,187 @@ def test_the_multicloud_fixture_correct_half_stays_clean_for_every_rule(tmp_path
     assert not wrong, [(f.location.logical, f.rule_id) for f in wrong]
     broken = [f for f in rep.active() if "bad" in f.location.logical]
     assert len(broken) >= 15
+
+
+# ===========================================================================
+# Incremental scanning
+#
+# The speed is the easy half. The half worth testing is that a scan which read
+# 199 of 2,293 files cannot produce a sentence anyone could quote as being
+# about the repository.
+# ===========================================================================
+
+def _git_repo(root, files, second=None):
+    """A real git repository with one commit, and optionally a second."""
+    import subprocess
+    root.mkdir(parents=True, exist_ok=True)
+    def run(*a):
+        subprocess.run(["git", "-C", str(root), *a], capture_output=True, check=True)
+    run("init", "-q", "-b", "main")
+    run("config", "user.email", "t@t"); run("config", "user.name", "t")
+    for name, text in files.items():
+        p = root / name
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text)
+    run("add", "-A"); run("commit", "-qm", "one")
+    base = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"],
+                          capture_output=True, text=True).stdout.strip()
+    if second:
+        for name, text in second.items():
+            p = root / name
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(text)
+        run("add", "-A"); run("commit", "-qm", "two")
+    return base
+
+
+CLEAN_PY = "def add(a, b):\n    return a + b\n"
+LEAKY_PY = 'TOKEN = "ghp_' + "b" * 36 + '"\n'
+
+
+def test_every_probe_declares_a_scope_we_understand():
+    from arbiter.probes import REGISTRY
+    from arbiter.adapters import register_adapters
+    register_adapters()
+    bad = [p.name for p in REGISTRY if p.scope not in ("file", "repo")]
+    assert bad == [], f"probes with an unrecognised scope: {bad}"
+
+
+def test_a_partial_scan_does_not_run_repo_scoped_probes(tmp_path):
+    base = _git_repo(tmp_path / "r", {"a.py": CLEAN_PY}, {"b.py": LEAKY_PY})
+    rep = run_scan([str(tmp_path / "r")], load_config(None), use_adapters=False,
+                   changed_since=base)
+    assert rep.scan_scope["mode"] == "partial"
+    from arbiter.probes import REGISTRY
+    repo_scoped = {p.name for p in REGISTRY if p.scope == "repo"}
+    for oc in rep.probes:
+        if oc.name in repo_scoped:
+            assert oc.status == "skipped"
+            assert "cannot answer from a subset" in oc.reason
+
+
+def test_a_partial_scan_withholds_the_grade(tmp_path):
+    base = _git_repo(tmp_path / "r", {"a.py": CLEAN_PY}, {"b.py": CLEAN_PY})
+    rep = run_scan([str(tmp_path / "r")], load_config(None), use_adapters=False,
+                   changed_since=base)
+    assert rep.scorecard.withheld is True
+    assert rep.scorecard.overall is None
+    assert "partial scan" in rep.scorecard.withheld_reason
+
+
+def test_a_partial_scan_claims_nothing_complete_about_the_repository(tmp_path):
+    base = _git_repo(tmp_path / "r", {"a.py": CLEAN_PY}, {"b.py": CLEAN_PY})
+    rep = run_scan([str(tmp_path / "r")], load_config(None), use_adapters=False,
+                   changed_since=base)
+    assert rep.integrity["ok"], rep.integrity["violations"]
+    complete = [c["id"] for c in rep.claims if c["scope"] == "complete"]
+    # Only the coverage measurement, which is a statement ABOUT the
+    # incompleteness rather than a claim weakened by it.
+    assert complete == ["coverage"], complete
+    for c in rep.claims:
+        if c["kind"] == "probe_clean":
+            assert "found nothing in the files it was given" in c["statement"]
+
+
+def test_ci_11_catches_a_partial_scan_that_claims_completeness(tmp_path):
+    """The invariant, not the code path, is what makes this safe to ship."""
+    base = _git_repo(tmp_path / "r", {"a.py": CLEAN_PY}, {"b.py": CLEAN_PY})
+    rep = run_scan([str(tmp_path / "r")], load_config(None), use_adapters=False,
+                   changed_since=base)
+    from arbiter.claims import verify
+    # Forge the report a naive implementation would produce: partial scan,
+    # every claim asserted as though the whole repository had been read.
+    for c in rep.claims:
+        c["scope"] = "complete"
+    import arbiter.claims as cl
+    saved = cl.build_claims
+    cl.build_claims = lambda r: [cl.Claim(
+        id=c["id"], kind=c["kind"], statement=c["statement"], scope="complete",
+        basis=c["basis"], abstained=[]) for c in rep.claims]
+    try:
+        violations = verify(rep, load_config(None))
+    finally:
+        cl.build_claims = saved
+    assert any(v.invariant == "CI-11" for v in violations)
+
+
+def test_partial_and_full_agree_exactly_on_the_files_both_read(tmp_path):
+    """scope='file' is a claim of exactness, not an approximation.
+
+    If a file-scoped probe gave a different answer with fewer files present,
+    it was mislabelled and the partial scan would be quietly wrong.
+    """
+    root = tmp_path / "r"
+    base = _git_repo(root, {
+        "keep.py": LEAKY_PY,
+        "infra/main.tf": 'resource "aws_s3_bucket" "b" {\n  bucket = "x"\n}\n',
+    }, {"changed.py": LEAKY_PY.replace("b" * 36, "c" * 36)})
+    full = run_scan([str(root)], load_config(None), use_adapters=False)
+    part = run_scan([str(root)], load_config(None), use_adapters=False,
+                    changed_since=base)
+    from arbiter.incremental import git_changed, narrow
+    from arbiter.inventory import acquire_one, build_inventory
+    info, _ = acquire_one(str(root))
+    paths, note = git_changed(str(root), base)
+    assert note == ""
+    nar, _ = narrow(build_inventory([info]), {"root": paths})
+    read = {f.path for f in nar.files}
+    from arbiter.probes import REGISTRY
+    fs = {p.name for p in REGISTRY if p.scope == "file"}
+    F = {f.id for f in full.findings if f.probe in fs and f.location.path in read}
+    P = {f.id for f in part.findings if f.probe in fs}
+    assert F == P, f"missing={F - P} extra={P - F}"
+    assert P, "the fixture produced no file-scoped findings, so this proves nothing"
+
+
+def test_a_ref_that_does_not_exist_refuses_rather_than_scanning_nothing(tmp_path):
+    """An empty diff and a failed diff look identical downstream.
+
+    Reporting the second as a clean partial scan would be the worst possible
+    failure: a green gate that read no files at all.
+    """
+    _git_repo(tmp_path / "r", {"a.py": LEAKY_PY})
+    with pytest.raises(RuntimeError) as e:
+        run_scan([str(tmp_path / "r")], load_config(None), use_adapters=False,
+                 changed_since="no-such-ref")
+    assert "not a commit" in str(e.value)
+
+
+def test_a_non_git_target_refuses_incremental_scanning(tmp_path):
+    (tmp_path / "a.py").write_text(LEAKY_PY)
+    with pytest.raises(RuntimeError) as e:
+        run_scan([str(tmp_path)], load_config(None), use_adapters=False,
+                 changed_since="main")
+    assert "not a git repository" in str(e.value)
+
+
+def test_context_files_are_kept_but_ordinary_config_is_not(tmp_path):
+    """The first version of this kept every yaml and read 55% of Traefik."""
+    from arbiter.incremental import is_context
+    from arbiter.inventory import FileInfo, classify
+
+    def fi(path):
+        lang = {"yml": "yaml", "yaml": "yaml", "json": "json", "tf": "terraform",
+                "mod": "unknown", "txt": "unknown"}.get(path.rsplit(".", 1)[-1], "unknown")
+        return FileInfo(path=path, abspath="", repo_id="root", language=lang,
+                        role=classify(path, lang))
+
+    for p in ("go.mod", "package.json", "requirements.txt", "infra/main.tf",
+              ".github/workflows/ci.yml", "Dockerfile", "poetry.lock"):
+        assert is_context(fi(p)), f"{p} must be kept: a probe reasons across it"
+    for p in ("integration/fixtures/a.yml", "testdata/big.json",
+              "deploy/k8s/service.yaml", "docs/conf.yaml"):
+        assert not is_context(fi(p)), (
+            f"{p} was kept; it is an ordinary config file with its own "
+            "pre-existing findings, not context for the changed ones")
+
+
+def test_only_files_is_a_partial_scan_too(tmp_path):
+    (tmp_path / "a.py").write_text(LEAKY_PY)
+    (tmp_path / "b.py").write_text(LEAKY_PY.replace("b" * 36, "d" * 36))
+    rep = run_scan([str(tmp_path)], load_config(None), use_adapters=False,
+                   only_files=["a.py"])
+    assert rep.scan_scope["mode"] == "partial"
+    assert rep.scorecard.withheld is True
+    paths = {f.location.path for f in rep.active() if f.probe == "secrets"}
+    assert paths == {"a.py"}, paths

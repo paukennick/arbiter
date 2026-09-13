@@ -330,6 +330,8 @@ def main() -> int:
         def weighted(group):
             return sum(r.get("weight", 0.0) for r in group)
 
+        t, h = rate(tuned), rate(held)
+
         print("\n  DOES THE TUNING GENERALIZE?")
         print(f"    well-maintained, tuned on ({len(tuned)} repos): {t:.2f} findings/KLOC")
         print(f"    well-maintained, HELD OUT ({len(held)} repos): {h:.2f} findings/KLOC")
