@@ -38,6 +38,28 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   adjudications are 0 in both copies, so nothing a person decided was touched.
   `training/disagreements.json` came back with it — 317 contested findings where
   exactly one of two analyzers is wrong.
+- Installed the `api` extra and put the assembled application under test for the
+  first time: thirteen tests now go through a real request, twelve of them new —
+  missing, unknown
+  and revoked keys, the plaintext refusal with and without `--behind-proxy`, the
+  HSTS header on refusals as well as successes, an oversized upload, a networked
+  profile, the hourly cap and its `Retry-After`, an end-to-end scan, and the
+  audit line for a served request and a refused one. The client dependency
+  (`httpx2`, which starlette's `TestClient` now requires) is recorded in the
+  `dev` extra so these run rather than skip. (REQ-018)
+- Fixed two defects those tests found, both of which would have met the first
+  tester. `from __future__ import annotations` makes every annotation in
+  `api.py` a string, and FastAPI resolves them against the module's globals —
+  where neither `UploadFile` nor the `ReviewRequest` body model could be found,
+  because both are local to `create_app` by design. Every upload request failed
+  inside body validation, and `/v1/review-queue` read its body as a query
+  parameter and rejected all JSON. Both names are now published to the module
+  when the app is built. (REQ-018)
+- A report with nothing left to review now comes back as an empty queue instead
+  of an error. `arbiter review` exits 0 and writes no file when a report holds
+  no findings or every finding has already been adjudicated; `service.review_queue`
+  treated the missing file as a failure, so a caller with a clean report — the
+  good outcome — got a 400 naming a server temporary directory. (REQ-018)
 
 ### 2026-09-12
 

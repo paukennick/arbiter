@@ -17,7 +17,9 @@ dependencies = [
 [project.optional-dependencies]
 ast = ["tree-sitter>=0.23", "tree-sitter-language-pack>=0.9"]
 tools = ["ruff", "bandit", "checkov", "semgrep"]
-dev = ["pytest>=7"]
+# httpx2 is starlette's test client transport. Without it the app-level tests
+# skip, so the request path -- auth, TLS refusal, the limiter -- goes unexercised.
+dev = ["pytest>=7", "httpx2"]
 mcp = ["mcp>=1.0"]
 api = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9"]
 

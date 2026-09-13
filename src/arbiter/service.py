@@ -384,7 +384,19 @@ def review_queue(report_path: str, output_dir: str, limit: int = 20, rule: str =
     if proc.returncode == EXIT_ERROR:
         raise ServiceError(f"review failed: {(proc.stderr or proc.stdout).strip()[:800]}")
     if not out.exists():
-        raise ServiceError(f"arbiter wrote no queue at {out}")
+        # Nothing to review is an answer, not a failure. `arbiter review` exits 0
+        # and writes no file when a report holds no findings, or when every one
+        # of them has already been adjudicated. Treating that as an error told a
+        # hosted caller their clean report was a bad request, and named a server
+        # temporary directory in the message while doing it.
+        return {
+            "queue_path": "",
+            "queue_markdown": "",
+            "entry_count": 0,
+            "recorded": False,
+            "note": ("Nothing to review: this report has no findings, or every "
+                     "finding in it has already been adjudicated."),
+        }
     text = out.read_text(encoding="utf-8")
     return {
         "queue_path": str(out),

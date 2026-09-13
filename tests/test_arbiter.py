@@ -3957,17 +3957,225 @@ def test_a_refused_key_is_audited_without_writing_the_key_down(tmp_path):
     assert entry["key"] == "" and entry["user"] == ""
 
 
+# ---------------------------------------------------------------------------
+# The assembled application: everything below goes through a real request
+#
+# The tests above exercise the pieces -- key verification, the limiter, the
+# handlers -- directly. These go through the middleware, the dependency and the
+# endpoint, because the wiring between correct pieces is its own failure mode
+# and no unit test can see it.
+# ---------------------------------------------------------------------------
+
+def _client(key_path, behind_proxy=False, audit=None):
+    """A test client over the real application, speaking HTTPS.
+
+    `base_url` matters: the TLS middleware refuses anything else, which is the
+    behaviour being relied on rather than worked around.
+    """
+    pytest.importorskip("fastapi", reason="the api extra is not installed")
+    pytest.importorskip("httpx2", reason="starlette's test client needs httpx2")
+    from fastapi.testclient import TestClient
+
+    from arbiter import api
+    app = api.create_app(key_path, behind_proxy=behind_proxy,
+                         audit=audit or api.AuditLog(enabled=False))
+    return TestClient(app, base_url="https://testserver")
+
+
+def _archive(tmp_path, name="repo/billing.py", secret=True):
+    """A small gzipped tarball, with a credential in it when one is wanted."""
+    import tarfile
+    body = ('KEY = "sk_live_51H8xQ2LkdIwHu7ix' + "Z" * 20 + '"\n') if secret else "x = 1\n"
+    source = tmp_path / "payload.py"
+    source.write_text(body)
+    archive = tmp_path / "repo.tar.gz"
+    with tarfile.open(archive, "w:gz") as tf:
+        tf.add(source, arcname=name)
+    return archive.read_bytes()
+
+
+def _reviewable_report():
+    """A report holding one finding, under a rule nothing has adjudicated.
+
+    An empty report is a legitimate thing to send and comes back as an empty
+    queue, so it cannot be used to prove the success path works.
+    """
+    report = Report()
+    report.findings.append(_finding("arbiter/hosted-test-only", path="billing.py"))
+    return report.to_dict()
+
+
+def test_a_request_without_a_key_is_refused_by_the_application(tmp_path):
+    """The dependency has to actually be wired to the endpoint."""
+    from arbiter import api
+    api.mint_key("dana@acme.example", tmp_path / "keys.json")
+    client = _client(tmp_path / "keys.json")
+    for headers in ({}, {"X-API-Key": "arb_not-a-real-key"}):
+        response = client.post("/v1/scan", files={"archive": ("r.tar.gz", b"x")},
+                               headers=headers)
+        assert response.status_code == 401, response.text
+        assert response.json()["detail"] == "unknown, revoked or expired API key"
+
+
+def test_a_revoked_key_stops_working_on_the_next_request(tmp_path):
+    """Revocation is only real if the running application honours it."""
+    from arbiter import api
+    path = tmp_path / "keys.json"
+    raw, record = api.mint_key("dana@acme.example", path)
+    client = _client(path)
+    assert client.get("/v1/health").status_code == 200
+    api.revoke_key(record["id"], path)
+    response = client.post("/v1/review-queue", json={"report": {"findings": []}},
+                           headers={"X-API-Key": raw})
+    assert response.status_code == 401
+
+
+def test_health_needs_no_key_but_everything_else_does(tmp_path):
+    """The one endpoint a stranger may call is the one that says nothing."""
+    client = _client(tmp_path / "keys.json")
+    assert client.get("/v1/health").status_code == 200
+    for path, kwargs in (("/v1/scan", {"files": {"archive": ("r.tar.gz", b"x")}}),
+                         ("/v1/gate", {"files": {"archive": ("r.tar.gz", b"x")}}),
+                         ("/v1/review-queue", {"json": {"report": {}}})):
+        assert client.post(path, **kwargs).status_code == 401, path
+
+
+def test_a_plaintext_request_is_refused_before_the_key_is_read(tmp_path):
+    """426, and no chance for the key to be logged or acted on.
+
+    The middleware runs before the dependency, so a key sent over plaintext is
+    never verified -- which matters, because it has already been exposed.
+    """
+    from arbiter import api
+    path = tmp_path / "keys.json"
+    raw, _ = api.mint_key("dana@acme.example", path)
+    client = _client(path)
+    response = client.request("GET", "http://testserver/v1/health")
+    assert response.status_code == 426
+    assert "HTTPS" in response.json()["detail"] or "plaintext" in response.json()["detail"]
+    assert client.post("http://testserver/v1/review-queue",
+                       json={"report": {}},
+                       headers={"X-API-Key": raw}).status_code == 426
+
+
+def test_behind_a_proxy_the_forwarded_header_is_what_decides(tmp_path):
+    """With --behind-proxy the scheme is the proxy's word, so it must be present."""
+    client = _client(tmp_path / "keys.json", behind_proxy=True)
+    assert client.get("/v1/health",
+                      headers={"X-Forwarded-Proto": "https"}).status_code == 200
+    assert client.get("/v1/health").status_code == 426
+    assert client.get("/v1/health",
+                      headers={"X-Forwarded-Proto": "http"}).status_code == 426
+
+
+def test_every_response_carries_the_hsts_header(tmp_path):
+    """Including the refusals, which is where a downgraded client would land."""
+    from arbiter import api
+    client = _client(tmp_path / "keys.json")
+    for response in (client.get("/v1/health"),
+                     client.post("/v1/review-queue", json={"report": {}})):
+        assert response.headers["Strict-Transport-Security"] == api.HSTS_HEADER
+
+
+def test_an_oversized_upload_is_refused_by_the_endpoint(tmp_path, monkeypatch):
+    """413 before any of it reaches a workspace."""
+    from arbiter import api
+    path = tmp_path / "keys.json"
+    raw, _ = api.mint_key("dana@acme.example", path)
+    monkeypatch.setattr(api, "MAX_UPLOAD_BYTES", 128)
+    client = _client(path)
+    response = client.post("/v1/scan", files={"archive": ("r.tar.gz", b"x" * 200)},
+                           headers={"X-API-Key": raw})
+    assert response.status_code == 413
+
+
+def test_a_scan_over_http_returns_the_report_and_leaves_nothing(tmp_path):
+    """The whole path, once: upload, scan, report back, nothing kept."""
+    from arbiter import api
+    path = tmp_path / "keys.json"
+    raw, _ = api.mint_key("dana@acme.example", path)
+    client = _client(path)
+    response = client.post("/v1/scan?only=secrets",
+                           files={"archive": ("repo.tar.gz", _archive(tmp_path))},
+                           headers={"X-API-Key": raw})
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["finding_count"] >= 1, "the fixture produced nothing, so this proves nothing"
+    assert "report_path" not in body, "a server path came back to the caller"
+    assert "sk_live_51H8xQ2LkdIwHu7ix" not in response.text, "the secret was reprinted"
+
+
+def test_a_refused_profile_is_a_400_not_a_500(tmp_path):
+    """Asking for a networked profile is a bad request, not a server fault."""
+    from arbiter import api
+    path = tmp_path / "keys.json"
+    raw, _ = api.mint_key("dana@acme.example", path)
+    client = _client(path)
+    response = client.post("/v1/scan?profile=connected",
+                           files={"archive": ("repo.tar.gz", _archive(tmp_path))},
+                           headers={"X-API-Key": raw})
+    assert response.status_code == 400
+    assert "connected" in response.json()["detail"]
+
+
+def test_an_hourly_cap_reached_answers_429_with_retry_after(tmp_path, monkeypatch):
+    """A caller over the cap needs to be told when to come back."""
+    from arbiter import api
+    path = tmp_path / "keys.json"
+    raw, _ = api.mint_key("dana@acme.example", path)
+    monkeypatch.setattr(api, "LIMITER", api.RateLimiter(requests=2, window=3600))
+    client = _client(path)
+    body = {"report": _reviewable_report()}
+    ok = [client.post("/v1/review-queue", json=body,
+                      headers={"X-API-Key": raw}) for _ in range(2)]
+    assert all(r.status_code == 200 for r in ok), [r.text for r in ok]
+    limited = client.post("/v1/review-queue", json=body,
+                          headers={"X-API-Key": raw})
+    assert limited.status_code == 429
+    assert int(limited.headers["Retry-After"]) > 0
+
+
+def test_a_request_is_audited_end_to_end(tmp_path):
+    """The log line has to be written by the running application, not just by a
+    method somebody could forget to call."""
+    from arbiter import api
+    path = tmp_path / "keys.json"
+    raw, record = api.mint_key("dana@acme.example", path)
+    log = api.AuditLog(tmp_path / "audit.log")
+    client = _client(path, audit=log)
+    client.post("/v1/review-queue", json={"report": _reviewable_report()},
+                headers={"X-API-Key": raw})
+    client.post("/v1/review-queue", json={"report": {}},
+                headers={"X-API-Key": "arb_wrong"})
+    lines = [json.loads(line) for line in (tmp_path / "audit.log").read_text().splitlines()]
+    assert [e["event"] for e in lines] == ["review_queue", "auth_failed"]
+    assert lines[0]["user"] == "dana@acme.example" and lines[0]["key"] == record["id"]
+    assert lines[0]["status"] == 200
+    assert lines[1]["key"] == "", "a rejected key was written down"
+
+
+def test_a_report_with_nothing_to_review_is_an_empty_queue_not_an_error(tmp_path):
+    """A clean report is the good outcome, so asking for its queue must not look
+    like a bad request -- and the refusal it used to produce named a server
+    temporary directory back at the caller."""
+    from arbiter import api
+    path = tmp_path / "keys.json"
+    raw, _ = api.mint_key("dana@acme.example", path)
+    client = _client(path)
+    response = client.post("/v1/review-queue", json={"report": {"findings": []}},
+                           headers={"X-API-Key": raw})
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["entry_count"] == 0 and body["recorded"] is False
+    assert str(tmp_path.anchor) not in json.dumps(body), "a server path came back"
+
+
 def test_the_limits_are_published_rather_than_discovered_through_a_429(tmp_path):
     """Nobody is charged, so the limits are capacity, and capacity should be
     visible. A recipient seeing what they have without asking is the difference
     between a service and a gate."""
-    fastapi = pytest.importorskip("fastapi", reason="the api extra is not installed")
-    from fastapi.testclient import TestClient
-
     from arbiter import api
-    client = TestClient(api.create_app(tmp_path / "keys.json",
-                                       audit=api.AuditLog(enabled=False)),
-                        base_url="https://testserver")
+    client = _client(tmp_path / "keys.json")
     body = client.get("/v1/health").json()
     assert body["free"] is True and body["retains_nothing"] is True
     assert body["limits"] == {
@@ -3977,7 +4185,6 @@ def test_the_limits_are_published_rather_than_discovered_through_a_429(tmp_path)
         "max_upload_bytes": api.MAX_UPLOAD_BYTES,
         "key_lifetime_days": api.DEFAULT_KEY_LIFETIME_DAYS,
     }
-    assert fastapi  # the import is the point of the skip guard
 
 
 def test_the_hourly_limit_sits_well_above_anyone_testing_in_earnest(tmp_path):

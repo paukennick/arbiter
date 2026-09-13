@@ -616,6 +616,15 @@ def create_app(key_path: Path | None = None, behind_proxy: bool = False,
             "pip install 'arbiter-eval[api]'"
         ) from exc
 
+    # `from __future__ import annotations` at the top of this module turns every
+    # annotation below into a string, and FastAPI resolves those against the
+    # module's globals -- where `UploadFile` is not, because the import above is
+    # deliberately local to keep the module importable without the extra. So the
+    # name is published here. Without it every upload request fails inside body
+    # validation with an unresolved forward reference, which is a 500 on the two
+    # endpoints that matter most.
+    globals()["UploadFile"] = UploadFile
+
     app = FastAPI(title="Arbiter", version=__version__,
                   description="Evaluate a repository without installing anything. "
                               "Uploads are deleted when the request ends.")
@@ -689,6 +698,11 @@ def create_app(key_path: Path | None = None, behind_proxy: bool = False,
         report: dict
         limit: int = 20
         rule: str = ""
+
+    # Published for the same reason as `UploadFile` above. Unresolved, FastAPI
+    # cannot tell this is a body model and reads `body` as a query parameter
+    # instead, so the endpoint rejects every JSON request it is sent.
+    globals()["ReviewRequest"] = ReviewRequest
 
     @app.get("/v1/health")
     def health() -> dict:

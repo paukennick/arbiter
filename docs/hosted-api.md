@@ -56,7 +56,7 @@ eventually be written differently.
 |---|---|
 | `service.py` | workspace lifecycle, archive ingest, path containment, profile checks, the three operations |
 | `mcp.py` | tool schemas and dispatch; no containment logic of its own |
-| HTTP API *(not built)* | authentication, tenancy, request limits, retention |
+| `api.py` | keys, request limits, TLS enforcement, the audit line; no containment logic of its own |
 
 Three operations, and only three: `scan`, `gate` and `review_queue`.
 `service.OPERATIONS` names them, and a test asserts the set is exactly that.
@@ -254,7 +254,7 @@ ability to answer what ran for whom.
 |---|---|---|
 | `POST /v1/scan` | an uploaded archive | the report |
 | `POST /v1/gate` | an uploaded archive | pass or fail, with the claim ledger |
-| `POST /v1/review-queue` | a report the caller already has | a queue with every mark blank |
+| `POST /v1/review-queue` | a report the caller already has | a queue with every mark blank, or an empty one when there is nothing left to ask about |
 | `GET /v1/health` | nothing; no key needed | version, and that it retains nothing |
 
 Everything but `/v1/health` needs an `X-API-Key` header. Uploads are capped at
