@@ -17,6 +17,12 @@ rules:
     title: Database storage is not encrypted at rest
     match_kinds: [database]
     assert: property_truthy
+    # These encrypt at rest unconditionally under a service-managed key and
+    # express nothing on the resource. Reporting them is the S3 situation --
+    # about key custody, not plaintext -- and there is no property here to
+    # carry that distinction, so they are excluded rather than mis-reported.
+    exclude_native: [azurerm_postgresql_server, azurerm_mysql_server,
+                     azurerm_postgresql_flexible_server, azurerm_mysql_flexible_server]
     any_of: [storage_encrypted, StorageEncrypted, encrypted, Encrypted, kms_key_id, KmsKeyId,
              EncryptionAtRestOptions.Enabled, SSESpecification.SSEEnabled,
              # Azure: transparent data encryption and infrastructure encryption
@@ -142,6 +148,73 @@ rules:
     remediation: Use HTTPS or TLS and attach a certificate.
     controls: [NIST-800-53r5:SC-8]
 
+  - id: database-allows-plaintext-connections
+    title: Database accepts unencrypted connections
+    match_kinds: [database]
+    # AWS RDS enforces TLS through a parameter group rather than a property on
+    # the instance, so the property is absent there for a reason that is not a
+    # defect. Scoping to the providers that DO express it on the resource is
+    # what keeps this from firing on every RDS instance ever written -- the
+    # same mistake the Kubernetes PersistentVolumeClaim episode was.
+    match_providers: [azure, gcp, alicloud]
+    # Azure SQL enforces TLS unconditionally and has no property that says so.
+    exclude_native: [azurerm_mssql_database, azurerm_mssql_server,
+                     azurerm_sql_database, azurerm_sql_server,
+                     azurerm_cosmosdb_account]
+    assert: property_truthy
+    any_of: [ssl_enforcement_enabled, ssl_enforcement, require_ssl,
+             settings.ip_configuration.require_ssl, enforce_ssl, tls_enforced,
+             ssl_mode, minimum_tls_version, ssl_action]
+    severity: high
+    confidence: medium
+    dimension: security
+    description: >-
+      Nothing on this database requires connections to use TLS, so a client
+      that does not ask for it gets an unencrypted session and no error. The
+      credential and every row cross the network in the clear.
+    remediation: >-
+      Require SSL on the server. Turning it on at the client is not the same
+      thing, because it leaves the unencrypted path open.
+    controls: [NIST-800-53r5:SC-8, NIST-800-171r2:3.13.8]
+
+  - id: weak-tls-version
+    title: TLS version policy allows 1.0 or 1.1
+    match_kinds: [database, object_store, load_balancer, listener, compute, search]
+    assert: property_not_in
+    any_of: [minimum_tls_version, min_tls_version, MinimumTlsVersion, tls_policy,
+             TLSSecurityPolicy, ssl_policy, security_policy, minimum_protocol_version,
+             MinimumProtocolVersion]
+    values: ["1.0", "1.1", "TLS1_0", "TLS1_1", "TLSv1", "TLSv1.1", "TLSv1_2016",
+             "Policy-Min-TLS-1-0-2019-07", "Policy-Min-TLS-1-1-2019-07",
+             "ELBSecurityPolicy-TLS-1-0-2015-04", "SSLv3", "TLS_1_0", "TLS_1_1"]
+    severity: medium
+    confidence: high
+    dimension: security
+    description: >-
+      This resource explicitly permits TLS 1.0 or 1.1. Both are withdrawn, and
+      a policy naming them is usually a default nobody revisited rather than a
+      decision about which clients need supporting.
+    remediation: Raise the minimum to TLS 1.2.
+    controls: [NIST-800-53r5:SC-8, NIST-800-53r5:SC-13]
+
+  - id: no-https-redirect
+    title: Web endpoint does not redirect HTTP to HTTPS
+    match_kinds: [listener, compute]
+    match_native: [azurerm_app_service, azurerm_linux_web_app, azurerm_windows_web_app,
+                   aws_api_gateway_domain_name, google_compute_target_http_proxy]
+    assert: property_truthy
+    any_of: [https_only, httpsOnly, redirect_http_to_https, force_https,
+             https_redirect, ssl_redirect]
+    severity: medium
+    confidence: medium
+    dimension: security
+    description: >-
+      The endpoint answers on HTTP and does not redirect to HTTPS, so the first
+      request of every session — the one carrying the session cookie — can be
+      made in the clear.
+    remediation: Set HTTPS-only, or add a redirect at the edge.
+    controls: [NIST-800-53r5:SC-8]
+
   - id: no-log-retention
     title: Log group has no retention period
     match_kinds: [log_group]
@@ -161,6 +234,10 @@ rules:
     title: Object store has no access logging
     match_kinds: [object_store]
     assert: property_truthy
+    # Azure storage logging is a diagnostic setting on a separate resource, so
+    # its absence here says nothing. Noted in the description already; now
+    # enforced rather than merely mentioned.
+    exclude_providers: [azure]
     any_of: [logging, LoggingConfiguration, logging_config,
              # Azure diagnostic settings are a separate resource; this catches
              # the inline form only, which is why the rule stays at low
@@ -179,6 +256,9 @@ rules:
     title: Stateful resource has no deletion protection
     match_kinds: [database]
     assert: property_truthy
+    # Azure has no per-resource deletion protection property; it uses
+    # management locks, which are a separate resource this rule cannot see.
+    exclude_providers: [azure]
     any_of: [deletion_protection, DeletionProtection, DeletionProtectionEnabled,
              deletion_protection_enabled,          # GCP / newer Azure providers
              prevent_deletion,

@@ -17,6 +17,13 @@ resource "google_sql_database_instance" "good" {
   deletion_protection = true
   settings {
     tier = "db-f1-micro"
+    # Added when the TLS rules landed: "good" has to mean good for every rule,
+    # not just the ones that existed when the fixture was written. A fixture
+    # whose correct half is only correct about some rules quietly stops being
+    # able to catch the next false positive.
+    ip_configuration {
+      require_ssl = true
+    }
   }
 }
 
