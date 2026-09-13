@@ -6,7 +6,14 @@
 > before any distribution. Nothing here is a substitute for that review.
 
 Tracked as **REQ-005**. Status: **pending** — the requirements below are
-settled; the licence instrument that satisfies them does not yet exist.
+settled; the operative licence instrument that satisfies them does not yet
+exist.
+
+**Progress, 2026-09-12.** L-2 and L-8 are satisfied, and L-1 is satisfied
+*provisionally*: a `LICENSE` file now exists and asserts ownership, reserves all
+rights and assigns scan output to the user (L-4's substance), but it explicitly
+is not the operative grant. L-3 still cannot be drafted, because it follows from
+open questions 1 and 2 below, and L-6 is untouched. What remains needs counsel.
 
 ## Contents
 
@@ -23,15 +30,19 @@ settled; the licence instrument that satisfies them does not yet exist.
 
 | Fact | Location | State |
 |---|---|---|
-| Licence declared `Proprietary` | `pyproject.toml` | present |
-| `LICENSE` file | repository root | **absent** |
-| Copyright notice | none | **absent** |
-| Third-party component inventory | `NOTICE.md` | present, incomplete |
+| Licence referenced from metadata | `pyproject.toml` | present — `license = { file = "LICENSE" }` |
+| `LICENSE` file | repository root | present — **interim notice, not a grant** |
+| Copyright notice | `LICENSE`, `pyproject.toml` | present — Nicholas J Pauken, 2026 |
+| Ownership of scan output assigned to the user | `LICENSE` §3 | present |
+| Inbound contribution terms | `CONTRIBUTING.md` | present — contributions not accepted |
+| Operative grant (who may use it, for what) | not drafted | **absent** |
+| Third-party component inventory | `NOTICE.md` | present, accurate |
 | Redistribution review for bundled analyzers | not started | **absent** |
 
-The package metadata asserts a proprietary licence, but the repository grants no
-terms in writing. A recipient of this code today has a declaration of intent and
-no licence — which is the gap this document exists to close.
+Ownership is now asserted and scan output is assigned to the user. What is still
+missing is the grant itself: a recipient of this code today has a clear statement
+of who owns it and an explicit refusal of permission, which is a defensible
+interim position but is not a licence. Closing that gap is what remains.
 
 ## Why this needs settling
 

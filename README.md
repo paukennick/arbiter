@@ -243,12 +243,18 @@ if calibration has moved since a release gate was pinned.
 
 ## Licensing
 
-Arbiter is **proprietary**. `pyproject.toml` declares
-`license = { text = "Proprietary" }`.
+Arbiter is **proprietary**. Copyright © 2026 Nicholas J Pauken, all rights
+reserved — see [LICENSE](LICENSE), which `pyproject.toml` references.
 
-> **Administrative note:** no `LICENSE` file has been added to the repository
-> yet, so no terms are currently granted in writing. Add one before any
-> distribution.
+**Scan output belongs to you.** Reports, findings, baselines and knowledge files
+that Arbiter generates from your material are yours, with no restriction on
+publishing them. That clause is in `LICENSE` today and is meant to survive into
+the operative licence unchanged.
+
+> **Administrative note:** `LICENSE` is an *interim* notice. It asserts
+> ownership, reserves all rights and assigns scan output to the user, but it is
+> not the operative grant — the terms on which Arbiter may be used have not been
+> drafted and need qualified counsel. Do not distribute against it.
 
 The licensing position is specified in **[docs/licensing.md](docs/licensing.md)**
 — eight requirements covering the operative grant, copyright ownership,

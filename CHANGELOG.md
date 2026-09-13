@@ -54,6 +54,17 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   and pull requests, so they cross machines. Files belonging to the scanned
   repository are untouched — those are decoded with `errors="replace"` by
   design. (REQ-009)
+- Put the licensing position in writing as far as it can go without counsel.
+  `LICENSE` now exists, asserting copyright to Nicholas J Pauken, reserving all
+  rights, assigning ownership of scan output to the user, and disclaiming any
+  grant over the adapted third-party analyzers. It says plainly that it is an
+  interim notice and not the operative grant. `pyproject.toml` references it by
+  file rather than declaring the bare string `Proprietary`, and names the
+  author. `CONTRIBUTING.md` states that external contributions are not
+  accepted, which L-8 requires be settled before a patch is taken rather than
+  after. This closes L-2 and L-8, and L-1 provisionally; REQ-005 stays open
+  because L-3 follows from decisions only the owner can make and the L-6
+  redistribution review is untouched. (REQ-005)
 
 Six commits (`8775017`…`54f9a13`) landed from an offline bundle without
 changelog entries. Recorded here after the fact, written from their diffs.
