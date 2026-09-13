@@ -63,7 +63,7 @@ def _context(repo_path: str, finding: Finding) -> tuple[list[tuple[int, str]], s
         return [], "this finding is about the repository as a whole"
     p = Path(repo_path) / finding.location.path
     try:
-        lines = p.read_text(errors="replace").split("\n")
+        lines = p.read_text(encoding="utf-8", errors="replace").split("\n")
     except OSError as exc:
         return [], f"could not read the file ({type(exc).__name__})"
     line = finding.location.start_line or 1
