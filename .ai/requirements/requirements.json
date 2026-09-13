@@ -2,44 +2,40 @@
   "version": "2.0.0",
   "requirement_id_prefix": "REQ",
   "categories": {
-    "developer-tooling": [
+    "developer-tooling": [],
+    "documentation": [],
+    "training-evidence": [],
+    "legal": [
       {
-        "id": "REQ-001",
-        "title": "Adopt OmniEngineering workspace and Headroom context optimization",
-        "description": "Install the OmniEngineering .ai/ scaffold and ./omni CLI so assistant sessions share one loading order, ruleset and requirements registry; install Headroom's Claude Code integration at local scope so tool output is compressed through the local proxy.",
-        "priority": "medium",
-        "status": "completed",
+        "id": "REQ-005",
+        "title": "Establish licensing terms for arbiter",
+        "description": "pyproject.toml declares a proprietary licence but the repository carries no LICENSE file and no copyright notice so no terms are granted in writing. docs/licensing.md records the requirements the instrument must satisfy and the questions that block drafting it.",
+        "priority": "high",
+        "status": "pending",
         "minimum_access_scope": [
-          ".ai/",
-          "CLAUDE.md",
-          "CHANGELOG.md",
-          "make_ai.py",
-          "omni",
-          ".gitignore",
-          ".claude/settings.local.json"
-        ],
-        "do_not_access": [
-          "src/arbiter/",
-          "training/"
+          "docs/licensing.md",
+          "NOTICE.md",
+          "LICENSE",
+          "pyproject.toml",
+          "README.md"
         ],
         "acceptance_criteria": [
-          ".ai/ contains no STEP-Migration project content",
-          "python omni doctor reports only the known upstream gaps listed in .ai/project-configuration.md",
-          "python omni map writes .ai/project-map.md",
-          ".claude/settings.local.json carries the Headroom env and hooks and is git-ignored"
+          "a LICENSE file exists at the repository root and pyproject.toml references it",
+          "copyright ownership is asserted",
+          "ownership of scan output is assigned to the user",
+          "the redistribution review for bundled analyzers is recorded in NOTICE.md with a date and a reviewer"
         ],
         "validation_required": [
-          "python omni doctor",
-          "python -m pytest"
+          "python omni doctor"
         ],
         "documentation_required": [
-          "CHANGELOG.md",
-          ".ai/project-context.md",
-          ".ai/project-configuration.md"
+          "docs/licensing.md",
+          "NOTICE.md",
+          "README.md"
         ],
         "risk_notes": [
-          "No pristine OmniEngineering upstream is available locally; the scaffold was assembled from STEP-Migration copies, so .ai/adapters/, .ai/checklists/public-release.md, fallback-llm-rules.json and hci-ui-rules.json are absent",
-          "With Headroom routing enabled, Claude Code sessions in this repo depend on the local proxy on port 8787 being reachable"
+          "Requires qualified legal review and cannot be completed by engineering alone",
+          "the air-gapped bundle roadmap item stays blocked until the semgrep LGPL-2.1 redistribution question is answered"
         ]
       }
     ]

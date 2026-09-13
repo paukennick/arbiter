@@ -104,7 +104,7 @@
       "Read .ai/context-brief.md and .ai/project-context.md first.",
       "Read .ai/project-configuration.md, .ai/project-map.md, and the active requirement.",
       "Read only the rulepack, playbook or checklist relevant to the active task.",
-      "Always read .ai/requirements/requirements.json before assigning or completing a requirement; assign the next free REQ ID.",
+      "Always read .ai/requirements/requirements.json before assigning or completing a requirement; allocate ids with `python omni requirement add`, which also reads .ai/requirements/archive.json so retired ids are never reused. Sweep completed or withdrawn requirements out with `python omni requirement archive` once their outcome is recorded in CHANGELOG.md and .ai/project-context.md.",
       "Update CHANGELOG.md when behavior, probes, adapters, packs, gates or scoring change; reference the REQ-### the change serves.",
       "Use .ai/.ignore to exclude sensitive or irrelevant paths."
     ]

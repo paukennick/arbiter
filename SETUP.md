@@ -1,160 +1,111 @@
-# Setting up continuous training
+# Setup
 
-## Why this file exists
+Installation, optional components, and enabling the training loop.
 
-Training makes the tool better over time. Each run plants known faults in real
-code, checks whether the rules catch them, measures every rule against both
-well-maintained and deliberately broken repositories, and writes down what it
-learned.
+## Requirements
 
-The catch is that the sandbox I work in is thrown away when the session ends.
-Nothing survives. So every time we start, the tool knows exactly as much as it
-did the first day.
+| | |
+|---|---|
+| Python | 3.11 or later |
+| Runtime dependencies | PyYAML |
+| Platform | Linux, macOS, Windows |
 
-A GitHub repository fixes that. It becomes the place the learning lives, so
-each run picks up where the last one stopped.
+Arbiter never executes the repository it scans, so no toolchain for the target
+language is required — no `npm install`, no `terraform init`, no importing the
+target's Python.
 
-## Why I could not do this part myself
-
-My sandbox can reach GitHub, but only for repositories that have been
-deliberately made available to it. I checked, and every route was refused:
-creating a repository, listing yours, and reading a specific one — including
-your own. The refusal is the same each time, and it is about the sandbox, not
-about your permissions.
-
-So this part has to come from you. It takes about two minutes, and it needs a
-computer — not a phone.
-
-## What you need to do
-
-**1. Unpack the archive and run one command.**
+## Install
 
 ```bash
-./tools/bootstrap_repo.sh
+pip install -e .
+arbiter scan ./my-repo
 ```
 
-It creates the repository, pushes this history to it, and tells you what is
-left. With the GitHub CLI installed and logged in (`gh auth login`) that is the
-whole job. Without it, the script prints the two commands to run by hand.
+### Optional extras
 
-It is safe to run twice. It never force-pushes and never rewrites history, and
-if the repository already exists with commits in it, it stops and says so
-rather than guessing which side should win. `--dry-run` prints what it would do
-and changes nothing.
+| Extra | Install | Enables |
+|---|---|---|
+| `ast` | `pip install -e ".[ast]"` | `ast_metrics` and `house_rules_ast` — function length, cyclomatic complexity and nesting depth from a real parse tree, in 11 languages, plus your own tree-sitter queries |
+| `dev` | `pip install -e ".[dev]"` | the test suite (pytest) |
+| `tools` | `pip install -e ".[tools]"` | external analyzers as Python packages |
 
-**2. Install the analyzers, if you want the external tools measured too.**
+Every extra is genuinely optional. A probe whose dependency is absent reports as
+*not assessed* with the dependency named, and the coverage figure drops by
+exactly what was not checked. Nothing silently becomes a pass.
+
+## External analyzers
 
 ```bash
 ./tools/install_tools.sh
 ```
 
-Checkov, semgrep, bandit, ruff and gitleaks, at pinned versions. Optional: a
-missing analyzer is recorded as *not assessed* with the binary named, and the
-coverage figure drops accordingly. Nothing here fails a build.
+Installs checkov, semgrep, bandit, ruff and gitleaks at pinned versions.
+Optional: a missing analyzer is recorded as not assessed with the binary named.
+Nothing here fails a build.
 
-**3. Install the Claude GitHub App on that repository.**
+Arbiter does not vendor or redistribute these tools. Their licenses are listed
+in [NOTICE.md](NOTICE.md).
 
-Go to https://github.com/apps/claude and install it, choosing only the
-`arbiter` repository.
-
-There is no "connect this repo" button inside a chat session — I told you
-there was, earlier, and I was wrong. The GitHub App is the mechanism, and it
-works for a *different surface* than the one this was built in: see below.
-
-**4. That is all.**
-
-The nightly training job is already in the repository and starts running on
-its own the day after you push.
-
-## How training continues, and who does which part
-
-Training has two halves. Only one of them needs anybody awake.
-
-**The mechanical half runs itself.** `.github/workflows/train.yml` runs every
-night on GitHub's own machines. It downloads the practice repositories, runs
-every rule against them, measures whether each rule tells good code from
-broken code, plants known faults and checks they are caught, verifies the tool
-never claims to have checked something it skipped, runs the tests, and commits
-all of it back. Nothing is needed from you or from me, and it costs nothing —
-a run takes about ten minutes against a monthly allowance of two thousand.
-
-It never edits a rule. It only measures.
-
-**The judgement half needs a session with the repository open.** Deciding what
-a result *means* is the part a schedule cannot do: whether a finding on a
-well-maintained repository is the rule's fault or the code's, whether a ratio
-is real or an artefact of how it was measured. Every real defect so far came
-from that half. The three worst — including a critical, high-confidence
-"leaked private key" finding pointing at three literal dots — were sitting in
-numbers a machine had already produced and nobody had read.
-
-`training/WORKLIST.md`, regenerated by every nightly run, is the handoff. It
-ranks what to look at and says why, so a session starts from a question rather
-than a pile of tables. Open a session at **claude.ai/code** with the repository
-connected, and the opening move is always the same:
-
-> Read training/WORKLIST.md and work the top item.
-
-Once a fortnight is plenty. The nightly job keeps the evidence current in the
-meantime, and the worklist tells you when there is nothing worth doing — an
-empty queue means the practice set has stopped teaching us anything, and the
-next useful move is to widen it rather than run it again.
-
-**Why not this chat?** The sandbox this was built in cannot reach any GitHub
-repository, including yours, and installing the app does not change that — it
-is a known platform bug, open since August. So the work lands where the
-repository is reachable. This chat is still the right place to design
-something new; it just cannot be where the training loop lives.
-
-## What happens in each run
-
-Each run:
-
-1. downloads the practice repositories, if they are not already there
-2. runs every rule against them and records what it found
-3. measures each rule's ability to tell good code from broken code
-4. plants known faults and checks the rules catch them
-5. checks the tool never claims to have checked something it skipped
-6. runs the test suite
-7. commits the results back to the repository
-
-Because step 7 writes to the repository, the next run starts from everything
-the previous runs learned. That is the whole point.
-
-To run a cycle by hand at any time:
+## Verify the install
 
 ```bash
-./tools/train_cycle.sh           # about fifteen minutes
-PUSH=1 ./tools/train_cycle.sh    # and save the results
+arbiter probes .              # what can run here, and why anything cannot
+python -m pytest tests/ -q    # requires the dev extra
 ```
 
-## What training actually produces
+`arbiter probes` is the fastest way to confirm which optional components the
+environment actually has. The golden-fixture tests are the ones that matter:
+`fixtures/legacy-platform` contains fourteen deliberately planted defects that
+`.arbiter-expected.yaml` enumerates, and any rule or adapter change that
+regresses on one of them fails the suite.
 
-A file called `.arbiter/knowledge.json`. It holds, for every rule:
+## Configure
 
-- how many planted faults it was shown, and how many it caught
-- how many look-alikes it was shown, and how many it correctly ignored
-- how many real findings a person has reviewed and judged right or wrong
+Create `arbiter.yaml` at the repository root. The repository's own
+`arbiter.yaml` is a working example — Arbiter evaluates itself with it.
 
-Those last numbers are kept separate from the first two on purpose. Faults I
-generate come from a pattern I chose, so they tell you whether a rule works
-mechanically. Only a person looking at a real finding tells you whether the
-things it flags in real life are worth flagging. Mixing the two would let a
-hundred thousand generated cases drown out ten real ones.
+See [docs/configuration.md](docs/configuration.md) for the full surface.
 
-## Two things to know about the numbers
+## Continuous integration
 
-**Running more trials does not make the tool more trustworthy past a point.**
-Twenty thousand faults generated from fifteen patterns is closer to fifteen
-independent tests than to twenty thousand. What actually improves the evidence
-is more kinds of fault and more kinds of code, not more repetitions. That is
-why the practice set spans thirteen languages and five infrastructure formats,
-and why every fault is planted into a real file rather than a made-up one.
+```bash
+arbiter gate . --profile ci --baseline .arbiter/baseline.json
+```
 
-**Most of the real defects have come from widening, not from repeating.**
-Every time the practice set grew, it found something the previous set could
-not. Adding deliberately-broken repositories for languages that had none
-exposed a critical finding that fired on three literal dots in a documentation
-example, and two more that fired on TLS keys a project commits on purpose so
-its integration tests have something to serve. Neither could have been found by
-running the old set more times.
+A GitHub Action is in `ci/github-action/` and a GitLab template in
+`ci/gitlab/`. See [docs/ci.md](docs/ci.md).
+
+## Enable the training loop
+
+Training measures the rules against real repositories and records what it
+learned. It needs a repository to persist that state into — without one, each
+run starts from zero.
+
+**1. Create the repository and push.**
+
+```bash
+./tools/bootstrap_repo.sh
+```
+
+Creates the repository, pushes this history to it, and reports what remains.
+With the GitHub CLI installed and authenticated (`gh auth login`) that is the
+whole job; without it, the script prints the two commands to run by hand.
+
+It is safe to run twice. It never force-pushes and never rewrites history, and
+if the repository already exists with commits in it, it stops and says so rather
+than guessing which side should win. `--dry-run` prints what it would do and
+changes nothing.
+
+**2. Install the analyzers** (above), if you want the external tools measured
+too.
+
+**3. Install the Claude GitHub App**, if sessions should be able to work the
+queue: <https://github.com/apps/claude>, scoped to this repository only.
+
+**4. Nothing else.** `.github/workflows/train.yml` is already in the repository
+and begins running the night after the first push.
+
+The mechanical half of training runs unattended and only measures — it never
+edits a rule. The half that needs judgement is handed off through
+`training/WORKLIST.md`, which every nightly run regenerates. See
+[docs/ci.md](docs/ci.md#continuous-training).
