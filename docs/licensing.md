@@ -170,7 +170,22 @@ change every row, which is what L-6 guards.
 | Internal use only, source stays in-house | L-1, L-2 sufficient | no |
 | Source delivered to a named customer | L-1 … L-5, L-8 | no, once L-1–L-3 drafted |
 | Air-gapped bundle including analyzers | all, plus L-6 | **yes** until L-6 done |
-| Hosted/SaaS offering | L-3 term structure differs; LGPL obligations differ again for network use | needs counsel |
+| Hosted/SaaS offering (REQ-018) | L-3 term structure differs; L-6 does not apply — see below | term structure and custody need counsel |
+
+**A correction about the hosted scenario.** An earlier note here and in
+`.ai/project-context.md` said that "LGPL obligations differ again for network
+use". That points the wrong way. LGPL-2.1 obligations attach to *conveying a
+copy*, and it carries no network-use clause — that is the AGPL, which
+`semgrep`'s CLI is not under. Running `semgrep` server-side and returning
+findings over HTTP conveys no copy to the caller, so **L-6 does not gate a
+hosted offering**; hosting triggers fewer third-party obligations than the
+air-gapped bundle, not more.
+
+What still needs counsel for hosting is L-3's term structure, which differs for
+a service from a delivered copy, and the custody of customer source — retention,
+deletion, confidentiality, incident notification and sub-processor disclosure.
+Those are contractual questions, not copyright ones. See
+[hosted-api.md](hosted-api.md).
 
 ## Open questions for counsel
 

@@ -18,6 +18,8 @@ dependencies = [
 ast = ["tree-sitter>=0.23", "tree-sitter-language-pack>=0.9"]
 tools = ["ruff", "bandit", "checkov", "semgrep"]
 dev = ["pytest>=7"]
+mcp = ["mcp>=1.0"]
+api = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9"]
 
 [project.scripts]
 arbiter = "arbiter.cli:main"

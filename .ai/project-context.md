@@ -533,3 +533,55 @@ recorded nothing and rewritten the ledger's version for no signal, and the only
 way it could have recorded anything is if the marks had been supplied by the
 assistant. That is the one thing this ledger cannot survive. The suite went from
 320 to 321.
+
+## 2026-09-12 — A hosted API, reversing the MCP-only decision (REQ-018)
+
+**The decision.** Build toward running Arbiter as a service the customer calls
+instead of installs. MCP stays, as one of two front doors over a shared service
+layer, rather than as the answer.
+
+**Why the earlier reasoning did not hold.** The entry above chose MCP and said
+plainly that it "relocates the installation rather than removing it, which is
+worth saying out loud, because 'no local install' is what was asked for and MCP
+does not strictly deliver it." That caveat was the whole requirement. An agent
+calling `arbiter_scan` still needs Arbiter, Python and the optional analyzers
+already present on the machine, so everyone who could not install it still
+cannot use it. The owner's judgement is that this restriction binds.
+
+**The objection that was simply wrong.** The earlier entry recorded that hosting
+"is the one distribution scenario `docs/licensing.md` marks as needing counsel —
+LGPL obligations differ again for network use." LGPL-2.1 obligations attach to
+conveying a copy and it has no network-use clause; that is the AGPL, and
+`semgrep`'s CLI is not under it. Running `semgrep` server-side conveys no copy,
+so L-6 — the redistribution review that blocks the air-gapped bundle — does not
+gate hosting at all. Hosting triggers *fewer* third-party obligations than the
+bundle. `docs/licensing.md` now records the correction.
+
+**The objection that was only half right.** Hosting was also rejected because it
+"contradicts the `offline` and `ci` profiles that declare `network: False`."
+Those profiles describe what a scan may reach *while running*, not where the
+process lives. A hosted scan runs with the network capability off exactly as a
+local one does, and `service.check_profile` now refuses `connected` and `audit`
+unless an operator explicitly allows them, which the hosted door never will.
+
+**What actually gates this, and it is not licensing.** Custody of customer
+source. Three things follow: workspaces are created outside the server tree and
+removed when the scan ends; uploaded archives are hostile input and members that
+are absolute, traverse upward, are links or are oversized are refused whole; and
+a report remains sensitive after redaction, because `report.py` withholds a
+secret's value but still names the file and the kind of credential, which is a
+map to what to steal. Retention is therefore an explicit decision rather than a
+default, and concentrating many customers' source in one place is a materially
+larger target than any single local install.
+
+**What carries over unchanged.** No surface records an adjudication verdict.
+`review --apply` is outside both front doors, `service.OPERATIONS` is exactly
+`scan`, `gate` and `review_queue`, and a test asserts the absence rather than
+trusting a reviewer to notice the capability returning. The ledger's value is
+that it is the one signal the system did not generate, and `learn.record()`
+makes a wrong mark permanent.
+
+**State.** The service layer and its tests exist. The HTTP surface does not, and
+must not face an external caller before the custody terms are written. The HTTP
+framework is deliberately unchosen — it would be the first runtime dependency
+beyond PyYAML. `docs/hosted-api.md` holds the design.

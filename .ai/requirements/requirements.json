@@ -136,6 +136,38 @@
           "spread cannot exceed the pool so unencrypted-database still draws 18 of 20 from terragoat because only three repositories in the corpus produce that finding",
           "the six queues generated before this change were drawn by the old sampler and are superseded"
         ]
+      },
+      {
+        "id": "REQ-018",
+        "title": "Serve Arbiter as a hosted API",
+        "description": "Run Arbiter as a service the customer calls instead of installs. This reverses the 2026-09-12 decision recorded in .ai/project-context.md that chose MCP over hosting; MCP relocates the installation rather than removing it and the owner judges that restriction the binding one. Both surfaces call one transport-neutral service layer in src/arbiter/service.py so the containment rules are written once: output beneath a caller-named directory only; the scanned repository never executed; the network capability off during a scan whatever the caller asks for; and no operation that records an adjudication verdict. The licensing objection recorded against hosting was partly misstated -- LGPL-2.1 obligations attach to conveying a copy and running semgrep server-side conveys nothing -- so L-6 does not gate this. What gates it is custody of customer source.",
+        "priority": "high",
+        "status": "pending",
+        "minimum_access_scope": [
+          "src/arbiter/service.py",
+          "src/arbiter/mcp.py",
+          "src/arbiter/api.py",
+          "docs/hosted-api.md",
+          "pyproject.toml",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "one service layer that both the MCP and HTTP surfaces call rather than duplicating containment;source is ingested into an isolated workspace outside the server tree and removed after the scan;archive ingest refuses absolute paths",
+          "parent traversal",
+          "links and oversized members;the scanned repository is never executed during ingest or scan;scans run with the network capability off regardless of caller input;no endpoint or tool records an adjudication verdict;a caller cannot read another caller's workspace or report;docs/hosted-api.md documents the surface and the data-custody position"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest -q"
+        ],
+        "documentation_required": [
+          "docs/hosted-api.md",
+          "README.md",
+          "CHANGELOG.md",
+          ".ai/project-context.md"
+        ],
+        "risk_notes": [
+          "customer source leaving the customer's machine is a custody question rather than a copyright one and needs contractual terms before any external caller;a stored report names file paths and credential kinds so it is sensitive even though report.py already redacts secret values;an HTTP framework would be the first runtime dependency beyond PyYAML and needs an optional-extra decision;hosting concentrates many customers' source in one place which is a materially larger target than a local install"
+        ]
       }
     ],
     "documentation": [],

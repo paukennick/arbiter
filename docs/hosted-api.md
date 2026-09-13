@@ -1,0 +1,266 @@
+# Hosted API
+
+> **Status: built, not deployed.** Tracked as **REQ-018**. The service layer
+> (`src/arbiter/service.py`) and the HTTP surface (`src/arbiter/api.py`) exist
+> and are tested. Nothing has been exposed to a network. It binds to localhost
+> by default, and must not face an external caller before the custody terms in
+> [Custody](#custody-is-the-real-gate) are settled.
+
+## Contents
+
+- [What changed and why](#what-changed-and-why)
+- [The shape](#the-shape)
+- [The operation that does not exist](#the-operation-that-does-not-exist)
+- [Custody is the real gate](#custody-is-the-real-gate)
+- [Licensing, corrected](#licensing-corrected)
+- [What is built](#what-is-built)
+- [What is not built](#what-is-not-built)
+
+---
+
+## What changed and why
+
+On 2026-09-12 this project chose an MCP server over a hosted API and wrote the
+reasoning into `.ai/project-context.md`. That decision is now reversed.
+
+MCP relocates the installation rather than removing it. An agent can call
+`arbiter_scan` without anyone typing a CLI command, but only on a machine where
+Arbiter, Python and the optional analyzers are already installed. "No local
+install" was the requirement, and MCP does not meet it. Everyone who cannot
+install it still cannot use it.
+
+MCP is not withdrawn. It remains the correct surface for source that must not
+leave the machine it sits on, which is a real and common constraint. It becomes
+one of two front doors rather than the only one.
+
+## The shape
+
+Both front doors call `src/arbiter/service.py`. Nothing about containment is
+decided in a front door, because a rule written twice is a rule that will
+eventually be written differently.
+
+```
+  MCP tools  ──┐
+               ├──►  service.py  ──►  arbiter console script (subprocess)
+  HTTP API  ───┘         │
+                         └─ Workspace, archive ingest, profile and path checks
+```
+
+| Layer | Responsibility |
+|---|---|
+| `service.py` | workspace lifecycle, archive ingest, path containment, profile checks, the three operations |
+| `mcp.py` | tool schemas and dispatch; no containment logic of its own |
+| HTTP API *(not built)* | authentication, tenancy, request limits, retention |
+
+Three operations, and only three: `scan`, `gate` and `review_queue`.
+`service.OPERATIONS` names them, and a test asserts the set is exactly that.
+
+Arbiter runs as a subprocess rather than an import. `run_scan` takes fifteen
+parameters and `src/arbiter/__init__.py` exports only `__version__`, so there is
+no stable Python API to bind to yet. The subprocess also means a probe that
+wedges or dies takes down a subprocess, not the server.
+
+## The operation that does not exist
+
+No function in `service.py` and no tool in `mcp.py` records an adjudication
+verdict, and the HTTP surface must never grow one.
+
+Calibration reads a single ledger: findings a person looked at and judged.
+Injection trials measure whether a rule fires against faults Arbiter generated
+itself; corpus discrimination measures whether a rule separates broken code from
+working code. Both are Arbiter measuring Arbiter. The adjudication ledger is the
+one signal in the system that the system did not generate.
+
+`learn.record()` refuses to re-adjudicate a fingerprint, so a wrong mark is
+permanent. An automated caller marking in a loop would convert measured
+precision into the tool's opinion of itself, at machine speed and irreversibly.
+
+So `review_queue` writes a queue with every mark blank and stops. A person marks
+it and runs `arbiter review --apply` locally, against a ledger on their own disk.
+`test_the_service_layer_exposes_no_way_to_record_a_verdict` asserts the absence
+rather than trusting a reviewer to notice the capability returning.
+
+## Custody is the real gate
+
+Hosting means customer source lives, however briefly, on a disk the customer
+does not control. That is the substantive change, and it is a contractual and
+security question rather than an engineering one.
+
+What the code already does:
+
+- **Workspaces are isolated and temporary.** `Workspace` creates a directory
+  outside the server tree, owner-only, with `source/` and `output/` as siblings,
+  and removes it on exit including after a failure. Siblings matter: a scan
+  whose output lands inside the scanned tree reports on its own previous HTML,
+  which was 27.7% of unsuppressed findings when it happened.
+- **Uploaded archives are treated as hostile.** Members that are absolute,
+  traverse upward, are links, are device nodes, or exceed the size and count
+  bounds are refused, and the archive is refused whole rather than partially
+  extracted. A link is the cheapest way to make a scan read a file outside the
+  upload and quote it back in a finding's evidence snippet.
+- **The network stays off.** `check_profile` refuses `connected` and `audit`,
+  which declare `network: True`, unless the operator explicitly allows it. The
+  hosted door never will. The MCP schemas offer only `offline` and `ci`.
+- **The scanned repository is never executed.** No build, test, hook or entry
+  point from the target runs at any stage. Probes read files.
+
+What the code cannot settle:
+
+- **A report is sensitive even after redaction.** `report.py` refuses to reprint
+  a secret's value and `test_no_output_format_reprints_a_secret` holds it to
+  that. But a report still names the file and the kind of credential, which is a
+  map to what to steal. Storing reports is therefore a decision that needs an
+  explicit retention answer, not a default.
+- **Concentration.** Many customers' source in one place is a materially larger
+  target than any single local install. That is an argument for short retention
+  and hard tenant isolation, and it is why the HTTP layer owns authentication
+  and tenancy rather than the service layer.
+- **Terms.** Confidentiality, retention, deletion, incident notification and
+  sub-processor disclosure all have to exist in writing before an external
+  caller uploads anything.
+
+## Licensing, corrected
+
+The original objection recorded against hosting was that "LGPL obligations
+differ again for network use". That overstates it in the wrong direction.
+
+LGPL-2.1 obligations attach to *conveying a copy*. It has no network-use clause
+— that is the AGPL, and `semgrep`'s CLI is not under it. Running `semgrep`
+server-side and returning findings over HTTP conveys no copy to the caller, so
+**L-6, the redistribution review that blocks the air-gapped bundle, does not
+gate hosting.** Hosting triggers fewer third-party obligations than the bundle
+does, not more.
+
+What does still need counsel is L-3's term structure — a hosted service is
+priced and terminated differently from a delivered copy — and the custody terms
+above. See [licensing.md](licensing.md).
+
+## Access is handed out by hand
+
+There is no sign-up, no billing and no self-service. The owner mints a key for
+one named recipient and sends it to them:
+
+```
+arbiter api key add --label "pilot: acme"
+arbiter api key list
+arbiter api key revoke 4a0df464a689
+```
+
+The raw key is printed once and never stored — only its SHA-256 hash goes to
+disk, so the key file is not itself worth stealing and losing it means reissuing
+rather than a breach. Every key carries a label naming its recipient, which is
+what makes manual distribution auditable, and a short id so it can be revoked or
+named in a log without anyone writing the secret down. Keys live at
+`~/.arbiter/keys.json`, or wherever `ARBITER_KEYS` points.
+
+An offering that cannot be signed up for cannot be abused at scale by someone
+who was never vetted. That is the point of doing it this way.
+
+### A key is a limited grant, not a permanent one
+
+A key that never expires and is never throttled is a standing, unlimited grant.
+If one leaks — pasted into a ticket, left in a shell history, kept by somebody
+who has since moved on — whoever holds it can run scans forever, and a scan is
+expensive: it unpacks an archive and runs several analyzers.
+
+Three limits, none of which a recipient notices in normal use:
+
+| Limit | Default | What it stops |
+|---|---|---|
+| Expiry | 90 days | a key leaked and forgotten working indefinitely |
+| Requests per key | 30 an hour | a leaked key being used at volume |
+| Concurrent scans per key | 2 | one key monopolising the machine |
+
+Over either cap the answer is `429 Too Many Requests` with a `Retry-After`
+header. The limits are per key, so one recipient cannot exhaust another's.
+
+`--no-expiry` mints a permanent key. It exists for something like a build
+server, and it is a deliberate exception rather than the default.
+
+Expired, revoked and unknown keys all get the same `401` message. Distinguishing
+them would confirm to a stranger that a key they guessed had once existed.
+
+The counts are held in memory, which is the honest scope: they do not survive a
+restart and are not shared between processes, so running several instances
+behind one address would multiply the effective limit. That is a known gap, not
+a surprise, and it is fine for a single-machine pilot.
+
+## The endpoints
+
+| Endpoint | Takes | Returns |
+|---|---|---|
+| `POST /v1/scan` | an uploaded archive | the report |
+| `POST /v1/gate` | an uploaded archive | pass or fail, with the claim ledger |
+| `POST /v1/review-queue` | a report the caller already has | a queue with every mark blank |
+| `GET /v1/health` | nothing; no key needed | version, and that it retains nothing |
+
+Everything but `/v1/health` needs an `X-API-Key` header. Uploads are capped at
+`MAX_UPLOAD_BYTES` (100 MB) and refused before anything is written.
+
+## TLS, with no plaintext mode
+
+Every request carries an API key in a header and a copy of somebody's source in
+the body. Over plaintext both are readable by anything on the path, and the key
+is replayable forever. So plaintext is not offered as a degraded mode: the
+server refuses to start without TLS, and refuses individual requests that arrive
+over it anyway with `426 Upgrade Required`.
+
+Two arrangements are legitimate, and nothing else starts:
+
+```
+# this process holds the certificate
+arbiter api serve --cert fullchain.pem --key privkey.pem --host 0.0.0.0
+
+# a proxy terminates TLS and forwards to loopback
+arbiter api serve --behind-proxy
+```
+
+`--behind-proxy` binds to the loopback interface only. `X-Forwarded-Proto` is a
+header any client can invent, so believing it on a public interface would hand
+anyone a way to declare their own plaintext request secure. Without that flag
+the header is ignored entirely.
+
+Direct TLS restricts the offered ciphers to forward-secret AEAD suites, which
+leaves nothing a TLS 1.0 or 1.1 client can negotiate in practice. Note the
+limit precisely: uvicorn builds its own SSL context and exposes no
+minimum-version setting, so a hard version floor cannot be asserted from inside
+this module — it comes from the platform's OpenSSL policy. If a guaranteed
+floor matters, terminate TLS at a proxy and use `--behind-proxy`, where that is
+configurable.
+
+Every response carries `Strict-Transport-Security` for two years including
+subdomains, so a client that once reached us over TLS will not try plaintext
+afterwards. The default port is 8443.
+
+Certificate issuance and renewal are the operator's, not this module's.
+
+Source arrives as an upload and only as an upload. The server does not clone
+from a caller's repository, because that would mean holding credentials to their
+source — a far larger thing to ask for, and to protect, than a tarball held for
+the length of one request.
+
+## What is built
+
+- `service.py`: `Workspace`, `extract_archive`, `resolve_within`,
+  `check_profile`, `scan`, `gate`, `review_queue`.
+- `api.py`: key issuance and verification, the three request handlers, and a
+  FastAPI application built only when actually serving.
+- `mcp.py`: tool schemas and dispatch over the same service layer.
+- `arbiter api serve` and `arbiter api key add|list|revoke`; `arbiter mcp`.
+- Tests covering the refusals, the workspace lifecycle, archive ingest, key
+  handling, keeping nothing, and the absence of any verdict-recording operation.
+
+FastAPI and uvicorn are an optional extra (`pip install 'arbiter-eval[api]'`),
+imported only inside `create_app`, so a plain install still depends on PyYAML
+alone and the whole module stays testable without them.
+
+## What is not built
+
+- Certificate issuance and renewal, which are the operator's job. TLS itself is
+  enforced — see above.
+- Rate limits shared across processes. The per-key caps exist but are held in
+  one process's memory — see above.
+- Any deployment. Nothing here has been exposed to a network.
+- Whether a customer's own human adjudications should feed calibration. Open by
+  decision, not oversight — see above. If it is ever answered yes, what travels
+  is the verdict and the rule id, never the fingerprint.

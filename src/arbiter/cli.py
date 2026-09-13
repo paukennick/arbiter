@@ -164,6 +164,34 @@ def build_parser() -> argparse.ArgumentParser:
     ex.add_argument("finding_id")
     ex.add_argument("--report", default="arbiter-out/report.json")
 
+    ap = sub.add_parser("api",
+                        help="serve the hosted API, and issue the keys that reach it")
+    ap.add_argument("--keys", help="key file (default ~/.arbiter/keys.json, or $ARBITER_KEYS)")
+    api_sub = ap.add_subparsers(dest="api_cmd", required=True)
+    sv = api_sub.add_parser("serve", help="run the API over TLS; there is no plaintext mode")
+    sv.add_argument("--host", default="127.0.0.1",
+                    help="localhost by default; exposing it is a deliberate act")
+    sv.add_argument("--port", type=int, default=8443)
+    sv.add_argument("--cert", help="TLS certificate file; required unless --behind-proxy")
+    sv.add_argument("--key", dest="tls_key", help="TLS private key file")
+    sv.add_argument("--behind-proxy", action="store_true",
+                    help="a reverse proxy terminates TLS and forwards to loopback; "
+                         "requests without X-Forwarded-Proto: https are refused")
+    ky = api_sub.add_parser("key", help="issue, list and revoke access by hand")
+    key_sub = ky.add_subparsers(dest="key_cmd", required=True)
+    ka = key_sub.add_parser("add", help="mint a key for one named recipient")
+    ka.add_argument("--label", required=True, help="who this key is for")
+    ka.add_argument("--expires-days", type=int, default=90,
+                    help="how long the key lasts (default 90)")
+    ka.add_argument("--no-expiry", action="store_true",
+                    help="mint a key that never expires; a permanent grant to "
+                         "whoever ends up holding it")
+    key_sub.add_parser("list", help="show every key, without secrets")
+    kr = key_sub.add_parser("revoke", help="revoke a key by its short id")
+    kr.add_argument("id")
+
+    sub.add_parser("mcp", help="run the MCP server on stdio")
+
     return p
 
 
@@ -607,6 +635,57 @@ def cmd_explain(args) -> int:
     return EXIT_ERROR
 
 
+def cmd_api(args) -> int:
+    """Serve the hosted API, or issue the keys that reach it.
+
+    Keys are minted one at a time, for one named recipient, by the owner. There
+    is no sign-up: distribution is manual on purpose.
+    """
+    from pathlib import Path as _Path
+
+    from . import api
+    path = _Path(args.keys).expanduser() if args.keys else None
+
+    if args.api_cmd == "serve":
+        return api.serve(host=args.host, port=args.port, key_path=path,
+                         certfile=args.cert, keyfile=args.tls_key,
+                         behind_proxy=args.behind_proxy)
+
+    if args.key_cmd == "add":
+        raw, record = api.mint_key(args.label, path,
+                                   None if args.no_expiry else args.expires_days)
+        print(f"key {record['id']} issued to {record['label']}")
+        print(raw)
+        if record["expires"]:
+            print(f"\nExpires {record['expires']}.")
+        else:
+            print("\nThis key never expires; revoke it by hand when it is done with.")
+        print("This is the only time the key is shown; only its hash is stored.")
+        print("Send it to the recipient over a channel you trust.")
+        return EXIT_OK
+    if args.key_cmd == "list":
+        keys = api.list_keys(path)
+        if not keys:
+            print("no keys issued")
+        for record in keys:
+            state = record["state"]
+            if state == "revoked":
+                state = f"revoked {record['revoked']}"
+            elif state == "expired":
+                state = f"expired {record['expires']}"
+            elif record.get("expires"):
+                state = f"active until {record['expires']}"
+            print(f"{record['id']}  {record['created']}  {state:34}  {record['label']}")
+        return EXIT_OK
+    if args.key_cmd == "revoke":
+        if api.revoke_key(args.id, path):
+            print(f"revoked {args.id}")
+            return EXIT_OK
+        print(f"arbiter: no active key {args.id}", file=sys.stderr)
+        return EXIT_ERROR
+    return EXIT_ERROR
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
@@ -635,6 +714,11 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_controls(args)
         if args.cmd == "explain":
             return cmd_explain(args)
+        if args.cmd == "api":
+            return cmd_api(args)
+        if args.cmd == "mcp":
+            from .mcp import serve as mcp_serve
+            return mcp_serve()
     except KeyboardInterrupt:
         return EXIT_ERROR
     except Exception as exc:  # noqa: BLE001

@@ -41,6 +41,54 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 
 ### 2026-09-12
 
+- Built the hosted API over that service layer, in `src/arbiter/api.py`. Access
+  is distributed by hand: `arbiter api key add --label "..."` mints one key for
+  one named recipient, prints it once and stores only its SHA-256 hash, so the
+  key file is not a credential store; `key list` and `key revoke` complete the
+  set. `POST /v1/scan`, `/v1/gate` and `/v1/review-queue` take an uploaded
+  archive — never a repository credential — and `GET /v1/health` needs no key.
+  Nothing is retained: the workspace is deleted when the request ends and server
+  paths are withheld from responses. Uploads are capped at 100 MB and refused
+  before extraction. FastAPI and uvicorn are an optional extra imported only
+  inside `create_app`, so a plain install still depends on PyYAML alone.
+  `arbiter mcp` now runs the MCP server. (REQ-018)
+- Made TLS mandatory on the hosted API, with no plaintext mode. Requests carry
+  an API key and a copy of somebody's source, so `serve` refuses to start
+  without either `--cert`/`--key` or `--behind-proxy`, and refuses individual
+  plaintext requests with `426 Upgrade Required`. `--behind-proxy` binds to
+  loopback only, because `X-Forwarded-Proto` is a header any client can invent
+  and believing it on a public interface would let anyone call their own
+  plaintext request secure; without the flag the header is ignored. Direct TLS
+  offers forward-secret AEAD ciphers only, which leaves nothing a TLS 1.0 or 1.1
+  client can negotiate — a hard version floor is not assertable from here,
+  because uvicorn builds its own SSL context, so it comes from the platform
+  policy or from a terminating proxy. Every response carries a two-year
+  `Strict-Transport-Security` header, and the default port is now 8443.
+  (REQ-018)
+- Made an API key a limited grant rather than a permanent one, before any key is
+  handed out. Keys now expire after 90 days by default (`--expires-days`, or
+  `--no-expiry` for a deliberate permanent one), a single key is capped at 30
+  requests an hour and 2 concurrent scans, and exceeding either returns `429`
+  with `Retry-After`. Limits are per key, so one recipient cannot exhaust
+  another's. Expired, revoked and unknown keys share one `401` message, because
+  distinguishing them would confirm that a guessed key had once existed. The
+  counts live in one process's memory, which bounds this to a single-machine
+  deployment — recorded in `docs/hosted-api.md` rather than implied. (REQ-018)
+- Began the move to a hosted API, reversing the decision to expose Arbiter only
+  over MCP. MCP relocates the installation rather than removing it, and "no
+  local install" was the requirement. Both surfaces now call one
+  transport-neutral service layer, `src/arbiter/service.py`, which owns the
+  containment: workspaces created outside the server tree with `source/` and
+  `output/` as siblings and removed when the scan ends; uploaded archives
+  refused whole if any member is absolute, traverses upward, is a link or a
+  device node, or breaches the size and count bounds; `connected` and `audit`
+  refused unless an operator explicitly allows the network; and no operation
+  that records an adjudication verdict, asserted by test rather than convention.
+  `docs/hosted-api.md` holds the design; the HTTP surface is not built and the
+  framework is deliberately unchosen. The licensing objection recorded against
+  hosting was wrong and is corrected in `docs/licensing.md` — LGPL-2.1
+  obligations attach to conveying a copy, so L-6 does not gate a hosted service.
+  (REQ-018, REQ-010)
 - Restructured the documentation. `README.md` is now an overview — what Arbiter
   is, its capabilities, administration, versioning and licensing — and the
   granular material moved into `docs/` split by category: `architecture.md`,
