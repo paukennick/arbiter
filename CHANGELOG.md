@@ -8,6 +8,11 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 
 ### 2026-09-13
 
+- Retired the stale one-session instructions in `HANDOFF.md`. It now routes a
+  fresh session to the maintained context and requirements registry, records
+  REQ-018 as the dependency root for REQ-019 and REQ-010, and leaves REQ-005
+  explicitly with counsel instead of claiming adjudication is the project's
+  only blocker. (REQ-010, REQ-018, REQ-019)
 - Removed the plaintext listener entirely. `--behind-proxy` bound a bare socket
   on loopback and treated `X-Forwarded-Proto: https` as proof the request had
   been secure earlier in its life; that is a header any client can invent and,
