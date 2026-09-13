@@ -3143,3 +3143,82 @@ def test_only_files_is_a_partial_scan_too(tmp_path):
     assert rep.scorecard.withheld is True
     paths = {f.location.path for f in rep.active() if f.probe == "secrets"}
     assert paths == {"a.py"}, paths
+
+
+# ===========================================================================
+# Provider-issued tokens
+#
+# Added after a pull-request rehearsal planted a live Stripe key in a billing
+# module and the scan came back clean. The symbol was STRIPE_KEY, and the
+# assigned-credential heuristic does not treat a bare "key" as credential-ish
+# because sort_key and cache_key are everywhere. For this family the name was
+# never the evidence -- the issuer-assigned prefix is.
+# ===========================================================================
+
+PROVIDER_TOKEN_CASES = [
+    ("stripe-key",     'K = "sk_live_' + "A" * 28 + '"'),
+    ("stripe-key",     'K = "rk_live_' + "B" * 28 + '"'),
+    ("openai-key",     'K = "sk-proj-' + "C" * 44 + '"'),
+    ("anthropic-key",  'K = "sk-ant-api03-' + "D" * 40 + '"'),
+    ("google-api-key", 'K = "AIza' + "E" * 35 + '"'),
+    ("gitlab-token",   'K = "glpat-' + "F" * 22 + '"'),
+    ("npm-token",      'K = "npm_' + "G" * 36 + '"'),
+    ("sendgrid-key",   'K = "SG.' + "H" * 22 + "." + "I" * 43 + '"'),
+    ("pypi-token",     'K = "pypi-AgEIcHlwaS5vcmc' + "J" * 60 + '"'),
+    ("slack-webhook",  'U = "https://hooks.slack.com/services/TABCDEFGH/BABCDEFGH/' + "K" * 24 + '"'),
+]
+
+
+@pytest.mark.parametrize("rule,line", PROVIDER_TOKEN_CASES,
+                         ids=[f"{r}-{i}" for i, (r, _) in enumerate(PROVIDER_TOKEN_CASES)])
+def test_provider_tokens_are_caught_whatever_the_symbol_is_called(tmp_path, rule, line):
+    (tmp_path / "billing.py").write_text(f"import os\n{line}\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["secrets"], use_adapters=False)
+    ids = {f.rule_id for f in rep.findings}
+    assert f"arbiter/secrets.{rule}" in ids, ids
+
+
+PROVIDER_TOKEN_LOOKALIKES = [
+    'K = "sk_test_' + "A" * 32 + '"',          # test mode, not a live key
+    'K = "sk_live_short"',                      # too short to be issued
+    'K = "AIzaTooShort"',                       # wrong length
+    'K = "npm_short"',                          # wrong length
+    'K = "glpat-your-token-here"',
+    'K = "${STRIPE_SECRET_KEY}"',
+    'K = "sk-slovak-locale"',                   # `sk-` is also a language tag
+    'U = "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"',
+    'U = "https://slack.com/api/chat.postMessage"',
+]
+
+
+@pytest.mark.parametrize("line", PROVIDER_TOKEN_LOOKALIKES)
+def test_provider_token_lookalikes_do_not_fire(tmp_path, line):
+    """A prefix rule looks unfalsifiable until you ask what else starts that way."""
+    (tmp_path / "config.py").write_text(f"import os\n{line}\n")
+    rep = run_scan([str(tmp_path)], load_config(None), only=["secrets"], use_adapters=False)
+    fired = {f.rule_id for f in rep.findings
+             if f.rule_id.split(".")[-1] in
+             {"stripe-key", "openai-key", "anthropic-key", "google-api-key",
+              "gitlab-token", "npm-token", "sendgrid-key", "pypi-token",
+              "slack-webhook"}}
+    assert not fired, f"{line} fired {fired}"
+
+
+def test_no_output_format_reprints_a_secret(tmp_path):
+    """The documented promise, machine-checked.
+
+    A finding tells you where a credential is and what kind it is. Reprinting
+    the value into a build log would turn the scanner into the leak.
+    """
+    from arbiter.report import write_all
+    value = "sk_live_51H8xQ2LkdIwHu7ix" + "Z" * 20
+    (tmp_path / "billing.py").write_text(f'STRIPE_KEY = "{value}"\n')
+    rep = run_scan([str(tmp_path)], load_config(None), only=["secrets"], use_adapters=False)
+    assert rep.findings, "fixture produced nothing, so this proves nothing"
+    out = tmp_path / "out"
+    written = write_all(rep, str(out), ["json", "sarif", "html", "markdown"])
+    assert len(written) == 4
+    for kind, path in written.items():
+        assert value not in Path(path).read_text(), f"{kind} reprinted the secret"
+    from arbiter.report import render_console
+    assert value not in render_console(rep, color=False)

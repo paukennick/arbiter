@@ -5,6 +5,8 @@
 - [GitHub Actions](#github-actions)
 - [GitLab CI](#gitlab-ci)
 - [Any other runner](#any-other-runner)
+- [Scanning only what changed](#scanning-only-what-changed)
+- [A ready-made workflow](#a-ready-made-workflow)
 - [Choosing a gate](#choosing-a-gate)
 - [Continuous training](#continuous-training)
 
@@ -43,6 +45,77 @@ arbiter gate . --profile ci --baseline .arbiter/baseline.json --format json,sari
 | `0` | pass |
 | `1` | gate failure |
 | `2` | error |
+
+## Scanning only what changed
+
+A full scan costs about a minute per half-million lines. That is fine nightly
+and too slow to sit in front of a merge. Caching file reads bought 20%, which
+was the measurement that mattered: reading was never the bottleneck, the
+analysis is.
+
+So `--changed` reads less.
+
+```bash
+arbiter gate . --changed origin/main --baseline .arbiter/baseline.json
+```
+
+Every probe declares a scope. **file** means every finding depends only on the
+file it is in — a hardcoded secret is a secret whether or not the rest of the
+tree was read. **repo** means the answer depends on relationships between
+files, and a subset-based answer is not weaker, it is false.
+
+In a partial scan the file-scoped probes run, and the repo-scoped ones are
+recorded as skipped with the partial scan named as the reason — so they stay in
+the coverage denominator as not-assessed rather than vanishing. The files read
+are the changed ones plus dependency manifests, lockfiles, CI workflows and
+Terraform, which is where a rule genuinely reasons about a file it is not
+reporting on.
+
+Traefik, 171 changed files of 2,293: **59s → 6s**. The file-scoped findings are
+identical to the full scan's on the files both read — 158 and 158, nothing
+missing, nothing extra. `scope="file"` is a claim of exactness, so it is tested
+rather than assumed.
+
+### What a partial scan may not say
+
+- The overall grade is **withheld outright**. The gate is a question a subset
+  can answer ("did anything cross a threshold"); a grade is a summary of the
+  repository, and a number that looks like one but describes a diff is the
+  thing this tool exists not to produce.
+- "Probe ran and found nothing" becomes "found nothing in the files it was
+  given".
+- No claim in the report is scoped complete except the coverage measurement
+  itself, which is a statement *about* the incompleteness.
+
+That last one is invariant **CI-11**, and it caught a real bug while this was
+being built: a dimension can reach 100% check coverage in a partial scan,
+because every probe carrying it is file-scoped and ran — having read a third of
+the files. Fixed at the source rather than exempted.
+
+A ref that does not exist refuses rather than scanning nothing. An empty diff
+and a failed diff look identical downstream, and the second would produce a
+green gate that read no files at all.
+
+Findings that land in a context file the branch did not touch are tagged
+`outside-this-change`, so a pull request is not blamed for a lockfile it never
+opened. The baseline is what keeps them out of the gate.
+
+## A ready-made workflow
+
+`examples/pull-request-gate/` holds a two-job workflow and the config that goes
+with it:
+
+| | pull request | nightly / main |
+|---|---|---|
+| what it reads | the changed files, plus manifests, lockfiles, CI and Terraform | everything |
+| how long | seconds | a minute per half-million lines |
+| what it blocks on | anything critical, anything new at high | nothing; it reports |
+| grade | withheld | reported |
+| refreshes the baseline | no | yes, from the default branch only |
+
+The nightly job is the only one allowed to refresh the baseline. Refreshing it
+from a partial scan would quietly forgive every finding in the files that scan
+did not read.
 
 ## Choosing a gate
 
