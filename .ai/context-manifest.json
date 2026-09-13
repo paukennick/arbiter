@@ -1,0 +1,113 @@
+{
+  "version": "1.2.0",
+  "purpose": "Machine-readable OmniContext loading order for arbiter (Claude Code only; CLAUDE.md is a routing shim).",
+  "entrypoints": {
+    "claude_code": "CLAUDE.md"
+  },
+  "entrypoint_sources": {
+    "claude": ".ai/entrypoints/claude.md",
+    "fallback_contract": ".ai/entrypoints/fallback-contract.md"
+  },
+  "indexes": {
+    "context_brief": ".ai/context-brief.md",
+    "playbooks": ".ai/playbooks/README.md",
+    "checklists": ".ai/checklists/README.md",
+    "swebok": ".ai/knowledge/swebok/README.md"
+  },
+  "project_context": ".ai/project-context.md",
+  "context_profiles": {
+    "minimum": [
+      ".ai/context-brief.md",
+      ".ai/project-context.md",
+      ".ai/project-configuration.md",
+      ".ai/requirements/requirements.json"
+    ],
+    "implementation": [
+      ".ai/context-brief.md",
+      ".ai/project-context.md",
+      ".ai/project-configuration.md",
+      ".ai/project-map.md",
+      ".ai/requirements/requirements.json",
+      ".ai/rules/controlled-implementation.json",
+      ".ai/playbooks/implementation.md"
+    ],
+    "review": [
+      ".ai/context-brief.md",
+      ".ai/project-context.md",
+      ".ai/project-configuration.md",
+      ".ai/project-map.md",
+      ".ai/requirements/requirements.json",
+      ".ai/playbooks/review.md",
+      ".ai/checklists/pre-completion.md"
+    ],
+    "deep_policy": [
+      ".ai/context-brief.md",
+      ".ai/project-context.md",
+      ".ai/core-context.md",
+      ".ai/project-configuration.md",
+      ".ai/rules/universal-engineering-ruleset.json",
+      ".ai/rules/controlled-implementation.json",
+      ".ai/rules/completion-workflow.json"
+    ]
+  },
+  "ignore_files": {
+    "prompt_exclusions": ".ai/.ignore",
+    "git": ".gitignore"
+  },
+  "project_map": ".ai/project-map.md",
+  "changelog": "CHANGELOG.md",
+  "requirements_registry": ".ai/requirements/requirements.json",
+  "requirements_schema": ".ai/schemas/requirements.schema.json",
+  "required_read_order": [
+    ".ai/context-brief.md",
+    ".ai/project-context.md",
+    ".ai/core-context.md",
+    ".ai/project-configuration.md",
+    ".ai/requirements/requirements.json",
+    ".ai/rules/universal-engineering-ruleset.json",
+    ".ai/rules/controlled-implementation.json",
+    ".ai/rules/completion-workflow.json",
+    ".ai/rules/data-governance.json",
+    ".ai/rules/oop-design.json"
+  ],
+  "adapter_prompts": {
+    "generic_llm": ".ai/entrypoints/universal.md"
+  },
+  "task_playbooks": {
+    "planning": ".ai/playbooks/planning.md",
+    "implementation": ".ai/playbooks/implementation.md",
+    "review": ".ai/playbooks/review.md",
+    "testing": ".ai/playbooks/testing.md",
+    "debugging": ".ai/playbooks/debugging.md",
+    "refactoring": ".ai/playbooks/refactoring.md",
+    "migration": ".ai/playbooks/migration.md",
+    "release": ".ai/playbooks/release.md",
+    "handoff": ".ai/playbooks/handoff.md"
+  },
+  "checklists": {
+    "pre_implementation": ".ai/checklists/pre-implementation.md",
+    "pre_completion": ".ai/checklists/pre-completion.md",
+    "security": ".ai/checklists/security.md"
+  },
+  "knowledge_packs": {
+    "swebok": ".ai/knowledge/swebok/README.md"
+  },
+  "validation_commands": [
+    "python -m pytest tests/ -q",
+    "python omni doctor"
+  ],
+  "sync_command": "python omni sync",
+  "security_exclusions": ".ai/.ignore",
+  "fallback_contract_source": ".ai/entrypoints/fallback-contract.md",
+  "context_retention_strategy": {
+    "any_session": [
+      "Read .ai/context-brief.md and .ai/project-context.md first.",
+      "Read .ai/project-configuration.md, .ai/project-map.md, and the active requirement.",
+      "Read only the rulepack, playbook or checklist relevant to the active task.",
+      "Always read .ai/requirements/requirements.json before assigning or completing a requirement; assign the next free REQ ID.",
+      "Update CHANGELOG.md when behavior, probes, adapters, packs, gates or scoring change; reference the REQ-### the change serves.",
+      "Use .ai/.ignore to exclude sensitive or irrelevant paths."
+    ]
+  },
+  "note": "Scaffold assembled from local STEP-Migration copies of OmniEngineering (no pristine upstream on this machine). omni doctor is expected to report .ai/adapters/*, .ai/checklists/public-release.md, .ai/rules/fallback-llm-rules.json and .ai/rules/hci-ui-rules.json as missing until pulled from upstream; see .ai/project-configuration.md."
+}
