@@ -43,6 +43,13 @@ secret's value -- `test_no_output_format_reprints_a_secret` holds it to that --
 but a stored report would still be a map of where to look. Keeping none is
 cheaper than guarding them.
 
+One thing is kept, and it is about the caller rather than the code: a line per
+request saying which key called, which operation, how it ended, how many bytes
+arrived and how long it took. That is what answers "who ran what, and when"
+after a key leaks or a bill is disputed. It holds no file name, no finding and
+no fragment of the upload, because a log that quoted findings would rebuild on
+disk, permanently, the thing the request path takes care to delete.
+
 ## Source arrives as an upload, and only as an upload
 
 The server does not clone from a caller's repository, because that would mean
@@ -73,6 +80,7 @@ import json
 import os
 import secrets
 import stat
+import sys
 import threading
 import time
 from contextlib import contextmanager
@@ -221,6 +229,10 @@ def _store(path: Path, keys: list[dict]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({"version": 1, "keys": keys}, indent=2), encoding="utf-8")
     try:
+        # Owner-only on POSIX. On Windows `chmod` only toggles the read-only
+        # attribute, so the file stays world-readable there and the directory
+        # has to be what restricts it. The file holds hashes rather than keys,
+        # which is why this is a second line of defence and not the first.
         os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)
     except OSError:  # pragma: no cover - platform dependent
         pass
@@ -351,6 +363,12 @@ RATE_LIMIT_REQUESTS = 30
 RATE_LIMIT_WINDOW_SECONDS = 3600
 MAX_CONCURRENT_SCANS = 2
 
+# And a cap on the whole server, because the per-key one multiplies. Five
+# testers with two slots each is ten concurrent scans, each unpacking an archive
+# and running several analyzers, on one machine. The per-key limit protects
+# testers from each other; this one protects the machine from all of them.
+MAX_TOTAL_SCANS = 4
+
 
 class RateLimited(ServiceError):
     """A key asked for too much. Carries how long to wait."""
@@ -361,7 +379,7 @@ class RateLimited(ServiceError):
 
 
 class RateLimiter:
-    """Per-key request and concurrency caps.
+    """Per-key request and concurrency caps, plus one cap on the whole server.
 
     Held in memory, which is the honest scope of it: the counts do not survive a
     restart and are not shared between processes. For a manually distributed
@@ -372,12 +390,15 @@ class RateLimiter:
 
     def __init__(self, requests: int = RATE_LIMIT_REQUESTS,
                  window: int = RATE_LIMIT_WINDOW_SECONDS,
-                 concurrent: int = MAX_CONCURRENT_SCANS) -> None:
+                 concurrent: int = MAX_CONCURRENT_SCANS,
+                 total: int = MAX_TOTAL_SCANS) -> None:
         self.requests = requests
         self.window = window
         self.concurrent = concurrent
+        self.total = total
         self._calls: dict[str, list[float]] = {}
         self._running: dict[str, int] = {}
+        self._total_running = 0
         self._lock = threading.Lock()
 
     def check(self, key_id: str, now: float | None = None) -> None:
@@ -397,23 +418,104 @@ class RateLimiter:
 
     @contextmanager
     def slot(self, key_id: str):
-        """Hold one of a key's concurrent scan slots for the length of a request."""
+        """Hold a concurrent scan slot, both the key's and the server's.
+
+        The key's own cap is checked first, so somebody who is over their share
+        is told that rather than being told the server is busy -- the two have
+        different answers, one being 'wait for your own scan' and the other
+        'wait for somebody else's'.
+        """
         with self._lock:
             running = self._running.get(key_id, 0)
             if running >= self.concurrent:
                 raise RateLimited(
                     f"this key already has {running} scans running; "
                     "wait for one to finish", 30)
+            if self._total_running >= self.total:
+                raise RateLimited(
+                    f"the service is running its limit of {self.total} scans; "
+                    "try again shortly", 30)
             self._running[key_id] = running + 1
+            self._total_running += 1
         try:
             yield
         finally:
             with self._lock:
                 self._running[key_id] = max(0, self._running.get(key_id, 1) - 1)
+                self._total_running = max(0, self._total_running - 1)
 
 
 # One limiter per process, shared by every request.
 LIMITER = RateLimiter()
+
+
+# --------------------------------------------------------------------------
+# An audit line per request, and nothing about the code in it
+# --------------------------------------------------------------------------
+#
+# Keeping none of a customer's source is the promise. Being unable to say who
+# called, when, and how it ended is a different thing, and not one worth having:
+# it is what answers a disputed bill, a leaked key, or "did you run anything for
+# us last Tuesday". So one line goes down per request, and that line is about
+# the caller, never about their code.
+
+def default_audit_path() -> Path:
+    """Where request lines go. `ARBITER_AUDIT` overrides it for a deployment."""
+    env = os.environ.get("ARBITER_AUDIT")
+    if env:
+        return Path(env).expanduser()
+    return Path.home() / ".arbiter" / "audit.log"
+
+
+class AuditLog:
+    """One JSON line per request: who called, what they asked, how it ended.
+
+    Deliberately not a record of the work. It holds no file name, no finding, no
+    evidence snippet and no part of the uploaded archive -- only the key and user
+    that called, the operation, the outcome, the bytes uploaded and the time
+    taken. A log that quoted findings would recreate, on disk and permanently,
+    exactly the thing the request path is careful to delete.
+    """
+
+    def __init__(self, path: Path | None = None, enabled: bool = True) -> None:
+        self.path = Path(path) if path else None
+        self.enabled = enabled
+        self._lock = threading.Lock()
+
+    def record(self, event: str, key: dict | None = None, status: int = 0,
+               bytes_in: int = 0, started: float | None = None) -> dict:
+        """Write one line. Returns the entry, which is what tests read."""
+        entry = {
+            "ts": _stamp(time.time()),
+            "event": event,
+            "key": (key or {}).get("id", ""),
+            "user": (key or {}).get("user", ""),
+            "status": status,
+            "bytes_in": bytes_in,
+            "ms": int((time.monotonic() - started) * 1000) if started else 0,
+        }
+        if not self.enabled:
+            return entry
+        path = self.path or default_audit_path()
+        try:
+            with self._lock:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                fresh = not path.exists()
+                with path.open("a", encoding="utf-8") as handle:
+                    handle.write(json.dumps(entry, sort_keys=True) + "\n")
+                if fresh:
+                    # POSIX only; on Windows this toggles the read-only
+                    # attribute and nothing more. See `_store`.
+                    os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)
+        except OSError as exc:  # pragma: no cover - depends on the filesystem
+            # A full or read-only disk must not turn into a failed scan. Say so
+            # on stderr, where the operator will see it, and carry on.
+            print(f"arbiter: could not write the audit log: {exc}", file=sys.stderr)
+        return entry
+
+
+# Configured by `serve`; tests and embedders pass their own to `create_app`.
+AUDIT = AuditLog()
 
 
 # --------------------------------------------------------------------------
@@ -486,13 +588,15 @@ ENDPOINTS = {"scan": handle_scan, "gate": handle_gate, "review_queue": handle_re
 # The framework layer, imported only when actually serving
 # --------------------------------------------------------------------------
 
-def create_app(key_path: Path | None = None, behind_proxy: bool = False) -> Any:
+def create_app(key_path: Path | None = None, behind_proxy: bool = False,
+               audit: AuditLog | None = None) -> Any:
     """Build the FastAPI application.
 
     FastAPI is imported here, not at module scope, so everything above stays
     importable and testable without it. It is an optional extra: a plain
     `pip install arbiter-eval` still depends on PyYAML alone.
     """
+    audit = audit or AUDIT
     try:
         from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
         from fastapi.responses import JSONResponse
@@ -527,12 +631,15 @@ def create_app(key_path: Path | None = None, behind_proxy: bool = False) -> Any:
         if record is None:
             # One message for unknown, revoked and expired alike: telling a
             # caller which one it was would confirm that a key it guessed once
-            # existed.
+            # existed. The audit line says a key was refused, not which one --
+            # writing a rejected key down would put a near-miss secret on disk.
+            audit.record("auth_failed", status=401)
             raise HTTPException(status_code=401,
                                 detail="unknown, revoked or expired API key")
         try:
             LIMITER.check(record["id"])
         except RateLimited as exc:
+            audit.record("rate_limited", record, status=429)
             raise HTTPException(status_code=429, detail=str(exc),
                                 headers={"Retry-After": str(exc.retry_after)}) from exc
         return record
@@ -544,21 +651,30 @@ def create_app(key_path: Path | None = None, behind_proxy: bool = False) -> Any:
                                 detail=f"upload exceeds {MAX_UPLOAD_BYTES} bytes")
         return data
 
-    def _guard(key_id: str, fn, *args, **kwargs):
-        """Run one operation while holding a concurrency slot for its key.
+    def _guard(key: dict, event: str, fn, *args, size: int = 0, **kwargs):
+        """Run one operation while holding a concurrency slot, and audit it.
 
         `RateLimited` is caught first because it subclasses `ServiceError`, and
         "you asked for too much" is a different answer from "your request was
-        malformed".
+        malformed". Every outcome is recorded, including the failures: a log
+        that only holds successes cannot show somebody hammering the service.
         """
+        started = time.monotonic()
         try:
-            with LIMITER.slot(key_id):
-                return fn(*args, **kwargs)
+            with LIMITER.slot(key["id"]):
+                result = fn(*args, **kwargs)
         except RateLimited as exc:
+            audit.record(event, key, status=429, bytes_in=size, started=started)
             raise HTTPException(status_code=429, detail=str(exc),
                                 headers={"Retry-After": str(exc.retry_after)}) from exc
         except ServiceError as exc:
+            audit.record(event, key, status=400, bytes_in=size, started=started)
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception:
+            audit.record(event, key, status=500, bytes_in=size, started=started)
+            raise
+        audit.record(event, key, status=200, bytes_in=size, started=started)
+        return result
 
     class ReviewRequest(BaseModel):
         report: dict
@@ -574,24 +690,30 @@ def create_app(key_path: Path | None = None, behind_proxy: bool = False) -> Any:
     async def scan_endpoint(archive: UploadFile = File(...), profile: str = "offline",
                             only: str = "", skip: str = "",
                             key: dict = Depends(caller)) -> dict:
-        return _guard(key["id"], handle_scan, await _read(archive), profile, only, skip)
+        data = await _read(archive)
+        return _guard(key, "scan", handle_scan, data, profile, only, skip,
+                      size=len(data))
 
     @app.post("/v1/gate")
     async def gate_endpoint(archive: UploadFile = File(...), profile: str = "ci",
                             only: str = "", skip: str = "",
                             key: dict = Depends(caller)) -> dict:
-        return _guard(key["id"], handle_gate, await _read(archive), profile, only, skip)
+        data = await _read(archive)
+        return _guard(key, "gate", handle_gate, data, profile, only, skip,
+                      size=len(data))
 
     @app.post("/v1/review-queue")
     def review_endpoint(body: ReviewRequest, key: dict = Depends(caller)) -> dict:
-        return _guard(key["id"], handle_review_queue, body.report, body.limit, body.rule)
+        return _guard(key, "review_queue", handle_review_queue,
+                      body.report, body.limit, body.rule)
 
     return app
 
 
 def serve(host: str = "127.0.0.1", port: int = 8443, key_path: Path | None = None,
           certfile: str | None = None, keyfile: str | None = None,
-          behind_proxy: bool = False) -> int:
+          behind_proxy: bool = False, audit_path: str | None = None,
+          audit: bool = True) -> int:
     """Run the API over TLS. There is no plaintext mode.
 
     Either this process holds the certificate, or a proxy terminates TLS and
@@ -610,7 +732,14 @@ def serve(host: str = "127.0.0.1", port: int = 8443, key_path: Path | None = Non
               "         pip install 'arbiter-eval[api]'")
         return 2
 
-    app = create_app(key_path, behind_proxy=behind_proxy)
+    log = AuditLog(Path(audit_path).expanduser() if audit_path else None,
+                   enabled=audit)
+    if audit:
+        print(f"arbiter: request lines go to {log.path or default_audit_path()} "
+              "(who called and how it ended; never their code)")
+    else:
+        print("arbiter: auditing is off; no record of who called will be kept")
+    app = create_app(key_path, behind_proxy=behind_proxy, audit=log)
 
     if behind_proxy:
         print(f"arbiter: serving on http://{host}:{port} for a TLS-terminating "

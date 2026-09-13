@@ -581,7 +581,39 @@ trusting a reviewer to notice the capability returning. The ledger's value is
 that it is the one signal the system did not generate, and `learn.record()`
 makes a wrong mark permanent.
 
-**State.** The service layer and its tests exist. The HTTP surface does not, and
-must not face an external caller before the custody terms are written. The HTTP
-framework is deliberately unchosen — it would be the first runtime dependency
-beyond PyYAML. `docs/hosted-api.md` holds the design.
+**State.** The service layer, the HTTP surface and their tests all exist, on
+FastAPI as an optional extra so a plain install still depends on PyYAML alone.
+Nothing has been exposed to a network, and nothing should be before the custody
+terms are written. `docs/hosted-api.md` holds the design.
+
+**Keys are scoped to a user, and nothing else** (decided 2026-09-12). No roles,
+no tiers, no per-repository or per-organisation scope, and one user holds at
+most one live key. A key that identifies a pool rather than a person makes the
+per-key limits meaningless — two keys is twice the allowance — and makes
+revocation ambiguous, since cutting somebody off means finding every key they
+hold and missing one leaves them in. Rotation is `--replace`, which revokes the
+old key in the same command so a half-rotation cannot happen quietly.
+
+**One record is kept, and it is about the caller.** Keeping no source is the
+promise; being unable to say who called is a different thing and not worth
+having. `AuditLog` writes one JSON line per request — key id, user, operation,
+status, bytes, milliseconds — and nothing about the code. A log that quoted
+findings would rebuild on disk, permanently, exactly what the request path
+deletes. This is the one deliberate exception to "keep nothing", and it is
+narrow on purpose.
+
+**Limits are per key and per server.** The per-key caps (30 requests an hour,
+two concurrent scans) multiply by the number of testers, so a whole-server
+ceiling of four concurrent scans sits above them. The counts live in one
+process's memory: they do not survive a restart and are not shared, so running
+several instances behind one address would multiply every limit. Known gap,
+acceptable for a single-machine pilot, not beyond it.
+
+**Running it is a documented procedure, not code** (2026-09-12).
+`docs/pilot-runbook.md` holds the arrangement — unprivileged container with a
+memory limit because the analyzers parse hostile input, a TLS-terminating proxy
+with a body limit because an unauthenticated upload is read before the key is
+checked, one key per tester, and what the request log is for.
+`docs/pilot-terms.md` is the draft of what a tester is told about their code,
+and it is pending counsel along with REQ-005's L-3 term structure. Nobody
+external uploads until that exists in some agreed form.

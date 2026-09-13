@@ -55,6 +55,21 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   before extraction. FastAPI and uvicorn are an optional extra imported only
   inside `create_app`, so a plain install still depends on PyYAML alone.
   `arbiter mcp` now runs the MCP server. (REQ-018)
+- Capped concurrent scans for the whole server at 4, not just 2 per key, since
+  the per-key limit multiplies by the number of testers and five of them at once
+  would be ten analyzer runs on one machine. A caller over their own share is
+  told that rather than told the service is busy. (REQ-018)
+- Added a request log: one JSON line per request to `~/.arbiter/audit.log`
+  (`--audit`, `ARBITER_AUDIT`, or `--no-audit` to keep nothing), holding the key
+  id, the user, the operation, the status, the bytes uploaded and the elapsed
+  time — and nothing about the code, because a log that quoted findings would
+  rebuild on disk what the request path deletes. Failures and refused keys are
+  logged too, the latter without writing the rejected key down. A log write that
+  fails complains on stderr rather than failing the scan. (REQ-018)
+- Documented how to run the pilot in `docs/pilot-runbook.md` — container with a
+  memory limit, TLS-terminating proxy with a body limit, one key per tester,
+  what to read in the log — and what to tell a tester about their code in
+  `docs/pilot-terms.md`, which is a draft pending counsel. (REQ-018, REQ-005)
 - Made TLS mandatory on the hosted API, with no plaintext mode. Requests carry
   an API key and a copy of somebody's source, so `serve` refuses to start
   without either `--cert`/`--key` or `--behind-proxy`, and refuses individual

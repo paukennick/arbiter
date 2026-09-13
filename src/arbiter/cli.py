@@ -177,6 +177,12 @@ def build_parser() -> argparse.ArgumentParser:
     sv.add_argument("--behind-proxy", action="store_true",
                     help="a reverse proxy terminates TLS and forwards to loopback; "
                          "requests without X-Forwarded-Proto: https are refused")
+    sv.add_argument("--audit",
+                    help="request log (default ~/.arbiter/audit.log, or $ARBITER_AUDIT); "
+                         "records who called and how it ended, never their code")
+    sv.add_argument("--no-audit", action="store_true",
+                    help="keep no record of who called; you will not be able to "
+                         "answer what ran for whom")
     ky = api_sub.add_parser("key", help="issue, list and revoke access by hand")
     key_sub = ky.add_subparsers(dest="key_cmd", required=True)
     ka = key_sub.add_parser("add", help="mint a key for one user")
@@ -653,7 +659,8 @@ def cmd_api(args) -> int:
     if args.api_cmd == "serve":
         return api.serve(host=args.host, port=args.port, key_path=path,
                          certfile=args.cert, keyfile=args.tls_key,
-                         behind_proxy=args.behind_proxy)
+                         behind_proxy=args.behind_proxy,
+                         audit_path=args.audit, audit=not args.no_audit)
 
     if args.key_cmd == "add":
         raw, record = api.mint_key(args.user, path,

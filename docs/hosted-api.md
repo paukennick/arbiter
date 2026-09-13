@@ -13,8 +13,14 @@
 - [The operation that does not exist](#the-operation-that-does-not-exist)
 - [Custody is the real gate](#custody-is-the-real-gate)
 - [Licensing, corrected](#licensing-corrected)
+- [Access is handed out by hand, one key per user](#access-is-handed-out-by-hand-one-key-per-user)
+- [The endpoints](#the-endpoints)
+- [TLS, with no plaintext mode](#tls-with-no-plaintext-mode)
 - [What is built](#what-is-built)
 - [What is not built](#what-is-not-built)
+
+Running it for real is [pilot-runbook.md](pilot-runbook.md); what a tester is
+told about their code is [pilot-terms.md](pilot-terms.md).
 
 ---
 
@@ -89,7 +95,8 @@ security question rather than an engineering one.
 What the code already does:
 
 - **Workspaces are isolated and temporary.** `Workspace` creates a directory
-  outside the server tree, owner-only, with `source/` and `output/` as siblings,
+  outside the server tree, owner-only on POSIX and inside the per-user temp
+  directory on Windows, with `source/` and `output/` as siblings,
   and removes it on exit including after a failure. Siblings matter: a scan
   whose output lands inside the scanned tree reports on its own previous HTML,
   which was 27.7% of unsuppressed findings when it happened.
@@ -174,16 +181,23 @@ If one leaks — pasted into a ticket, left in a shell history, kept by somebody
 who has since moved on — whoever holds it can run scans forever, and a scan is
 expensive: it unpacks an archive and runs several analyzers.
 
-Three limits, none of which a recipient notices in normal use:
+Four limits, none of which a recipient notices in normal use:
 
 | Limit | Default | What it stops |
 |---|---|---|
 | Expiry | 90 days | a key leaked and forgotten working indefinitely |
 | Requests per key | 30 an hour | a leaked key being used at volume |
 | Concurrent scans per key | 2 | one key monopolising the machine |
+| Concurrent scans in total | 4 | several testers at once flattening the box |
 
-Over either cap the answer is `429 Too Many Requests` with a `Retry-After`
-header. The limits are per key, so one recipient cannot exhaust another's.
+Over any of them the answer is `429 Too Many Requests` with a `Retry-After`
+header. The first three are per key, so one recipient cannot exhaust another's.
+The fourth is the server's own ceiling, and it exists because the per-key one
+multiplies: five testers with two slots each is ten concurrent scans, each
+unpacking an archive and running several analyzers. A caller who is over their
+own share is told that rather than told the service is busy — the two have
+different answers, one being "wait for your own scan" and the other "wait for
+somebody else's".
 
 `--no-expiry` mints a permanent key. It exists for something like a build
 server, and it is a deliberate exception rather than the default.
@@ -195,6 +209,34 @@ The counts are held in memory, which is the honest scope: they do not survive a
 restart and are not shared between processes, so running several instances
 behind one address would multiply the effective limit. That is a known gap, not
 a surprise, and it is fine for a single-machine pilot.
+
+### One line per request, about the caller and not their code
+
+Keeping none of a customer's source is the promise. Being unable to say who
+called, when, and how it ended is a separate thing and not worth having: it is
+what answers a leaked key, a disputed bill, or "did you run anything for us last
+Tuesday". So each request appends one JSON line to `~/.arbiter/audit.log`, or
+wherever `--audit` or `ARBITER_AUDIT` points:
+
+```json
+{"bytes_in": 41233, "event": "scan", "key": "4a0df464a689", "ms": 8142,
+ "status": 200, "ts": "2026-09-13T06:40:11Z", "user": "dana@acme.example"}
+```
+
+Seven fields, and that is the whole record: no file name, no finding, no
+evidence snippet, no fragment of the archive. A log that quoted findings would
+rebuild on disk, permanently, exactly what the request path takes care to
+delete. Failures are recorded too — a log holding only successes cannot show
+somebody hammering the service — and a refused key is logged as `auth_failed`
+with no key written down, because a rejected key is still somebody's near-miss
+secret.
+
+The file is created owner-read-only where the platform honours that, which means
+POSIX; on Windows `chmod` only toggles the read-only attribute and the file
+stays world-readable, so a deployment there has to restrict the directory
+itself. If the disk is full or read-only the write fails loudly on stderr and
+the scan still runs: a broken log should not become a failed request. `--no-audit` turns it off entirely, which means giving up the
+ability to answer what ran for whom.
 
 ## The endpoints
 
@@ -301,8 +343,9 @@ the length of one request.
 
 - `service.py`: `Workspace`, `extract_archive`, `resolve_within`,
   `check_profile`, `scan`, `gate`, `review_queue`.
-- `api.py`: key issuance and verification, the three request handlers, and a
-  FastAPI application built only when actually serving.
+- `api.py`: key issuance and verification, per-key and whole-server limits, the
+  request log, the three request handlers, and a FastAPI application built only
+  when actually serving.
 - `mcp.py`: tool schemas and dispatch over the same service layer.
 - `arbiter api serve` and `arbiter api key add|list|revoke`; `arbiter mcp`.
 - Tests covering the refusals, the workspace lifecycle, archive ingest, key
@@ -318,7 +361,15 @@ alone and the whole module stays testable without them.
   enforced — see above.
 - Rate limits shared across processes. The per-key caps exist but are held in
   one process's memory — see above.
-- Any deployment. Nothing here has been exposed to a network.
+- Any deployment. Nothing here has been exposed to a network, and
+  [pilot-runbook.md](pilot-runbook.md) is the arrangement to stand up when it
+  is.
+- A body limit before authentication. An unauthenticated upload is read by the
+  framework before the key is checked, so a `401` still costs bandwidth and
+  memory. The fix belongs at the proxy, which is another reason to prefer
+  `--behind-proxy`.
+- Terms that counsel has seen. [pilot-terms.md](pilot-terms.md) is a draft
+  describing what the code does, not an agreement.
 - Whether a customer's own human adjudications should feed calibration. Open by
   decision, not oversight — see above. If it is ever answered yes, what travels
   is the verdict and the rule id, never the fingerprint.

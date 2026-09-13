@@ -3892,3 +3892,75 @@ def test_one_key_cannot_run_unlimited_scans_at_once(tmp_path):
     # Slots are released even though an exception was raised inside one.
     with limiter.slot("k1"):
         pass
+
+
+def test_the_whole_server_has_a_scan_ceiling_of_its_own(tmp_path):
+    """The per-key cap multiplies by the number of testers; this one does not.
+
+    Five people with two slots each is ten concurrent scans on one machine.
+    The per-key limit protects testers from each other; this protects the
+    machine from all of them at once.
+    """
+    from arbiter import api
+    limiter = api.RateLimiter(requests=100, window=3600, concurrent=2, total=3)
+    with limiter.slot("k1"), limiter.slot("k1"), limiter.slot("k2"):
+        with pytest.raises(api.RateLimited, match="limit of 3 scans"):
+            with limiter.slot("k3"):
+                pass
+    # Everything is handed back, so the ceiling is not a one-way ratchet.
+    with limiter.slot("k3"):
+        pass
+
+
+def test_a_key_over_its_own_share_is_told_that_not_that_we_are_busy(tmp_path):
+    """The two refusals mean different things to whoever reads them.
+
+    "Wait for your own scan" is actionable; "the service is busy" when the
+    caller is the one filling it would send them looking for a fault elsewhere.
+    """
+    from arbiter import api
+    limiter = api.RateLimiter(requests=100, window=3600, concurrent=1, total=4)
+    with limiter.slot("k1"):
+        with pytest.raises(api.RateLimited, match="this key already has"):
+            with limiter.slot("k1"):
+                pass
+
+
+def test_an_audit_line_says_who_called_and_never_what_was_in_their_code(tmp_path):
+    """The one thing kept is about the caller, not about the upload.
+
+    A log that quoted a finding would rebuild on disk, permanently, exactly what
+    the request path deletes.
+    """
+    from arbiter import api
+    path = tmp_path / "audit.log"
+    log = api.AuditLog(path)
+    key = {"id": "abc123def456", "user": "dana@acme.example"}
+    entry = log.record("scan", key, status=200, bytes_in=4096)
+    written = [json.loads(line) for line in path.read_text().splitlines()]
+    assert len(written) == 1 and written[0] == entry
+    assert set(entry) == {"ts", "event", "key", "user", "status", "bytes_in", "ms"}
+    assert entry["key"] == "abc123def456" and entry["user"] == "dana@acme.example"
+
+
+def test_a_refused_key_is_audited_without_writing_the_key_down(tmp_path):
+    """A rejected key is still somebody's near-miss secret.
+
+    Recording that a key was refused is the useful part; recording which string
+    was tried would put candidate credentials on disk.
+    """
+    from arbiter import api
+    path = tmp_path / "audit.log"
+    api.AuditLog(path).record("auth_failed", status=401)
+    entry = json.loads(path.read_text().strip())
+    assert entry["event"] == "auth_failed" and entry["status"] == 401
+    assert entry["key"] == "" and entry["user"] == ""
+
+
+def test_auditing_can_be_turned_off_and_then_writes_nothing(tmp_path):
+    """`--no-audit` has to actually keep nothing, not merely log less."""
+    from arbiter import api
+    path = tmp_path / "audit.log"
+    log = api.AuditLog(path, enabled=False)
+    assert log.record("scan", {"id": "k1", "user": "dana"}, status=200)["event"] == "scan"
+    assert not path.exists(), "auditing was off and a file appeared anyway"
