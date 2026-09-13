@@ -1,10 +1,12 @@
 # What happens to your code
 
-> **Draft, not legal advice.** This is the plain statement to send each pilot
-> tester with their key. It describes what the software actually does, which is
-> verifiable in [hosted-api.md](hosted-api.md) and in the test suite. It is not
-> a contract and has not been through counsel; REQ-005 tracks that, along with
-> the L-3 term structure. Do not present it as a signed agreement.
+> **Approved for the pilot on 2026-09-13. Not legal advice.** This is the plain
+> statement to send each tester with their key, and it goes out as written. It
+> describes what the software actually does, which is verifiable in
+> [hosted-api.md](hosted-api.md) and in the test suite. It has not been through
+> counsel — REQ-005 tracks that, along with the L-3 term structure — so it is
+> not a contract and must not be presented as a signed agreement. Anything
+> beyond a pilot needs the counsel-reviewed version first.
 
 You are about to upload a copy of source code — often your employer's — to a
 service somebody else runs. Here is what happens to it.

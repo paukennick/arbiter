@@ -614,6 +614,17 @@ acceptable for a single-machine pilot, not beyond it.
 memory limit because the analyzers parse hostile input, a TLS-terminating proxy
 with a body limit because an unauthenticated upload is read before the key is
 checked, one key per tester, and what the request log is for.
-`docs/pilot-terms.md` is the draft of what a tester is told about their code,
-and it is pending counsel along with REQ-005's L-3 term structure. Nobody
-external uploads until that exists in some agreed form.
+`docs/pilot-terms.md` is what a tester is told about their code; it was approved
+for pilot use on 2026-09-13 and goes out as written, but it has not been through
+counsel, so it covers a pilot and nothing that looks like a customer. REQ-005
+still owns the reviewed version and the L-3 term structure.
+
+`deploy/` holds the arrangement itself: a Dockerfile, a `compose.yaml` and a
+`Caddyfile`. Two things there are load-bearing rather than incidental. Arbiter
+shares Caddy's network namespace, because `--behind-proxy` believes
+`X-Forwarded-Proto` and that is only safe when nothing but the proxy can reach
+the port — sharing the namespace keeps "bound to loopback" literally true, and
+uvicorn only accepts forwarded headers from 127.0.0.1 anyway. And the image must
+stay private: running semgrep server-side conveys no copy, which is the whole
+reason hosting escapes L-6, but pushing the image to a public registry would
+convey copies and put those obligations back.

@@ -1,0 +1,66 @@
+# The pilot deployment: Caddy terminates TLS, Arbiter never sees the network.
+#
+#   docker compose -f deploy/compose.yaml up -d --build
+#
+# Edit deploy/Caddyfile first -- it holds the hostname and the ACME contact
+# address, and neither has a sensible default.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"     # ACME's HTTP challenge, and the redirect to HTTPS
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data      # certificates and their renewals live here
+      - caddy-config:/config
+    mem_limit: 256m
+    pids_limit: 128
+    security_opt:
+      - no-new-privileges:true
+
+  arbiter:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: arbiter-eval:pilot   # keep private; see the note in the Dockerfile
+    restart: unless-stopped
+
+    # Arbiter shares Caddy's network namespace rather than sitting on a bridge
+    # network of its own. That is deliberate and load-bearing: `--behind-proxy`
+    # believes `X-Forwarded-Proto`, and it is only safe to believe that header
+    # when nothing but the proxy can reach the port. Sharing the namespace makes
+    # "bound to loopback" literally true instead of approximately true, and it
+    # also means uvicorn sees the proxy as 127.0.0.1, which is the only address
+    # it accepts forwarded headers from.
+    network_mode: "service:caddy"
+    depends_on:
+      - caddy
+
+    command: ["api", "serve", "--behind-proxy", "--port", "8443"]
+
+    volumes:
+      - arbiter-data:/data   # keys.json and audit.log; the only state that survives
+      - arbiter-work:/work   # scan workspaces, deleted as each request ends
+
+    # The analyzers parse attacker-chosen files. Nothing from an upload is ever
+    # executed, but a parser bug on a pathological file is the plausible way to
+    # lose the machine, so the blast radius is bounded here rather than hoped
+    # away: no writable root, no new privileges, no capabilities, a memory cap
+    # above the four concurrent scans the service allows, and a process cap.
+    read_only: true
+    mem_limit: 3g
+    cpus: 2
+    pids_limit: 512
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  caddy-data:
+  caddy-config:
+  arbiter-data:
+  arbiter-work:

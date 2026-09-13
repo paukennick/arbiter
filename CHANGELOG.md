@@ -55,6 +55,18 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   before extraction. FastAPI and uvicorn are an optional extra imported only
   inside `create_app`, so a plain install still depends on PyYAML alone.
   `arbiter mcp` now runs the MCP server. (REQ-018)
+- Added the pilot deployment in `deploy/`: a Dockerfile that installs Arbiter
+  with the `api` and `tools` extras into a virtualenv and copies it into a clean
+  image running as uid 10001, a `compose.yaml` pairing it with Caddy, and a
+  `Caddyfile` carrying the hostname, the ACME contact and a 110 MB body limit.
+  Arbiter shares Caddy's network namespace so that "bound to loopback" is
+  literally true rather than approximately true, which is what makes believing
+  `X-Forwarded-Proto` safe and is also the only way uvicorn accepts forwarded
+  headers. The container is read-only, capability-free, `no-new-privileges`, and
+  capped at 3 GB, 2 CPUs and 512 processes, because the analyzers parse
+  attacker-chosen files even though nothing from an upload is executed. The
+  image must stay private: running semgrep conveys no copy, but publishing the
+  image would. (REQ-018, REQ-005)
 - Capped concurrent scans for the whole server at 4, not just 2 per key, since
   the per-key limit multiplies by the number of testers and five of them at once
   would be ten analyzer runs on one machine. A caller over their own share is
