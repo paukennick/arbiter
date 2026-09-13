@@ -139,3 +139,43 @@ first is not reachable; a Windows Job object would close that, at the cost of
 the gap. CI is `ubuntu-latest` only (`.github/workflows/train.yml`, single job,
 no matrix), so this branch is exercised only by developers on Windows — which is
 why a crash on every adapter timeout survived to be found by hand.
+
+## 2026-09-12 — The bundle commits, recorded after the fact (REQ-007)
+
+**What this is.** Six commits (`8775017`…`54f9a13`) were authored in a session
+that could not push, travelled here as a git bundle, and were fast-forwarded
+onto `main` and pushed. They changed probes, packs, gates, scoring and the CLI
+surface, and none of them had a CHANGELOG entry or a section here. REQ-007 is
+the recording, not the work; the work itself was unticketed.
+
+**Written from the diffs, not the commit messages.** Those messages are long and
+persuasive and were written by a session holding context this one does not, which
+is the same reason REQ-002 re-verified its claims against source. Verified here
+before being restated: the seven file-scoped probes and the conservative `repo`
+default (`probes.py`, `authored.py`); CI-11's presence in `claims.INVARIANTS`
+and its two reasoned exemptions; that `withheld`/`withheld_reason` are declared
+fields on `Scorecard`, serialized, round-tripped and guarded by CI-3, so a
+withheld grade is machine-checked rather than a rendering convention; the nine
+token patterns and their severities; `exclude_native` handling in
+`probe_resource_policy`; and the `(path, mtime_ns, size)` cache key.
+
+**Relayed, not verified.** The performance and training figures those commits
+cite — Traefik 59s → 6s, 158 findings against 158 on the files both scans read,
+4401/4401 injection recall, 1653/1653 after the cache fix — cannot be reproduced
+on this machine: the corpus is not cloned and there is no Traefik checkout. They
+are recorded as that session's measurements and are not restated as fact in
+`CHANGELOG.md`.
+
+**Gap found while reading, not fixed.** `adapters.py:342` registers every
+adapter-backed probe without a `scope`, so all five external analyzers (ruff,
+bandit, checkov, semgrep, gitleaks) inherit the `repo` default and are recorded
+as not-assessed in any partial scan. That is the right default — nothing has
+established that those tools give subset-exact answers — but it means the
+pull-request gate runs native probes only, and neither `docs/ci.md` nor
+`RUNNING-ON-YOUR-OWN-CODE.md` says so. Worth either declaring the scope
+deliberately per adapter or documenting the limitation; it should not stay
+implicit in a default.
+
+**Also outstanding.** `HANDOFF.md` tells a fresh session to expect `310 passed`.
+That has never matched this machine, where the suite is 307 passed and 3 skipped
+after REQ-006.
