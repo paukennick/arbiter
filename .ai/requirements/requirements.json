@@ -2,7 +2,46 @@
   "version": "2.0.0",
   "requirement_id_prefix": "REQ",
   "categories": {
-    "developer-tooling": [],
+    "developer-tooling": [
+      {
+        "id": "REQ-010",
+        "title": "Expose Arbiter as an MCP server",
+        "description": "Wrap the existing arbiter console script in a Model Context Protocol server so an agent can call scan, gate and review-queue generation as tools, instead of a human typing CLI commands. The server shells out to the console script registered at pyproject.toml:22 rather than importing the package, because src/arbiter/__init__.py exports only __version__ and run_scan takes twelve-plus parameters: the stable Python API should be shaped by observed MCP usage rather than guessed at first. Chosen over a hosted API because hosting requires customer source to leave their machine, which contradicts the offline and ci profiles that declare network False, and because a hosted offering is the one distribution scenario docs/licensing.md marks as needing counsel. Note that MCP relocates the installation rather than removing it -- Arbiter still runs where the repository is on disk.",
+        "priority": "high",
+        "status": "pending",
+        "minimum_access_scope": [
+          "src/arbiter/mcp.py",
+          "src/arbiter/cli.py",
+          "docs/mcp.md",
+          "pyproject.toml",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "a tool for scan that takes a path and returns the report json",
+          "a tool for gate that returns pass or fail with the claim ledger",
+          "a tool that generates a review queue but cannot record a verdict",
+          "the offline profile is the default and network is never enabled implicitly",
+          "output is written only beneath a caller-specified directory",
+          "the server never executes the scanned repository",
+          "docs/mcp.md documents the tool surface",
+          "tests cover the tool schemas and the refusal to mark verdicts"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest -q"
+        ],
+        "documentation_required": [
+          "docs/mcp.md",
+          "README.md",
+          "CHANGELOG.md",
+          ".ai/project-context.md"
+        ],
+        "risk_notes": [
+          "recording verdicts through an automated caller would destroy the calibration ledger's value as the one human-generated signal; the review tool must generate queues only",
+          "an MCP dependency is the first new runtime dependency beyond PyYAML and needs a decision on whether it is optional",
+          "scanning through a server re-raises the arbiter-out self-contamination defect if callers point output inside the scanned tree"
+        ]
+      }
+    ],
     "documentation": [],
     "training-evidence": [],
     "legal": [
