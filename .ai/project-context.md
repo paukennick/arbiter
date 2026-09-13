@@ -634,11 +634,12 @@ counsel, so it covers a pilot and nothing that looks like a customer. REQ-005
 still owns the reviewed version and the L-3 term structure.
 
 `deploy/` holds the arrangement itself: a Dockerfile, a `compose.yaml` and a
-`Caddyfile`. Two things there are load-bearing rather than incidental. Arbiter
-shares Caddy's network namespace, because `--behind-proxy` believes
-`X-Forwarded-Proto` and that is only safe when nothing but the proxy can reach
-the port — sharing the namespace keeps "bound to loopback" literally true, and
-uvicorn only accepts forwarded headers from 127.0.0.1 anyway. And the image must
+`Caddyfile`. Two things there are load-bearing rather than incidental. No socket
+in it speaks plaintext, including the hop from Caddy to Arbiter: a one-shot
+`certs` service generates a self-signed certificate for `arbiter.internal`,
+Arbiter serves with it, and Caddy verifies against exactly that certificate
+instead of skipping the check. Sharing Caddy's network namespace is a second
+layer on top, not what keeps the hop private. And the image must
 stay private: running semgrep server-side conveys no copy, which is the whole
 reason hosting escapes L-6, but pushing the image to a public registry would
 convey copies and put those obligations back.

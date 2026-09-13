@@ -96,6 +96,19 @@ arbiter scan ./my-repo
 
 Full installation, optional extras and training setup: **[SETUP.md](SETUP.md)**.
 
+Or reach a hosted instance and install no analyzers at all:
+
+```bash
+pip install arbiter-eval
+export ARBITER_SERVER=https://arbiter.example.com
+export ARBITER_API_KEY=arb_...   # issued by hand by whoever runs the server
+arbiter remote scan ./my-repo
+```
+
+The output is identical, because it is rendered by the same code; the analysis
+happened on the server. HTTPS only — an `http://` address is refused before the
+key is sent.
+
 ## Commands
 
 ```bash
@@ -113,6 +126,18 @@ arbiter review arbiter-out/report.json         # adjudicate a batch in one pass
 arbiter feedback f:8c41 --false-positive       # adjudicate one finding
 arbiter learn                                  # what has been learned
 arbiter ab --spec examples/ab-native-vs-checkov.yaml    # compare two arms
+```
+
+Against a hosted instance, with nothing but Arbiter itself installed locally:
+
+```bash
+arbiter remote health                          # what this server is, and what it allows
+arbiter remote scan ./repo                     # analyze and report, server-side
+arbiter remote gate ./repo                     # exit 1 on policy failure
+arbiter remote review-queue arbiter-out/report.json   # draw a queue; marks stay blank
+arbiter api serve                              # run an instance yourself
+arbiter mcp                                    # serve the tools over MCP, on stdio
+arbiter mcp --http --root /srv/work            # ...or over HTTPS, to several people
 ```
 
 Full reference: **[docs/cli.md](docs/cli.md)**.
@@ -209,6 +234,11 @@ enumerates, and any change that regresses on one of them fails the suite.
 | [docs/calibration.md](docs/calibration.md) | Learning, adjudication, external severity |
 | [docs/ab-testing.md](docs/ab-testing.md) | The A/B harness |
 | [docs/ci.md](docs/ci.md) | CI integration and continuous training |
+| [docs/hosted-api.md](docs/hosted-api.md) | Running an instance, reaching one with `arbiter remote`, custody and TLS |
+| [docs/mcp.md](docs/mcp.md) | The MCP surface: the tools, stdio and HTTPS, and who is allowed to call |
+| [docs/pilot-runbook.md](docs/pilot-runbook.md) | Standing a pilot up, in the order the steps have to happen |
+| [docs/pilot-terms.md](docs/pilot-terms.md) | What each tester is told happens to their code |
+| [docs/licensing.md](docs/licensing.md) | Licensing requirements and the questions still open (REQ-005) |
 | [CHANGELOG.md](CHANGELOG.md) | Dated entries, referenced to requirements |
 | [NOTICE.md](NOTICE.md) | Third-party components and their licenses |
 

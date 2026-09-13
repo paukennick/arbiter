@@ -8,7 +8,17 @@
 }
 
 arbiter.example.com {
-	reverse_proxy 127.0.0.1:8443
+	# The hop to Arbiter is HTTPS as well. Nothing in this arrangement speaks
+	# plaintext, not even inside the shared network namespace: Arbiter holds its
+	# own certificate, and Caddy verifies it against that certificate rather than
+	# skipping the check. `tls_server_name` names what the certificate says,
+	# since the address dialled is the loopback one.
+	reverse_proxy https://127.0.0.1:8443 {
+		transport http {
+			tls_trusted_ca_certs /certs/backend.pem
+			tls_server_name arbiter.internal
+		}
+	}
 
 	# Arbiter refuses an upload over 100 MB itself. The ceiling here is a little
 	# higher because multipart framing adds to the body, and a request rejected

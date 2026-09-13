@@ -8,6 +8,19 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 
 ### 2026-09-13
 
+- Removed the plaintext listener entirely. `--behind-proxy` bound a bare socket
+  on loopback and treated `X-Forwarded-Proto: https` as proof the request had
+  been secure earlier in its life; that is a header any client can invent and,
+  more to the point, a socket carrying API keys and somebody's source in clear.
+  Both surfaces now require `--cert` and `--key` — there is no arrangement in
+  which a proxy removes that, because the hop from the proxy is a socket too.
+  `require_tls` takes only the scheme the socket actually spoke, nothing reads
+  the forwarded header, and a test tokenizes `api.py` and `mcp.py` to fail if
+  either name comes back. `deploy/` follows: a one-shot `certs` service issues
+  the backend a self-signed certificate for `arbiter.internal`, Caddy dials
+  `https://127.0.0.1:8443` and verifies against exactly that certificate rather
+  than skipping the check, and the container health check does the same instead
+  of faking a forwarded header. (REQ-010, REQ-018)
 - Fixed the nightly training job, which had never once written its results back.
   `git add -A .arbiter training` matched `.gitignore`'s `training/`, git exited 1,
   and the step's `bash -e` failed the job two seconds after a 55-minute cycle
@@ -40,9 +53,8 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   exactly one of two analyzers is wrong.
 - Installed the `api` extra and put the assembled application under test for the
   first time: thirteen tests now go through a real request, twelve of them new —
-  missing, unknown
-  and revoked keys, the plaintext refusal with and without `--behind-proxy`, the
-  HSTS header on refusals as well as successes, an oversized upload, a networked
+  missing, unknown and revoked keys, the plaintext refusal and the forwarded
+  header that cannot override it, the HSTS header on refusals as well as successes, an oversized upload, a networked
   profile, the hourly cap and its `Retry-After`, an end-to-end scan, and the
   audit line for a served request and a refused one. The client dependency
   (`httpx2`, which starlette's `TestClient` now requires) is recorded in the
@@ -60,6 +72,93 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   no findings or every finding has already been adjudicated; `service.review_queue`
   treated the missing file as a failure, so a caller with a clean report — the
   good outcome — got a 400 naming a server temporary directory. (REQ-018)
+- Gave the hosted API a client, in `src/arbiter/client.py` and the new `arbiter
+  remote` command group. Until now the service had no caller half: every CLI
+  command either ran the scanner locally or ran it on the server, and the
+  documented way to reach a hosted instance was to assemble multipart uploads by
+  hand. `arbiter remote scan .` packs the directory, sends it, and renders the
+  answer through the same functions `arbiter scan` uses, so `--out`, `--format`
+  and `--limit` mean what they always meant — with none of the five analyzers,
+  the grammar pack or the rule engine installed on the caller's machine.
+  `remote gate` exits non-zero on a failed gate and deliberately takes no
+  `--out`, because `/v1/gate` answers with the verdict and the claim ledger
+  rather than a report. `remote health` needs no key, so somebody can see what a
+  server offers before asking for access to it. Settings resolve flags first,
+  then `ARBITER_SERVER` and `ARBITER_API_KEY`, then `~/.arbiter/client.json`, so
+  a one-off `--server` cannot lose to a stale file. The transport is `urllib`
+  from the standard library rather than `requests` or `httpx`: a plain install
+  still depends on PyYAML alone. (REQ-019)
+- Three of the client's refusals happen before anything leaves the machine. An
+  `http://` address is rejected outright — the server refuses plaintext too, but
+  its refusal arrives after the key has already crossed the network in the
+  clear. Certificate verification cannot be switched off: `--cacert` adds a root
+  to trust, nothing subtracts one, and a test asserts `CERT_NONE`,
+  `check_hostname = False` and `_create_unverified` appear nowhere in the module.
+  An oversized target is refused against the cap `/v1/health` publishes, instead
+  of uploading for two minutes to earn a 413. The archive also skips
+  `inventory.SKIP_DIRS`, so `.git`, `node_modules` and `.venv` never leave the
+  caller's disk — source that never left is source nobody has to be trusted
+  with. No client call records an adjudication verdict, because no endpoint
+  does. 11 tests cover this, and the end-to-end ones route the client's own
+  `urllib` through the real application, so the multipart field name, the query
+  string and the `X-API-Key` header are proven against the endpoints rather than
+  assumed to match. Suite: 381 passed, 3 skipped. (REQ-019)
+- Amended REQ-010 and added REQ-019. REQ-010 had justified the MCP server as
+  having been "chosen over a hosted API"; that rationale is withdrawn, since
+  both now exist, and the requirement gains a multi-user obligation — an HTTP
+  transport that authenticates every call against the same key store as the
+  hosted API, with the resolved caller reaching `dispatch` so the rate limiter
+  and the audit line apply per key, while stdio keeps working unauthenticated
+  for the single-user local case. REQ-019 is the client: a CLI that reaches a
+  hosted Arbiter, adding no runtime dependency beyond PyYAML. (REQ-010, REQ-019)
+- Built the MCP server's second transport, so more than one person can use it:
+  `arbiter mcp --http` serves the same three tools over HTTPS, where `arbiter
+  mcp` still serves one local agent over stdio. Every HTTP call carries a key
+  from the same file `arbiter api key add` writes and `/v1/scan` reads —
+  `Authorization: Bearer` or `X-API-Key`, both accepted — so access is granted
+  and revoked in one place for both front doors, and a revoked key stops working
+  on the next request to either. The resolved caller reaches `dispatch`, which
+  takes the same per-key concurrency slot the API takes and writes the same
+  audit line (`mcp_scan`, `mcp_gate`, `mcp_review_queue`, with the key id, the
+  user, the status and the duration), so a key's budget is one budget rather
+  than one per surface. Plaintext is refused with `426` and every response
+  carries HSTS, exactly as on the API. Stdio stays unauthenticated, because
+  whoever started that subprocess already holds the privileges it runs with.
+  (REQ-010)
+- Confined every path argument on that transport, which is the thing that made
+  it safe to expose at all. These tools take `target` and `output_dir` as paths
+  **on the server**: right for a local agent, and for a remote caller an
+  arbitrary file read with a scanner attached, since `target: "/etc"` would come
+  back as findings quoting what is in there. So `--http` refuses to start
+  without `--root`, and rewrites every path to sit beneath `root/<key id>` —
+  one directory per key, so callers are separated from each other and not merely
+  from the rest of the disk. Relative paths are joined onto that directory,
+  absolute and `..` escapes are refused by `service.resolve_within`, which
+  resolves symlinks before comparing. The arguments treated this way are listed
+  in `mcp.PATH_ARGUMENTS`, and a test fails if a tool grows a path argument that
+  is not in the list, because that one would be unconfined and silently so.
+  (REQ-010)
+- Raised the SDK pin from `mcp>=1.0` to `mcp>=2.2`, and found while doing it
+  that `arbiter mcp` had been broken against anything 2.x: the server API moved
+  handlers from decorators (`@server.list_tools()`) to constructor arguments, so
+  the stdio server raised `AttributeError` at startup under the old pin's own
+  range. `_build_server` now builds both transports the one way, so they cannot
+  drift in what they expose, and a test constructs every entry of `TOOLS` as an
+  SDK `Tool` — the schemas are plain data precisely so tests can read them
+  without the SDK, which is also why nothing noticed when the SDK renamed the
+  field they map to. A tool that refuses is now returned with `is_error` set
+  rather than as ordinary text an agent would read as a result. 14 tests cover
+  the transport. Suite: 395 passed, 3 skipped. (REQ-010)
+- Wrote `docs/mcp.md`, which REQ-010 has required all along and which did not
+  exist: the tool surface, which transport needs a key, the path confinement and
+  why, and the one flag the proxy arrangement needs. The transport's
+  DNS-rebinding guard allows loopback names only until it is told otherwise,
+  while a proxy forwards the public hostname — so every real request comes back
+  `421 Invalid Host header` unless `--allowed-host` names it. That cannot be
+  detected from inside, so it is documented as the first thing to check when
+  every call fails and none of them reaches the audit log. The README's documentation
+  table was also missing `hosted-api.md`, `mcp.md`, `pilot-runbook.md`,
+  `pilot-terms.md` and `licensing.md`; all five are listed now. (REQ-010)
 
 ### 2026-09-12
 
@@ -90,10 +189,10 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   with the `api` and `tools` extras into a virtualenv and copies it into a clean
   image running as uid 10001, a `compose.yaml` pairing it with Caddy, and a
   `Caddyfile` carrying the hostname, the ACME contact and a 110 MB body limit.
-  Arbiter shares Caddy's network namespace so that "bound to loopback" is
-  literally true rather than approximately true, which is what makes believing
-  `X-Forwarded-Proto` safe and is also the only way uvicorn accepts forwarded
-  headers. The container is read-only, capability-free, `no-new-privileges`, and
+  A one-shot `certs` service gives Arbiter its own certificate so the hop from
+  Caddy is HTTPS as well, and Caddy verifies against that certificate rather
+  than skipping the check; Arbiter also shares Caddy's network namespace, so
+  only Caddy can reach the port at all. The container is read-only, capability-free, `no-new-privileges`, and
   capped at 3 GB, 2 CPUs and 512 processes, because the analyzers parse
   attacker-chosen files even though nothing from an upload is executed. The
   image must stay private: running semgrep conveys no copy, but publishing the
@@ -115,11 +214,8 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   `docs/pilot-terms.md`, which is a draft pending counsel. (REQ-018, REQ-005)
 - Made TLS mandatory on the hosted API, with no plaintext mode. Requests carry
   an API key and a copy of somebody's source, so `serve` refuses to start
-  without either `--cert`/`--key` or `--behind-proxy`, and refuses individual
-  plaintext requests with `426 Upgrade Required`. `--behind-proxy` binds to
-  loopback only, because `X-Forwarded-Proto` is a header any client can invent
-  and believing it on a public interface would let anyone call their own
-  plaintext request secure; without the flag the header is ignored. Direct TLS
+  without `--cert`/`--key`, and refuses individual plaintext requests with
+  `426 Upgrade Required`. Direct TLS
   offers forward-secret AEAD ciphers only, which leaves nothing a TLS 1.0 or 1.1
   client can negotiate — a hard version floor is not assertable from here,
   because uvicorn builds its own SSL context, so it comes from the platform

@@ -3750,53 +3750,64 @@ def test_a_plaintext_request_is_refused():
     rather than served.
     """
     from arbiter import api, service
-    api.require_tls("https", "", behind_proxy=False)
+    api.require_tls("https")
     with pytest.raises(service.ServiceError, match="plaintext HTTP is refused"):
-        api.require_tls("http", "", behind_proxy=False)
+        api.require_tls("http")
 
 
-def test_the_forwarded_protocol_is_only_believed_behind_a_proxy():
-    """`X-Forwarded-Proto` is a header any client can invent.
+def test_no_socket_this_project_opens_is_allowed_to_be_plaintext():
+    """There is no proxy mode, because a proxy mode is a plaintext listener.
 
-    Honouring it on a public interface would let anyone declare their own
-    plaintext request secure, so it counts only when the operator said a proxy
-    terminates TLS, and the proxy binds to loopback.
+    The old arrangement bound a bare socket on loopback and took
+    `X-Forwarded-Proto` as proof it was secure. A header is not a transport, so
+    the flag is gone and the scheme the socket actually spoke is what decides.
     """
-    from arbiter import api, service
-    api.require_tls("http", "https", behind_proxy=True)
-    api.require_tls("http", "https, http", behind_proxy=True)
-    with pytest.raises(service.ServiceError, match="plaintext"):
-        api.require_tls("http", "http", behind_proxy=True)
-    with pytest.raises(service.ServiceError, match="plaintext"):
-        api.require_tls("http", "", behind_proxy=True)
-    # Without --behind-proxy the header is ignored entirely.
-    with pytest.raises(service.ServiceError, match="plaintext HTTP is refused"):
-        api.require_tls("http", "https", behind_proxy=False)
+    import inspect
+    import io
+    import tokenize
+
+    from arbiter import api, mcp
+
+    def code_only(module):
+        """The module with its comments and strings removed.
+
+        Both modules explain this rule in prose, and prose saying a header is
+        never consulted must not read as consulting it.
+        """
+        tokens = tokenize.generate_tokens(
+            io.StringIO(inspect.getsource(module)).readline)
+        return " ".join(tok.string for tok in tokens
+                        if tok.type not in (tokenize.COMMENT, tokenize.STRING)).lower()
+
+    for module in (api, mcp):
+        source = code_only(module)
+        assert "behind_proxy" not in source, f"{module.__name__} still has a proxy mode"
+        assert "x-forwarded-proto" not in source, (
+            f"{module.__name__} consults a header a client can invent")
+        assert "proxy_headers" not in source, (
+            f"{module.__name__} asks uvicorn to trust forwarded headers")
 
 
 def test_the_server_refuses_to_start_without_tls(tmp_path):
     """A misconfiguration must fail at startup, not downgrade quietly."""
     from arbiter import api, service
     with pytest.raises(service.ServiceError, match="TLS is required"):
-        api.check_tls_config(None, None, behind_proxy=False, host="0.0.0.0")
+        api.check_tls_config(None, None)
     with pytest.raises(service.ServiceError, match="TLS is required"):
-        api.check_tls_config("cert.pem", None, behind_proxy=False, host="0.0.0.0")
+        api.check_tls_config("cert.pem", None)
     with pytest.raises(service.ServiceError, match="does not exist"):
-        api.check_tls_config(str(tmp_path / "absent.pem"), str(tmp_path / "absent.key"),
-                             behind_proxy=False, host="0.0.0.0")
+        api.check_tls_config(str(tmp_path / "absent.pem"), str(tmp_path / "absent.key"))
     cert, key = tmp_path / "c.pem", tmp_path / "k.pem"
     cert.write_text("x")
     key.write_text("x")
-    api.check_tls_config(str(cert), str(key), behind_proxy=False, host="0.0.0.0")
+    api.check_tls_config(str(cert), str(key))
 
 
-def test_a_terminating_proxy_may_only_forward_to_loopback():
-    """Trusting the forwarded header on a public interface would defeat it."""
+def test_a_certificate_is_required_even_with_a_proxy_in_front(tmp_path):
+    """The hop from the proxy to here is a socket too, and it has to be TLS."""
     from arbiter import api, service
-    for host in ("127.0.0.1", "::1", "localhost"):
-        api.check_tls_config(None, None, behind_proxy=True, host=host)
-    with pytest.raises(service.ServiceError, match="loopback"):
-        api.check_tls_config(None, None, behind_proxy=True, host="0.0.0.0")
+    with pytest.raises(service.ServiceError, match="the hop from the proxy to here"):
+        api.check_tls_config(None, None)
 
 
 def test_every_response_carries_hsts():
@@ -3966,7 +3977,7 @@ def test_a_refused_key_is_audited_without_writing_the_key_down(tmp_path):
 # and no unit test can see it.
 # ---------------------------------------------------------------------------
 
-def _client(key_path, behind_proxy=False, audit=None):
+def _client(key_path, audit=None):
     """A test client over the real application, speaking HTTPS.
 
     `base_url` matters: the TLS middleware refuses anything else, which is the
@@ -3977,8 +3988,7 @@ def _client(key_path, behind_proxy=False, audit=None):
     from fastapi.testclient import TestClient
 
     from arbiter import api
-    app = api.create_app(key_path, behind_proxy=behind_proxy,
-                         audit=audit or api.AuditLog(enabled=False))
+    app = api.create_app(key_path, audit=audit or api.AuditLog(enabled=False))
     return TestClient(app, base_url="https://testserver")
 
 
@@ -4058,14 +4068,13 @@ def test_a_plaintext_request_is_refused_before_the_key_is_read(tmp_path):
                        headers={"X-API-Key": raw}).status_code == 426
 
 
-def test_behind_a_proxy_the_forwarded_header_is_what_decides(tmp_path):
-    """With --behind-proxy the scheme is the proxy's word, so it must be present."""
-    client = _client(tmp_path / "keys.json", behind_proxy=True)
+def test_a_forwarded_header_cannot_talk_the_application_into_plaintext(tmp_path):
+    """Anyone can send `X-Forwarded-Proto: https`. Nothing here believes it."""
+    client = _client(tmp_path / "keys.json")
+    assert client.get("http://testserver/v1/health",
+                      headers={"X-Forwarded-Proto": "https"}).status_code == 426
     assert client.get("/v1/health",
-                      headers={"X-Forwarded-Proto": "https"}).status_code == 200
-    assert client.get("/v1/health").status_code == 426
-    assert client.get("/v1/health",
-                      headers={"X-Forwarded-Proto": "http"}).status_code == 426
+                      headers={"X-Forwarded-Proto": "http"}).status_code == 200
 
 
 def test_every_response_carries_the_hsts_header(tmp_path):
@@ -4201,3 +4210,537 @@ def test_auditing_can_be_turned_off_and_then_writes_nothing(tmp_path):
     log = api.AuditLog(path, enabled=False)
     assert log.record("scan", {"id": "k1", "user": "dana"}, status=200)["event"] == "scan"
     assert not path.exists(), "auditing was off and a file appeared anyway"
+
+
+# --------------------------------------------------------------------------
+# The client half (REQ-019)
+#
+# These matter because the hosted API was unusable by a person until it had a
+# client: every CLI command was either local or server-side, and the docs told
+# a caller to assemble multipart uploads by hand. The end-to-end tests below
+# route the client's own urllib through the real application, so the field
+# name, the query string and the header are proven against the endpoints
+# rather than assumed to match them.
+# --------------------------------------------------------------------------
+
+def _repo(tmp_path, name="repo"):
+    """A small tree holding two directories the scanner never walks."""
+    root = tmp_path / name
+    (root / "src").mkdir(parents=True)
+    (root / ".git").mkdir()
+    (root / "node_modules" / "pkg").mkdir(parents=True)
+    (root / "src" / "app.py").write_text("x = 1\n", encoding="utf-8")
+    (root / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+    (root / "node_modules" / "pkg" / "i.js").write_text("//\n", encoding="utf-8")
+    (root / "README.md").write_text("# demo\n", encoding="utf-8")
+    return root
+
+
+def _through_the_app(monkeypatch, app_client):
+    """Point the client's urllib at the real application.
+
+    The client speaks HTTP over urllib and the test client speaks ASGI in
+    process, so this bridges the two. Everything the client builds -- the
+    multipart body, the field name, the query string, the X-API-Key header --
+    is what the endpoint actually receives.
+    """
+    import io as _io
+    import urllib.error
+    import urllib.request
+    from urllib.parse import urlsplit
+
+    class _Response:
+        def __init__(self, body):
+            self._body = body
+
+        def read(self):
+            return self._body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+    def fake_urlopen(request, timeout=None, context=None):
+        parts = urlsplit(request.full_url)
+        path = parts.path + (f"?{parts.query}" if parts.query else "")
+        headers = dict(request.headers)
+        if request.data is None:
+            answer = app_client.get(path, headers=headers)
+        else:
+            answer = app_client.post(path, content=request.data, headers=headers)
+        if answer.status_code >= 400:
+            raise urllib.error.HTTPError(request.full_url, answer.status_code,
+                                         answer.text, answer.headers,
+                                         _io.BytesIO(answer.content))
+        return _Response(answer.content)
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+
+
+def test_the_client_refuses_plaintext_before_the_key_leaves_the_machine():
+    """The server refuses plaintext too, but its refusal arrives after the key
+    has already crossed the network in the clear. The client's refusal is the
+    one that happens while the secret is still at home."""
+    from arbiter import client
+    with pytest.raises(client.ClientError) as caught:
+        client.normalise_server("http://arbiter.example.com")
+    assert "HTTPS only" in str(caught.value)
+    for rejected in ("ftp://host", "arbiter.example.com", "https://"):
+        with pytest.raises(client.ClientError):
+            client.normalise_server(rejected)
+    assert client.normalise_server("https://host:8443/") == "https://host:8443"
+
+
+def test_the_client_has_no_switch_that_turns_certificate_checking_off():
+    """--cacert adds a root to trust; nothing subtracts one. A service holding
+    somebody else's source is not a place to make `curl -k` convenient."""
+    import ssl
+
+    from arbiter import client
+    context = client._tls_context(None)
+    assert context.verify_mode == ssl.CERT_REQUIRED
+    assert context.check_hostname is True
+    source = Path(client.__file__).read_text(encoding="utf-8")
+    for forbidden in ("CERT_NONE", "check_hostname = False", "_create_unverified"):
+        assert forbidden not in source, f"{forbidden} is reachable in the client"
+    with pytest.raises(client.ClientError):
+        client._tls_context("no-such-certificate.pem")
+
+
+def test_the_upload_leaves_behind_what_the_scanner_would_never_have_read(tmp_path):
+    """`.git` and `node_modules` staying on disk keeps uploads small, but the
+    reason it matters is custody: source that never left is source nobody has
+    to be trusted with."""
+    import tarfile
+    from io import BytesIO
+
+    from arbiter import client
+    blob = client.build_archive(_repo(tmp_path))
+    with tarfile.open(fileobj=BytesIO(blob)) as archive:
+        names = sorted(archive.getnames())
+    assert names == ["README.md", "src/app.py"], names
+
+
+def test_an_upload_over_the_servers_limit_is_refused_before_it_is_sent(tmp_path):
+    """Uploading for two minutes to earn a 413 is a worse answer than a
+    sentence, and the limit is published on /v1/health for exactly this."""
+    from arbiter import client
+    with pytest.raises(client.ClientError) as caught:
+        client.build_archive(_repo(tmp_path), max_bytes=10)
+    message = str(caught.value)
+    assert "over the server's" in message and "10-byte" in message
+
+
+def test_where_the_server_and_key_come_from_has_one_order(tmp_path, monkeypatch):
+    """A one-off --server must never silently lose to a stale config file."""
+    from arbiter import client
+    config = tmp_path / "client.json"
+    config.write_text(json.dumps({"server": "https://file.example", "key": "kf"}),
+                      encoding="utf-8")
+    monkeypatch.delenv(client.ENV_SERVER, raising=False)
+    monkeypatch.delenv(client.ENV_KEY, raising=False)
+    assert client.load_settings(config_path=config) == ("https://file.example", "kf")
+    monkeypatch.setenv(client.ENV_SERVER, "https://env.example")
+    monkeypatch.setenv(client.ENV_KEY, "ke")
+    assert client.load_settings(config_path=config) == ("https://env.example", "ke")
+    assert client.load_settings("https://flag.example", "kflag", config) == (
+        "https://flag.example", "kflag")
+
+
+def test_asking_what_a_server_offers_needs_no_key(tmp_path, monkeypatch):
+    """Otherwise nobody could see what they were being offered before asking
+    for access to it."""
+    from arbiter import client
+    monkeypatch.delenv(client.ENV_KEY, raising=False)
+    monkeypatch.setenv(client.ENV_SERVER, "https://arbiter.example")
+    server, key = client.load_settings(config_path=tmp_path / "absent.json",
+                                       need_key=False)
+    assert server == "https://arbiter.example" and key == ""
+    with pytest.raises(client.ClientError) as caught:
+        client.load_settings(config_path=tmp_path / "absent.json")
+    assert "issued by hand" in str(caught.value)
+
+
+def test_every_refusal_the_server_can_send_becomes_a_sentence():
+    """A status code on its own tells a caller nothing about what to do next."""
+    import io as _io
+    import urllib.error
+
+    from arbiter import client
+
+    def refusal(code, body=b'{"detail":"no"}', headers=None):
+        return urllib.error.HTTPError("https://h/v1/scan", code, "", headers or {},
+                                      _io.BytesIO(body))
+
+    assert "issued by hand" in client._explain(refusal(401))
+    assert "larger than the server accepts" in client._explain(refusal(413, b"{}"))
+    assert "HTTPS only" in client._explain(refusal(426, b"{}"))
+    assert "Try again in 90 seconds" in client._explain(
+        refusal(429, b'{"detail":"slow down."}', {"Retry-After": "90"}))
+
+
+def test_nothing_the_client_can_call_records_a_verdict():
+    """The same refusal the MCP surface makes. A queue is drawn by a machine and
+    marked by a person; a client that could mark would let the ledger fill up
+    with the model's opinion of the model's own output."""
+    from arbiter import client
+    public = {n for n in dir(client) if not n.startswith("_")}
+    for banned in ("record", "apply", "adjudicate", "verdict", "feedback"):
+        assert not any(banned in n for n in public), f"{banned} is reachable"
+
+
+def test_a_scan_goes_out_and_comes_back_renderable(tmp_path, monkeypatch):
+    """End to end through the real application: the client packs a directory,
+    the endpoint accepts the multipart field and the key, and what comes back
+    rebuilds into a Report the ordinary console renderer can print."""
+    from arbiter import api, client
+    from arbiter.report import render_console
+    keys = tmp_path / "keys.json"
+    raw, _ = api.mint_key("dana@acme.example", keys)
+    _through_the_app(monkeypatch, _client(keys))
+
+    answer = client.scan("https://testserver", raw, _repo(tmp_path))
+    assert "report" in answer and "finding_count" in answer
+    assert isinstance(render_console(client.report_from(answer), color=False), str)
+
+
+def test_a_scan_sent_with_a_bad_key_is_refused_end_to_end(tmp_path, monkeypatch):
+    """The client cannot talk its way past authentication by being the client."""
+    from arbiter import client
+    _through_the_app(monkeypatch, _client(tmp_path / "keys.json"))
+    with pytest.raises(client.ClientError) as caught:
+        client.scan("https://testserver", "arb_not-a-real-key", _repo(tmp_path))
+    assert "unknown, revoked or expired" in str(caught.value)
+
+
+def test_the_client_reads_the_limits_the_server_publishes(tmp_path, monkeypatch):
+    """The preflight that lets an oversized target be refused locally."""
+    from arbiter import api, client
+    _through_the_app(monkeypatch, _client(tmp_path / "keys.json"))
+    state = client.health("https://testserver")
+    assert state["limits"]["max_upload_bytes"] == api.MAX_UPLOAD_BYTES
+    assert state["retains_nothing"] is True
+
+
+# --------------------------------------------------------------------------
+# MCP for more than one caller (REQ-010)
+#
+# Over stdio the server is a subprocess of one agent on one machine, and there
+# is nobody to identify. Over HTTPS that stops being true, and these cover the
+# three things that change: a key on every call, per-key limits and audit, and
+# confinement of the path arguments -- which over a network are otherwise an
+# arbitrary file read with a scanner attached.
+# --------------------------------------------------------------------------
+
+def _mcp_app(tmp_path, key_path=None, audit=None, **kw):
+    """The MCP HTTP application, wired the way a deployment wires it.
+
+    A fresh one per client: the SDK's session manager refuses a second `run()`,
+    so an app that has been served once cannot be served again.
+    """
+    pytest.importorskip("mcp", reason="the mcp extra is not installed")
+    pytest.importorskip("httpx2", reason="starlette's test client needs httpx2")
+    from arbiter import api, mcp
+    kw.setdefault("allowed_hosts", ["testserver"])
+    return mcp.build_http_app(key_path or (tmp_path / "keys.json"),
+                              tmp_path / "root",
+                              audit=audit or api.AuditLog(enabled=False), **kw)
+
+
+def _mcp_client(app, scheme="https"):
+    from starlette.testclient import TestClient
+    return TestClient(app, base_url=f"{scheme}://testserver")
+
+
+def _initialize():
+    return {"jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {"protocolVersion": "2025-06-18", "capabilities": {},
+                       "clientInfo": {"name": "test", "version": "1"}}}
+
+
+_MCP_HEADERS = {"Accept": "application/json, text/event-stream",
+                "Content-Type": "application/json"}
+
+
+def test_an_mcp_call_over_http_without_a_usable_key_gets_nowhere(tmp_path):
+    """Stdio can skip authentication because the caller already owns the
+    machine. Over a network that reasoning evaporates, and the same file the
+    hosted API reads is what decides who may call."""
+    from arbiter import api
+    keys = tmp_path / "keys.json"
+    api.mint_key("dana@acme.example", keys)
+    with _mcp_client(_mcp_app(tmp_path, keys)) as client:
+        for headers in ({}, {"X-API-Key": "arb_not-a-real-key"},
+                        {"Authorization": "Bearer arb_not-a-real-key"}):
+            response = client.post("/mcp", json=_initialize(), headers=headers)
+            assert response.status_code == 401, response.text
+            # The same sentence for unknown, revoked and expired alike: saying
+            # which would confirm that a guessed key once existed.
+            assert response.json()["detail"] == "unknown, revoked or expired API key"
+
+
+def test_a_key_works_over_mcp_and_stops_the_moment_it_is_revoked(tmp_path):
+    """One key store behind both front doors. Revoking access has to mean
+    revoking it, not revoking it on the door somebody remembered."""
+    from arbiter import api
+    keys = tmp_path / "keys.json"
+    raw, record = api.mint_key("dana@acme.example", keys)
+    with _mcp_client(_mcp_app(tmp_path, keys)) as client:
+        headers = {"X-API-Key": raw, **_MCP_HEADERS}
+        assert client.post("/mcp", json=_initialize(), headers=headers).status_code == 200
+        api.revoke_key(record["id"], keys)
+        assert client.post("/mcp", json=_initialize(), headers=headers).status_code == 401
+
+
+def test_mcp_over_http_accepts_the_key_by_either_name(tmp_path):
+    """MCP clients send `Authorization: Bearer`; everything else that talks to
+    Arbiter sends `X-API-Key`. Refusing one of them would only teach people
+    which by making them fail first."""
+    from arbiter import api
+    keys = tmp_path / "keys.json"
+    raw, _ = api.mint_key("dana@acme.example", keys)
+    for header in ({"X-API-Key": raw}, {"Authorization": f"Bearer {raw}"}):
+        with _mcp_client(_mcp_app(tmp_path, keys)) as client:
+            response = client.post("/mcp", json=_initialize(),
+                                   headers={**header, **_MCP_HEADERS})
+            assert response.status_code == 200, response.text
+
+
+def test_mcp_over_plaintext_is_refused_like_every_other_surface(tmp_path):
+    """A key in a header and a path to somebody's source, in the clear."""
+    from arbiter import api
+    keys = tmp_path / "keys.json"
+    raw, _ = api.mint_key("dana@acme.example", keys)
+    with _mcp_client(_mcp_app(tmp_path, keys), scheme="http") as client:
+        response = client.post("/mcp", json=_initialize(),
+                               headers={"X-API-Key": raw, **_MCP_HEADERS})
+        assert response.status_code == 426
+        assert "HTTPS" in response.json()["detail"]
+        assert response.headers["Strict-Transport-Security"]
+
+
+def test_a_served_mcp_response_carries_hsts_as_well_as_a_refused_one(tmp_path):
+    """A client that once reached us over TLS should refuse to try plaintext
+    afterwards, and that only holds if the header is on the success path too."""
+    from arbiter import api
+    keys = tmp_path / "keys.json"
+    raw, _ = api.mint_key("dana@acme.example", keys)
+    with _mcp_client(_mcp_app(tmp_path, keys)) as client:
+        response = client.post("/mcp", json=_initialize(),
+                               headers={"X-API-Key": raw, **_MCP_HEADERS})
+        assert response.status_code == 200
+        assert response.headers["Strict-Transport-Security"] == api.HSTS_HEADER
+
+
+def test_a_remote_mcp_caller_cannot_name_a_path_outside_its_own_directory(tmp_path):
+    """The difference between the two transports, and the reason the HTTP one
+    exists in this shape. `target` is read and `output_dir` is written, both on
+    the server: unconfined, `target: "/etc"` is an arbitrary file read that
+    comes back as findings quoting what is in there."""
+    from arbiter import mcp
+    from arbiter.service import ServiceError
+    root = tmp_path / "root"
+    dana = {"id": "aaaaaaaaaaaa", "user": "dana@acme.example"}
+    sam = {"id": "bbbbbbbbbbbb", "user": "sam@acme.example"}
+
+    inside = mcp.confine({"target": "myrepo", "output_dir": "out"}, root, dana)
+    assert Path(inside["target"]) == (root / dana["id"] / "myrepo").resolve()
+
+    for escape in ("/etc", "../../elsewhere", str(tmp_path)):
+        with pytest.raises(ServiceError):
+            mcp.confine({"target": escape}, root, dana)
+
+    # And not into each other's, which is what makes this multi-user rather
+    # than merely sandboxed.
+    theirs = mcp.confine({"target": "myrepo"}, root, sam)
+    assert Path(theirs["target"]) != Path(inside["target"])
+    with pytest.raises(ServiceError):
+        mcp.confine({"target": f"../{dana['id']}/myrepo"}, root, sam)
+
+
+def test_every_path_argument_any_tool_takes_is_confined(tmp_path):
+    """A tool that gained a path argument nobody added to `PATH_ARGUMENTS`
+    would be unconfined, and silently so. This is the check that notices."""
+    from arbiter import mcp
+    named = set(mcp.PATH_ARGUMENTS)
+    for tool in mcp.TOOLS:
+        for field in tool["inputSchema"]["properties"]:
+            if field.endswith(("_dir", "_path")) or field == "target":
+                assert field in named, f"{tool['name']}.{field} is not confined"
+
+
+def test_the_http_transport_will_not_start_without_somewhere_to_confine_to(tmp_path):
+    """Refusing at startup rather than defaulting to the filesystem root: a
+    default here would be a quiet grant of everything the process can read."""
+    from arbiter import mcp
+    from arbiter.service import ServiceError
+    pytest.importorskip("mcp", reason="the mcp extra is not installed")
+    with pytest.raises(ServiceError) as caught:
+        mcp.build_http_app(tmp_path / "keys.json", root=None)
+    assert "--root" in str(caught.value)
+
+
+def test_the_transport_accepts_the_hostname_a_proxy_forwards(tmp_path):
+    """A proxy in front forwards the public hostname, and the transport's
+    DNS-rebinding guard allows loopback names only until it is told otherwise.
+    Left alone that arrangement 421s every real request, so `--allowed-host` has
+    to reach the guard -- on the bare name and on any port."""
+    from arbiter import api
+    keys = tmp_path / "keys.json"
+    raw, _ = api.mint_key("dana@acme.example", keys)
+    headers = dict(_MCP_HEADERS, Authorization=f"Bearer {raw}")
+
+    # A hostname the guard was not told about, sent by a caller whose key is
+    # good: the refusal is the transport's, not the key check's.
+    elsewhere = _mcp_app(tmp_path, key_path=keys, allowed_hosts=["arbiter.example.com"])
+    with _mcp_client(elsewhere) as client:
+        refused = client.post("/mcp", json=_initialize(), headers=headers)
+    assert refused.status_code == 421, refused.text
+
+    named = _mcp_app(tmp_path, key_path=keys, allowed_hosts=["testserver"])
+    with _mcp_client(named) as client:
+        answered = client.post("/mcp", json=_initialize(), headers=headers)
+    assert answered.status_code != 421, answered.text
+
+
+def test_an_authenticated_tool_call_is_limited_and_audited_per_key(tmp_path, monkeypatch):
+    """What "the caller reaches dispatch" is actually for: a key's budget is one
+    budget across both front doors, and the line saying who called is written
+    for MCP exactly as it is for a request to /v1/scan."""
+    from arbiter import api, mcp
+    log = api.AuditLog(tmp_path / "audit.log")
+    caller = {"id": "cccccccccccc", "user": "dana@acme.example"}
+    seen = {}
+
+    def fake_scan(**kwargs):
+        seen.update(kwargs)
+        return {"finding_count": 0}
+
+    monkeypatch.setitem(mcp.HANDLERS, "arbiter_scan", fake_scan)
+    result = mcp.dispatch("arbiter_scan", {"target": "myrepo", "output_dir": "out"},
+                          caller=caller, audit=log, root=tmp_path / "root")
+    assert result == {"finding_count": 0}
+    # The handler was handed confined paths, not the ones the caller sent.
+    assert Path(seen["target"]).is_relative_to((tmp_path / "root" / caller["id"]).resolve())
+
+    written = [json.loads(line) for line in
+               (tmp_path / "audit.log").read_text(encoding="utf-8").splitlines()]
+    assert written[-1]["event"] == "mcp_scan"
+    assert written[-1]["key"] == caller["id"]
+    assert written[-1]["user"] == "dana@acme.example"
+    assert written[-1]["status"] == 200
+
+
+def test_a_tool_that_refuses_is_audited_as_a_refusal(tmp_path, monkeypatch):
+    """A log holding only successes cannot show somebody hammering the service."""
+    from arbiter import api, mcp
+    from arbiter.service import ServiceError
+    log = api.AuditLog(tmp_path / "audit.log")
+    caller = {"id": "dddddddddddd", "user": "sam@acme.example"}
+
+    def refuses(**kwargs):
+        raise ServiceError("no")
+
+    monkeypatch.setitem(mcp.HANDLERS, "arbiter_gate", refuses)
+    with pytest.raises(ServiceError):
+        mcp.dispatch("arbiter_gate", {"target": "r", "output_dir": "o"},
+                     caller=caller, audit=log, root=tmp_path / "root")
+    entry = json.loads((tmp_path / "audit.log").read_text(encoding="utf-8").splitlines()[-1])
+    assert entry["event"] == "mcp_gate" and entry["status"] == 400
+
+
+def test_stdio_still_dispatches_with_nobody_to_identify(tmp_path, monkeypatch):
+    """The local case must not acquire a key requirement as a side effect of the
+    remote one existing. Whoever started the subprocess already has the
+    privileges the subprocess has."""
+    from arbiter import mcp
+    monkeypatch.setitem(mcp.HANDLERS, "arbiter_scan", lambda **kw: {"ran": kw["target"]})
+    assert mcp.dispatch("arbiter_scan", {"target": "/anywhere/at/all",
+                                         "output_dir": "/tmp/out"}) == {
+        "ran": "/anywhere/at/all"}
+
+
+def test_the_tool_schemas_still_build_against_the_installed_sdk():
+    """`TOOLS` is plain data so tests can read it without the SDK, which means
+    nothing else notices when the SDK renames the field it maps to -- as it did
+    at 2.0, where `inputSchema` became `input_schema`."""
+    pytest.importorskip("mcp", reason="the mcp extra is not installed")
+    from mcp.types import Tool
+
+    from arbiter import mcp as surface
+    for tool in surface.TOOLS:
+        built = Tool(**tool)
+        assert built.name == tool["name"]
+        assert built.input_schema == tool["inputSchema"]
+
+
+def test_the_stdio_server_actually_starts_and_answers_a_real_client(tmp_path):
+    """Everything else about stdio is tested by construction: `dispatch` is
+    called directly, and `TOOLS` is checked against the SDK's `Tool`. Neither
+    starts the server, which is how `serve()` sat broken against the installed
+    SDK -- handlers moved from decorators to constructor arguments at 2.0 and
+    nothing noticed, because nothing ever spoke to it.
+
+    So this one starts `arbiter mcp` as a subprocess and talks MCP down the
+    pipes: initialize, list the tools, call one that succeeds, call one that
+    refuses. Slower than the rest of the suite, and the only test that would
+    have caught that failure.
+    """
+    pytest.importorskip("mcp", reason="the mcp extra is not installed")
+    import asyncio
+    import os
+    import sys
+
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+
+    repo = Path(__file__).resolve().parents[1]
+    report = tmp_path / "report.json"
+    report.write_text(json.dumps({"findings": []}), encoding="utf-8")
+
+    params = StdioServerParameters(
+        command=sys.executable,
+        args=["-c", "import sys; from arbiter.cli import main; sys.exit(main(['mcp']))"],
+        cwd=str(repo),
+        env={**os.environ, "PYTHONPATH": "src", "PYTHONIOENCODING": "utf-8"},
+    )
+
+    async def talk():
+        async with stdio_client(params) as (read, write):
+            async with ClientSession(read, write) as session:
+                started = await session.initialize()
+                listed = await session.list_tools()
+                worked = await session.call_tool("arbiter_review_queue", {
+                    "report_path": str(report),
+                    "output_dir": str(tmp_path / "out")})
+                refused = await session.call_tool("arbiter_review_queue", {
+                    "report_path": str(tmp_path / "absent.json"),
+                    "output_dir": str(tmp_path / "out")})
+                return started, listed, worked, refused
+
+    started, listed, worked, refused = asyncio.run(talk())
+
+    from arbiter import mcp
+    assert started.server_info.name == "arbiter"
+    assert {tool.name for tool in listed.tools} == set(mcp.HANDLERS)
+
+    # An empty report is a legitimate thing to send and comes back as an empty
+    # queue -- a result, not a failure, and with no mark in it.
+    assert worked.is_error is False
+    assert json.loads(worked.content[0].text)["entry_count"] == 0
+
+    # And a refusal arrives as a refusal rather than as text an agent would read
+    # back as a finding.
+    assert refused.is_error is True
+    assert "no report at" in refused.content[0].text
+
+
+def test_the_mcp_surface_still_records_no_verdict_over_http():
+    """The refusal that has to survive every new transport."""
+    from arbiter import mcp
+    public = {n for n in dir(mcp) if not n.startswith("_")}
+    for banned in ("record", "apply", "adjudicate", "verdict", "feedback"):
+        assert not any(banned in n.lower() for n in public), f"{banned} is reachable"
+    assert set(mcp.HANDLERS) == {"arbiter_scan", "arbiter_gate", "arbiter_review_queue"}

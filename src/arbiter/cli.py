@@ -10,7 +10,7 @@ import json
 import sys
 from pathlib import Path
 
-from . import __version__
+from . import __version__, client
 from .ab import (
     Arm, arm_from_dict, load_ab_spec, render_ab_console, render_ab_html, run_ab,
 )
@@ -172,11 +172,8 @@ def build_parser() -> argparse.ArgumentParser:
     sv.add_argument("--host", default="127.0.0.1",
                     help="localhost by default; exposing it is a deliberate act")
     sv.add_argument("--port", type=int, default=8443)
-    sv.add_argument("--cert", help="TLS certificate file; required unless --behind-proxy")
+    sv.add_argument("--cert", help="TLS certificate file; required, including behind a proxy")
     sv.add_argument("--key", dest="tls_key", help="TLS private key file")
-    sv.add_argument("--behind-proxy", action="store_true",
-                    help="a reverse proxy terminates TLS and forwards to loopback; "
-                         "requests without X-Forwarded-Proto: https are refused")
     sv.add_argument("--audit",
                     help="request log (default ~/.arbiter/audit.log, or $ARBITER_AUDIT); "
                          "records who called and how it ended, never their code")
@@ -199,7 +196,77 @@ def build_parser() -> argparse.ArgumentParser:
     kr = key_sub.add_parser("revoke", help="revoke a key by its short id")
     kr.add_argument("id")
 
-    sub.add_parser("mcp", help="run the MCP server on stdio")
+    mp = sub.add_parser("mcp",
+                        help="serve the MCP tools: stdio for one local agent, "
+                             "or HTTPS for several people")
+    mp.add_argument("--http", action="store_true",
+                    help="serve over HTTPS instead of stdio; every call needs a key")
+    mp.add_argument("--root",
+                    help="directory every caller's paths must stay inside, one "
+                         "subdirectory per key; required with --http")
+    mp.add_argument("--keys", help="key file (default ~/.arbiter/keys.json, or $ARBITER_KEYS)")
+    mp.add_argument("--host", default="127.0.0.1",
+                    help="localhost by default; exposing it is a deliberate act")
+    mp.add_argument("--port", type=int, default=8444)
+    mp.add_argument("--path", default="/mcp", help="URL path to serve the endpoint on")
+    mp.add_argument("--allowed-host", action="append", dest="allowed_hosts",
+                    help="hostname callers reach this server by; repeatable. "
+                         "Needed when a proxy forwards a public hostname, because "
+                         "the transport refuses a Host header it was not told to expect")
+    mp.add_argument("--cert", help="TLS certificate file; required, including behind a proxy")
+    mp.add_argument("--key", dest="tls_key", help="TLS private key file")
+    mp.add_argument("--audit",
+                    help="request log (default ~/.arbiter/audit.log, or $ARBITER_AUDIT); "
+                         "records who called and how it ended, never their code")
+    mp.add_argument("--no-audit", action="store_true",
+                    help="keep no record of who called; you will not be able to "
+                         "answer what ran for whom")
+
+    # The client half. Everything above runs the scanner here; this runs it
+    # somewhere else and renders the answer with the same code, so a person who
+    # installed nothing but this package gets the same report.
+    rm = sub.add_parser("remote",
+                        help="run against a hosted Arbiter; installs nothing locally")
+    remote_sub = rm.add_subparsers(dest="remote_cmd", required=True)
+
+    def remote_common(sp):
+        sp.add_argument("--server", help="https://host[:port] of the hosted instance")
+        sp.add_argument("--key", help="your API key (issued by hand by whoever runs it)")
+        sp.add_argument("--cacert", help="certificate to trust, for a self-signed server")
+        sp.add_argument("--config", dest="client_config",
+                        help=f"client settings file (default {client.DEFAULT_CONFIG})")
+        return sp
+
+    rs = remote_common(remote_sub.add_parser("scan", help="scan a directory remotely"))
+    rs.add_argument("target", nargs="?", default=".", help="directory to send")
+    rs.add_argument("--profile", default="offline",
+                    help="capability budget; both profiles run with the network off")
+    rs.add_argument("--only", default="", help="comma-separated probes to run exclusively")
+    rs.add_argument("--skip", default="", help="comma-separated probes to skip")
+    rs.add_argument("--out", default="arbiter-out", help="output directory")
+    rs.add_argument("--format", default="json,console",
+                    help="json,sarif,html,markdown,console")
+    rs.add_argument("--limit", type=int, default=40, help="findings shown on the console")
+
+    # No --out or --format here, unlike the local gate: /v1/gate answers with the
+    # verdict and the claim ledger, not a report, so those flags would take a
+    # value and do nothing with it.
+    rg = remote_common(remote_sub.add_parser("gate", help="run the policy gate remotely"))
+    rg.add_argument("target", nargs="?", default=".", help="directory to send")
+    rg.add_argument("--profile", default="ci")
+    rg.add_argument("--only", default="")
+    rg.add_argument("--skip", default="")
+
+    rq = remote_common(remote_sub.add_parser(
+        "review-queue", help="draw a review queue from a report; marks nothing"))
+    rq.add_argument("report", help="path to a report.json")
+    rq.add_argument("--limit", type=int, default=20)
+    rq.add_argument("--rule", default="", help="only findings whose rule id contains this")
+    rq.add_argument("--out", help="write the queue here instead of standard output")
+
+    rh = remote_common(remote_sub.add_parser(
+        "health", help="what the server is, and what it will allow"))
+    rh.set_defaults(needs_key=False)
 
     return p
 
@@ -659,7 +726,6 @@ def cmd_api(args) -> int:
     if args.api_cmd == "serve":
         return api.serve(host=args.host, port=args.port, key_path=path,
                          certfile=args.cert, keyfile=args.tls_key,
-                         behind_proxy=args.behind_proxy,
                          audit_path=args.audit, audit=not args.no_audit)
 
     if args.key_cmd == "add":
@@ -700,6 +766,85 @@ def cmd_api(args) -> int:
     return EXIT_ERROR
 
 
+def cmd_remote(args) -> int:
+    """Run against a hosted Arbiter and render the answer as though it were local.
+
+    Nothing is analysed here. The report the server sends back is rebuilt and
+    handed to the same writers `arbiter scan` uses, so `--out` and `--format`
+    mean what they have always meant and the console output is the same text.
+    The only visible difference is that this machine never had the analyzers.
+    """
+    config = Path(args.client_config).expanduser() if args.client_config else None
+
+    try:
+        server, key = client.load_settings(
+            args.server, args.key, config,
+            need_key=getattr(args, "needs_key", True))
+
+        if args.remote_cmd == "health":
+            state = client.health(server, args.cacert)
+            custody = ("keeps nothing after a scan" if state.get("retains_nothing")
+                       else "retains what is uploaded")
+            print(server)
+            print(f"  arbiter {state.get('version', '?')}, {custody}"
+                  + (", free to use" if state.get("free") else ""))
+            for name, value in (state.get("limits") or {}).items():
+                shown = f"{value:,}" if isinstance(value, int) else str(value)
+                print(f"  {name.replace('_', ' '):<26} {shown}")
+            return EXIT_OK
+
+        if args.remote_cmd == "review-queue":
+            report = json.loads(Path(args.report).read_text(encoding="utf-8"))
+            answer = client.review_queue(server, key, report, args.limit,
+                                         args.rule, args.cacert)
+            if not answer.get("entry_count"):
+                print(answer.get("note") or "nothing to review")
+                return EXIT_OK
+            queue = answer.get("queue_markdown", "")
+            if args.out:
+                out = Path(args.out).expanduser()
+                out.parent.mkdir(parents=True, exist_ok=True)
+                out.write_text(queue, encoding="utf-8")
+                print(f"  wrote queue: {out}  "
+                      f"({answer['entry_count']} to adjudicate)")
+            else:
+                print(queue)
+            return EXIT_OK
+
+        # Ask what the server allows before packing anything, so an oversized
+        # target is refused here rather than after a long upload earns a 413.
+        limits = (client.health(server, args.cacert).get("limits") or {})
+        cap = limits.get("max_upload_bytes")
+        send = client.gate if args.remote_cmd == "gate" else client.scan
+        answer = send(server, key, Path(args.target), args.profile,
+                      args.only, args.skip, args.cacert, cap)
+    except client.ClientError as exc:
+        print(f"arbiter: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+
+    if args.remote_cmd == "gate":
+        passed = bool(answer.get("passed"))
+        print("gate: PASSED" if passed else "gate: FAILED")
+        for name, value in sorted((answer.get("gate") or {}).items()):
+            if isinstance(value, (str, int, float, bool)):
+                print(f"  {name.replace('_', ' '):<26} {value}")
+        claims = answer.get("claims") or []
+        if claims:
+            print(f"  {'claims in the ledger':<26} {len(claims)}")
+        return EXIT_OK if passed else EXIT_GATE_FAIL
+
+    report = client.report_from(answer)
+    formats = _formats(args.format)
+    written = write_all(report, args.out, [f for f in formats if f != "console"])
+    if "console" in formats or not formats:
+        print(render_console(report, limit=args.limit))
+    for kind, path in written.items():
+        print(f"  wrote {kind}: {path}")
+    if written:
+        print()
+    return EXIT_OK
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
@@ -731,8 +876,22 @@ def main(argv: list[str] | None = None) -> int:
         if args.cmd == "api":
             return cmd_api(args)
         if args.cmd == "mcp":
-            from .mcp import serve as mcp_serve
-            return mcp_serve()
+            from pathlib import Path as _Path
+
+            from . import mcp as mcp_surface
+            if not args.http:
+                # Stdio serves one agent on this machine, which already has
+                # whatever privileges this process has; there is nobody to
+                # identify and nothing to confine.
+                return mcp_surface.serve()
+            return mcp_surface.serve_http(
+                host=args.host, port=args.port,
+                key_path=_Path(args.keys).expanduser() if args.keys else None,
+                root=args.root, certfile=args.cert, keyfile=args.tls_key,
+                audit_path=args.audit, audit=not args.no_audit,
+                path=args.path, allowed_hosts=args.allowed_hosts)
+        if args.cmd == "remote":
+            return cmd_remote(args)
     except KeyboardInterrupt:
         return EXIT_ERROR
     except Exception as exc:  # noqa: BLE001

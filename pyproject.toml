@@ -20,7 +20,10 @@ tools = ["ruff", "bandit", "checkov", "semgrep"]
 # httpx2 is starlette's test client transport. Without it the app-level tests
 # skip, so the request path -- auth, TLS refusal, the limiter -- goes unexercised.
 dev = ["pytest>=7", "httpx2"]
-mcp = ["mcp>=1.0"]
+# 2.2 is a hard floor, not caution: the server API changed shape there --
+# handlers are constructor arguments rather than decorators -- so a 1.x
+# install fails at startup. starlette and uvicorn arrive with it.
+mcp = ["mcp>=2.2"]
 api = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9"]
 
 [project.scripts]

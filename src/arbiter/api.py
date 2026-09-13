@@ -121,9 +121,6 @@ DEFAULT_KEY_LIFETIME_DAYS = 90
 # once reached us over TLS refuses to try plaintext afterwards.
 HSTS_HEADER = "max-age=63072000; includeSubDomains"
 
-LOOPBACK = {"127.0.0.1", "::1", "localhost"}
-
-
 # --------------------------------------------------------------------------
 # Transport security, which is not optional
 # --------------------------------------------------------------------------
@@ -134,50 +131,34 @@ LOOPBACK = {"127.0.0.1", "::1", "localhost"}
 # not offer plaintext as a degraded mode: it refuses to start without TLS, and
 # refuses individual requests that arrive over it anyway.
 #
-# There are exactly two legitimate arrangements. Either this process terminates
-# TLS itself, with a certificate and key, or a proxy terminates it and forwards
-# to this process on the loopback interface. The second is only honoured when
-# the operator says so explicitly, because `X-Forwarded-Proto` is a header any
-# client can invent -- trusting it on a public interface would hand anyone a
-# way to claim their plaintext request was secure.
+# There is one arrangement, not two: this process holds a certificate and every
+# socket it opens speaks TLS. A proxy may still sit in front of it, but the hop
+# from the proxy to here is TLS as well. `X-Forwarded-Proto` is deliberately not
+# consulted -- it is a header any client can invent, and believing it means a
+# plaintext listener somewhere, which is the thing being refused.
 
 
-def require_tls(scheme: str, forwarded_proto: str, behind_proxy: bool) -> None:
+def require_tls(scheme: str) -> None:
     """Refuse a request that did not arrive over TLS.
 
-    Framework-free so the rule is testable without a running server.
+    Framework-free so the rule is testable without a running server. The scheme
+    is the one the socket actually spoke; no header can talk it into `https`.
     """
-    if behind_proxy:
-        # A proxy may append to the header, so the first hop is the client's.
-        proto = (forwarded_proto or "").split(",")[0].strip().lower()
-        if proto != "https":
-            raise ServiceError(
-                "this request reached the proxy over plaintext; HTTPS is required"
-            )
-        return
     if (scheme or "").lower() != "https":
         raise ServiceError("plaintext HTTP is refused; use HTTPS")
 
 
-def check_tls_config(certfile: str | None, keyfile: str | None,
-                     behind_proxy: bool, host: str) -> None:
-    """Refuse to start in any arrangement that would expose plaintext.
+def check_tls_config(certfile: str | None, keyfile: str | None) -> None:
+    """Refuse to start without a certificate and key.
 
     Called before the socket is opened, so a misconfiguration is a startup
     failure rather than a quiet downgrade nobody notices.
     """
-    if behind_proxy:
-        if host not in LOOPBACK:
-            raise ServiceError(
-                f"--behind-proxy binds to the loopback interface only, not {host}; "
-                "otherwise anyone could send X-Forwarded-Proto: https and be believed"
-            )
-        return
     if not certfile or not keyfile:
         raise ServiceError(
-            "TLS is required: pass --cert and --key, or --behind-proxy if a "
-            "reverse proxy terminates TLS and forwards to localhost. "
-            "With no certificate to hand, see docs/hosted-api.md "
+            "TLS is required: pass --cert and --key. A proxy in front does not "
+            "remove that -- the hop from the proxy to here is a socket too, and "
+            "it has to be TLS. With no certificate to hand, see docs/hosted-api.md "
             "('If you have no certificate') -- there is no plaintext mode"
         )
     for label, value in (("--cert", certfile), ("--key", keyfile)):
@@ -597,7 +578,7 @@ ENDPOINTS = {"scan": handle_scan, "gate": handle_gate, "review_queue": handle_re
 # The framework layer, imported only when actually serving
 # --------------------------------------------------------------------------
 
-def create_app(key_path: Path | None = None, behind_proxy: bool = False,
+def create_app(key_path: Path | None = None,
                audit: AuditLog | None = None) -> Any:
     """Build the FastAPI application.
 
@@ -633,9 +614,7 @@ def create_app(key_path: Path | None = None, behind_proxy: bool = False,
     async def enforce_tls(request, call_next):
         """Refuse plaintext before anything reads the key or the body."""
         try:
-            require_tls(request.url.scheme,
-                        request.headers.get("x-forwarded-proto", ""),
-                        behind_proxy)
+            require_tls(request.url.scheme)
         except ServiceError as exc:
             # 426 Upgrade Required: the request was understood and the transport
             # is the problem, which is exactly what happened.
@@ -743,18 +722,17 @@ def create_app(key_path: Path | None = None, behind_proxy: bool = False,
 
 def serve(host: str = "127.0.0.1", port: int = 8443, key_path: Path | None = None,
           certfile: str | None = None, keyfile: str | None = None,
-          behind_proxy: bool = False, audit_path: str | None = None,
-          audit: bool = True) -> int:
-    """Run the API over TLS. There is no plaintext mode.
+          audit_path: str | None = None, audit: bool = True) -> int:
+    """Run the API over TLS. There is no plaintext mode, and no plaintext port.
 
-    Either this process holds the certificate, or a proxy terminates TLS and
-    forwards to loopback with `--behind-proxy`. Anything else fails to start.
+    This process holds the certificate. A proxy may sit in front of it, but the
+    hop from that proxy to here is TLS too; nothing here opens a bare socket.
     """
     # The TLS check comes first deliberately. An operator whose install is
     # missing the extra should still be told plainly that their arrangement
     # would have served plaintext, rather than fixing the dependency and
     # meeting that refusal only on the second attempt.
-    check_tls_config(certfile, keyfile, behind_proxy, host)
+    check_tls_config(certfile, keyfile)
 
     try:
         import uvicorn
@@ -770,21 +748,14 @@ def serve(host: str = "127.0.0.1", port: int = 8443, key_path: Path | None = Non
               "(who called and how it ended; never their code)")
     else:
         print("arbiter: auditing is off; no record of who called will be kept")
-    app = create_app(key_path, behind_proxy=behind_proxy, audit=log)
-
-    if behind_proxy:
-        print(f"arbiter: serving on http://{host}:{port} for a TLS-terminating "
-              "proxy only; requests without X-Forwarded-Proto: https are refused")
-        uvicorn.run(app, host=host, port=port, proxy_headers=True,
-                    forwarded_allow_ips="127.0.0.1")
-        return 0
+    app = create_app(key_path, audit=log)
 
     # uvicorn builds its own SSL context and exposes no minimum-version hook, so
     # a TLS 1.2 floor cannot be asserted from here. Restricting to forward-secret
     # AEAD suites is what is actually enforced: it leaves nothing a TLS 1.0 or
     # 1.1 client can negotiate. The version floor proper belongs to the platform
-    # OpenSSL policy, or to the terminating proxy under --behind-proxy, which is
-    # the arrangement to prefer if that floor has to be guaranteed.
+    # OpenSSL policy, or to a proxy in front of this process, which is where to
+    # put it if that floor has to be guaranteed.
     print(f"arbiter: serving on https://{host}:{port}")
     uvicorn.run(app, host=host, port=port, ssl_certfile=certfile,
                 ssl_keyfile=keyfile,

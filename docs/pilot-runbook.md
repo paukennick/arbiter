@@ -103,11 +103,14 @@ server swallow 100 MB before it answers `401`.
 
 Two details in `deploy/compose.yaml` are load-bearing rather than incidental:
 
-- **Arbiter shares Caddy's network namespace.** `--behind-proxy` believes
-  `X-Forwarded-Proto`, and that header is only safe to believe when nothing but
-  the proxy can reach the port. Sharing the namespace makes "bound to loopback"
-  literally true instead of approximately true, and it is also why uvicorn
-  accepts the forwarded headers, since it only trusts them from 127.0.0.1.
+- **The hop from Caddy to Arbiter is HTTPS too.** Nothing in this arrangement
+  speaks plaintext, including inside the machine. A one-shot `certs` service
+  generates a self-signed certificate for `arbiter.internal` the first time you
+  bring the stack up; Arbiter serves with it, and Caddy verifies against that
+  one certificate rather than skipping the check. It is never seen by a caller,
+  so it needs no CA and no renewal — delete the `arbiter-certs` volume to
+  replace it. Arbiter also shares Caddy's network namespace, so only Caddy can
+  reach port 8443; that is a second layer, not the thing making the hop private.
 - **The container is unprivileged, read-only, capped and capability-free.**
   Nothing from an upload is executed, but the analyzers parse attacker-chosen
   files, and a parser bug on a pathological one is the plausible way to lose the
@@ -120,7 +123,9 @@ to a public registry would convey copies and put L-6's obligations back. See
 [licensing.md](licensing.md).
 
 If the machine has no public address, a tunnel (`cloudflared`, Tailscale Funnel)
-terminates TLS at the provider's edge and forwards to loopback the same way. The
+terminates TLS at the provider's edge and forwards to loopback the same way —
+to Arbiter's own certificate, which for `cloudflared` means an `originRequest`
+with `caPool` pointing at `backend.pem` and `noTLSVerify` left alone. The
 provider then sees the traffic, which is a custody change your testers were not
 told about — so either tell them or do not do it.
 

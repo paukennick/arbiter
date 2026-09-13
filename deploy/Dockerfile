@@ -49,14 +49,16 @@ USER 10001
 WORKDIR /work
 EXPOSE 8443
 
-# The service refuses any request that did not reach the proxy over HTTPS, so
-# the health check has to say so. It only reaches this port from inside the
-# network namespace it shares with Caddy.
+# The service speaks TLS on this port and nothing else, so the health check
+# speaks TLS too -- and verifies, against the same certificate Caddy verifies
+# against, rather than turning verification off for convenience. It only reaches
+# this port from inside the network namespace it shares with Caddy.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD python -c "import urllib.request as r; \
-req = r.Request('http://127.0.0.1:8443/v1/health', \
-headers={'X-Forwarded-Proto': 'https'}); \
-exit(0 if r.urlopen(req, timeout=4).status == 200 else 1)"
+  CMD python -c "import ssl, urllib.request as r; \
+ctx = ssl.create_default_context(cafile='/certs/backend.pem'); \
+exit(0 if r.urlopen('https://127.0.0.1:8443/v1/health', \
+timeout=4, context=ctx).status == 200 else 1)"
 
 ENTRYPOINT ["arbiter"]
-CMD ["api", "serve", "--behind-proxy", "--port", "8443"]
+CMD ["api", "serve", "--port", "8443", \
+     "--cert", "/certs/backend.pem", "--key", "/certs/backend.key"]

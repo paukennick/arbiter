@@ -5,12 +5,13 @@
     "developer-tooling": [
       {
         "id": "REQ-010",
-        "title": "Expose Arbiter as an MCP server",
-        "description": "Wrap the existing arbiter console script in a Model Context Protocol server so an agent can call scan, gate and review-queue generation as tools, instead of a human typing CLI commands. The server shells out to the console script registered at pyproject.toml:22 rather than importing the package, because src/arbiter/__init__.py exports only __version__ and run_scan takes twelve-plus parameters: the stable Python API should be shaped by observed MCP usage rather than guessed at first. Chosen over a hosted API because hosting requires customer source to leave their machine, which contradicts the offline and ci profiles that declare network False, and because a hosted offering is the one distribution scenario docs/licensing.md marks as needing counsel. Note that MCP relocates the installation rather than removing it -- Arbiter still runs where the repository is on disk.",
+        "title": "Expose Arbiter as an MCP server, for more than one user",
+        "description": "Wrap the service layer in a Model Context Protocol server so an agent can call scan, gate and review-queue generation as tools, instead of a human typing CLI commands. Amended 2026-09-13. The original rationale said MCP was chosen over a hosted API because hosting requires customer source to leave the customer's machine. REQ-018 reversed that decision and the hosted API is built, so that sentence is withdrawn rather than merely stale: both surfaces now exist and both call src/arbiter/service.py, which is where containment is written once. What the amendment adds is that the MCP surface must serve more than one user. It is stdio only today: serve() runs one process per client and dispatch() carries no caller identity at all, so it cannot tell two callers apart even in principle, and neither the rate limiter nor the audit line can apply to it. The fix is a streamable-HTTP transport authenticated by the same key store the API already uses -- api.verify_key, one user one key -- with the resolved caller threaded through dispatch so per-key limits and audit records apply exactly as they do over HTTP. Two surfaces, one identity model, one service layer. The stdio transport stays, because a single user on a machine holding source that must not leave it is still the case MCP serves best.",
         "priority": "high",
         "status": "pending",
         "minimum_access_scope": [
           "src/arbiter/mcp.py",
+          "src/arbiter/api.py",
           "src/arbiter/cli.py",
           "docs/mcp.md",
           "pyproject.toml",
@@ -23,8 +24,13 @@
           "the offline profile is the default and network is never enabled implicitly",
           "output is written only beneath a caller-specified directory",
           "the server never executes the scanned repository",
-          "docs/mcp.md documents the tool surface",
-          "tests cover the tool schemas and the refusal to mark verdicts"
+          "an HTTP transport authenticates every call against the same key store as the hosted API",
+          "the resolved caller reaches dispatch so the rate limiter and the audit line apply per key",
+          "the HTTP transport refuses plaintext on the same terms as the API",
+          "one caller cannot read another caller's workspace or result",
+          "the stdio transport keeps working unauthenticated for the single-user local case",
+          "docs/mcp.md documents the tool surface and which transport needs a key",
+          "tests cover the tool schemas, the refusal to mark verdicts, and per-caller isolation"
         ],
         "validation_required": [
           "PYTHONPATH=src python -m pytest -q"
@@ -37,8 +43,9 @@
         ],
         "risk_notes": [
           "recording verdicts through an automated caller would destroy the calibration ledger's value as the one human-generated signal; the review tool must generate queues only",
-          "an MCP dependency is the first new runtime dependency beyond PyYAML and needs a decision on whether it is optional",
-          "scanning through a server re-raises the arbiter-out self-contamination defect if callers point output inside the scanned tree"
+          "the mcp dependency stays an optional extra; the core install remains PyYAML alone",
+          "scanning through a server re-raises the arbiter-out self-contamination defect if callers point output inside the scanned tree",
+          "two transports with different authentication rules is a place for a mistake to hide; the stdio case must be unmistakably local-only in the documentation"
         ]
       },
       {
@@ -167,6 +174,44 @@
         ],
         "risk_notes": [
           "customer source leaving the customer's machine is a custody question rather than a copyright one and needs contractual terms before any external caller;a stored report names file paths and credential kinds so it is sensitive even though report.py already redacts secret values;an HTTP framework would be the first runtime dependency beyond PyYAML and needs an optional-extra decision;hosting concentrates many customers' source in one place which is a materially larger target than a local install"
+        ]
+      },
+      {
+        "id": "REQ-019",
+        "title": "Give a user a CLI that reaches a hosted Arbiter",
+        "description": "REQ-018 built the hosted API and nothing can conveniently call it. Every CLI command is either local (scan, gate, review) or server-side (api serve, api key add|list|revoke); docs/hosted-api.md tells a user to assemble multipart uploads with curl. That makes the hosted service real for a script and not for a person, which defeats the reason it was built -- a caller should be able to get an opinion about their repository without installing five analyzers, a grammar pack and a rule engine. This adds an arbiter remote command group that packages a target, sends it over TLS with a hand-issued key, and renders the answer through the same report.py functions a local scan uses, so the output is identical and --out, --format and --limit keep their meaning. The transport is urllib from the standard library rather than requests or httpx: pip install arbiter-eval must stay PyYAML-only, because a thin client that drags in a dependency tree is not a thin client.",
+        "priority": "high",
+        "status": "pending",
+        "minimum_access_scope": [
+          "src/arbiter/client.py",
+          "src/arbiter/cli.py",
+          "docs/hosted-api.md",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "arbiter remote scan and gate send a target to a hosted instance and render the report locally",
+          "the client adds no runtime dependency beyond PyYAML",
+          "an http:// server address is refused by the client before the key is sent",
+          "certificate verification is on and there is no switch that disables it",
+          "the archive skips inventory.SKIP_DIRS so .git and node_modules never leave the caller's disk",
+          "an upload larger than the server's published limit is refused before it is sent",
+          "401, 413, 426 and 429 each produce a sentence saying what to do next",
+          "server address and key come from flags, then the environment, then a config file, in that order",
+          "no client call can record an adjudication verdict",
+          "docs/hosted-api.md documents the client as the way a person uses the service"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest -q"
+        ],
+        "documentation_required": [
+          "docs/hosted-api.md",
+          "README.md",
+          "CHANGELOG.md"
+        ],
+        "risk_notes": [
+          "an archive built from the caller's working tree can carry uncommitted secrets that a git-based upload would not; the skip list bounds this but does not remove it",
+          "a client that renders a server-produced report trusts the server's finding list; that is inherent to hosting and is a custody question rather than a code one",
+          "--cacert exists for the self-signed pilot and is a place a user could be talked into trusting the wrong certificate"
         ]
       }
     ],

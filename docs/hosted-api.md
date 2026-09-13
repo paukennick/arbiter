@@ -14,6 +14,7 @@
 - [Custody is the real gate](#custody-is-the-real-gate)
 - [Licensing, corrected](#licensing-corrected)
 - [Access is handed out by hand, one key per user](#access-is-handed-out-by-hand-one-key-per-user)
+- [How a person uses it: `arbiter remote`](#how-a-person-uses-it-arbiter-remote)
 - [The endpoints](#the-endpoints)
 - [TLS, with no plaintext mode](#tls-with-no-plaintext-mode)
 - [What is built](#what-is-built)
@@ -248,6 +249,52 @@ itself. If the disk is full or read-only the write fails loudly on stderr and
 the scan still runs: a broken log should not become a failed request. `--no-audit` turns it off entirely, which means giving up the
 ability to answer what ran for whom.
 
+## How a person uses it: `arbiter remote`
+
+The endpoints below are what the service exposes. Almost nobody should have to
+touch them directly. The client is the way in:
+
+```
+pip install arbiter-eval          # PyYAML and nothing else
+export ARBITER_SERVER=https://arbiter.example.com
+export ARBITER_API_KEY=arb_...    # issued by hand, sent to you out of band
+
+arbiter remote health             # what this server is, and what it allows
+arbiter remote scan .             # the same output as a local scan
+arbiter remote gate .             # exits non-zero when policy fails
+```
+
+Settings come from flags first, then `ARBITER_SERVER` and `ARBITER_API_KEY`,
+then `~/.arbiter/client.json` — so a one-off `--server` never loses to a stale
+file.
+
+What makes this worth having is what the caller did not install. `arbiter remote
+scan` sends the directory and renders the answer through the same functions
+`arbiter scan` uses, so `--out`, `--format` and `--limit` mean what they always
+meant and the console output is the same text. None of the five analyzers, the
+grammar pack or the rule engine is on that machine. The transport is `urllib`
+from the standard library rather than `requests` or `httpx`, because a thin
+client that drags in a dependency tree is not a thin client.
+
+Three refusals happen on the caller's side, before anything is sent:
+
+- **`http://` is refused outright.** The server refuses plaintext too, but its
+  refusal arrives after the key has already crossed the network in the clear.
+- **Certificate verification cannot be switched off.** `--cacert` adds a root to
+  trust, for the self-signed case below; nothing subtracts one.
+- **An oversized target is refused locally.** `/v1/health` publishes the
+  100 MiB cap, so uploading for two minutes to earn a 413 is avoidable.
+
+The upload also leaves behind what the scanner would never have read — `.git`,
+`node_modules`, `.venv` and the rest of `inventory.SKIP_DIRS`. That keeps
+uploads small, but the reason it matters is custody: source that never left is
+source nobody has to be trusted with.
+
+`arbiter remote gate` takes no `--out` or `--format`, because `/v1/gate` answers
+with the verdict and the claim ledger rather than a report. And there is no
+`arbiter remote` command that records an adjudication verdict, because there is
+no endpoint that does — see below.
+
 ## The endpoints
 
 | Endpoint | Takes | Returns |
@@ -268,27 +315,26 @@ is replayable forever. So plaintext is not offered as a degraded mode: the
 server refuses to start without TLS, and refuses individual requests that arrive
 over it anyway with `426 Upgrade Required`.
 
-Two arrangements are legitimate, and nothing else starts:
+There is one arrangement, and nothing else starts:
 
 ```
-# this process holds the certificate
 arbiter api serve --cert fullchain.pem --key privkey.pem --host 0.0.0.0
-
-# a proxy terminates TLS and forwards to loopback
-arbiter api serve --behind-proxy
 ```
 
-`--behind-proxy` binds to the loopback interface only. `X-Forwarded-Proto` is a
-header any client can invent, so believing it on a public interface would hand
-anyone a way to declare their own plaintext request secure. Without that flag
-the header is ignored entirely.
+A proxy may still sit in front — and for a pilot it should, since it can get a
+real certificate and carry a body limit — but it does not remove that
+requirement. The hop from the proxy to this process is a socket too, so it
+carries its own certificate and the proxy verifies it. There is no flag that
+binds a plaintext port and takes `X-Forwarded-Proto` as proof the request was
+secure somewhere upstream; that header is not consulted anywhere in this
+project. A header is not a transport, and a loopback listener is still a
+listener.
 
-Direct TLS restricts the offered ciphers to forward-secret AEAD suites, which
-leaves nothing a TLS 1.0 or 1.1 client can negotiate in practice. Note the
-limit precisely: uvicorn builds its own SSL context and exposes no
-minimum-version setting, so a hard version floor cannot be asserted from inside
-this module — it comes from the platform's OpenSSL policy. If a guaranteed
-floor matters, terminate TLS at a proxy and use `--behind-proxy`, where that is
+The offered ciphers are restricted to forward-secret AEAD suites, which leaves
+nothing a TLS 1.0 or 1.1 client can negotiate in practice. Note the limit
+precisely: uvicorn builds its own SSL context and exposes no minimum-version
+setting, so a hard version floor cannot be asserted from inside this module — it
+comes from the platform's OpenSSL policy, or from a proxy in front, where it is
 configurable.
 
 Every response carries `Strict-Transport-Security` for two years including
@@ -304,14 +350,19 @@ that does. Three ways to get a certificate, in the order they are worth trying:
 
 **Let something else obtain it for you.** A reverse proxy that handles ACME —
 Caddy is a single binary and needs a two-line config — gets a real certificate
-from Let's Encrypt and renews it on its own. Arbiter then runs
-`arbiter api serve --behind-proxy` on loopback and never touches a key file.
-This needs a domain name pointing at the machine and inbound port 80 and 443.
+from Let's Encrypt for the public name and renews it on its own. Arbiter behind
+it still holds a certificate of its own for the loopback hop, but that one never
+faces a caller, so a self-signed one generated once is enough and the proxy is
+told to trust exactly it. `deploy/` does this: see
+[pilot-runbook.md](pilot-runbook.md). This needs a domain name pointing at the
+machine and inbound port 80 and 443.
 
 **A tunnel, if the machine has no public address.** `cloudflared tunnel` (or
 Tailscale Funnel) terminates TLS at the provider's edge on a hostname they
-issue, and forwards to loopback. Again `--behind-proxy`, no certificate locally.
-The trade is that the provider terminates TLS, so they can see the traffic —
+issue, and forwards to loopback — over HTTPS to Arbiter's own certificate, which
+for `cloudflared` means an `originRequest` with `caPool` set and `noTLSVerify`
+left alone. The trade is that the provider terminates TLS, so they can see the
+traffic —
 which is a custody question, not just a convenience one, and belongs in the
 answer to [Custody](#custody-is-the-real-gate).
 
@@ -357,9 +408,14 @@ the length of one request.
   request log, the three request handlers, and a FastAPI application built only
   when actually serving.
 - `mcp.py`: tool schemas and dispatch over the same service layer.
-- `arbiter api serve` and `arbiter api key add|list|revoke`; `arbiter mcp`.
+- `client.py`: the caller's half — settings resolution, the plaintext and
+  certificate refusals, the archive builder that skips `SKIP_DIRS`, and one
+  function per endpoint. Standard-library `urllib`, no new dependency.
+- `arbiter api serve` and `arbiter api key add|list|revoke`; `arbiter mcp`;
+  `arbiter remote scan|gate|review-queue|health`.
 - Tests covering the refusals, the workspace lifecycle, archive ingest, key
-  handling, keeping nothing, and the absence of any verdict-recording operation.
+  handling, keeping nothing, and the absence of any verdict-recording operation
+  — on the server and in the client alike.
 
 FastAPI and uvicorn are an optional extra (`pip install 'arbiter-eval[api]'`),
 imported only inside `create_app`, so a plain install still depends on PyYAML
@@ -376,8 +432,8 @@ alone and the whole module stays testable without them.
   is.
 - A body limit before authentication. An unauthenticated upload is read by the
   framework before the key is checked, so a `401` still costs bandwidth and
-  memory. The fix belongs at the proxy, which is another reason to prefer
-  `--behind-proxy`.
+  memory. The fix belongs at the proxy, which is one of the reasons to put one
+  in front.
 - Terms that counsel has seen. [pilot-terms.md](pilot-terms.md) is a draft
   describing what the code does, not an agreement.
 - Whether a customer's own human adjudications should feed calibration. Open by
