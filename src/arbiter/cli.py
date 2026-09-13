@@ -63,6 +63,13 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--knowledge", help="knowledge file (default .arbiter/knowledge.json)")
         sp.add_argument("--pin-knowledge", metavar="HASH",
                         help="fail unless the knowledge file is exactly this version")
+        sp.add_argument("--changed", metavar="REF", default=None,
+                        help="scan only files that differ from REF (plus uncommitted "
+                             "work), and record every check that needs the whole "
+                             "repository as not assessed. For pull-request gates.")
+        sp.add_argument("--only-files", default="", metavar="PATHS",
+                        help="comma-separated paths to scan; same partial-scan "
+                             "accounting as --changed")
         sp.add_argument("--tfplan", action="append", default=[], metavar="[REPO=]PATH",
                         help="Terraform plan or state JSON; supersedes reading .tf source. "
                              "Repeatable, and prefix with `repo=` in a multi-repo system.")
@@ -185,6 +192,8 @@ def cmd_scan(args, gate_mode: bool = False) -> int:
         plan_paths=list(getattr(args, "tfplan", []) or []),
         knowledge_path=getattr(args, "knowledge", None),
         pin_knowledge=getattr(args, "pin_knowledge", None),
+        changed_since=getattr(args, "changed", None),
+        only_files=[s for s in (getattr(args, "only_files", "") or "").split(",") if s],
     )
 
     formats = _formats(args.format)

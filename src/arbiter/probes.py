@@ -48,6 +48,18 @@ class Probe:
     network: bool = False
     model: bool = False
     multi_repo_only: bool = False
+    # Can this probe answer honestly from a SUBSET of the files?
+    #
+    # "file" means every finding depends only on the file it is in, so running
+    # over the changed files gives a complete answer FOR THOSE FILES.
+    # "repo" means the answer depends on relationships between files -- which
+    # routes exist anywhere, what every manifest declares, how many
+    # suppressions the repository contains -- so a subset gives a wrong answer
+    # rather than a partial one. Those are reported as not assessed in an
+    # incremental scan, never as a pass.
+    #
+    # Conservative by default: a probe is "repo" unless it is known not to be.
+    scope: str = "repo"
     version: str = "0.1.0"
 
     def applicable(self, ctx: ProbeContext) -> tuple[bool, str]:
@@ -423,7 +435,7 @@ def probe_secrets(ctx: ProbeContext) -> list[Finding]:
     return out
 
 
-register(Probe(name="secrets", dimensions=["security"], checks=len(SECRET_PATTERNS) + 1, run=probe_secrets))
+register(Probe(name="secrets", scope="file", dimensions=["security"], checks=len(SECRET_PATTERNS) + 1, run=probe_secrets))
 
 
 # ===========================================================================
@@ -735,6 +747,7 @@ def probe_resource_policy(ctx: ProbeContext) -> list[Finding]:
 
 register(Probe(
     name="resource_policy",
+    scope="file",
     dimensions=["security", "compliance"],
     checks=max(1, len(_load_resource_rules())),
     run=probe_resource_policy,
@@ -868,7 +881,7 @@ def probe_ast_metrics(ctx: ProbeContext) -> list[Finding]:
 
 
 register(Probe(
-    name="ast_metrics", dimensions=["quality"], checks=3,
+    name="ast_metrics", scope="file", dimensions=["quality"], checks=3,
     run=probe_ast_metrics, modules=["tree_sitter_language_pack"],
 ))
 
@@ -1007,7 +1020,7 @@ def probe_supply_chain(ctx: ProbeContext) -> list[Finding]:
     return out
 
 
-register(Probe(name="supply_chain", dimensions=["supply_chain", "security"], checks=5, run=probe_supply_chain))
+register(Probe(name="supply_chain", scope="file", dimensions=["supply_chain", "security"], checks=5, run=probe_supply_chain))
 
 
 # ===========================================================================
@@ -1547,7 +1560,7 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
     return out
 
 
-register(Probe(name="house_rules", dimensions=["quality", "drift"], checks=1, run=probe_house_rules))
+register(Probe(name="house_rules", scope="file", dimensions=["quality", "drift"], checks=1, run=probe_house_rules))
 
 
 def probe_house_rules_ast(ctx: ProbeContext) -> list[Finding]:
@@ -1624,7 +1637,7 @@ def probe_house_rules_ast(ctx: ProbeContext) -> list[Finding]:
 
 
 register(Probe(
-    name="house_rules_ast", dimensions=["quality", "security"], checks=1,
+    name="house_rules_ast", scope="file", dimensions=["quality", "security"], checks=1,
     run=probe_house_rules_ast, modules=["tree_sitter_language_pack"],
 ))
 
