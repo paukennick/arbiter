@@ -10,10 +10,14 @@ afterwards.
 
 ## Access is handed out by hand, one key per user
 
-There is no sign-up, no billing and no self-service. The owner mints a key with
-`arbiter api key add --user "..."` and sends it to a person he chose. That is
-the whole distribution model, and it is deliberate: an offering that cannot be
-signed up for cannot be abused at scale by someone who was never vetted.
+There is no sign-up, no billing and no self-service, and nothing here charges
+anybody. The owner mints a key with `arbiter api key add --user "..."` and sends
+it to somebody he knows. Issuing by hand is how access works because there is no
+identity or billing system to do it any other way -- not a vetting step, and not
+something a recipient has to justify. Nobody is asked what they intend to scan.
+
+The side effect is worth keeping: something that cannot be signed up for cannot
+be used at scale by a stranger.
 
 A key is scoped to a user, and that is the whole model -- no roles, no tiers, no
 per-key permissions. One user holds at most one live key, so a key identifies a
@@ -350,16 +354,21 @@ def verify_key(raw: str, path: Path | None = None) -> dict | None:
 # Limits on a key, so holding one is not the same as owning the machine
 # --------------------------------------------------------------------------
 #
-# A key that never expires and is never throttled is a permanent, unlimited
-# grant. If one leaks -- pasted into a ticket, left in a shell history, kept by
-# somebody who has since left -- whoever holds it can run scans forever, and a
-# scan is expensive: it unpacks an archive and runs several analyzers.
+# These are not a tier and not a price. Nobody is being charged, and a limit
+# that a friend testing their repositories can feel would be a restriction
+# dressed up as capacity. Each one exists for a specific failure:
 #
-# Three limits, all cheap, none of which a recipient would notice in normal use:
-# keys expire, a key may only make so many requests in an hour, and a key may
-# only have so many scans running at once.
+#   - a key that never expires and is never throttled is a permanent, unlimited
+#     grant to whoever ends up holding it after a leak -- a ticket, a shell
+#     history, somebody who has since moved on;
+#   - a scan is expensive, unpacking an archive and running several analyzers,
+#     so concurrency is what actually decides whether the machine stays up.
+#
+# The hourly figure is therefore set well above real use rather than near it.
+# Somebody working through twenty repositories in an afternoon should never see
+# it; a leaked key running flat out should.
 
-RATE_LIMIT_REQUESTS = 30
+RATE_LIMIT_REQUESTS = 120
 RATE_LIMIT_WINDOW_SECONDS = 3600
 MAX_CONCURRENT_SCANS = 2
 
@@ -683,8 +692,16 @@ def create_app(key_path: Path | None = None, behind_proxy: bool = False,
 
     @app.get("/v1/health")
     def health() -> dict:
+        # The limits are published rather than discovered on contact with a 429.
+        # Somebody should be able to see what they have without asking for it.
         return {"status": "ok", "version": __version__,
-                "retains_nothing": RETAINS_NOTHING, "tls_required": True}
+                "retains_nothing": RETAINS_NOTHING, "tls_required": True,
+                "free": True,
+                "limits": {"requests_per_hour": LIMITER.requests,
+                           "concurrent_scans_per_key": LIMITER.concurrent,
+                           "concurrent_scans_total": LIMITER.total,
+                           "max_upload_bytes": MAX_UPLOAD_BYTES,
+                           "key_lifetime_days": DEFAULT_KEY_LIFETIME_DAYS}}
 
     @app.post("/v1/scan")
     async def scan_endpoint(archive: UploadFile = File(...), profile: str = "offline",

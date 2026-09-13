@@ -144,8 +144,12 @@ above. See [licensing.md](licensing.md).
 
 ## Access is handed out by hand, one key per user
 
-There is no sign-up, no billing and no self-service. The owner mints a key for
-one user and sends it to them:
+It is free, and there is nothing to apply for. Access is issued by hand because
+there is no identity or billing system to do it any other way — not because
+anybody is being vetted, and not because a recipient has to justify what they
+want to scan. Nobody is asked what is in the repository.
+
+The owner mints a key for one user and sends it to them:
 
 ```
 arbiter api key add --user "dana@acme.example"
@@ -171,24 +175,30 @@ rather than a breach. Each key carries a short id so it can be revoked or named
 in a log without anyone writing the secret down. Keys live at
 `~/.arbiter/keys.json`, or wherever `ARBITER_KEYS` points.
 
-An offering that cannot be signed up for cannot be abused at scale by someone
-who was never vetted. That is the point of doing it this way.
+The side effect is worth keeping: something that cannot be signed up for cannot
+be used at scale by a stranger.
 
-### A key is a limited grant, not a permanent one
+### The limits are capacity and leak containment, not a tier
 
-A key that never expires and is never throttled is a standing, unlimited grant.
-If one leaks — pasted into a ticket, left in a shell history, kept by somebody
-who has since moved on — whoever holds it can run scans forever, and a scan is
-expensive: it unpacks an archive and runs several analyzers.
+Nobody is charged, so nothing here is metering. Each limit exists for one
+specific failure, and each is set well above real use rather than near it —
+somebody working through twenty repositories in an afternoon should never meet
+one.
 
-Four limits, none of which a recipient notices in normal use:
-
-| Limit | Default | What it stops |
+| Limit | Default | What it is for |
 |---|---|---|
-| Expiry | 90 days | a key leaked and forgotten working indefinitely |
-| Requests per key | 30 an hour | a leaked key being used at volume |
-| Concurrent scans per key | 2 | one key monopolising the machine |
-| Concurrent scans in total | 4 | several testers at once flattening the box |
+| Expiry | 90 days | a key leaked and forgotten stops working on its own |
+| Requests per key | 120 an hour | a leaked key running flat out is capped |
+| Concurrent scans per key | 2 | one key cannot take the whole machine |
+| Concurrent scans in total | 4 | the box stays up when everyone arrives at once |
+
+A key that never expires and is never throttled is a standing, unlimited grant
+to whoever ends up holding it — a ticket, a shell history, somebody who moved
+on. The concurrency numbers are the ones that decide whether the machine stays
+up, because a scan unpacks an archive and runs several analyzers.
+
+`GET /v1/health` publishes all of them, so a recipient can see what they have
+without asking or discovering it through a `429`.
 
 Over any of them the answer is `429 Too Many Requests` with a `Retry-After`
 header. The first three are per key, so one recipient cannot exhaust another's.

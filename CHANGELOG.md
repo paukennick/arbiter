@@ -55,6 +55,15 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   before extraction. FastAPI and uvicorn are an optional extra imported only
   inside `create_app`, so a plain install still depends on PyYAML alone.
   `arbiter mcp` now runs the MCP server. (REQ-018)
+- Raised the per-key request limit from 30 an hour to 120, and published every
+  limit on `GET /v1/health` alongside `"free": true`. Nobody is charged and the
+  service is for people testing it, so a limit anybody can feel during normal
+  use is a restriction dressed up as capacity. The concurrency caps are
+  unchanged, because those are what decide whether the machine stays up.
+  Reworded the access and terms documents to say plainly that it is free, that
+  there is nothing to apply for, and that nobody is asked what they intend to
+  scan; issuing keys by hand is how access works in the absence of an identity
+  system, not a vetting step. (REQ-018)
 - Added the pilot deployment in `deploy/`: a Dockerfile that installs Arbiter
   with the `api` and `tools` extras into a virtualenv and copies it into a clean
   image running as uid 10001, a `compose.yaml` pairing it with Caddy, and a

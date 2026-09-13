@@ -159,8 +159,12 @@ Revocation takes effect on the next request. Anything already running finishes.
 - The URL, and that every call needs `X-API-Key`.
 - Their key, over a channel that expires.
 - [pilot-terms.md](pilot-terms.md).
-- The limits, so a `429` is not a support ticket: 30 requests an hour, two scans
-  at once, uploads up to 100 MB, keys expire in 90 days.
+- That it is free and there is nothing to apply for: scan whatever they like,
+  as often as they like, without telling anybody what is in it.
+- The limits, so a `429` is not a support ticket: 120 requests an hour, two
+  scans at once, uploads up to 100 MB, keys expire in 90 days. `GET /v1/health`
+  lists them, so nobody has to ask. They are there to keep one leaked key or one
+  busy afternoon from taking the machine down, not to meter anything.
 - That the report they get back names the file each credential sits in and what
   kind it is. The value is never reprinted, but the report is still a map of
   where to look, and where they store it is now their decision.

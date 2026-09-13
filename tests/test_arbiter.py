@@ -3957,6 +3957,36 @@ def test_a_refused_key_is_audited_without_writing_the_key_down(tmp_path):
     assert entry["key"] == "" and entry["user"] == ""
 
 
+def test_the_limits_are_published_rather_than_discovered_through_a_429(tmp_path):
+    """Nobody is charged, so the limits are capacity, and capacity should be
+    visible. A recipient seeing what they have without asking is the difference
+    between a service and a gate."""
+    fastapi = pytest.importorskip("fastapi", reason="the api extra is not installed")
+    from fastapi.testclient import TestClient
+
+    from arbiter import api
+    client = TestClient(api.create_app(tmp_path / "keys.json",
+                                       audit=api.AuditLog(enabled=False)),
+                        base_url="https://testserver")
+    body = client.get("/v1/health").json()
+    assert body["free"] is True and body["retains_nothing"] is True
+    assert body["limits"] == {
+        "requests_per_hour": api.RATE_LIMIT_REQUESTS,
+        "concurrent_scans_per_key": api.MAX_CONCURRENT_SCANS,
+        "concurrent_scans_total": api.MAX_TOTAL_SCANS,
+        "max_upload_bytes": api.MAX_UPLOAD_BYTES,
+        "key_lifetime_days": api.DEFAULT_KEY_LIFETIME_DAYS,
+    }
+    assert fastapi  # the import is the point of the skip guard
+
+
+def test_the_hourly_limit_sits_well_above_anyone_testing_in_earnest(tmp_path):
+    """A limit a friend can feel while testing is a restriction wearing
+    capacity's clothes. Twenty repositories in an afternoon must not hit it."""
+    from arbiter import api
+    assert api.RATE_LIMIT_REQUESTS >= 100, "the hourly cap is back in metering range"
+
+
 def test_auditing_can_be_turned_off_and_then_writes_nothing(tmp_path):
     """`--no-audit` has to actually keep nothing, not merely log less."""
     from arbiter import api

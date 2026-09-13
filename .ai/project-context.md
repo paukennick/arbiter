@@ -602,12 +602,26 @@ findings would rebuild on disk, permanently, exactly what the request path
 deletes. This is the one deliberate exception to "keep nothing", and it is
 narrow on purpose.
 
-**Limits are per key and per server.** The per-key caps (30 requests an hour,
-two concurrent scans) multiply by the number of testers, so a whole-server
-ceiling of four concurrent scans sits above them. The counts live in one
-process's memory: they do not survive a restart and are not shared, so running
-several instances behind one address would multiply every limit. Known gap,
-acceptable for a single-machine pilot, not beyond it.
+**Free, with nothing to apply for** (decided 2026-09-13). This is not a paid
+service and is not being positioned as one yet. It goes to people the owner
+knows, so they can test it against their own repositories and cloud builds.
+Nobody is charged, nobody is asked what they intend to scan, and nothing has to
+be approved. Keys are issued by hand because there is no identity or billing
+system to do it any other way — that is a mechanism, not a vetting step, and the
+documents say so. The one side effect worth keeping is that something which
+cannot be signed up for cannot be used at scale by a stranger.
+
+**Limits are capacity and leak containment, never metering.** The per-key caps
+(120 requests an hour, two concurrent scans) multiply by the number of testers,
+so a whole-server ceiling of four concurrent scans sits above them. The hourly
+figure was raised from 30 on 2026-09-13 for the reason above: a limit a friend
+can feel while testing twenty repositories in an afternoon is a restriction
+wearing capacity's clothes. The concurrency caps stayed, because those are what
+decide whether the machine survives. Every limit is published on `GET
+/v1/health` so a recipient sees what they have without asking or meeting a 429.
+The counts live in one process's memory: they do not survive a restart and are
+not shared, so running several instances behind one address would multiply every
+limit. Known gap, acceptable for a single-machine pilot, not beyond it.
 
 **Running it is a documented procedure, not code** (2026-09-12).
 `docs/pilot-runbook.md` holds the arrangement — unprivileged container with a

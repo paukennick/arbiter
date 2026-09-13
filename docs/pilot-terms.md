@@ -11,6 +11,23 @@
 You are about to upload a copy of source code — often your employer's — to a
 service somebody else runs. Here is what happens to it.
 
+## What it costs, and what we ask of you
+
+Nothing, and nothing. There is no charge now and no invoice later for what you
+run during this period. You do not have to say what you intend to scan, justify
+why you want access, or get anything approved. Scan whatever you like — work
+repositories, side projects, whatever cloud build you are curious about — as
+often as you like.
+
+There are limits on the service, and they are about keeping the machine
+standing rather than metering you: 120 requests an hour, two scans at once,
+uploads up to 100 MB. `GET /v1/health` lists them. If you hit one, it is a
+capacity answer rather than a judgement, and telling us is more useful than
+working around it.
+
+What we would like back is what broke, what was wrong, and what was missing. You
+are testing this, not buying it.
+
 ## What we do with it
 
 You upload an archive. It is unpacked into a temporary directory, scanned, and
