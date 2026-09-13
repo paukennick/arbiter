@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+  #!/usr/bin/env bash
 #
 # Create the GitHub repository, push this history to it, and say what is left.
 #
