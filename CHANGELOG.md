@@ -42,10 +42,13 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ### 2026-09-12
 
 - Built the hosted API over that service layer, in `src/arbiter/api.py`. Access
-  is distributed by hand: `arbiter api key add --label "..."` mints one key for
-  one named recipient, prints it once and stores only its SHA-256 hash, so the
-  key file is not a credential store; `key list` and `key revoke` complete the
-  set. `POST /v1/scan`, `/v1/gate` and `/v1/review-queue` take an uploaded
+  is distributed by hand: `arbiter api key add --user "..."` mints one key for
+  one user, prints it once and stores only its SHA-256 hash, so the key file is
+  not a credential store; `key list` and `key revoke` complete the set. A key is
+  scoped to a user and nothing else, and one user holds at most one live key —
+  minting over a live key is refused unless `--replace` is passed, which revokes
+  the old one in the same command, so a shared or half-rotated key cannot arise
+  quietly. `POST /v1/scan`, `/v1/gate` and `/v1/review-queue` take an uploaded
   archive — never a repository credential — and `GET /v1/health` needs no key.
   Nothing is retained: the workspace is deleted when the request ends and server
   paths are withheld from responses. Uploads are capped at 100 MB and refused

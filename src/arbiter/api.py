@@ -8,12 +8,18 @@ What belongs here instead is everything that only matters when the caller is
 remote and unknown: who they are, how much they may send, and what is kept
 afterwards.
 
-## Access is handed out by hand
+## Access is handed out by hand, one key per user
 
 There is no sign-up, no billing and no self-service. The owner mints a key with
-`arbiter api key add --label "..."` and sends it to a person he chose. That is
+`arbiter api key add --user "..."` and sends it to a person he chose. That is
 the whole distribution model, and it is deliberate: an offering that cannot be
 signed up for cannot be abused at scale by someone who was never vetted.
+
+A key is scoped to a user, and that is the whole model -- no roles, no tiers, no
+per-key permissions. One user holds at most one live key, so a key identifies a
+person rather than a pool. Sharing one defeats every limit here: the caps below
+count per key, and revoking a shared key for the person who left also cuts off
+the person who stayed. Adding somebody means minting them their own.
 
 Keys are stored as SHA-256 hashes, never in the clear. The raw key is shown once
 at mint time and cannot be recovered -- so the key file is not itself a
@@ -158,7 +164,9 @@ def check_tls_config(certfile: str | None, keyfile: str | None,
     if not certfile or not keyfile:
         raise ServiceError(
             "TLS is required: pass --cert and --key, or --behind-proxy if a "
-            "reverse proxy terminates TLS and forwards to localhost"
+            "reverse proxy terminates TLS and forwards to localhost. "
+            "With no certificate to hand, see docs/hosted-api.md "
+            "('If you have no certificate') -- there is no plaintext mode"
         )
     for label, value in (("--cert", certfile), ("--key", keyfile)):
         if not Path(value).expanduser().is_file():
@@ -218,9 +226,29 @@ def _store(path: Path, keys: list[dict]) -> None:
         pass
 
 
-def mint_key(label: str, path: Path | None = None,
-             lifetime_days: int | None = DEFAULT_KEY_LIFETIME_DAYS) -> tuple[str, dict]:
-    """Create a key for one named recipient. Returns the raw key and its record.
+def active_key_for(user: str, path: Path | None = None) -> dict | None:
+    """The live key a user holds, if any. One user, one key."""
+    wanted = user.strip()
+    for rec in _load(path or default_key_path()):
+        if rec.get("user") == wanted and key_state(rec) == "active":
+            return rec
+    return None
+
+
+def mint_key(user: str, path: Path | None = None,
+             lifetime_days: int | None = DEFAULT_KEY_LIFETIME_DAYS,
+             replace: bool = False) -> tuple[str, dict]:
+    """Create a key for one user. Returns the raw key and its record.
+
+    A key is scoped to a user and that is the whole model. One user holds at
+    most one live key, so a key identifies a person rather than a pool: if two
+    people share one, nothing downstream can tell them apart, and revoking it
+    for the one who left also cuts off the one who stayed. Adding a second
+    person means minting them their own.
+
+    Minting over a live key is refused unless `replace` is set, which revokes
+    the old one in the same breath -- so rotation is one deliberate act and
+    never silently leaves two keys working for the same person.
 
     The raw key is returned once and never stored. Only its hash is written, so
     the key file cannot be used to impersonate anyone who holds a key.
@@ -229,23 +257,38 @@ def mint_key(label: str, path: Path | None = None,
     deliberate exception rather than the default: a permanent key is a permanent
     grant to whoever ends up holding it.
     """
-    if not label.strip():
-        raise ServiceError("a key needs a label saying who it is for")
+    user = user.strip()
+    if not user:
+        raise ServiceError("a key is scoped to a user; name the one it is for")
     if lifetime_days is not None and lifetime_days <= 0:
         raise ServiceError("a key's lifetime must be at least one day")
     path = path or default_key_path()
+
+    held = active_key_for(user, path)
+    if held and not replace:
+        raise ServiceError(
+            f"{user} already holds key {held['id']}; pass --replace to rotate it, "
+            "or revoke it first. One user, one key."
+        )
+
+    keys = _load(path)
+    if held:
+        for rec in keys:
+            if rec.get("id") == held["id"]:
+                rec["revoked"] = _stamp(time.time())
+
     raw = KEY_PREFIX + secrets.token_urlsafe(32)
     digest = _digest(raw)
     now = time.time()
     record = {
         "id": digest[:12],
-        "label": label.strip(),
+        "user": user,
         "sha256": digest,
         "created": _stamp(now),
         "expires": _stamp(now + lifetime_days * 86400) if lifetime_days else None,
         "revoked": None,
+        "replaced": held["id"] if held else None,
     }
-    keys = _load(path)
     keys.append(record)
     _store(path, keys)
     return raw, record
@@ -554,6 +597,12 @@ def serve(host: str = "127.0.0.1", port: int = 8443, key_path: Path | None = Non
     Either this process holds the certificate, or a proxy terminates TLS and
     forwards to loopback with `--behind-proxy`. Anything else fails to start.
     """
+    # The TLS check comes first deliberately. An operator whose install is
+    # missing the extra should still be told plainly that their arrangement
+    # would have served plaintext, rather than fixing the dependency and
+    # meeting that refusal only on the second attempt.
+    check_tls_config(certfile, keyfile, behind_proxy, host)
+
     try:
         import uvicorn
     except ImportError:
@@ -561,7 +610,6 @@ def serve(host: str = "127.0.0.1", port: int = 8443, key_path: Path | None = Non
               "         pip install 'arbiter-eval[api]'")
         return 2
 
-    check_tls_config(certfile, keyfile, behind_proxy, host)
     app = create_app(key_path, behind_proxy=behind_proxy)
 
     if behind_proxy:

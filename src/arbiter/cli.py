@@ -179,8 +179,11 @@ def build_parser() -> argparse.ArgumentParser:
                          "requests without X-Forwarded-Proto: https are refused")
     ky = api_sub.add_parser("key", help="issue, list and revoke access by hand")
     key_sub = ky.add_subparsers(dest="key_cmd", required=True)
-    ka = key_sub.add_parser("add", help="mint a key for one named recipient")
-    ka.add_argument("--label", required=True, help="who this key is for")
+    ka = key_sub.add_parser("add", help="mint a key for one user")
+    ka.add_argument("--user", required=True,
+                    help="the person this key is for; one user holds one key")
+    ka.add_argument("--replace", action="store_true",
+                    help="revoke the user's current key and issue a new one")
     ka.add_argument("--expires-days", type=int, default=90,
                     help="how long the key lasts (default 90)")
     ka.add_argument("--no-expiry", action="store_true",
@@ -638,8 +641,9 @@ def cmd_explain(args) -> int:
 def cmd_api(args) -> int:
     """Serve the hosted API, or issue the keys that reach it.
 
-    Keys are minted one at a time, for one named recipient, by the owner. There
-    is no sign-up: distribution is manual on purpose.
+    A key is scoped to a user and nothing else, and one user holds one live key.
+    The owner mints them one at a time; there is no sign-up, because manual
+    distribution is the point.
     """
     from pathlib import Path as _Path
 
@@ -652,9 +656,12 @@ def cmd_api(args) -> int:
                          behind_proxy=args.behind_proxy)
 
     if args.key_cmd == "add":
-        raw, record = api.mint_key(args.label, path,
-                                   None if args.no_expiry else args.expires_days)
-        print(f"key {record['id']} issued to {record['label']}")
+        raw, record = api.mint_key(args.user, path,
+                                   None if args.no_expiry else args.expires_days,
+                                   replace=args.replace)
+        print(f"key {record['id']} issued to {record['user']}")
+        if record["replaced"]:
+            print(f"revoked their previous key {record['replaced']}")
         print(raw)
         if record["expires"]:
             print(f"\nExpires {record['expires']}.")
@@ -675,7 +682,7 @@ def cmd_api(args) -> int:
                 state = f"expired {record['expires']}"
             elif record.get("expires"):
                 state = f"active until {record['expires']}"
-            print(f"{record['id']}  {record['created']}  {state:34}  {record['label']}")
+            print(f"{record['id']}  {record['created']}  {state:34}  {record['user']}")
         return EXIT_OK
     if args.key_cmd == "revoke":
         if api.revoke_key(args.id, path):

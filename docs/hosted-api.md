@@ -135,22 +135,33 @@ What does still need counsel is L-3's term structure — a hosted service is
 priced and terminated differently from a delivered copy — and the custody terms
 above. See [licensing.md](licensing.md).
 
-## Access is handed out by hand
+## Access is handed out by hand, one key per user
 
 There is no sign-up, no billing and no self-service. The owner mints a key for
-one named recipient and sends it to them:
+one user and sends it to them:
 
 ```
-arbiter api key add --label "pilot: acme"
+arbiter api key add --user "dana@acme.example"
 arbiter api key list
 arbiter api key revoke 4a0df464a689
 ```
 
+A key is scoped to a user, and that is the whole model — no roles, no tiers, no
+per-repository or per-organisation scope. One user holds at most one live key,
+so a key identifies a person rather than a pool. Minting over a live key is
+refused unless `--replace` is passed, which revokes the old one in the same
+command, so rotation is one deliberate act and never leaves two keys quietly
+working for the same person.
+
+Sharing a key defeats everything below it: the caps are counted per key, so two
+people sharing one get half the allowance each and look like one caller in any
+log; and revoking it for the person who left also cuts off the person who
+stayed. Adding somebody means minting them their own.
+
 The raw key is printed once and never stored — only its SHA-256 hash goes to
 disk, so the key file is not itself worth stealing and losing it means reissuing
-rather than a breach. Every key carries a label naming its recipient, which is
-what makes manual distribution auditable, and a short id so it can be revoked or
-named in a log without anyone writing the secret down. Keys live at
+rather than a breach. Each key carries a short id so it can be revoked or named
+in a log without anyone writing the secret down. Keys live at
 `~/.arbiter/keys.json`, or wherever `ARBITER_KEYS` points.
 
 An offering that cannot be signed up for cannot be abused at scale by someone
@@ -233,6 +244,53 @@ subdomains, so a client that once reached us over TLS will not try plaintext
 afterwards. The default port is 8443.
 
 Certificate issuance and renewal are the operator's, not this module's.
+
+### If you have no certificate
+
+Not having one is not a reason to fall back to plaintext, and there is no flag
+that does. Three ways to get a certificate, in the order they are worth trying:
+
+**Let something else obtain it for you.** A reverse proxy that handles ACME —
+Caddy is a single binary and needs a two-line config — gets a real certificate
+from Let's Encrypt and renews it on its own. Arbiter then runs
+`arbiter api serve --behind-proxy` on loopback and never touches a key file.
+This needs a domain name pointing at the machine and inbound port 80 and 443.
+
+**A tunnel, if the machine has no public address.** `cloudflared tunnel` (or
+Tailscale Funnel) terminates TLS at the provider's edge on a hostname they
+issue, and forwards to loopback. Again `--behind-proxy`, no certificate locally.
+The trade is that the provider terminates TLS, so they can see the traffic —
+which is a custody question, not just a convenience one, and belongs in the
+answer to [Custody](#custody-is-the-real-gate).
+
+**Self-signed, for a pilot with people you can talk to.** One command, valid a
+year, with the hostname in a subject alternative name so clients accept it:
+
+```
+openssl req -x509 -newkey rsa:4096 -sha256 -days 365 -nodes \
+  -keyout privkey.pem -out fullchain.pem \
+  -subj "/CN=arbiter.internal" \
+  -addext "subjectAltName=DNS:arbiter.internal,IP:127.0.0.1"
+
+arbiter api serve --cert fullchain.pem --key privkey.pem
+```
+
+In Git Bash on Windows, prefix that with `MSYS_NO_PATHCONV=1`. Without it the
+shell rewrites `/CN=arbiter.internal` into a filesystem path and `openssl`
+refuses the subject. Pass the certificate paths to `arbiter` in Windows form
+(`C:\...`), not as `/tmp/...`, which Python does not resolve.
+
+The encryption is real; what is missing is any proof of who is on the other
+end. No browser or client trusts it by default, so each recipient must be given
+`fullchain.pem` out of band and point at it explicitly — `curl --cacert
+fullchain.pem https://...`. If anyone reaches for `curl -k` or
+`verify=False`, the authentication is gone and a machine on the path can
+impersonate the server and collect the API keys. Do not hand a self-signed
+certificate to a customer for that reason; keep it for your own testing and for
+a pilot you can walk somebody through.
+
+Whichever route, `privkey.pem` is a credential: owner-read-only, never in the
+repository, and rotated if it is ever copied anywhere.
 
 Source arrives as an upload and only as an upload. The server does not clone
 from a caller's repository, because that would mean holding credentials to their

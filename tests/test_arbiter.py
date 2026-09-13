@@ -3606,10 +3606,10 @@ def test_a_key_is_stored_only_as_a_hash(tmp_path):
     """
     from arbiter import api
     path = tmp_path / "keys.json"
-    raw, record = api.mint_key("acme pilot", path)
+    raw, record = api.mint_key("dana@acme.example", path)
     assert raw.startswith(api.KEY_PREFIX)
     assert raw not in path.read_text(), "the key file contains a usable key"
-    assert record["label"] == "acme pilot"
+    assert record["user"] == "dana@acme.example"
     assert api.verify_key(raw, path)["id"] == record["id"]
 
 
@@ -3635,14 +3635,55 @@ def test_listing_keys_never_prints_a_secret(tmp_path):
     assert len(listed) == 2
     for record in listed:
         assert "sha256" not in record
-        assert set(record) == {"id", "label", "created", "expires", "revoked", "state"}
+        assert set(record) == {"id", "user", "created", "expires", "revoked",
+                               "replaced", "state"}
 
 
-def test_a_key_needs_a_label_saying_who_it_is_for(tmp_path):
-    """Manual distribution is only auditable if every key names a recipient."""
+def test_a_key_needs_the_user_it_is_scoped_to(tmp_path):
+    """A key is scoped to a user, so an unnamed key has no scope at all."""
     from arbiter import api
-    with pytest.raises(api.ServiceError, match="label"):
+    with pytest.raises(api.ServiceError, match="scoped to a user"):
         api.mint_key("   ", tmp_path / "keys.json")
+
+
+def test_one_user_holds_one_key(tmp_path):
+    """Two live keys for one person make the per-key caps meaningless.
+
+    They also make revocation ambiguous: cutting someone off means finding
+    every key they hold, and missing one leaves them in.
+    """
+    from arbiter import api
+    path = tmp_path / "keys.json"
+    first, _ = api.mint_key("dana@acme.example", path)
+    with pytest.raises(api.ServiceError, match="already holds key"):
+        api.mint_key("dana@acme.example", path)
+    assert api.verify_key(first, path), "the refusal disturbed the existing key"
+    # A different person is unaffected; the limit is per user, not global.
+    other, _ = api.mint_key("sam@acme.example", path)
+    assert api.verify_key(other, path)
+
+
+def test_replacing_a_key_revokes_the_one_it_replaces(tmp_path):
+    """Rotation is one act, so it cannot half-happen and leave two keys live."""
+    from arbiter import api
+    path = tmp_path / "keys.json"
+    first, old = api.mint_key("dana@acme.example", path)
+    second, new = api.mint_key("dana@acme.example", path, replace=True)
+    assert api.verify_key(first, path) is None, "the replaced key still worked"
+    assert api.verify_key(second, path)["id"] == new["id"]
+    assert new["replaced"] == old["id"], "the record does not say what it replaced"
+    assert api.active_key_for("dana@acme.example", path)["id"] == new["id"]
+
+
+def test_a_revoked_users_key_can_be_reissued(tmp_path):
+    """One live key is the rule; one key ever would strand anyone who lost theirs."""
+    from arbiter import api
+    path = tmp_path / "keys.json"
+    _, first = api.mint_key("dana@acme.example", path)
+    api.revoke_key(first["id"], path)
+    assert api.active_key_for("dana@acme.example", path) is None
+    raw, _ = api.mint_key("dana@acme.example", path)
+    assert api.verify_key(raw, path)
 
 
 def test_an_oversized_upload_is_refused(tmp_path, monkeypatch):
