@@ -20,5 +20,7 @@ training/*
 !training/fix-pairs.json
 !training/disagreements.json
 
-# Claude Code local settings (Headroom hooks, machine-specific paths)
-.claude/settings.local.json
+# Claude Code local state: settings with machine-specific paths, and the
+# Headroom marker files. All of it is per-machine and none of it describes the
+# project, so the whole directory stays out rather than one file at a time.
+.claude/
