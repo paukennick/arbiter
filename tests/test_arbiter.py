@@ -460,6 +460,32 @@ def test_genuinely_broken_link_still_found(tmp_path):
     assert [f for f in found if "broken-doc-link" in f.rule_id]
 
 
+def test_dotted_paths_in_prose_resolve(tmp_path):
+    """A path named in prose was normalized with lstrip('./'), which strips a
+    character set rather than a prefix: `.ai/context-brief.md` collapsed to
+    `ai/context-brief.md` and matched nothing. Scanning arbiter with itself,
+    159 of this rule's 187 findings came from that one line."""
+    (tmp_path / ".ai").mkdir()
+    (tmp_path / ".ai" / "context-brief.md").write_text("# brief\n")
+    found = _scan_text(tmp_path, "README.md",
+                       "Read `.ai/context-brief.md` first.\n", ["doc_drift"])
+    assert not [f for f in found if "doc-references-missing-file" in f.rule_id]
+
+
+def test_missing_file_in_prose_still_found(tmp_path):
+    found = _scan_text(tmp_path, "README.md",
+                       "Read `.ai/context-brief.md` first.\n", ["doc_drift"])
+    assert [f for f in found if "doc-references-missing-file" in f.rule_id]
+
+
+def test_prose_path_escaping_the_repository_is_not_checked(tmp_path):
+    """`../../other/thing.py` names a file outside the repository, which this
+    scan cannot speak to either way."""
+    found = _scan_text(tmp_path, "README.md",
+                       "See `../../other/thing.py` in the sibling repo.\n", ["doc_drift"])
+    assert not [f for f in found if "doc-references-missing-file" in f.rule_id]
+
+
 def test_env_vars_only_checked_inside_a_config_section(tmp_path):
     """`BEGIN_TF_DOCS` in a template marker and `DEBUG_FD` in a changelog were
     both reported as undocumented environment variables."""
@@ -1601,6 +1627,20 @@ def test_malformed_model_output_yields_nothing_rather_than_crashing():
 def _finding(rule, path="a.tf", line=1, evidence=""):
     return Finding(rule_id=rule, title=f"{rule} here", evidence=evidence or f"{path}:{line}",
                    location=Location(path=path, start_line=line))
+
+
+def test_text_artifacts_are_written_as_utf8(tmp_path):
+    """Written without an explicit encoding these took the platform default,
+    so on Windows the renderings — which emit em dashes — came out as cp1252
+    and would not decode as UTF-8 anywhere else. Reports travel into
+    accreditation packages and pull requests, so they cross machines."""
+    from arbiter.report import write_all
+    rep = Report()
+    rep.findings.append(_finding("arbiter/x", path="a.tf"))
+    written = write_all(rep, str(tmp_path), ["html", "markdown"])
+    for path in written.values():
+        # the assertion is that this does not raise UnicodeDecodeError
+        Path(path).read_bytes().decode("utf-8")
 
 
 def test_review_prefers_rules_close_to_the_proven_threshold(tmp_path):

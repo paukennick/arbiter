@@ -179,3 +179,100 @@ implicit in a default.
 **Also outstanding.** `HANDOFF.md` tells a fresh session to expect `310 passed`.
 That has never matched this machine, where the suite is 307 passed and 3 skipped
 after REQ-006.
+
+## 2026-09-12 — Two defects the first calibration queue exposed (REQ-008, REQ-009)
+
+**How they were found.** Preparing the first adjudication queue meant scanning
+Arbiter with itself. One rule, `drift.doc-references-missing-file`, produced 187
+of the 230 unsuppressed findings — 81%. A rule that dominates a self-scan that
+heavily is either the most important rule in the system or broken, and reading
+the evidence settled it before any verdict was marked.
+
+**Why it was worth stopping for (REQ-008).** `docs/calibration.md` states that
+one finding moves the statistics once and re-adjudicating a fingerprint is
+refused. Observations are therefore the one input in this system that cannot be
+bought twice. Measured by scanning Arbiter with itself before and after the
+change, with the output directory removed so that neither run could read the
+other's: 187 findings before, 28 after, and **all 20** findings already queued
+were in the vanishing set. Adjudicating that queue would
+have spent a fifth of the rule's lifetime evidence recording, permanently, the
+behaviour of a bug — and recorded it flatteringly, since a corrected rule would
+never have emitted them. The fix is one line; the reason to make it first is
+that the alternative is not reversible.
+
+**The defect.** `lstrip("./")` strips a character set, not a prefix. Every path
+beginning with a dot lost it, so `.ai/context-brief.md` was tested as
+`ai/context-brief.md` and neither the exact nor the suffix membership test could
+match. The sibling rule twenty lines above already used `_normalize_relative()`,
+which resolves `.` and `..` segments properly and returns empty for a path that
+escapes the repository root; the two rules now agree. Of the 28 survivors, 20
+are real drift — including the `.ai/rules/fallback-llm-rules.json` and
+`.ai/rules/hci-ui-rules.json` gap recorded under REQ-001, which the noise had
+been burying. The remaining 8 name files under `.arbiter/` that exist on disk,
+and are a different defect; see below.
+
+**No margin.** 20 genuine findings against a `MIN_OBSERVATIONS` of 20 is exactly
+the threshold and not one finding more. Repairing any of the drift the rule now
+correctly reports removes queue material with it. If this rule is to be proven,
+it must be adjudicated before its findings are fixed, or adjudicated against a
+second repository.
+
+**Two defects the verification turned up, neither fixed here.** Both were found
+because the before/after numbers refused to reconcile, which is the argument for
+insisting that they do.
+
+*Arbiter scans its own output directory.* `arbiter-out/` is in `.gitignore`, but
+nothing excludes it from a scan, and a scan reads the working tree rather than
+the index. So the run read the previous run's `report.json` and `review-queue.md`:
+40 of 109 unsuppressed findings — 37% — came from its own output. Two distinct
+loops. `assurance.blanket-suppression` matched `# noqa` and `checkov:skip`
+inside the evidence strings of the earlier report, inventing 23 findings. And
+`drift.doc-references-missing-file` read the *old rule's mangled paths* out of
+the old review queue and reported them as missing files, so the defect's output
+became the next scan's input. Any tool that writes its output beneath the
+directory it scans has this problem; the output directory is known at scan time
+and should be excluded from the walk.
+
+*`.arbiter/` is invisible to the inventory.* `.arbiter` is in `inventory.SKIP_DIRS`,
+so `.arbiter/knowledge.json` and `.arbiter/external-severity.json` — both tracked
+in git and present on disk — are not in `ctx.inventory.files`. Documentation that
+names them is therefore reported as referring to missing files: 8 of the 28
+surviving findings, and 6 of the 20 in the queue. The skip is defensible for
+probes that would otherwise scan a 322 KB severity table as source, but
+`doc_drift` resolves references against that same inventory and cannot tell
+"absent" from "deliberately not walked". A file the tool wrote itself should not
+read as documentation drift.
+
+**A caution about measuring rules out of band.** The before/after figures above
+were first estimated with a standalone script that applied the rule's predicate
+to `git ls-files`. It disagreed with the real scan in both directions and its
+numbers were wrong. Two reasons, both instructive: findings are deduplicated on
+`Finding.id`, whose fingerprint includes `evidence` but deliberately not the line
+number, so one path named eleven times in a file is one finding, not eleven; and
+the scan resolves against the walked inventory, which `SKIP_DIRS` and
+`MAX_FILE_BYTES` make narrower than the git index in some places and the
+untracked working tree makes wider in others. Measure a rule by running the
+scanner.
+
+**Encoding (REQ-009).** Reading the generated queue back failed on byte `0x97`,
+an em dash written as cp1252. Thirteen `write_text()` calls omitted `encoding=`,
+so every text artifact took the console codepage. Precisely: the JSON writers
+were never corrupt, because `json.dumps` escapes non-ASCII by default — the
+damage was confined to the HTML, markdown, PR-comment and review-queue
+renderings, which emit em dashes directly. The JSON calls were made explicit
+anyway, so correctness stops depending on a default that could be changed by
+passing `ensure_ascii=False` for readability. The matching reads are explicit
+too, since an artifact that cannot be read back on another machine is not
+evidence. Deliberately out of scope: `graph.py` and `review_ui.py` read files
+belonging to the *scanned* repository with `errors="replace"`, which is a
+different question — what to do about a target file that is not UTF-8 — and
+should not be answered by a change aimed at Arbiter's own output. Also left
+alone: the YAML and TOML configuration readers in `policy.py`, `controls.py`,
+`ab.py` and `adapters.py`. TOML is specified as UTF-8, so `adapters.py:291`
+reading a pack manifest through the platform default is a latent defect of the
+same family, worth a separate look.
+
+**Why this class of bug survives.** Both are Windows-only, and CI is
+`ubuntu-latest` with no matrix — the same reason the REQ-006 timeout crash lived
+as long as it did. Three platform defects have now been found by hand on this
+machine. A Windows job in CI would have caught all three.
