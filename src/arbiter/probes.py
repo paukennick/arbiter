@@ -1147,7 +1147,12 @@ def probe_doc_drift(ctx: ProbeContext) -> list[Finding]:
             ))
 
         for m in _BACKTICK_PATH.finditer(text):
-            cand = m.group(1).lstrip("./")
+            # _normalize_relative, not lstrip("./"): lstrip strips a character
+            # set rather than a prefix, so `.ai/context-brief.md` collapsed to
+            # `ai/context-brief.md` and every dotted path read as missing.
+            cand = _normalize_relative(m.group(1))
+            if not cand:
+                continue
             if cand in known or any(k.endswith("/" + cand) for k in known):
                 continue
             out.append(Finding(
