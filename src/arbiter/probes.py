@@ -118,7 +118,7 @@ def _read(f) -> str:
     if cached is not None:
         return cached
     try:
-        text = Path(path).read_text(errors="replace")
+        text = Path(path).read_text(encoding="utf-8", errors="replace")
     except OSError:
         text = ""
     if len(_READ_CACHE) >= _READ_CACHE_MAX:
@@ -1092,6 +1092,13 @@ def probe_doc_drift(ctx: ProbeContext) -> list[Finding]:
     for f in ctx.inventory.files:
         by_repo_paths.setdefault(f.repo_id, set()).add(f.path)
 
+    # The inventory records what the probes were shown, which is a different
+    # question from whether a documented file exists. Directories in SKIP_DIRS
+    # -- `.arbiter` among them -- hold tracked files that prose legitimately
+    # names, and checking the inventory alone reported every one of them as
+    # missing. Existence is a question about disk.
+    roots = {r.id: Path(r.path) for r in ctx.repos if getattr(r, "path", "")}
+
     code_blobs: dict[str, str] = {}
     for f in ctx.inventory.text_files():
         if f.role in ("source", "iac", "config", "ci"):
@@ -1107,6 +1114,15 @@ def probe_doc_drift(ctx: ProbeContext) -> list[Finding]:
         base_dir = f.path.rsplit("/", 1)[0] if "/" in f.path else ""
 
         has_html = any(k.endswith(".html") for k in known)
+
+        def on_disk(rel: str) -> bool:
+            root = roots.get(f.repo_id)
+            if not rel or root is None:
+                return False
+            try:
+                return (root / rel).exists()
+            except OSError:
+                return False
 
         def resolve(target: str) -> str:
             t = target.split("#")[0].strip()
@@ -1134,6 +1150,8 @@ def probe_doc_drift(ctx: ProbeContext) -> list[Finding]:
             stripped = norm.rstrip("/")
             if stripped in known or any(k.startswith(stripped + "/") for k in known):
                 continue
+            if on_disk(stripped):
+                continue
             out.append(Finding(
                 rule_id="arbiter/drift.broken-doc-link",
                 title=f"Documentation links to `{m.group(1)}`, which does not exist",
@@ -1147,8 +1165,15 @@ def probe_doc_drift(ctx: ProbeContext) -> list[Finding]:
             ))
 
         for m in _BACKTICK_PATH.finditer(text):
-            cand = m.group(1).lstrip("./")
+            # _normalize_relative, not lstrip("./"): lstrip strips a character
+            # set rather than a prefix, so `.ai/context-brief.md` collapsed to
+            # `ai/context-brief.md` and every dotted path read as missing.
+            cand = _normalize_relative(m.group(1))
+            if not cand:
+                continue
             if cand in known or any(k.endswith("/" + cand) for k in known):
+                continue
+            if on_disk(cand):
                 continue
             out.append(Finding(
                 rule_id="arbiter/drift.doc-references-missing-file",

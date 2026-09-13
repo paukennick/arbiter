@@ -152,12 +152,12 @@ class Adapter:
     def _kill_group(proc: "subprocess.Popen") -> None:
         """SIGTERM the whole group, then SIGKILL whatever ignored it."""
         import signal as _signal
+        if not hasattr(os, "killpg"):
+            Adapter._kill_tree(proc)
+            return
         for sig in (_signal.SIGTERM, _signal.SIGKILL):
             try:
-                if hasattr(os, "killpg"):
-                    os.killpg(os.getpgid(proc.pid), sig)
-                else:
-                    proc.send_signal(sig)
+                os.killpg(os.getpgid(proc.pid), sig)
             except (ProcessLookupError, PermissionError, OSError):
                 break
             try:
@@ -165,6 +165,33 @@ class Adapter:
                 return
             except subprocess.TimeoutExpired:
                 continue
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
+
+    @staticmethod
+    def _kill_tree(proc: "subprocess.Popen") -> None:
+        """Kill a process and its descendants where there is no process group.
+
+        Windows has neither `os.killpg` nor `SIGKILL`, so the group signalling
+        above has nothing to signal — reaching it there raised AttributeError
+        and the analyzer outlived its own timeout. `taskkill /T` walks the child
+        tree from the parent PID, which is the nearest equivalent: killing only
+        the direct child leaves the fanned-out workers running, which is the
+        failure this whole path exists to prevent.
+        """
+        taskkill = shutil.which("taskkill")
+        if taskkill:
+            try:
+                subprocess.run(
+                    [taskkill, "/T", "/F", "/PID", str(proc.pid)],
+                    capture_output=True, timeout=15,
+                )
+            except (OSError, subprocess.SubprocessError):
+                proc.kill()
+        else:
+            proc.kill()
         try:
             proc.wait(timeout=5)
         except subprocess.TimeoutExpired:

@@ -68,6 +68,151 @@
         "risk_notes": [
           "make_ai.py is vendored OmniEngineering tooling so these changes must be reapplied if a pristine upstream is ever pulled"
         ]
+      },
+      {
+        "id": "REQ-006",
+        "title": "Fix Windows-only crash in adapter timeout kill path",
+        "description": "Adapter._kill_group references signal.SIGKILL unconditionally, which does not exist on Windows, so any adapter timeout raises AttributeError from the cleanup path instead of stopping the analyzer. Windows also lacks os.setsid and os.killpg, so the process-group guarantee the timeout depends on has no implementation there.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          "src/arbiter/adapters.py",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "an adapter timeout on Windows terminates the analyzer and its descendants instead of raising AttributeError",
+          "test_adapter_timeout_kills_the_whole_process_group passes on Windows",
+          "POSIX process-group behaviour is unchanged"
+        ],
+        "validation_required": [
+          "python -m pytest tests/ -q"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md"
+        ],
+        "risk_notes": []
+      },
+      {
+        "id": "REQ-008",
+        "title": "Correct path normalization in the doc-reference drift rule",
+        "description": "probes.py:1150 normalizes a backtick-quoted path with lstrip('./'), which strips a character set rather than a prefix, so '.ai/context-brief.md' becomes 'ai/context-brief.md' and neither membership test can match. Every dotted path in the repository is reported as missing. Measured over tracked markdown: 211 findings now, 28 with the sibling rule's _normalize_relative(). The rule is unusable for calibration until this is fixed, because adjudicating it would spend irreplaceable observations on artifacts of the defect.",
+        "priority": "high",
+        "status": "completed",
+        "minimum_access_scope": [
+          "src/arbiter/probes.py",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "the backtick-path rule uses _normalize_relative() and skips paths that escape the repository root",
+          "a regression test covers a dotted path that exists on disk and is not reported",
+          "a regression test covers a genuinely missing file that is still reported",
+          "the suite is green"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest -q"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md",
+          ".ai/project-context.md"
+        ],
+        "risk_notes": [
+          "the corrected rule yields 28 findings against MIN_OBSERVATIONS of 20",
+          "so the calibration queue fills with little margin"
+        ]
+      },
+      {
+        "id": "REQ-009",
+        "title": "Write and read arbiter's own artifacts as UTF-8",
+        "description": "Thirteen write_text() calls across cli.py, report.py, engine.py and learn.py omit encoding=, so on Windows every report, PR comment, review queue and the knowledge ledger are written in the console codepage. Observed: arbiter-out/self-scan/review-queue.md is undecodable as UTF-8 (byte 0x97, an em dash written as cp1252). Reports are meant for accreditation packages and PR comments, so they cross machines. Scope is arbiter's own artifacts, not the readers in graph.py that parse scanned target files, which is a separate question about input decoding.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          "src/arbiter/cli.py",
+          "src/arbiter/report.py",
+          "src/arbiter/engine.py",
+          "src/arbiter/learn.py",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "every write of an arbiter-authored artifact specifies encoding='utf-8'",
+          "the matching reads of those artifacts specify encoding='utf-8'",
+          "a test writes and reads back a report containing non-ASCII text",
+          "the suite is green"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest -q"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md",
+          ".ai/project-context.md"
+        ],
+        "risk_notes": [
+          "CI is ubuntu-latest with no matrix",
+          "so this class of defect is invisible there and must be checked on Windows by hand"
+        ]
+      },
+      {
+        "id": "REQ-011",
+        "title": "Exclude the scan's own output directory from the walk",
+        "description": "A scan reads the working tree, and the output directory defaults to the relative path arbiter-out inside that tree, so a second run reads the first run's report. Measured on this repository: 28 of 101 unsuppressed findings were located inside arbiter-out, 27.7 percent, of which 24 were assurance.blanket-suppression -- the rule then being adjudicated. Thread the resolved output directory through run_scan and build_inventory into walk_repo and skip it. Excluding rather than refusing, because the documented default is inside the tree.",
+        "priority": "high",
+        "status": "completed",
+        "minimum_access_scope": [],
+        "acceptance_criteria": [
+          "walk_repo skips the resolved output directory",
+          "Two consecutive scans into the default output path produce identical unsuppressed findings",
+          "No finding is ever located inside the output directory"
+        ],
+        "validation_required": [
+          "pytest",
+          "Two back-to-back self-scans compared"
+        ],
+        "documentation_required": [
+          "changelog"
+        ],
+        "risk_notes": []
+      },
+      {
+        "id": "REQ-012",
+        "title": "Decode scanned files as UTF-8 rather than the platform default",
+        "description": "Ten call sites read files belonging to the scanned repository with read_text(errors='replace') and no encoding argument, so the codec is the platform default -- cp1252 on Windows. errors='replace' governs failure handling, not codec choice, and cp1252 decodes almost every byte without erroring, so it does not mis-decode loudly, it mis-decodes silently. A UTF-8 em dash in a scanned file reached a generated review queue as the mojibake sequence a-circumflex-euro-quotation. REQ-009 fixed arbiter's own artifacts and deliberately excluded these sites on the incorrect reasoning that errors='replace' was the design intent; the design intent is never crashing on a target file, which encoding='utf-8' preserves.",
+        "priority": "high",
+        "status": "completed",
+        "minimum_access_scope": [],
+        "acceptance_criteria": [
+          "All target-file reads pass encoding='utf-8' with errors='replace' retained",
+          "Evidence snippets from a UTF-8 source file are byte-correct",
+          "No target file causes a scan to raise UnicodeDecodeError"
+        ],
+        "validation_required": [
+          "pytest",
+          "Self-scan review queue inspected for mojibake"
+        ],
+        "documentation_required": [
+          "changelog"
+        ],
+        "risk_notes": []
+      },
+      {
+        "id": "REQ-013",
+        "title": "Check documented paths against disk, not only the walked inventory",
+        "description": "The doc-reference drift rule tests a path named in prose against ctx.inventory.files. Directories in SKIP_DIRS are absent from that inventory, so tracked files there read as missing: .arbiter/knowledge.json, .arbiter/baseline.json and .arbiter/external-severity.json account for 9 of 31 doc-drift findings on this repository, all false. The question the rule asks is whether a documented file exists, which is a question about disk rather than about what the probes were shown. Confirm existence on disk before reporting. The remaining 22 findings are genuine and independently confirmed by omni doctor, so the rule keeps its yield.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [],
+        "acceptance_criteria": [
+          "A documented path inside a SKIP_DIRS directory is not reported missing",
+          "A genuinely absent documented path is still reported",
+          "Paths escaping the repository root are still refused"
+        ],
+        "validation_required": [
+          "pytest",
+          "Self-scan doc-drift count compared before and after"
+        ],
+        "documentation_required": [
+          "changelog"
+        ],
+        "risk_notes": []
       }
     ],
     "documentation": [
@@ -100,6 +245,36 @@
         "risk_notes": [
           "Measured figures were carried forward from an earlier corpus run and are labelled as such until tools/corpus.py is rerun"
         ]
+      },
+      {
+        "id": "REQ-007",
+        "title": "Record the six landed bundle commits in CHANGELOG and project-context",
+        "description": "Commits 8775017 through 54f9a13 landed from an offline bundle and are on origin/main, but CHANGELOG.md has no entry for any of them and .ai/project-context.md has no section. They change probes, packs, gates, scoring and the CLI surface, which the changelog policy requires to be recorded. Entries must be written from the diffs rather than the commit messages, which were authored by a session with context not available here.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          "CHANGELOG.md",
+          ".ai/project-context.md",
+          "src/arbiter",
+          "tools",
+          "docs",
+          "README.md",
+          "HANDOFF.md"
+        ],
+        "acceptance_criteria": [
+          "every one of the six commits is represented in CHANGELOG.md under a REQ id",
+          "rationale and residual gaps are recorded in .ai/project-context.md",
+          "each claim is verified against the diff rather than the commit message"
+        ],
+        "validation_required": [
+          "python -m pytest tests/ -q",
+          "python omni doctor"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md",
+          ".ai/project-context.md"
+        ],
+        "risk_notes": []
       }
     ],
     "training-evidence": [

@@ -75,7 +75,7 @@ def apply_baseline(findings: list[Finding], baseline_path: str | None) -> None:
     if not p.is_file():
         return
     try:
-        known = set(json.loads(p.read_text()).get("ids", []))
+        known = set(json.loads(p.read_text(encoding="utf-8")).get("ids", []))
     except Exception:
         return
     for f in findings:
@@ -90,7 +90,7 @@ def write_baseline(report: Report, path: str) -> int:
         "created": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
         "system": report.system,
         "ids": ids,
-    }, indent=2))
+    }, indent=2), encoding="utf-8")
     return len(ids)
 
 
@@ -142,6 +142,7 @@ def run_scan(
     pin_knowledge: str | None = None,
     changed_since: str | None = None,
     only_files: list[str] | None = None,
+    out_dir: str | None = None,
 ) -> Report:
     started = time.time()
     if use_adapters:
@@ -158,7 +159,12 @@ def run_scan(
     clear_read_cache()
 
     system_name, repos, tempdirs, manifest = resolve_targets(targets, system_path)
-    inv = build_inventory(repos)
+    # A scan must not read the previous scan's output. The output directory
+    # defaults to `arbiter-out` inside the tree being scanned, so without this
+    # the second run reports on the first run's HTML -- 27% of unsuppressed
+    # findings, concentrated in the suppression rules, which the rendered
+    # report is naturally full of.
+    inv = build_inventory(repos, {out_dir} if out_dir else None)
     plans = list(plan_paths or [])
     plans += [str(p) for p in ((config.get("terraform") or {}).get("plans") or [])]
 

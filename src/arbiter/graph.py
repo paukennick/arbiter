@@ -405,7 +405,7 @@ def _parse_hcl_body(body: str) -> dict:
 
 def parse_terraform(path: Path, rel: str, repo_id: str) -> list[Resource]:
     try:
-        text = path.read_text(errors="replace")
+        text = path.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return []
     out: list[Resource] = []
@@ -563,7 +563,7 @@ def _tf_provider(provider_name: str, native: str) -> str:
 
 def parse_tfplan(path: Path, rel: str, repo_id: str) -> list[Resource]:
     try:
-        doc = json.loads(path.read_text(errors="replace"))
+        doc = json.loads(path.read_text(encoding="utf-8", errors="replace"))
     except Exception:
         return []
     if not is_plan_document(doc):
@@ -677,7 +677,7 @@ def merge_plan_over_source(resources: list[Resource]) -> list[Resource]:
 
 def parse_cfn(path: Path, rel: str, repo_id: str) -> list[Resource]:
     try:
-        raw = path.read_text(errors="replace")
+        raw = path.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return []
     doc: Any = None
@@ -718,7 +718,7 @@ def parse_cfn(path: Path, rel: str, repo_id: str) -> list[Resource]:
 def parse_k8s(path: Path, rel: str, repo_id: str) -> list[Resource]:
     try:
         import yaml  # type: ignore
-        docs = list(yaml.safe_load_all(path.read_text(errors="replace")))
+        docs = list(yaml.safe_load_all(path.read_text(encoding="utf-8", errors="replace")))
     except Exception:
         return []
     out: list[Resource] = []
@@ -871,7 +871,7 @@ def looks_like_plan(path: Path, rel: str) -> bool:
     """Cheap sniff before parsing. A repository can hold a lot of JSON."""
     base = rel.rsplit("/", 1)[-1].lower()
     try:
-        head = path.read_text(errors="replace")[:4096]
+        head = path.read_text(encoding="utf-8", errors="replace")[:4096]
     except OSError:
         return False
     if not any(m in head for m in PLAN_MARKERS):
@@ -919,7 +919,7 @@ def build_graph(inv, plan_paths: list[str] | None = None) -> list[Resource]:
         elif f.language == "yaml":
             head = ""
             try:
-                head = p.read_text(errors="replace")[:4000]
+                head = p.read_text(encoding="utf-8", errors="replace")[:4000]
             except OSError:
                 pass
             if "AWSTemplateFormatVersion" in head or re.search(r"^Resources:", head, re.M):
