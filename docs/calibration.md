@@ -1,0 +1,120 @@
+# Calibration and Learning
+
+Adapting and being reproducible pull against each other: if behaviour depends on
+history, the same commit passes on Monday and fails on Tuesday, and baselines,
+gates and accreditation artefacts stop meaning anything. Arbiter separates the
+two.
+
+## Contents
+
+- [Offline learning, pinned execution](#offline-learning-pinned-execution)
+- [Three limits that keep it honest](#three-limits-that-keep-it-honest)
+- [Adjudication](#adjudication)
+- [Calibrating someone else's tool](#calibrating-someone-elses-tool)
+
+---
+
+## Offline learning, pinned execution
+
+```bash
+arbiter feedback f:8c41d2ae9b07 --false-positive --note "vendored fixture"
+arbiter learn                                  # what has been learned, and what it supports
+arbiter scan . --pin-knowledge k:4cf3d3fa2f02  # freeze it for a release gate
+```
+
+Learning is offline and accumulates in `.arbiter/knowledge.json`. Execution reads
+**one pinned knowledge version** and records its hash, so
+`(commit, config, knowledge version)` always produces identical bytes.
+
+`.arbiter/knowledge.json` holds, for every rule:
+
+- how many planted faults it was shown, and how many it caught
+- how many look-alikes it was shown, and how many it correctly ignored
+- how many real findings a person reviewed and judged right or wrong
+
+Those last numbers are kept separate from the first two on purpose. Generated
+faults come from a chosen pattern, so they tell you whether a rule works
+mechanically. Only a person looking at a real finding tells you whether the
+things it flags in real life are worth flagging. Mixing the two would let a
+hundred thousand generated cases drown out ten real ones.
+
+## Three limits that keep it honest
+
+- **Confidence moves, severity never does.** How often a rule is right is
+  measurable; how much it matters when it is right is a policy judgement.
+- **Learning never changes a gate outcome** unless `gate.use_calibration` is set.
+- **One finding moves the statistics once.** Re-adjudicating a fingerprint is
+  refused.
+
+A rule under 20 adjudicated observations reports as **unproven** rather than
+inheriting a flattering estimate from a handful of samples.
+
+## Adjudication
+
+Calibration reads one ledger: findings a person judged right or wrong. Not the
+injection trials, not the corpus discrimination — those measure whether a rule
+works mechanically and whether it separates populations, and neither answers
+whether the things it flags are things you would act on.
+
+That ledger sat at zero, because adjudicating meant copying fingerprints one at
+a time.
+
+```bash
+arbiter review report.json --html          # one self-contained page
+arbiter review report.json --interactive   # one keypress per finding
+arbiter review --apply review.md           # record the verdicts
+```
+
+The page has no server, no network and no build step, so it works from a phone
+with the wifi off — which matters, because the reports worth adjudicating are
+often the ones you cannot send anywhere. One finding at a time with the code
+around it: adjudicating from a list encourages skimming, and a skimmed verdict
+is worse than none, because this ledger is the only thing calibration reads.
+
+Which findings you see is the whole question. The batch is chosen to move the
+most rules past the twenty-observation line — rules already close to the
+threshold first, spread across files so twenty instances of one mistake are not
+counted as twenty observations, never re-asking an adjudicated finding.
+
+## Calibrating someone else's tool
+
+Checkov's open build reports `"severity": null` on every finding. Arbiter's
+adapter invented `medium` for all of them, so one Terraform repository produced
+477 findings of identical weight and no way to tell the two that matter from the
+475 that do not.
+
+`tools/calibrate_external.py` measures every individual external check — every
+`CKV_AWS_*`, every bandit `B*` — against the same three-population corpus used
+for native rules, and assigns severity from the measured ratio:
+
+| Measured ratio | Assigned |
+|---|---|
+| ≥ 10× | medium |
+| ≥ 3× | low |
+| < 3× | info — reported, zero weight |
+| fewer than 5 observations | nothing assigned; no claim made |
+| seen in only one repository | capped at low |
+
+Note the ceiling: **measurement cannot promote a check to `high`.**
+Discrimination measures *signal* — how much more often a check fires on broken
+code. Severity encodes *consequence* — how much it matters when the check is
+right. Those correlate and are not the same quantity.
+
+The example that forced the rule: "Ensure every security group and rule has a
+description" fires 33 times on deliberately broken Terraform and zero times on
+the well-maintained `terraform-aws-modules` repositories, which are meticulous
+about descriptions. The ratio is real, reproducible and stack-matched. It is
+also not a security finding, and grading it `high` would put a missing comment
+on the same footing as a public S3 bucket. So measurement may say "this carries
+signal" and may say "this carries none"; it may not manufacture a claim about
+consequence.
+
+On Terragoat, 477 findings of identical `medium` became 296 medium, 151 low and
+30 info — 181 regraded from measurement.
+
+This does not breach the standing rule that learning never touches severity. For
+a native rule, severity is a deliberate policy statement and nothing may move it.
+For an external check the tool supplied *no* severity — replacing an invented
+constant with a measured one is not drift. The table lives in the knowledge
+file, is part of its version hash, and `--pin-knowledge` still fails a run if it
+moved.

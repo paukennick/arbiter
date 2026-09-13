@@ -129,6 +129,52 @@ NATIVE = ["secrets", "resource_policy", "quality", "ast_metrics",
           "assurance", "authored", "contract"]
 
 
+def print_composition() -> int:
+    """Report what the corpus is made of, without needing it cloned.
+
+    Documentation kept quoting repository counts that had drifted from this
+    file -- a total that counted the holdout twice, and a population table that
+    mixed tuned-only counts for one population with full counts for the others.
+    A number a reader cannot recompute is a number that will drift again, so
+    the counts are derived here and the docs cite the command.
+    """
+    tuned = {name: meta for name, meta in CORPUS.items() if name not in HOLDOUT}
+    stacks = sorted({stack for _, stack in CORPUS.values()})
+
+    print(f"\n  {'POPULATION':<14}{'TOTAL':>7}{'HELD OUT':>10}{'TUNED':>7}")
+    for population in POPULATIONS:
+        total = sum(1 for p, _ in CORPUS.values() if p == population)
+        held = sum(1 for name, (p, _) in CORPUS.items()
+                   if p == population and name in HOLDOUT)
+        print(f"  {population:<14}{total:>7}{held:>10}{total - held:>7}")
+    print(f"  {'-' * 38}")
+    print(f"  {'all':<14}{len(CORPUS):>7}{len(HOLDOUT):>10}{len(tuned):>7}")
+
+    print(f"\n  {len(stacks)} stack labels: {', '.join(stacks)}")
+
+    unknown = sorted(HOLDOUT - set(CORPUS))
+    if unknown:
+        print(f"\n  WARNING: held out but not in the corpus: {', '.join(unknown)}")
+
+    # Reported in both directions on purpose. A stack with no broken counterpart
+    # cannot have its rules measured at all -- that is the gap the worklist
+    # chases. A stack with no well-maintained counterpart is the opposite
+    # problem: nothing to measure false positives against. Collapsing the two
+    # into one list would hide which kind of hole each stack is.
+    by_population = {
+        population: {stack for _, (p, stack) in CORPUS.items() if p == population}
+        for population in POPULATIONS
+    }
+    no_broken = sorted(by_population["clean"] - by_population["vulnerable"])
+    no_clean = sorted(by_population["vulnerable"] - by_population["clean"])
+    if no_broken:
+        print(f"  no vulnerable counterpart (rules cannot be measured): {', '.join(no_broken)}")
+    if no_clean:
+        print(f"  no well-maintained counterpart (no false-positive check): {', '.join(no_clean)}")
+    print()
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default="/tmp/corpus")
@@ -137,7 +183,14 @@ def main() -> int:
     ap.add_argument("--holdout", choices=["exclude", "only", "both"], default="both",
                     help="exclude: tuning set only. only: the held-out set. "
                          "both (default): everything, reported separately.")
+    ap.add_argument("--counts", action="store_true",
+                    help="Print corpus composition and exit. Needs nothing cloned: "
+                         "this is the authoritative source for the repository "
+                         "counts quoted in documentation.")
     args = ap.parse_args()
+
+    if args.counts:
+        return print_composition()
 
     root = Path(args.root)
     outdir = Path(args.out)

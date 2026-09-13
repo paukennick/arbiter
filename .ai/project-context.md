@@ -66,3 +66,49 @@ STEP-Migration venv and exposed on PATH via `WindowsApps\headroom.cmd`) wrote
 that keep the proxy running. That file holds machine-specific paths, so it is
 git-ignored. It takes effect after Claude Code restarts. Because Headroom
 lives in another project's venv, recreating that venv would break these hooks.
+
+## 2026-09-12 — Documentation, corpus figures, REQ lifecycle, licensing (REQ-002…005)
+
+**Documentation (REQ-002).** `README.md` was 900 lines and was the only product
+document. It is now an overview; granular material lives in `docs/`, one file
+per category. Claims were re-verified against source rather than copied forward:
+the dimension weights, severity and confidence factors, probe skip precedence,
+fingerprint construction and CLI surface in the new docs all came from reading
+`core.py`, `policy.py`, `engine.py` and `cli.py`. `SETUP.md` became an
+installation guide — its previous first-person narrative, including a paragraph
+retracting an earlier mistaken claim, was not repository documentation.
+
+**Corpus figures (REQ-003).** The docs quoted three different corpus sizes. The
+tooling is authoritative and self-consistent: `tools/corpus.py` and
+`tools/fetch_corpus.sh` both describe 41 repositories — 16 vulnerable, 20 clean,
+5 examples — with 5 held out (2/2/1), leaving 36 tuned. The old "39" was
+14 tuned-vulnerable plus 20 and 5 *untuned* counts, which is why it never
+reconciled. `--counts` now derives this offline so documentation cites a command
+instead of a memory. The measured lines/findings table predates the two Go
+repositories and is labelled rather than silently updated, because it cannot be
+recomputed without cloning the corpus.
+
+**Requirement lifecycle (REQ-004).** The registry appears in every context
+profile in `.ai/context-manifest.json`, so every entry is a permanent
+per-session cost — the STEP-Migration workspace this scaffold came from carries
+80. Terminal requirements now sweep into `.ai/requirements/archive.json`, which
+no profile loads. The subtle part is ID allocation: `next_requirement_id` read
+only the active registry, so archiving alone would have silently reused retired
+IDs and broken CHANGELOG references. It now scans both files, `omni doctor`
+errors on collision, and archiving a non-terminal requirement is refused. The
+three-digit ID format caps the project at 999, so reuse would corrupt history
+rather than conserve anything.
+
+Policy: a requirement is archived once it is `completed` or `withdrawn` **and**
+its outcome is recorded in `CHANGELOG.md` and this file. Rationale lives here
+permanently; the registry holds only live work. Not every change earns a REQ —
+routine maintenance rides an existing one or is a CHANGELOG line.
+
+**Licensing (REQ-005).** `pyproject.toml` declares `Proprietary` but there is no
+`LICENSE` file and no copyright notice, so no terms are granted in writing;
+`omni doctor` independently flags this. `docs/licensing.md` states eight
+requirements (L-1…L-8) and the open questions that block drafting. Two points
+are load-bearing: scan output must belong to the user, since reports are meant
+for accreditation packages and PR comments; and `semgrep` is LGPL-2.1, so the
+air-gapped bundle cannot ship until the redistribution review in L-6 is done.
+Engineering cannot close this one — it needs counsel.

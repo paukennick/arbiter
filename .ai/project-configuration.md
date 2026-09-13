@@ -14,10 +14,13 @@ These settings correspond to the `configuration` block in
 - `lint_command`: none gating; `ruff` is available through the `tools` extra
 - `typecheck_command`: none configured
 - `changelog_location`: `CHANGELOG.md`, grouped by date under `[Unreleased]`, each entry citing its `REQ-###`
-- `documentation_locations`: `.ai/project-context.md` (decision history), `CHANGELOG.md`, `README.md` (commands, probes, layout, evidence), `SETUP.md` (continuous-training setup), `NOTICE.md` (third-party tools)
+- `documentation_locations`: `.ai/project-context.md` (decision history), `CHANGELOG.md`, `README.md` (overview: capabilities, administration, versioning, licensing), `docs/` (granular reference, one file per category), `SETUP.md` (installation), `NOTICE.md` (third-party components), `docs/licensing.md` (licensing requirements)
 - `branching_or_pr_standard`: main branch `main`; remote `github.com/paukennick/arbiter`; no PR template in-repo
 - `comment_style`: minimal — comments only for non-obvious WHY, matching the existing `src/arbiter/` style
-- `requirement_id_prefix`: `REQ` — registry at `.ai/requirements/requirements.json`; assign the next free ID
+- `requirement_id_prefix`: `REQ` — active registry at
+  `.ai/requirements/requirements.json`, retired entries at
+  `.ai/requirements/archive.json`; assign the next free ID with
+  `python omni requirement add`, which allocates across both files
 
 ## Project-Specific Notes (arbiter)
 
@@ -51,4 +54,5 @@ These settings correspond to the `configuration` block in
   remove the integration: `headroom unwrap claude` or delete that file.
 - Arbiter's own rules apply to work on it: coverage is reported, never
   assumed; the tool never executes the target; deterministic and inferred
-  findings never blend. See `README.md` "The four rules".
+  findings never blend. See `README.md` "Principles" (six, not four — the
+  count grew when knowledge pinning and machine-checked invariants landed).

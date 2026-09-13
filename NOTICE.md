@@ -1,22 +1,28 @@
 # Third-party components
 
-Arbiter itself depends only on PyYAML at runtime.
-
 The adapters in `src/arbiter/packs/adapters/` invoke external analyzers but do
 not vendor or redistribute them. Each is installed separately by the operator.
-Their licenses apply to those tools, not to Arbiter:
+Their licenses apply to those tools, not to Arbiter.
 
-| Tool | License |
-|---|---|
-| ruff | MIT |
-| bandit | Apache-2.0 |
-| checkov | Apache-2.0 |
-| semgrep | LGPL-2.1 (CLI) |
-| gitleaks | MIT |
+The **Redistributed** column is the load-bearing one: every entry reads *no*,
+which is why no third-party obligation is currently triggered.
+
+| Component | License | Role | Redistributed |
+|---|---|---|---|
+| PyYAML | MIT | runtime dependency | no — installed by pip |
+| ruff | MIT | optional analyzer | no — installed by the operator |
+| bandit | Apache-2.0 | optional analyzer | no — installed by the operator |
+| checkov | Apache-2.0 | optional analyzer | no — installed by the operator |
+| semgrep | LGPL-2.1 (CLI) | optional analyzer | no — installed by the operator |
+| gitleaks | MIT | optional analyzer | no — installed by the operator |
 
 Before building a distributable air-gapped bundle that *does* include these
-binaries, review each license for redistribution terms. That review has not
-been done yet.
+binaries, every row above changes and each license must be reviewed for
+redistribution terms — `semgrep` (LGPL-2.1) in particular.
+
+**That review has not been done.** It is tracked as requirement L-6 in
+[docs/licensing.md](docs/licensing.md), which blocks the air-gapped bundle until
+it is complete and recorded here with a date and a reviewer.
 
 The AWS access key in `fixtures/legacy-platform/app/config.py` is the example
 key published in AWS documentation. It is not a live credential.

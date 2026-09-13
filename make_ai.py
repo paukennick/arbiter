@@ -604,17 +604,57 @@ def slugify(value: str) -> str:
     return slug or "item"
 
 
-def next_requirement_id(requirements: dict[str, Any]) -> str:
-    prefix = str(requirements.get("requirement_id_prefix", "REQ"))
-    highest = 0
-    for items in requirements.get("categories", {}).values():
+# The active requirements registry is loaded into every session -- it appears in
+# every context profile in .ai/context-manifest.json -- so it is a working set,
+# not a history. Left unbounded it becomes a permanent per-session context tax:
+# the workspace this scaffold was assembled from carries 80 entries. Completed
+# work is swept into the archive, which no context profile loads.
+#
+# Ids are allocated across BOTH files and are never reused. A retired id still
+# means exactly one thing in CHANGELOG.md, and the three-digit id format caps the
+# project at 999 requirements, so reuse would corrupt history rather than
+# conserve anything worth conserving.
+REQUIREMENT_ARCHIVE_PATH = Path(".ai/requirements/archive.json")
+TERMINAL_REQUIREMENT_STATUSES = {"completed", "withdrawn"}
+
+
+def load_requirement_archive() -> dict[str, Any]:
+    if not REQUIREMENT_ARCHIVE_PATH.is_file():
+        return {}
+    archive = load_json(REQUIREMENT_ARCHIVE_PATH)
+    return archive if isinstance(archive, dict) else {}
+
+
+def requirement_ids(registry: Any) -> set[str]:
+    ids: set[str] = set()
+    if not isinstance(registry, dict):
+        return ids
+    for items in registry.get("categories", {}).values():
         if not isinstance(items, list):
             continue
         for requirement in items:
-            requirement_id = str(requirement.get("id", ""))
-            match = re.fullmatch(rf"{re.escape(prefix)}-(\d{{3}})", requirement_id)
-            if match:
-                highest = max(highest, int(match.group(1)))
+            if isinstance(requirement, dict) and isinstance(requirement.get("id"), str):
+                ids.add(requirement["id"])
+    return ids
+
+
+def next_requirement_id(requirements: dict[str, Any], *additional: Any) -> str:
+    prefix = str(requirements.get("requirement_id_prefix", "REQ"))
+    highest = 0
+    for registry in (requirements, *additional):
+        if not isinstance(registry, dict):
+            continue
+        for items in registry.get("categories", {}).values():
+            if not isinstance(items, list):
+                continue
+            for requirement in items:
+                if not isinstance(requirement, dict):
+                    continue
+                match = re.fullmatch(
+                    rf"{re.escape(prefix)}-(\d{{3}})", str(requirement.get("id", ""))
+                )
+                if match:
+                    highest = max(highest, int(match.group(1)))
     return f"{prefix}-{highest + 1:03d}"
 
 
@@ -747,6 +787,59 @@ def validate_requirements(requirements: Any, report: DoctorReport) -> None:
         report.pass_check("Requirements registry is structurally valid")
     elif seen_ids:
         report.warning("Requirements registry was partially readable")
+
+
+def validate_requirement_archive(active: Any, report: DoctorReport) -> None:
+    """The archive is optional, but it must never collide with the active set.
+
+    Archiving is only safe because ids are allocated across both files. If the
+    two ever share an id, a CHANGELOG reference stops resolving to one thing,
+    which is the failure the archive exists to avoid.
+    """
+    if not REQUIREMENT_ARCHIVE_PATH.is_file():
+        return
+
+    try:
+        archive = load_json(REQUIREMENT_ARCHIVE_PATH)
+    except (OSError, json.JSONDecodeError):
+        report.error(f"Requirement archive is not readable JSON: {REQUIREMENT_ARCHIVE_PATH}")
+        return
+
+    if not isinstance(archive, dict):
+        report.error("Requirement archive must be a JSON object")
+        return
+
+    archived = requirement_ids(archive)
+    if not archived:
+        report.warning(f"Requirement archive holds no requirements: {REQUIREMENT_ARCHIVE_PATH}")
+        return
+
+    collisions = sorted(archived & requirement_ids(active))
+    if collisions:
+        report.error(
+            "Requirement ids appear in both the active registry and the archive: "
+            f"{', '.join(collisions)}"
+        )
+        return
+
+    non_terminal = sorted(
+        str(requirement.get("id"))
+        for items in archive.get("categories", {}).values()
+        if isinstance(items, list)
+        for requirement in items
+        if isinstance(requirement, dict)
+        and requirement.get("status") not in TERMINAL_REQUIREMENT_STATUSES
+    )
+    if non_terminal:
+        report.error(
+            "Archived requirements must be completed or withdrawn: "
+            f"{', '.join(non_terminal)}"
+        )
+        return
+
+    report.pass_check(
+        f"Requirement archive holds {len(archived)} retired requirement(s), ids disjoint"
+    )
 
 
 def validate_rulepacks(parsed: dict[str, Any], report: DoctorReport) -> None:
@@ -1330,6 +1423,7 @@ def run_doctor() -> int:
     validate_ruleset(parsed.get(".ai/rules/universal-engineering-ruleset.json"), report)
     validate_rulepacks(parsed, report)
     validate_requirements(parsed.get(".ai/requirements/requirements.json"), report)
+    validate_requirement_archive(parsed.get(".ai/requirements/requirements.json"), report)
     validate_assistant_pointers(report)
     validate_entrypoint_sources(report)
     validate_synced_ignore_files(report)
@@ -1470,7 +1564,16 @@ def run_adopt(args: argparse.Namespace) -> int:
 def run_requirement_add(args: argparse.Namespace) -> int:
     path = Path(".ai/requirements/requirements.json")
     requirements = load_json(path)
-    requirement_id = args.id or next_requirement_id(requirements)
+    archive = load_requirement_archive()
+    requirement_id = args.id or next_requirement_id(requirements, archive)
+
+    if requirement_id in requirement_ids(archive):
+        print(
+            "Requirement id was retired to the archive and must not be reused: "
+            f"{requirement_id}",
+            file=sys.stderr,
+        )
+        return 1
 
     categories = requirements.setdefault("categories", {})
 
@@ -1512,6 +1615,84 @@ def run_requirement_add(args: argparse.Namespace) -> int:
     bucket.append(new_requirement)
     write_json(path, requirements)
     print(f"Added requirement {requirement_id}: {args.title}")
+    return 0
+
+
+def run_requirement_archive(args: argparse.Namespace) -> int:
+    """Sweep completed requirements out of the active registry.
+
+    Nothing is lost by moving them: the rationale for finished work lives in
+    .ai/project-context.md and CHANGELOG.md, both append-only. What the registry
+    holds is the work that is still live, which is what a session needs loaded.
+    """
+    path = Path(".ai/requirements/requirements.json")
+    requirements = load_json(path)
+    archive = load_requirement_archive()
+
+    categories = requirements.get("categories")
+    if not isinstance(categories, dict):
+        print("Requirements registry has no categories object", file=sys.stderr)
+        return 1
+
+    wanted = set(split_csv(args.id)) or None
+    if wanted:
+        unknown = sorted(wanted - requirement_ids(requirements))
+        if unknown:
+            print(f"Not in the active registry: {', '.join(unknown)}", file=sys.stderr)
+            return 1
+
+    moved: list[tuple[str, str]] = []
+    for category_name, items in categories.items():
+        if not isinstance(items, list):
+            continue
+        retained: list[Any] = []
+        for requirement in items:
+            if not isinstance(requirement, dict):
+                retained.append(requirement)
+                continue
+            requirement_id = str(requirement.get("id", ""))
+            status = requirement.get("status")
+            selected = (
+                requirement_id in wanted
+                if wanted
+                else status in TERMINAL_REQUIREMENT_STATUSES
+            )
+            if not selected:
+                retained.append(requirement)
+                continue
+            if status not in TERMINAL_REQUIREMENT_STATUSES:
+                print(
+                    f"Refusing to archive {requirement_id}: status is '{status}'. "
+                    "Only completed or withdrawn requirements may be archived.",
+                    file=sys.stderr,
+                )
+                return 1
+            moved.append((requirement_id, str(requirement.get("title", ""))))
+            archive.setdefault("categories", {}).setdefault(category_name, []).append(
+                requirement
+            )
+        categories[category_name] = retained
+
+    if not moved:
+        print("Nothing to archive: no completed or withdrawn requirements are active.")
+        return 0
+
+    archive.setdefault("version", str(requirements.get("version", "1.0.0")))
+    archive.setdefault(
+        "requirement_id_prefix", str(requirements.get("requirement_id_prefix", "REQ"))
+    )
+
+    verb = "Would archive" if args.dry_run else "Archived"
+    print(f"{verb} {len(moved)} requirement(s) to {REQUIREMENT_ARCHIVE_PATH}:")
+    for requirement_id, title in moved:
+        print(f"  {requirement_id}  {title}")
+
+    if args.dry_run:
+        return 0
+
+    write_json(REQUIREMENT_ARCHIVE_PATH, archive)
+    write_json(path, requirements)
+    print(f"{len(requirement_ids(requirements))} requirement(s) remain active.")
     return 0
 
 
@@ -1719,6 +1900,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
     requirement_add.add_argument("--risks", default="", help="Comma-separated risk notes.")
 
+    requirement_archive = requirement_subparsers.add_parser(
+        "archive",
+        help="Move completed requirements out of the active registry.",
+    )
+    requirement_archive.add_argument(
+        "--id",
+        default="",
+        help="Comma-separated ids to archive. Default: every completed or "
+             "withdrawn requirement in the active registry.",
+    )
+    requirement_archive.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would move without writing files.",
+    )
+
     rule_parser = subparsers.add_parser("rule", help="Manage structured rulepacks.")
     rule_subparsers = rule_parser.add_subparsers(dest="rule_command")
     rule_add = rule_subparsers.add_parser(
@@ -1764,6 +1961,8 @@ def main(argv: list[str] | None = None) -> int:
     if command == "requirement":
         if args.requirement_command == "add":
             return run_requirement_add(args)
+        if args.requirement_command == "archive":
+            return run_requirement_archive(args)
         parser.error("requirement requires a subcommand")
     if command == "rule":
         if args.rule_command == "add":

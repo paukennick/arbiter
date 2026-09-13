@@ -1,0 +1,138 @@
+{
+  "categories": {
+    "developer-tooling": [
+      {
+        "id": "REQ-001",
+        "title": "Adopt OmniEngineering workspace and Headroom context optimization",
+        "description": "Install the OmniEngineering .ai/ scaffold and ./omni CLI so assistant sessions share one loading order, ruleset and requirements registry; install Headroom's Claude Code integration at local scope so tool output is compressed through the local proxy.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          ".ai/",
+          "CLAUDE.md",
+          "CHANGELOG.md",
+          "make_ai.py",
+          "omni",
+          ".gitignore",
+          ".claude/settings.local.json"
+        ],
+        "do_not_access": [
+          "src/arbiter/",
+          "training/"
+        ],
+        "acceptance_criteria": [
+          ".ai/ contains no STEP-Migration project content",
+          "python omni doctor reports only the known upstream gaps listed in .ai/project-configuration.md",
+          "python omni map writes .ai/project-map.md",
+          ".claude/settings.local.json carries the Headroom env and hooks and is git-ignored"
+        ],
+        "validation_required": [
+          "python omni doctor",
+          "python -m pytest"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md",
+          ".ai/project-context.md",
+          ".ai/project-configuration.md"
+        ],
+        "risk_notes": [
+          "No pristine OmniEngineering upstream is available locally; the scaffold was assembled from STEP-Migration copies, so .ai/adapters/, .ai/checklists/public-release.md, fallback-llm-rules.json and hci-ui-rules.json are absent",
+          "With Headroom routing enabled, Claude Code sessions in this repo depend on the local proxy on port 8787 being reachable"
+        ]
+      },
+      {
+        "id": "REQ-004",
+        "title": "Bound requirement registry growth with an archive lifecycle",
+        "description": "The active registry is loaded into every session by every context profile so unbounded growth is a permanent context tax rather than mere file bloat. Completed and withdrawn requirements are swept into an archive that no context profile loads while ids stay unique across both files.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          "make_ai.py",
+          ".ai/requirements/",
+          ".ai/project-configuration.md"
+        ],
+        "acceptance_criteria": [
+          "omni requirement archive moves terminal requirements out of the active registry",
+          "next_requirement_id never reuses an archived id",
+          "omni doctor errors when active and archived ids collide",
+          "archiving a requirement that is not completed or withdrawn is refused"
+        ],
+        "validation_required": [
+          "python omni doctor",
+          "python -m py_compile make_ai.py"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md",
+          ".ai/project-configuration.md"
+        ],
+        "risk_notes": [
+          "make_ai.py is vendored OmniEngineering tooling so these changes must be reapplied if a pristine upstream is ever pulled"
+        ]
+      }
+    ],
+    "documentation": [
+      {
+        "id": "REQ-002",
+        "title": "Restructure product documentation into an overview plus category documents",
+        "description": "README.md had grown to 900 lines and served as the only product document. Split it into a professional overview covering capabilities and administration plus ten category documents under docs/ so granular material is found by type rather than by scrolling.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          "README.md",
+          "SETUP.md",
+          "docs/",
+          "CHANGELOG.md"
+        ],
+        "acceptance_criteria": [
+          "README.md is an overview rather than a full manual",
+          "docs/ holds one document per category",
+          "every internal documentation link resolves",
+          "no carried-forward claim is restated without checking it against source"
+        ],
+        "validation_required": [
+          "python -m pytest tests/ -q",
+          "python omni doctor"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md",
+          ".ai/project-context.md"
+        ],
+        "risk_notes": [
+          "Measured figures were carried forward from an earlier corpus run and are labelled as such until tools/corpus.py is rerun"
+        ]
+      }
+    ],
+    "training-evidence": [
+      {
+        "id": "REQ-003",
+        "title": "Settle corpus composition figures and make them recomputable",
+        "description": "Documentation quoted 42 repositories in one place and 39 in another while the population table mixed a tuned-only count for the vulnerable population with full counts for the other two. tools/corpus.py is authoritative: 41 repositories of which 5 are held out leaving a tuning set of 36.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          "tools/corpus.py",
+          "docs/evidence.md",
+          "README.md"
+        ],
+        "acceptance_criteria": [
+          "python tools/corpus.py --counts prints composition with nothing cloned",
+          "README.md and docs/evidence.md cite 41 total and 5 held out and 36 tuned",
+          "stack coverage gaps are reported directionally rather than as one merged list"
+        ],
+        "validation_required": [
+          "python tools/corpus.py --counts",
+          "python -m pytest tests/ -q"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md",
+          "docs/evidence.md"
+        ],
+        "risk_notes": [
+          "The measured lines and findings table predates the two Go repositories added later and stays labelled until a corpus run refreshes it"
+        ]
+      }
+    ]
+  },
+  "version": "2.0.0",
+  "requirement_id_prefix": "REQ"
+}
