@@ -22,10 +22,39 @@ set -uo pipefail
 DEST="${1:-/tmp/corpus}"
 mkdir -p "$DEST"
 
+# How much history to keep. Scanning needs none of it -- a single commit is
+# enough to read files from -- but fix-pair mining needs it, and that is the one
+# source of ground truth in the whole system that Arbiter did not generate
+# itself: a commit where a maintainer changed code a rule fired on, after which
+# it stopped firing. At depth 1 `tools/fixpairs.py` skips every repository as
+# shallow, which is what it did on every run until 2026-09-13. 300 is the figure
+# its own message recommends, and it buys enough history for the message filter
+# to find candidates in repositories that commit often.
+DEPTH="${DEPTH:-300}"
+
+# Catch up a clone made when the depth was smaller, including one restored from
+# a cache. Recorded rather than measured, because a repository with fewer than
+# DEPTH commits in total is already as deep as it can get and would otherwise be
+# re-fetched every night for nothing.
+deepen() {
+  local repo="$1" marker="$1/.git/arbiter-depth"
+  [ -d "$repo/.git" ] || return 0
+  [ -f "$marker" ] && [ "$(cat "$marker" 2>/dev/null)" = "$DEPTH" ] && return 0
+  if [ -f "$repo/.git/shallow" ]; then
+    git -C "$repo" fetch --quiet --deepen="$DEPTH" 2>/dev/null || true
+  fi
+  printf '%s' "$DEPTH" > "$marker" 2>/dev/null || true
+}
+
 get() {
   local name="$1" url="$2"
-  if [ -d "$DEST/$name" ]; then printf '  have %s\n' "$name"; return; fi
-  if git clone --depth 1 -q "$url" "$DEST/$name" 2>/dev/null; then
+  if [ -d "$DEST/$name" ]; then
+    deepen "$DEST/$name"
+    printf '  have %s\n' "$name"
+    return
+  fi
+  if git clone --depth "$DEPTH" -q "$url" "$DEST/$name" 2>/dev/null; then
+    printf '%s' "$DEPTH" > "$DEST/$name/.git/arbiter-depth" 2>/dev/null || true
     printf '  got  %s\n' "$name"
   else
     printf '  FAILED %s (skipping)\n' "$name"

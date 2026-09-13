@@ -6,6 +6,39 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 
 ## [Unreleased]
 
+### 2026-09-13
+
+- Fixed the nightly training job, which had never once written its results back.
+  `git add -A .arbiter training` matched `.gitignore`'s `training/`, git exited 1,
+  and the step's `bash -e` failed the job two seconds after a 55-minute cycle
+  finished successfully — so run 1 measured everything and committed nothing.
+  `training/` now ignores its contents rather than itself, and the three files
+  that accumulate (`WORKLIST.md`, `fix-pairs.json`, `disagreements.json`) are
+  tracked while the per-run stamped logs stay out. (No requirement covers the
+  nightly training job — the four entries below are unplanned repair, and the
+  gap is itself worth a requirement.)
+- Fixed the same job silently degrading the handoff it exists to produce. Its
+  final step read `/tmp/corpus-out/summary.json` and `/tmp/discriminate.json`,
+  which nothing writes, so every night it overwrote the complete `WORKLIST.md`
+  that `train_cycle.sh` had just written with one headed "Incomplete: no results
+  found for corpus, discrimination". It now reads the newest stamped files under
+  `training/`, and still runs on failure so a cycle that dies early leaves a
+  handoff from what did finish.
+- Clone the practice repositories 300 commits deep instead of 1, and deepen the
+  ones already on disk. `fixpairs.py` skips a shallow clone, so fix-pair mining
+  had been reporting "0 candidate fix pairs from 41 repositories in 0s" — every
+  repository skipped, every night. Those pairs are the only ground truth in the
+  system Arbiter did not generate itself, so the cost in clone size is worth
+  paying. `train_cycle.sh` now runs `fetch_corpus.sh` every cycle rather than
+  only when the corpus is missing, because that is what catches up a cached
+  clone; the script is idempotent and records the depth it reached.
+- Restored `.arbiter/knowledge.json` from the artifact of the failed run: 27
+  rules with measurements where the committed copy had 15, 55,075 planted faults
+  against 44,000, and the 12 additional rules all previously unmeasured. Human
+  adjudications are 0 in both copies, so nothing a person decided was touched.
+  `training/disagreements.json` came back with it — 317 contested findings where
+  exactly one of two analyzers is wrong.
+
 ### 2026-09-12
 
 - Restructured the documentation. `README.md` is now an overview — what Arbiter

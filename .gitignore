@@ -6,9 +6,19 @@ arbiter-out/
 arbiter-ab/
 build/
 dist/
-training/*/
-training/
+# Per-run training output is regenerated every cycle and would grow the
+# repository without telling a later run anything. What accumulates stays:
+# WORKLIST.md is the nightly handoff to whoever does the judging, and the two
+# JSON files are evidence gathered over time rather than one run's logs.
+#
+# The directory itself must not be ignored. `training/` matched the directory,
+# so the nightly job's `git add -A .arbiter training` exited 1 and threw away
+# 55 minutes of measurement before it could be committed.
+training/*
 !training/.gitkeep
+!training/WORKLIST.md
+!training/fix-pairs.json
+!training/disagreements.json
 
 # Claude Code local settings (Headroom hooks, machine-specific paths)
 .claude/settings.local.json

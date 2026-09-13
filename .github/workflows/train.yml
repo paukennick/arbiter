@@ -47,12 +47,17 @@ jobs:
         with:
           python-version: "3.11"
 
-      # The practice repositories are about a gigabyte and do not change often.
-      # Caching them is the difference between a four-minute job and a
-      # twenty-minute one. The key rotates weekly so the corpus is re-cloned
-      # occasionally rather than drifting years behind.
-      # History is what the fix-pair miner reads. A shallow clone has none, so
-      # the cycle deepens what it can and reports the rest as unavailable.
+      # The practice repositories do not change often, and caching them is the
+      # difference between a four-minute job and a twenty-minute one. The key
+      # includes a hash of fetch_corpus.sh, so changing the list -- or the clone
+      # depth -- abandons the old cache and re-clones rather than inheriting
+      # repositories fetched under the old rules.
+      #
+      # History is what the fix-pair miner reads, and it is the only ground truth
+      # in the system Arbiter did not generate itself. The clones are 300 commits
+      # deep for that reason alone; scanning needs one. That costs cache size, so
+      # if this starts evicting, lower DEPTH in fetch_corpus.sh rather than
+      # removing the cache.
       - name: Cache practice repositories
         uses: actions/cache@v4
         with:
@@ -78,12 +83,20 @@ jobs:
           TRIALS: ${{ github.event.inputs.trials || '20000' }}
         run: ./tools/train_cycle.sh "$TRIALS"
 
+      # The cycle writes WORKLIST.md itself at step 7/9. This is the safety net
+      # for a run that died before reaching it, so it has to read the same files
+      # the cycle produces -- stamped, under training/. It used to read
+      # /tmp/corpus-out/summary.json and /tmp/discriminate.json, which nothing
+      # writes, so every night it replaced the real handoff with one whose first
+      # line said "Incomplete: no results found for corpus, discrimination".
       - name: Work out what to do next
         if: always()
         run: |
+          summary="$(ls -1d training/corpus-*/summary.json 2>/dev/null | tail -1 || true)"
+          discrimination="$(ls -1 training/discriminate-*.json 2>/dev/null | tail -1 || true)"
           python tools/worklist.py \
-            --corpus-summary /tmp/corpus-out/summary.json \
-            --discrimination /tmp/discriminate.json \
+            ${summary:+--corpus-summary "$summary"} \
+            ${discrimination:+--discrimination "$discrimination"} \
             --out training/WORKLIST.md
 
       # Uploaded as well as committed, so a failed run still leaves the

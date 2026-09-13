@@ -39,12 +39,15 @@ if [ -x "$ROOT/tools/install_tools.sh" ]; then
 fi
 
 echo "==> 1/9  practice repositories"
+# Run every cycle rather than only on the first. The script is idempotent -- it
+# prints "have" for a repository already present -- and it is also what deepens
+# a clone made when the depth was smaller. Skipping it left a cached corpus
+# shallow forever, and a shallow corpus is one the fix-pair miner cannot read.
 if [ ! -d "$CORPUS" ] || [ -z "$(ls -A "$CORPUS" 2>/dev/null)" ]; then
   echo "    downloading (first run only, a few minutes)"
-  bash "$ROOT/tools/fetch_corpus.sh" "$CORPUS"
-else
-  echo "    already present: $(ls -1 "$CORPUS" | wc -l) repositories"
 fi
+bash "$ROOT/tools/fetch_corpus.sh" "$CORPUS" | tail -5
+echo "    $(ls -1 "$CORPUS" | wc -l) repositories present"
 
 echo "==> 2/9  running every rule against them"
 python tools/corpus.py --root "$CORPUS" --out "$RESULTS/corpus-$STAMP" \
