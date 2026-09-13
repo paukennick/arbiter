@@ -68,6 +68,29 @@
         "risk_notes": [
           "make_ai.py is vendored OmniEngineering tooling so these changes must be reapplied if a pristine upstream is ever pulled"
         ]
+      },
+      {
+        "id": "REQ-006",
+        "title": "Fix Windows-only crash in adapter timeout kill path",
+        "description": "Adapter._kill_group references signal.SIGKILL unconditionally, which does not exist on Windows, so any adapter timeout raises AttributeError from the cleanup path instead of stopping the analyzer. Windows also lacks os.setsid and os.killpg, so the process-group guarantee the timeout depends on has no implementation there.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          "src/arbiter/adapters.py",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "an adapter timeout on Windows terminates the analyzer and its descendants instead of raising AttributeError",
+          "test_adapter_timeout_kills_the_whole_process_group passes on Windows",
+          "POSIX process-group behaviour is unchanged"
+        ],
+        "validation_required": [
+          "python -m pytest tests/ -q"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md"
+        ],
+        "risk_notes": []
       }
     ],
     "documentation": [
@@ -100,6 +123,36 @@
         "risk_notes": [
           "Measured figures were carried forward from an earlier corpus run and are labelled as such until tools/corpus.py is rerun"
         ]
+      },
+      {
+        "id": "REQ-007",
+        "title": "Record the six landed bundle commits in CHANGELOG and project-context",
+        "description": "Commits 8775017 through 54f9a13 landed from an offline bundle and are on origin/main, but CHANGELOG.md has no entry for any of them and .ai/project-context.md has no section. They change probes, packs, gates, scoring and the CLI surface, which the changelog policy requires to be recorded. Entries must be written from the diffs rather than the commit messages, which were authored by a session with context not available here.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          "CHANGELOG.md",
+          ".ai/project-context.md",
+          "src/arbiter",
+          "tools",
+          "docs",
+          "README.md",
+          "HANDOFF.md"
+        ],
+        "acceptance_criteria": [
+          "every one of the six commits is represented in CHANGELOG.md under a REQ id",
+          "rationale and residual gaps are recorded in .ai/project-context.md",
+          "each claim is verified against the diff rather than the commit message"
+        ],
+        "validation_required": [
+          "python -m pytest tests/ -q",
+          "python omni doctor"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md",
+          ".ai/project-context.md"
+        ],
+        "risk_notes": []
       }
     ],
     "training-evidence": [
