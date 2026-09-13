@@ -386,3 +386,150 @@ unrepresentative target for the suppression rules specifically.
 
 **Still not adjudicated.** The ledger holds 15 rules and zero observations. No
 verdict has been recorded by anyone, and none was recorded here.
+
+## 2026-09-12 — The queue could not name what it was asking about (REQ-014, REQ-015)
+
+**How they surfaced.** By fetching the 41-repository corpus and scanning 36 of
+them. The five held out by `tools/corpus.py` stayed out: adjudication decides a
+rule, and the holdout exists precisely so some repositories are never read while
+deciding one. Spending it on the first batch would not be recoverable.
+
+**What the corpus settled.** Six of the fifteen registered rules can reach the
+twenty-observation line from this sample — `secrets.assigned-credential` (287
+findings across 24 repositories), `supply.unpinned-action` (214/26),
+`drift.broken-doc-link` (193/17), `resource.k8s-no-security-context` (135/7),
+`secrets.private-key` (46/6) and `resource.unencrypted-database` (20/3). Nine
+cannot, and two fired zero times across 36 repositories. This is the answer the
+previous session could not get: scanning Arbiter with itself, the only rules
+reaching twenty were doc-drift and blanket-suppression, and both were largely
+the tool detecting itself.
+
+**REQ-014, and a claim made without checking.** `Location.short()` builds its
+prefix from the Location rather than the Finding, and `doc_drift` set the id on
+the Finding alone, so all 330 drift findings rendered as bare paths. The
+requirement as first written stated that the three sibling probes already did
+this correctly and `doc_drift` was the outlier. That was false, and it was
+written from two matching lines in a grep rather than from measurement. The
+reverse holds: `assurance` sets it at every construction site, while `secrets`
+attributed 0 of 377, `supply_chain` 0 of 1,817 and `resource_policy` 7 of 1,040.
+The registry entry now carries the correction instead of the claim. That is the
+second consecutive session in which the defect was a stated justification rather
+than an oversight — REQ-012 was the same shape.
+
+**REQ-015, and why the renderer and not the probes.** Roughly twenty
+construction sites across eight probes omit the id, and several are repo-level
+or cross-repo where the right value is a judgement, not a substitution. The
+Finding carries the id in all 3,564 cases, so `review.where()` qualifies the
+path from there and both front ends share one helper. Measured afterwards: 120
+of 120 queue lines across the six queues name their repository, checked against
+the real corpus directory names rather than a regex that assumed the line
+format — an earlier measurement in this session was wrong for exactly that
+reason. The probe sites remain wrong, so SARIF, HTML and console output are
+still unqualified. Recorded as residual risk, not closed.
+
+**What the queues are not.** `select()` spreads across distinct files, not
+across repositories or populations, and it shows: k8s-no-security-context draws
+20 of 20 from one repository, unencrypted-database 18 of 20, private-key 16 of
+20. Two queues are almost entirely teaching material, which corpus.py states is
+useless as a false-positive measure — usually right about the file and silent
+about the rule. Twenty adjudications drawn from one repository of one population
+would yield a precision figure for that repository, not for the rule. The
+sampler has no notion of either axis, and that is now the limiting factor on
+queue quality rather than anything about attribution.
+
+**Still not adjudicated.** The ledger holds 15 rules and zero observations. Six
+queues of twenty were generated and no verdict was marked. `knowledge.save()`
+runs only under `--apply`, so this is guaranteed by the code path and not only
+by restraint. The suite went from 315 to 317.
+
+## 2026-09-12 — Attribution at the source (REQ-016)
+
+**Closing what REQ-015 deferred.** The renderer fix qualified queue lines from
+the Finding, which made adjudication possible without waiting on the probes, and
+left SARIF, the HTML report and the console still unqualified. That was recorded
+as residual risk on the requirement and in the changelog rather than quietly
+dropped, which is the only reason it was cheap to pick up again. Eighteen of the
+twenty construction sites in `src/arbiter/probes.py` took the id already in
+scope on the enclosing Finding — a substitution, not a decision.
+
+**The two that were not substitutions.** The `interface` rule for unused IAM
+grants accumulated service names into a set, discarding the site each grant was
+written at, so the finding could cite only the string `iam:` plus a service and
+had to guess a repository: the alphabetically first infrastructure one, which is
+wrong whenever the grant is not in it. It now records a Location exactly as the
+neighbouring collections for reads, provides, ports and SDK calls already did,
+and the finding cites the file. The two `house_rules` path rules compared
+against every path in the scan flattened into a single set. That made them the
+only two sites in the tree that set no repository on the Finding at all, so they
+reported against the `root` default whatever they matched, and it meant one
+repository's LICENSE satisfied a required-path rule for all thirty-six. Both now
+ask the question per repository. This is a behaviour change, not only an
+attribution one, and it is recorded as risk on REQ-016: a forbidden path present
+in three repositories is now three findings, and a required path missing from
+three is now three rather than none.
+
+**What the measurement says.** The same 36-repository corpus, the same four
+probes, before and after: 3,564 findings both times, with the identical
+per-probe distribution — `secrets` 377, `resource_policy` 1,040, `doc_drift`
+330, `supply_chain` 1,817. Unattributed locations went from 3,227 to 0, and no
+finding changed the repository it belongs to. That combination is the point: if
+the totals had moved, the fix would have been changing what is reported rather
+than what it is reported against. A self-scan covers the probes the corpus run
+does not exercise — `quality`, `authored`, `assurance` — at 126 findings, 0
+unattributed. The holdout stayed held out.
+
+**What it does not fix.** The sampler still spreads across files rather than
+repositories or populations, which the previous section named as the limiting
+factor on queue quality. Nothing here touches that. Attribution was never the
+reason two of the six queues are almost entirely teaching material.
+
+**Still not adjudicated.** The ledger holds 15 rules, zero observations and zero
+adjudications, re-verified after this work. The suite went from 317 to 320.
+
+## 2026-09-12 — The sampler was measuring repositories (REQ-017)
+
+**The defect the previous section named.** Attribution was never why two of the
+six queues were nearly useless. `select()` spread within a rule across distinct
+files, and one repository supplies plenty of distinct files, so the spread was
+satisfied without leaving the repository. Measured on the six queues:
+k8s-no-security-context drew 19 of 20 from one repository and all 20 from the
+examples population, unencrypted-database 18 of 20, private-key 16 of 20. A
+queue like that answers whether the rule is right about one repository. The
+ledger has no field for that distinction — it records the verdict against the
+rule — so the error would have been laundered into a precision figure and then
+into the gate.
+
+**The fix, and what it deliberately does not do.** Selection round-robins across
+repositories and keeps file spread as the secondary axis inside each, so a
+repository with thirty findings and one with a single finding are equals on the
+first pass. Population is not an input. That label lives in `tools/corpus.py`,
+and a library that ranks findings for adjudication must not import the test
+harness to do its ranking — the coupling would be backwards, and it would only
+work for repositories the corpus happens to know. Repository spread is the proxy
+the library can compute from what a Finding already carries, which is why
+REQ-016 mattered first.
+
+**Measured on the same corpus, same four probes.** Average distinct repositories
+per queue 6.0 to 12.2; largest single-repository share 64.2% to 30.0%;
+k8s-no-security-context from one population to all three (8 examples, 7
+vulnerable, 5 clean) across 7 repositories rather than 2. Two queues moved
+little and the reason is worth recording: unencrypted-database still draws 18 of
+20 from terragoat, and private-key 9 of 20 from traefik, because only three and
+six repositories in the corpus produce those findings at all. Spread cannot
+exceed the pool. Those two rules need corpus breadth, not a better sampler, and
+the average across six queues would hide that if it were the only number kept.
+
+**Why the old queues were discarded rather than marked.** The six queues on disk
+were drawn by the old sampler. They were entirely unmarked — 120 of 120 lines
+blank, verified before touching them — so nothing human was lost by regenerating
+them. Had they been marked and applied, the skew would have been permanent:
+`record()` refuses to re-adjudicate a fingerprint, so a verdict recorded against
+a badly drawn sample cannot be withdrawn by drawing a better one.
+
+**Still not adjudicated.** The ledger holds 15 rules, zero observations, zero
+adjudications, at version `k:c52cc1b05ee9`. An `--apply` run was requested this
+session and not performed: every mark in every queue was blank, so it would have
+recorded nothing and rewritten the ledger's version for no signal, and the only
+way it could have recorded anything is if the marks had been supplied by the
+assistant. That is the one thing this ledger cannot survive. The suite went from
+320 to 321.

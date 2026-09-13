@@ -20,6 +20,7 @@ from arbiter.inventory import build_inventory, detect_stacks
 from arbiter.policy import apply_suppressions, load_config
 from arbiter.probes import _entropy, _mask
 from arbiter.report import render_html, render_markdown, write_sarif
+from arbiter.review import where
 
 ROOT = Path(__file__).resolve().parents[1]
 LEGACY = ROOT / "fixtures" / "legacy-platform"
@@ -59,6 +60,28 @@ def test_fingerprint_is_repo_scoped():
     a = Finding(rule_id="r", title="t", repo_id="infra", location=Location(path="x.py"))
     b = Finding(rule_id="r", title="t", repo_id="app", location=Location(path="x.py"))
     assert a.id != b.id
+
+
+def test_queue_line_names_the_repository():
+    """`Location.short()` builds its prefix from the Location, which most probes
+    leave blank — 3,227 of 3,564 findings in a 36-repository corpus scan, across
+    secrets, supply_chain and resource_policy alike. The Finding carries the id
+    in every one of those cases. Two corpus repositories each have a `python/`
+    tree, so a bare `python/stepfunctions/README.md` named nothing a reader
+    could open."""
+    blank = Finding(rule_id="r", title="t", repo_id="juice-shop",
+                    location=Location(path="docs/x.md", start_line=7))
+    assert where(blank) == "juice-shop:docs/x.md:7"
+
+    # A Location that already carries the id is left alone, not double-prefixed.
+    both = Finding(rule_id="r", title="t", repo_id="app",
+                   location=Location(path="x.py", start_line=3, repo_id="app"))
+    assert where(both) == "app:x.py:3"
+
+    # Repo-level: there is nothing to point at but the repository itself, and
+    # naming it beats the bare "-" that Location.short() returns.
+    whole = Finding(rule_id="r", title="t", repo_id="infra", location=Location())
+    assert where(whole) == "infra"
 
 
 def test_secret_values_are_masked():
@@ -171,6 +194,17 @@ def test_constant_disagreement_cites_both_repos(system_report):
     repos = {f.location.repo_id} | {r.repo_id for r in f.related}
     assert repos == {"infra", "app"}
     assert "512" in f.description and "1024" in f.description
+
+
+def test_unused_permission_cites_the_grant_it_found(system_report):
+    """The rule collected service names into a set and threw the grant site
+    away, so it could only point at the string `iam:s3` and had to guess a
+    repository — the alphabetically first infrastructure one, which is the
+    wrong one whenever the grant is not in it."""
+    f = next(f for f in system_report.findings if "permission-unused" in f.rule_id)
+    assert f.location.path, "the finding must name the file granting the permission"
+    assert f.location.logical.startswith("iam:")
+    assert f.location.repo_id == f.repo_id != ""
 
 
 # --------------------------------------------------------------------------
@@ -437,6 +471,51 @@ def test_production_key_stays_critical(tmp_path):
     assert found and found[0].severity == "critical"
 
 
+def test_every_finding_names_its_repository_in_the_location(tmp_path):
+    """REQ-014 fixed this for doc_drift and REQ-015 worked around it in the
+    review queue; this is the invariant itself. `Location.short()` builds its
+    `repo:path` prefix from the Location, so a probe that sets the id on the
+    Finding alone renders an unqualified path everywhere the queue is not:
+    SARIF, the HTML report and the console. Measured on a 36-repository corpus
+    scan before the fix, 3,227 of 3,564 findings carried a blank one.
+    """
+    (tmp_path / "src").mkdir()
+    (tmp_path / ".github" / "workflows").mkdir(parents=True)
+    (tmp_path / "src" / "app.py").write_text(
+        'api_key = "Xk39Fj2LmQ8vTz01"\n'
+        + "".join(f"# TODO: item {i}\n" for i in range(6))
+    )
+    (tmp_path / "requirements.txt").write_text("requests\n")
+    (tmp_path / ".github" / "workflows" / "ci.yml").write_text(
+        "on: push\njobs:\n  b:\n    steps:\n      - uses: actions/checkout@v4\n"
+    )
+    (tmp_path / "README.md").write_text("See [design](design.md).\n")
+
+    cfg = dict(load_config(None))
+    found = run_scan([str(tmp_path)], cfg,
+                     only=["secrets", "supply_chain", "doc_drift", "quality"]).active()
+
+    assert len({f.probe for f in found}) >= 3, "need several probes represented"
+    unqualified = [f for f in found if f.location.repo_id != f.repo_id != ""]
+    assert not unqualified, (
+        "these findings do not name their repository in the Location: "
+        + ", ".join(f"{f.rule_id} @ {f.location.path}" for f in unqualified)
+    )
+
+
+def test_house_rule_required_path_is_asked_per_repository(tmp_path):
+    """`file_exists` matched against every path in the scan flattened together,
+    so one repository's LICENSE answered for all of them and the finding had no
+    repository to name — it reported against the `root` default whatever it had
+    matched."""
+    rules = {"rules": [{"id": "needs-license", "type": "file_exists",
+                        "paths": ["LICENSE"]}]}
+    found = _scan_text(tmp_path, "src/a.py", "x = 1\n", ["house_rules"], rules)
+    hits = [f for f in found if f.rule_id == "house/needs-license"]
+    assert len(hits) == 1
+    assert hits[0].location.repo_id == hits[0].repo_id != ""
+
+
 def test_passphrase_examples_are_not_credentials(tmp_path):
     """expressjs/express: `secret: 'keyboard cat'` in its own examples."""
     found = _scan_text(tmp_path, "app.js", "app.use(session({ secret: 'keyboard cat' }))\n", ["secrets"])
@@ -523,6 +602,23 @@ def test_link_into_a_skipped_directory_is_not_broken(tmp_path):
     found = _scan_text(tmp_path, "README.md",
                        "See [the baseline](.arbiter/baseline.json).\n", ["doc_drift"])
     assert not [f for f in found if "broken-doc-link" in f.rule_id]
+
+
+def test_doc_drift_findings_name_their_repository(tmp_path):
+    """`Location.short()` builds its `repo:path` prefix from the Location, not
+    from the Finding. doc_drift set the id on the Finding alone, and the three
+    sibling probes set it on both. Scanning the 36-repository corpus, all 330
+    drift findings rendered as bare paths — `python/stepfunctions/README.md`,
+    when cdk-examples and k8s-examples each have a `python/` tree. A review
+    queue is read by a person, so an unattributable line is an unadjudicable
+    one."""
+    found = _scan_text(tmp_path, "README.md",
+                       "See [design](design.md) and `missing.py`.\n", ["doc_drift"])
+    drift = [f for f in found if f.rule_id.startswith("arbiter/drift.")]
+    assert drift
+    for f in drift:
+        assert f.location.repo_id == f.repo_id != ""
+        assert f.location.short().startswith(f.repo_id + ":")
 
 
 def test_env_vars_only_checked_inside_a_config_section(tmp_path):
@@ -1731,6 +1827,27 @@ def test_review_spreads_across_files_within_a_rule(tmp_path):
                 + [_finding("arbiter/r", f"other{i}.tf") for i in range(3)])
     picked = select(findings, Knowledge(), limit=4)
     assert len({f.location.path for f in picked}) >= 4
+
+
+def test_review_spreads_across_repositories_within_a_rule():
+    """Twenty findings of one rule from one repository measure that repository,
+    not the rule. Drawn from the 36-repository corpus, three of the six queues
+    took 19, 18 and 16 of 20 from a single repository, and one of those was
+    entirely teaching material — which the corpus tooling states is useless as a
+    false-positive measure. File spread alone cannot see this, because one
+    repository supplies plenty of distinct files."""
+    from arbiter.learn import Knowledge
+    from arbiter.review import select
+    findings = ([Finding(rule_id="arbiter/r", title="t", repo_id="loud",
+                         location=Location(path=f"a{i}.tf", start_line=1,
+                                           repo_id="loud"))
+                 for i in range(30)]
+                + [Finding(rule_id="arbiter/r", title="t", repo_id=rid,
+                           location=Location(path="b.tf", start_line=1, repo_id=rid))
+                   for rid in ("quiet1", "quiet2", "quiet3")])
+    picked = select(findings, Knowledge(), limit=6)
+    assert len({f.repo_id for f in picked}) == 4, \
+        "one repository with thirty findings must not crowd out three with one each"
 
 
 def test_review_never_re_asks_an_adjudicated_finding(tmp_path):

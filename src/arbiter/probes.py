@@ -397,7 +397,8 @@ def _credential_finding(f, text: str, offset: int, name: str, value: str,
         confidence="high" if strong else "low",
         repo_id=f.repo_id,
         probe="secrets",
-        location=Location(path=f.path, start_line=_line_of(text, offset)),
+        location=Location(path=f.path, repo_id=f.repo_id,
+                          start_line=_line_of(text, offset)),
         description=(f"High-entropy {where}literal (H={ent:.2f}, {classes} character "
                      f"classes) assigned to a credential-named symbol."),
         remediation="Move the value to a secret manager and inject it at runtime.",
@@ -445,7 +446,8 @@ def probe_secrets(ctx: ProbeContext) -> list[Finding]:
                     confidence=eff_conf,
                     repo_id=f.repo_id,
                     probe="secrets",
-                    location=Location(path=f.path, start_line=_line_of(text, m.start())),
+                    location=Location(path=f.path, repo_id=f.repo_id,
+                                      start_line=_line_of(text, m.start())),
                     description="A credential-shaped literal is present in version-controlled source." + note,
                     remediation="Remove the literal, rotate the credential, and load it from a secret store at runtime.",
                     evidence=f"{suffix}:{_mask(val)}",
@@ -685,7 +687,8 @@ def probe_resource_policy(ctx: ProbeContext) -> list[Finding]:
                         repo_id=res.repo_id, probe="resource_policy",
                         location=Location(path=res.origin.path,
                                           start_line=res.origin.start_line,
-                                          logical=res.address),
+                                          logical=res.address,
+                                          repo_id=res.repo_id),
                         description=(
                             "The plan leaves this value undetermined until apply, so the check "
                             "could not run. It is not a pass — re-evaluate against state after "
@@ -717,6 +720,7 @@ def probe_resource_policy(ctx: ProbeContext) -> list[Finding]:
                     path=res.origin.path,
                     start_line=res.origin.start_line,
                     logical=res.address,
+                    repo_id=res.repo_id,
                 ),
                 description=rule.get("description", ""),
                 remediation=rule.get("remediation", ""),
@@ -809,7 +813,7 @@ def probe_quality(ctx: ProbeContext) -> list[Finding]:
                 title=f"File is {f.lines} lines (limit {max_file})",
                 dimension="quality", severity="low", confidence="high",
                 repo_id=f.repo_id, probe="quality",
-                location=Location(path=f.path, start_line=1),
+                location=Location(path=f.path, start_line=1, repo_id=f.repo_id),
                 description="Long files concentrate change risk and slow review.",
                 remediation="Split along the seams that already exist in the file.",
                 evidence=f"lines={f.lines}",
@@ -825,7 +829,8 @@ def probe_quality(ctx: ProbeContext) -> list[Finding]:
                 title=f"{len(todos)} unresolved TODO/FIXME markers in one file",
                 dimension="quality", severity="low", confidence="medium",
                 repo_id=f.repo_id, probe="quality",
-                location=Location(path=f.path, start_line=_line_of(text, todos[0].start())),
+                location=Location(path=f.path, repo_id=f.repo_id,
+                                  start_line=_line_of(text, todos[0].start())),
                 description="A cluster of deferred work markers usually means an unfinished refactor.",
                 remediation="Convert them to tracked issues or resolve them.",
                 evidence=f"markers={len(todos)}",
@@ -841,7 +846,7 @@ def probe_quality(ctx: ProbeContext) -> list[Finding]:
                 title="No test files found in this repository",
                 dimension="quality", severity="medium", confidence="high",
                 repo_id=repo.id, probe="quality",
-                location=Location(path="."),
+                location=Location(path=".", repo_id=repo.id),
                 description=f"{len(src)} source files and no recognizable tests.",
                 remediation="Add a test directory and cover the highest-risk module first.",
                 evidence=f"source_files={len(src)}",
@@ -873,7 +878,8 @@ def probe_ast_metrics(ctx: ProbeContext) -> list[Finding]:
             continue
         for fn in ts.functions(f.abspath, f.language):
             loc = Location(path=f.path, start_line=fn.start_line,
-                           end_line=fn.end_line, logical=fn.name)
+                           end_line=fn.end_line, logical=fn.name,
+                           repo_id=f.repo_id)
             if fn.lines > max_func:
                 out.append(Finding(
                     rule_id="arbiter/ast.function-too-long",
@@ -949,7 +955,7 @@ def probe_supply_chain(ctx: ProbeContext) -> list[Finding]:
                         # is reported for completeness and scores zero.
                         dimension="supply_chain", severity="info", confidence="high",
                         repo_id=f.repo_id, probe="supply_chain",
-                        location=Location(path=f.path, start_line=i),
+                        location=Location(path=f.path, start_line=i, repo_id=f.repo_id),
                         description="An unpinned requirement makes builds non-reproducible. Note that "
                                     "libraries are expected to declare ranges; this matters for "
                                     "applications and deployment manifests.",
@@ -976,7 +982,8 @@ def probe_supply_chain(ctx: ProbeContext) -> list[Finding]:
                             # ratio of 1.1x, which is no signal at all.
                             dimension="supply_chain", severity="info", confidence="high",
                             repo_id=f.repo_id, probe="supply_chain",
-                            location=Location(path=f.path, logical=f"{section}.{name}"),
+                            location=Location(path=f.path, repo_id=f.repo_id,
+                                              logical=f"{section}.{name}"),
                             description="A caret or tilde range resolves differently over time.",
                             remediation="Pin exact versions and rely on a lockfile plus a bot for upgrades.",
                             evidence=f"{name}@{spec}",
@@ -996,7 +1003,8 @@ def probe_supply_chain(ctx: ProbeContext) -> list[Finding]:
                     # discriminates — 4.3x on Node, 219x on CloudFormation.
                     dimension="supply_chain", severity="low", confidence="high",
                     repo_id=f.repo_id, probe="supply_chain",
-                    location=Location(path=f.path, start_line=_line_of(text, m.start())),
+                    location=Location(path=f.path, repo_id=f.repo_id,
+                                      start_line=_line_of(text, m.start())),
                     description="Tags and branches can be repointed, so the workflow can execute different code tomorrow.",
                     remediation="Pin the action to a full commit SHA.",
                     evidence=f"{action}@{ref}",
@@ -1032,7 +1040,8 @@ def probe_supply_chain(ctx: ProbeContext) -> list[Finding]:
                     severity="high" if checks_out_head else "info",
                     confidence="high" if checks_out_head else "low",
                     repo_id=f.repo_id, probe="supply_chain",
-                    location=Location(path=f.path, start_line=_line_of(text, idx)),
+                    location=Location(path=f.path, repo_id=f.repo_id,
+                                      start_line=_line_of(text, idx)),
                     description=(
                         "The workflow runs with repository secrets in scope and checks out the "
                         "fork's head commit, so untrusted code executes with those secrets."
@@ -1157,7 +1166,12 @@ def probe_doc_drift(ctx: ProbeContext) -> list[Finding]:
                 title=f"Documentation links to `{m.group(1)}`, which does not exist",
                 dimension="drift", severity="medium", confidence="high",
                 repo_id=f.repo_id, probe="doc_drift",
-                location=Location(path=f.path, start_line=_line_of(text, m.start())),
+                # The Location carries the repo as well as the Finding: `short()`
+                # builds its `repo:path` prefix from the Location, so without it a
+                # queue spanning 36 repositories prints a bare
+                # `python/stepfunctions/README.md`, which names no repository at all.
+                location=Location(path=f.path, repo_id=f.repo_id,
+                                  start_line=_line_of(text, m.start())),
                 description="The documentation references a path that is not in the repository.",
                 remediation="Fix the link or restore the file.",
                 evidence=f"link={m.group(1)}",
@@ -1180,7 +1194,8 @@ def probe_doc_drift(ctx: ProbeContext) -> list[Finding]:
                 title=f"Documentation describes `{cand}`, which is not in the repository",
                 dimension="drift", severity="low", confidence="medium",
                 repo_id=f.repo_id, probe="doc_drift",
-                location=Location(path=f.path, start_line=_line_of(text, m.start())),
+                location=Location(path=f.path, repo_id=f.repo_id,
+                                  start_line=_line_of(text, m.start())),
                 description="A file named in prose has no counterpart on disk — usually a rename the docs missed.",
                 remediation="Update the document, or confirm the file was intentionally removed.",
                 evidence=f"path={cand}",
@@ -1214,7 +1229,7 @@ def probe_doc_drift(ctx: ProbeContext) -> list[Finding]:
                         title=f"Documented environment variable `{name}` is never read in code",
                         dimension="drift", severity="low", confidence="low",
                         repo_id=f.repo_id, probe="doc_drift",
-                        location=Location(path=f.path,
+                        location=Location(path=f.path, repo_id=f.repo_id,
                                           start_line=_line_of(text, offset + m.start())),
                         description="A configuration section documents this variable and no source "
                                     "file reads it.",
@@ -1343,7 +1358,7 @@ def probe_interface(ctx: ProbeContext) -> list[Finding]:
     provides: dict[str, dict[str, Location]] = {}
     app_ports: dict[int, Location] = {}
     sdk_services: dict[str, Location] = {}
-    granted_services: set[str] = set()
+    granted_services: dict[str, Location] = {}
 
     for f in ctx.inventory.text_files():
         if f.role in ("generated", "data"):
@@ -1389,7 +1404,15 @@ def probe_interface(ctx: ProbeContext) -> list[Finding]:
                     )
         if is_infra:
             for m in _IAM_ACTION.finditer(text):
-                granted_services.add(m.group(1))
+                # Keep where the grant was written, the way the sibling
+                # collections above do. Only the service name was kept before,
+                # so the finding had nothing to point at but the string
+                # `iam:s3` and had to guess at a repository.
+                granted_services.setdefault(
+                    m.group(1),
+                    Location(path=f.path, start_line=_line_of(text, m.start()),
+                             logical=f"iam:{m.group(1)}", repo_id=f.repo_id),
+                )
 
     # env read by someone, provided by nobody
     for name, per_repo in reads.items():
@@ -1465,15 +1488,19 @@ def probe_interface(ctx: ProbeContext) -> list[Finding]:
                 remediation="Add the required actions to the task or function role, scoped to the resources it touches.",
                 evidence=f"service={svc}", tags=["interface", "iam"],
             ))
-        for svc in sorted(granted_services - set(sdk_services) - {"*"}):
+        for svc in sorted(set(granted_services) - set(sdk_services) - {"*"}):
             if svc in ("logs", "sts", "ecr", "xray", "cloudwatch", "kms", "ec2"):
                 continue  # platform-level grants with no SDK call site
             out.append(Finding(
                 rule_id="arbiter/interface.permission-unused",
                 title=f"IAM grants `{svc}` but no application code calls it",
                 dimension="interface", severity="low", confidence="low",
-                repo_id=sorted(infra_repos)[0] if infra_repos else "root",
-                probe="interface", location=Location(logical=f"iam:{svc}"),
+                # The repository the grant is actually written in, not the
+                # alphabetically first infrastructure repository: with more
+                # than one infra repo in a system that guess named the wrong
+                # one whenever the grant was not in the first.
+                repo_id=granted_services[svc].repo_id or "root",
+                probe="interface", location=granted_services[svc],
                 description="A granted permission with no observed consumer is unused privilege.",
                 remediation="Remove the grant, or confirm it is used by something outside this system.",
                 evidence=f"unused-service={svc}", tags=["interface", "iam", "least-privilege"],
@@ -1495,7 +1522,15 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
     rules = ctx.config.get("rules") or []
     out: list[Finding] = []
     files = ctx.inventory.text_files()
-    all_paths = {f.path for f in ctx.inventory.files}
+    # Paths per repository rather than one flat set. Flattened, the question
+    # asked was "does any repository have this path", so in a multi-repository
+    # scan one repository's LICENSE satisfied the rule for all of them — and
+    # the finding had no repository to name. These two rules were the only
+    # probe sites in the tree that set no repo_id on the Finding at all, and
+    # so reported against the `root` default whatever they had matched.
+    paths_by_repo: dict[str, set[str]] = {}
+    for rec in ctx.inventory.files:
+        paths_by_repo.setdefault(rec.repo_id, set()).add(rec.path)
 
     def matching(glob_pat: str):
         import fnmatch
@@ -1509,12 +1544,15 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
         if rtype == "file_exists":
             for pat in rule.get("paths", []):
                 import fnmatch
-                if not any(fnmatch.fnmatch(p, pat) for p in all_paths):
+                for repo_id, paths in sorted(paths_by_repo.items()):
+                    if any(fnmatch.fnmatch(p, pat) for p in paths):
+                        continue
                     out.append(Finding(
                         rule_id=f"house/{rid}",
                         title=rule.get("title", f"Required path missing: {pat}"),
                         dimension="quality", severity=sev, confidence="high",
-                        probe="house_rules", location=Location(path=pat),
+                        repo_id=repo_id, probe="house_rules",
+                        location=Location(path=pat, repo_id=repo_id),
                         description=rule.get("description", ""),
                         remediation=rule.get("remediation", ""),
                         evidence=f"missing={pat}", tags=["house-rule"],
@@ -1523,13 +1561,16 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
         elif rtype == "file_absent":
             for pat in rule.get("paths", []):
                 import fnmatch
-                for p in sorted(all_paths):
-                    if fnmatch.fnmatch(p, pat):
+                for repo_id, paths in sorted(paths_by_repo.items()):
+                    for p in sorted(paths):
+                        if not fnmatch.fnmatch(p, pat):
+                            continue
                         out.append(Finding(
                             rule_id=f"house/{rid}",
                             title=rule.get("title", f"Forbidden path present: {p}"),
                             dimension="quality", severity=sev, confidence="high",
-                            probe="house_rules", location=Location(path=p),
+                            repo_id=repo_id, probe="house_rules",
+                            location=Location(path=p, repo_id=repo_id),
                             description=rule.get("description", ""),
                             remediation=rule.get("remediation", ""),
                             evidence=f"present={p}", tags=["house-rule"],
@@ -1548,7 +1589,8 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
                             title=rule.get("title", f"Forbidden pattern in {f.path}"),
                             dimension=rule.get("dimension", "quality"), severity=sev, confidence="high",
                             repo_id=f.repo_id, probe="house_rules",
-                            location=Location(path=f.path, start_line=_line_of(text, m.start())),
+                            location=Location(path=f.path, repo_id=f.repo_id,
+                                              start_line=_line_of(text, m.start())),
                             description=rule.get("description", ""),
                             remediation=rule.get("remediation", ""),
                             evidence=m.group(0)[:80], tags=["house-rule"],
@@ -1559,7 +1601,7 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
                         title=rule.get("title", f"Required pattern missing in {f.path}"),
                         dimension=rule.get("dimension", "quality"), severity=sev, confidence="high",
                         repo_id=f.repo_id, probe="house_rules",
-                        location=Location(path=f.path),
+                        location=Location(path=f.path, repo_id=f.repo_id),
                         description=rule.get("description", ""),
                         remediation=rule.get("remediation", ""),
                         evidence="pattern-absent", tags=["house-rule"],
@@ -1589,7 +1631,8 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
                         title=rule.get("title", f"Unresolved reference `{val}`"),
                         dimension="drift", severity=sev, confidence="high",
                         repo_id=f.repo_id, probe="house_rules",
-                        location=Location(path=f.path, start_line=_line_of(text, m.start())),
+                        location=Location(path=f.path, repo_id=f.repo_id,
+                                          start_line=_line_of(text, m.start())),
                         description=rule.get("description", "A pointer in the source does not resolve to any documented anchor."),
                         remediation=rule.get("remediation", "Add the anchor, or correct the pointer."),
                         evidence=f"ref={val}", tags=["house-rule", "reference"],
@@ -1607,7 +1650,7 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
                     title=rule.get("title", f"{metric}={value} exceeds {limit} in {f.path}"),
                     dimension="quality", severity=sev, confidence="high",
                     repo_id=f.repo_id, probe="house_rules",
-                    location=Location(path=f.path),
+                    location=Location(path=f.path, repo_id=f.repo_id),
                     description=rule.get("description", ""),
                     remediation=rule.get("remediation", ""),
                     evidence=f"{metric}={value}", tags=["house-rule"],
@@ -1668,7 +1711,7 @@ def probe_house_rules_ast(ctx: ProbeContext) -> list[Finding]:
                         title=rule.get("title", f"Required structure missing in {f.path}"),
                         dimension=rule.get("dimension", "quality"), severity=sev,
                         confidence="high", repo_id=f.repo_id, probe="house_rules_ast",
-                        location=Location(path=f.path),
+                        location=Location(path=f.path, repo_id=f.repo_id),
                         description=rule.get("description", ""),
                         remediation=rule.get("remediation", ""),
                         evidence=f"query-absent:{rid}", tags=["house-rule", "ast"],
@@ -1683,7 +1726,7 @@ def probe_house_rules_ast(ctx: ProbeContext) -> list[Finding]:
                     dimension=rule.get("dimension", "quality"), severity=sev,
                     confidence="high", repo_id=f.repo_id, probe="house_rules_ast",
                     location=Location(path=f.path, start_line=c["start_line"],
-                                      end_line=c["end_line"]),
+                                      end_line=c["end_line"], repo_id=f.repo_id),
                     description=rule.get("description", ""),
                     remediation=rule.get("remediation", ""),
                     evidence=f"{c['type']}:{snippet}", tags=["house-rule", "ast"],

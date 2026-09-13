@@ -49,7 +49,7 @@ from pathlib import Path
 
 from .core import Finding
 from .learn import MIN_OBSERVATIONS, Knowledge
-from .review import _rule_gap
+from .review import _rule_gap, where
 
 # How much code to show around a finding. Enough to judge, short enough that a
 # phone screen holds it without scrolling past the point.
@@ -85,7 +85,7 @@ def build_payload(findings: list[Finding], knowledge: Knowledge,
             "severity": f.severity,
             "confidence": f.confidence,
             "dimension": f.dimension,
-            "where": f.location.short() or "repository",
+            "where": where(f),
             "line": f.location.start_line or 0,
             "evidence": f.evidence[:200],
             "description": f.description[:600],

@@ -126,6 +126,59 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   reports, correctly — it is documented but genuinely absent. The other 22
   findings are untouched, and `omni doctor` independently confirms them.
   (REQ-013)
+- Gave doc-drift findings a repository in their `Location`. `Location.short()`
+  builds its `repo:path` prefix from the Location rather than the Finding, and
+  `doc_drift` set the id on the Finding only, so all 330 drift findings in a
+  36-repository corpus scan rendered as bare paths. Two of those repositories
+  each contain a python/ tree, so a line naming a README under it identified no
+  repository a reader could open. (Those paths are deliberately not backticked:
+  they belong to another repository, and backticking them here manufactures the
+  very drift finding this entry is about.)
+  (REQ-014)
+- Made the review queue name the repository for every probe, not just for
+  doc-drift. The same defect ran wider than one probe: 3,227 of 3,564 findings
+  in that scan carried a blank `Location.repo_id` — `supply_chain` 0 of 1,817,
+  `secrets` 0 of 377, `resource_policy` 7 of 1,040 — while `assurance` sets it
+  at every construction site. The `Finding` carries the id in all 3,564 cases,
+  so `review.where()` qualifies the path from there and both the markdown and
+  HTML front ends use it, rather than adjudication waiting on some twenty
+  construction sites across eight probes, several of them repo-level or
+  cross-repo and needing judgement rather than a mechanical pass. Those sites
+  are still wrong, so SARIF, HTML and console output remain unqualified.
+  (REQ-015)
+- Named the repository at every probe construction site, closing the residual
+  risk REQ-015 recorded rather than fixed. Eighteen of the twenty sites took the
+  id already in scope on the enclosing finding. Two did not, and they are why
+  the renderer went first. The `interface` rule for unused IAM grants collected
+  service names into a set and discarded where each grant was written, so it
+  could cite only a synthetic `iam:` string and attributed the finding to the
+  alphabetically first infrastructure repository — the wrong one whenever the
+  grant was not in it; it now keeps the grant's location the way the
+  neighbouring collections already did. The two `house_rules` path rules matched
+  against every path in the scan flattened into one set, which left them the
+  only sites in the tree setting no repository on the finding at all, and let
+  one repository's LICENSE answer the rule for every repository; both now ask
+  per repository. Re-measured on the same 36-repository corpus: 3,564 findings
+  before and after, of which 3,227 were unattributed before and none after, and
+  no finding changed repository. (REQ-016)
+- Made the review sampler spread across repositories, not only across files.
+  Within a rule it ordered findings so that distinct files came first, which one
+  repository satisfies on its own: of six queues drawn from the 36-repository
+  corpus, `resource.k8s-no-security-context` took 19 of 20 from a single
+  repository and all 20 from teaching material, which the corpus tooling states
+  is useless as a false-positive measure. Twenty findings from one repository
+  are largely one author, one generator and one set of conventions, so they
+  answer whether the rule is right about that repository while the ledger
+  records the answer as though it were about the rule. Selection now
+  round-robins across repositories and keeps file spread as the secondary axis
+  inside each. Re-measured on the same corpus: average distinct repositories per
+  queue 6.0 to 12.2, largest single-repository share 64.2% to 30.0%, and the
+  k8s-no-security-context queue from one population to all three. Population is
+  deliberately not an input — that label lives in the corpus tooling, and a
+  library that ranks findings must not import the test harness — so repository
+  spread is the proxy. Spread also cannot exceed the pool:
+  `resource.unencrypted-database` still draws 18 of 20 from terragoat, because
+  only three repositories in the corpus produce that finding at all. (REQ-017)
 
 Six commits (`8775017`…`54f9a13`) landed from an offline bundle without
 changelog entries. Recorded here after the fact, written from their diffs.
