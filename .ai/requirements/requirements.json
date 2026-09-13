@@ -2,7 +2,31 @@
   "version": "2.0.0",
   "requirement_id_prefix": "REQ",
   "categories": {
-    "developer-tooling": [],
+    "developer-tooling": [
+      {
+        "id": "REQ-006",
+        "title": "Fix Windows-only crash in adapter timeout kill path",
+        "description": "Adapter._kill_group references signal.SIGKILL unconditionally, which does not exist on Windows, so any adapter timeout raises AttributeError from the cleanup path instead of stopping the analyzer. Windows also lacks os.setsid and os.killpg, so the process-group guarantee the timeout depends on has no implementation there.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          "src/arbiter/adapters.py",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "an adapter timeout on Windows terminates the analyzer and its descendants instead of raising AttributeError",
+          "test_adapter_timeout_kills_the_whole_process_group passes on Windows",
+          "POSIX process-group behaviour is unchanged"
+        ],
+        "validation_required": [
+          "python -m pytest tests/ -q"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md"
+        ],
+        "risk_notes": []
+      }
+    ],
     "documentation": [],
     "training-evidence": [],
     "legal": [
