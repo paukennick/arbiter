@@ -31,6 +31,13 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   the redistribution review that blocks the air-gapped bundle. `NOTICE.md` now
   records every third-party component and whether it is redistributed. The
   `LICENSE` file itself remains outstanding and needs counsel. (REQ-005)
+- Made adapter timeouts stop the analyzer on Windows. `Adapter._kill_group`
+  named `signal.SIGKILL`, which does not exist there, so every timeout raised
+  `AttributeError` out of the cleanup path. Windows also has no `os.killpg`, so
+  signalling the direct child alone left the fanned-out workers running — the
+  exact failure the process-group path exists to prevent. Timeouts now fall back
+  to `taskkill /T /F`, which walks the child tree from the parent PID. POSIX
+  behaviour is unchanged. (REQ-006)
 
 - Adopted the OmniEngineering workspace: `.ai/` source-of-truth scaffold
   (rules, schemas, playbooks, checklists, SWEBOK knowledge pack), the

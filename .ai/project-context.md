@@ -112,3 +112,30 @@ are load-bearing: scan output must belong to the user, since reports are meant
 for accreditation packages and PR comments; and `semgrep` is LGPL-2.1, so the
 air-gapped bundle cannot ship until the redistribution review in L-6 is done.
 Engineering cannot close this one — it needs counsel.
+
+## 2026-09-12 — Adapter timeouts on Windows (REQ-006)
+
+**What changed.** `Adapter._kill_group` delegates to a new `Adapter._kill_tree`
+when `os.killpg` is absent; there it runs `taskkill /T /F /PID`, falling back to
+`proc.kill()` if `taskkill` is unavailable or fails. The POSIX path keeps its
+SIGTERM-then-SIGKILL group signalling unchanged, minus a branch that had become
+unreachable.
+
+**Why not the one-line fix.** The obvious repair is
+`getattr(_signal, "SIGKILL", _signal.SIGTERM)`, and it is wrong. It clears the
+`AttributeError` without delivering what the function promises: Windows has no
+`os.setsid` or `os.killpg` either, so there is no group, and signalling the
+direct child leaves its descendants running. Measured on this machine with the
+same shape as the test — a shell that backgrounds a grandchild and sleeps —
+`proc.kill()` let the grandchild run to completion and write its marker;
+`taskkill /T /F` did not. The one-line version would have converted a crash
+into a passing-looking kill that still orphaned the workers, which is the
+original checkov failure wearing a different hat.
+
+**Residual risk.** `taskkill /T` resolves the tree from the parent PID at kill
+time, so a grandchild already orphaned by an intermediate process that exited
+first is not reachable; a Windows Job object would close that, at the cost of
+`ctypes` plumbing or a new dependency. Not worth it until something demonstrates
+the gap. CI is `ubuntu-latest` only (`.github/workflows/train.yml`, single job,
+no matrix), so this branch is exercised only by developers on Windows — which is
+why a crash on every adapter timeout survived to be found by hand.
