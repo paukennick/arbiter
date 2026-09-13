@@ -17,20 +17,15 @@ Use the maintained context in this order:
 authority for unfinished work; `CHANGELOG.md` and `.ai/project-context.md`
 record completed decisions and their reasons.
 
-## Current completion order
+## Current state
 
-The `req-018-hosted-api` branch contains three related deliverables:
+The hosted HTTPS API (REQ-018), remote CLI (REQ-019), and stdio plus HTTPS MCP
+transports (REQ-010) passed their requirement-specific tests and the full Linux
+completion gate, then closed in that dependency order. Their outcomes are in
+`CHANGELOG.md`, `.ai/project-context.md`, and the requirement archive.
 
-1. **REQ-018** — the shared service layer and hosted HTTPS API. This is the
-   dependency root.
-2. **REQ-019** — the remote CLI that calls the hosted API.
-3. **REQ-010** — stdio and authenticated HTTPS MCP transports over the same
-   service, identity, limit and audit model.
-
-REQ-019 and REQ-010 both depend on REQ-018; neither depends on the other. Close
-them only after the rebased branch passes the requirement-specific tests and
-the full Linux completion gate. REQ-005 remains separate and requires counsel;
-do not represent engineering work as resolving its licensing questions.
+REQ-005 is the only active requirement. It requires counsel; do not represent
+engineering work as resolving its licensing questions.
 
 ## Validation
 

@@ -643,3 +643,14 @@ layer on top, not what keeps the hop private. And the image must
 stay private: running semgrep server-side conveys no copy, which is the whole
 reason hosting escapes L-6, but pushing the image to a public registry would
 convey copies and put those obligations back.
+
+## 2026-09-13 — Hosted surfaces completed (REQ-018, REQ-019, REQ-010)
+
+The hosted API closed first because its service, identity, rate-limit and audit
+layers are the shared base. The remote CLI and authenticated HTTPS MCP transport
+then closed as independent consumers of that base; neither depends on the
+other. The rebased branch passed all 53 requirement-specific tests on Windows
+and all 399 tests in a Linux-native checkout with the `dev`, `api` and `mcp`
+extras installed: 396 passed and 3 skipped. REQ-018, REQ-019 and REQ-010 were
+then archived in that order. REQ-005 remains the only active requirement and
+still belongs to counsel rather than engineering.

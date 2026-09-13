@@ -12,7 +12,9 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   fresh session to the maintained context and requirements registry, records
   REQ-018 as the dependency root for REQ-019 and REQ-010, and leaves REQ-005
   explicitly with counsel instead of claiming adjudication is the project's
-  only blocker. (REQ-010, REQ-018, REQ-019)
+  only blocker. After the rebased implementation passed all 399 Linux tests
+  with the `api` and `mcp` extras installed (396 passed, 3 skipped), the three
+  requirements were archived in dependency order. (REQ-010, REQ-018, REQ-019)
 - Removed the plaintext listener entirely. `--behind-proxy` bound a bare socket
   on loopback and treated `X-Forwarded-Proto: https` as proof the request had
   been secure earlier in its life; that is a header any client can invent and,
