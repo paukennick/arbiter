@@ -8,7 +8,7 @@ network = false
 timeout = 300
 
 [invoke]
-argv = ["gitleaks", "detect", "--no-git", "--no-banner", "--report-format", "json", "--report-path", "/dev/stdout", "-s", "{workdir}"]
+argv = ["gitleaks", "detect", "--no-git", "--no-banner", "--report-format", "json", "--report-path", "-", "-s", "{workdir}"]
 version_argv = ["gitleaks", "version"]
 parse = "json"
 ok_exit = [0, 1]
