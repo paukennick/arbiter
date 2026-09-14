@@ -14,6 +14,13 @@ Arbiter never executes the repository it scans, so no toolchain for the target
 language is required — no `npm install`, no `terraform init`, no importing the
 target's Python.
 
+**Windows note:** the `arbiter` CLI is pure Python and runs the same in
+PowerShell, cmd.exe, or a terminal as it does on Linux or macOS — everything
+under **Install** and **Verify the install** below works as written. The
+`.sh` scripts under `tools/` (`install_tools.sh`, `bootstrap_repo.sh`, and the
+rest) are bash, not PowerShell; run those specific steps from Git Bash
+(installed alongside Git for Windows) or WSL.
+
 ## Install
 
 ```bash

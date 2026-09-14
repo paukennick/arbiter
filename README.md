@@ -92,6 +92,7 @@ arbiter scan ./my-repo
 
 ```bash
 ./tools/install_tools.sh     # optional: the five external analyzers, pinned
+                              # (bash — on Windows use Git Bash or WSL)
 ```
 
 Full installation, optional extras and training setup: **[SETUP.md](SETUP.md)**.

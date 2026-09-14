@@ -6,6 +6,13 @@ repositories. This is the part where it looks at code that matters to you.
 Nothing here needs my sandbox. It runs on your machine, against repositories
 that never leave it.
 
+**A note if you're on Windows:** the `arbiter` CLI itself is pure Python and
+runs the same in PowerShell, cmd.exe, or a terminal — every command below
+works as written. The handful of `.sh` helper scripts (`install_tools.sh`
+below, and a few others under `tools/`) are bash, not PowerShell, so run those
+specific steps from Git Bash (installed alongside Git for Windows) or WSL.
+Nothing else in this walkthrough needs bash.
+
 ---
 
 ## Before you start: what this will and will not tell you
@@ -68,7 +75,7 @@ Run from the root of the repository you want scanned. If you were already
 there for step 1, this is the same directory — otherwise, `cd` there first:
 
 ```bash
-cd /path/to/STEP_App
+cd /path/to/your-repo
 arbiter scan . --out .arbiter/first-run --format json,html,console
 ```
 
@@ -146,9 +153,9 @@ evidence of perfection.
 ## 5. Put it on pull requests
 
 ```bash
-cp examples/pull-request-gate/arbiter.yaml       /path/to/STEP_App/arbiter.yaml
-mkdir -p /path/to/STEP_App/.github/workflows
-cp examples/pull-request-gate/arbiter-pr.yml     /path/to/STEP_App/.github/workflows/
+cp examples/pull-request-gate/arbiter.yaml       /path/to/your-repo/arbiter.yaml
+mkdir -p /path/to/your-repo/.github/workflows
+cp examples/pull-request-gate/arbiter-pr.yml     /path/to/your-repo/.github/workflows/
 ```
 
 Edit one line in the workflow — the `pip install git+https://github.com/OWNER/arbiter.git@main`
@@ -194,7 +201,7 @@ step 3 comes before step 5.
 You do not have to push a workflow to find out what it will say:
 
 ```bash
-cd /path/to/STEP_App
+cd /path/to/your-repo
 git fetch origin main
 arbiter gate . --changed origin/main --baseline .arbiter/baseline.json
 echo "exit code: $?"
@@ -202,19 +209,21 @@ echo "exit code: $?"
 
 ---
 
-## 6. For the migration specifically
+## 6. Comparing two related repositories (system mode)
 
-A migration is two codebases that are supposed to mean the same thing, which is
-the case Arbiter's system mode exists for. Write an `arbiter-system.yaml`:
+If you have two codebases that are supposed to mean the same thing — a
+migration from an old stack to a new one, a rewrite, a service split out of a
+monolith — that is the case Arbiter's system mode exists for. Write an
+`arbiter-system.yaml`:
 
 ```yaml
-system: step
+system: my-system
 repos:
-  - id: legacy
-    path: ../STEP-Migration
+  - id: old
+    path: ../old-repo
     role: source
-  - id: app
-    path: ../STEP_App
+  - id: new
+    path: ../new-repo
     role: target
 ```
 
