@@ -22,8 +22,19 @@
 # measured severities are keyed to check ids that a new version may add to,
 # rename, or drop.
 #
-#   ./tools/install_tools.sh              # everything
-#   ./tools/install_tools.sh checkov      # just one
+# Nothing here is bundled with Arbiter -- each tool is fetched from its own
+# upstream (PyPI or a GitHub release) at install time. Redistributing the
+# binaries themselves is a separate, unresolved question (docs/licensing.md,
+# requirement L-6), so this script stays on the safe side of it: it only ever
+# drives the operator's own install of someone else's tool.
+#
+#   ./tools/install_tools.sh              # everything, no prompts (CI/scripted)
+#   ./tools/install_tools.sh checkov      # just one, no prompt
+#   ./tools/install_tools.sh -y           # everything, skip the confirm prompt
+#
+# Run with no arguments at an interactive terminal and it asks which of the
+# five to install and then asks you to confirm before touching anything.
+# Pass -y/--yes to skip that confirmation (selection by name still works).
 #
 set -uo pipefail
 
@@ -33,10 +44,53 @@ BANDIT_VERSION="${BANDIT_VERSION:-1.9.4}"
 RUFF_VERSION="${RUFF_VERSION:-0.15.11}"
 GITLEAKS_VERSION="${GITLEAKS_VERSION:-8.21.2}"
 
-WANT=("$@")
+TOOL_LICENSES=(
+  "checkov:Apache-2.0"
+  "semgrep:LGPL-2.1"
+  "bandit:Apache-2.0"
+  "ruff:MIT"
+  "gitleaks:MIT"
+)
+
+YES=0
+WANT=()
+for arg in "$@"; do
+  case "$arg" in
+    -y|--yes) YES=1 ;;
+    *) WANT+=("$arg") ;;
+  esac
+done
+
+# No tools named on the command line, run at a real terminal: ask instead of
+# silently defaulting to "all five". A script (CI, another script piping in)
+# has no terminal on stdin/stdout, so it keeps the old no-args-means-everything
+# behaviour and never blocks on a prompt.
+if [ ${#WANT[@]} -eq 0 ] && [ -t 0 ] && [ -t 1 ]; then
+  echo "Which analyzers do you want to install?"
+  for entry in "${TOOL_LICENSES[@]}"; do
+    printf '  %-10s %s\n' "${entry%%:*}" "${entry##*:}"
+  done
+  echo
+  read -r -p "Enter names separated by spaces, or press enter for all: " SEL
+  if [ -n "$SEL" ]; then
+    read -r -a WANT <<< "$SEL"
+  fi
+fi
+
 [ ${#WANT[@]} -eq 0 ] && WANT=(checkov semgrep bandit ruff gitleaks)
 
 wants() { for w in "${WANT[@]}"; do [ "$w" = "$1" ] && return 0; done; return 1; }
+
+if [ "$YES" -eq 0 ] && [ -t 0 ] && [ -t 1 ]; then
+  echo
+  echo "About to install: ${WANT[*]}"
+  echo "Each is fetched from its own upstream (pip or a GitHub release);"
+  echo "nothing is bundled with or redistributed by Arbiter itself."
+  read -r -p "Continue? [Y/n] " CONFIRM
+  case "$CONFIRM" in
+    [nN]*) echo "Aborted -- nothing installed."; exit 0 ;;
+  esac
+fi
 
 PIP_FLAGS=""
 # Debian's externally-managed marker refuses a plain pip install. In a
