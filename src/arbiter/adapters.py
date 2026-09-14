@@ -126,7 +126,9 @@ class Adapter:
         if not self.version_argv:
             return ""
         try:
-            r = subprocess.run(self.version_argv, capture_output=True, text=True, timeout=20)
+            version_argv = list(self.version_argv)
+            version_argv[0] = shutil.which(version_argv[0]) or version_argv[0]
+            r = subprocess.run(version_argv, capture_output=True, text=True, timeout=20)
             return (r.stdout or r.stderr).strip().split("\n")[0][:60]
         except Exception:
             return ""
@@ -145,6 +147,15 @@ class Adapter:
         what makes the timeout mean what it says.
         """
         argv = [a.replace("{workdir}", workdir) for a in self.argv]
+        if argv:
+            # On Windows, Popen(shell=False) calls CreateProcess directly,
+            # which -- unlike cmd.exe -- does not search PATHEXT for a bare
+            # name. A tool whose console-script entry point is a .cmd/.bat
+            # shim (checkov) resolves fine via shutil.which() in
+            # missing_binaries() but then fails every invocation with
+            # WinError 2. Resolving to the full, extensioned path here makes
+            # invocation match the availability check.
+            argv[0] = shutil.which(argv[0]) or argv[0]
         cwd = self.cwd.replace("{workdir}", workdir) if self.cwd else None
         env = dict(os.environ)
         env.setdefault("PYTHONIOENCODING", "utf-8")
