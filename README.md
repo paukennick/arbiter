@@ -97,6 +97,10 @@ arbiter scan ./my-repo
 
 Full installation, optional extras and training setup: **[SETUP.md](SETUP.md)**.
 
+Pointing this at a repository of your own, rather than the examples above?
+**[RUNNING-ON-YOUR-OWN-CODE.md](RUNNING-ON-YOUR-OWN-CODE.md)** walks through
+install, first scan, baseline and calibration end to end.
+
 ## Commands
 
 ```bash
@@ -200,6 +204,7 @@ enumerates, and any change that regresses on one of them fails the suite.
 | Document | Contents |
 |---|---|
 | [SETUP.md](SETUP.md) | Installation, optional extras, enabling the training loop |
+| [RUNNING-ON-YOUR-OWN-CODE.md](RUNNING-ON-YOUR-OWN-CODE.md) | Start here to point Arbiter at your own repository |
 | [docs/architecture.md](docs/architecture.md) | Pipeline, module layout, fingerprinting, scoring |
 | [docs/cli.md](docs/cli.md) | Full command reference, formats, exit codes |
 | [docs/configuration.md](docs/configuration.md) | `arbiter.yaml`, profiles, gating, suppressions, house rules |

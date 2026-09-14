@@ -6,6 +6,13 @@ repositories. This is the part where it looks at code that matters to you.
 Nothing here needs my sandbox. It runs on your machine, against repositories
 that never leave it.
 
+**A note on licensing:** `LICENSE` reserves all rights and grants none — that's
+deliberate, the operative terms are still being drafted (tracked as REQ-005 in
+[docs/licensing.md](docs/licensing.md)). If you got a link to this repository
+from me, you have my go-ahead to run it against your own code; that's the
+actual, current position while the formal grant is unsettled, not just a gap
+in the paperwork.
+
 **A note if you're on Windows:** the `arbiter` CLI itself is pure Python and
 runs the same in PowerShell, cmd.exe, or a terminal — every command below
 works as written. The handful of `.sh` helper scripts (`install_tools.sh`
@@ -289,6 +296,11 @@ coverage figure — that is a machine-checked invariant, CI-6.
 ---
 
 ## What to send back
+
+File it as a GitHub issue on this repository — that's the channel
+`CONTRIBUTING.md` sets up for exactly this: defect reports, reproductions and
+doc corrections. Send code snippets or a description directly to me instead of
+attaching a patch; `CONTRIBUTING.md` explains why.
 
 If you want the next session to be useful, the three most valuable things are:
 
