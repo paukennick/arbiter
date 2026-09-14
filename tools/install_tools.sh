@@ -119,15 +119,18 @@ wants semgrep && pip_install semgrep "semgrep==${SEMGREP_VERSION}"
 wants bandit  && pip_install bandit  "bandit==${BANDIT_VERSION}"
 wants ruff    && pip_install ruff    "ruff==${RUFF_VERSION}"
 
-# gitleaks ships as a release binary rather than a package.
+# gitleaks ships as a release binary rather than a package. Windows/Git Bash
+# (MINGW*/MSYS*) gets its own branch: the release asset there is a .zip
+# containing gitleaks.exe, not a .tar.gz containing gitleaks.
 if wants gitleaks; then
   if command -v gitleaks >/dev/null 2>&1; then
     printf '  have   %-10s %s\n' gitleaks "$(gitleaks version 2>&1 | head -1)"
   else
     case "$(uname -s)" in
-      Linux)  OS=linux ;;
-      Darwin) OS=darwin ;;
-      *)      OS="" ;;
+      Linux)                 OS=linux ;;
+      Darwin)                OS=darwin ;;
+      MINGW*|MSYS*|CYGWIN*)  OS=windows ;;
+      *)                     OS="" ;;
     esac
     case "$(uname -m)" in
       x86_64|amd64) ARCH=x64 ;;
@@ -136,17 +139,33 @@ if wants gitleaks; then
     esac
     if [ -z "$OS" ] || [ -z "$ARCH" ]; then
       printf '  MISSED %-10s no release build for %s/%s\n' gitleaks "$(uname -s)" "$(uname -m)"
+    elif [ "$OS" = "windows" ] && ! command -v unzip >/dev/null 2>&1; then
+      printf '  MISSED %-10s windows build needs unzip, which is not on PATH\n' gitleaks
     else
-      URL="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_${OS}_${ARCH}.tar.gz"
       TMP="$(mktemp -d)"
-      if curl -sSL --fail --max-time 120 "$URL" -o "$TMP/gl.tgz" 2>/dev/null \
-         && tar -xzf "$TMP/gl.tgz" -C "$TMP" gitleaks 2>/dev/null; then
+      FETCHED=0
+      if [ "$OS" = "windows" ]; then
+        BIN=gitleaks.exe
+        URL="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_${OS}_${ARCH}.zip"
+        if curl -sSL --fail --max-time 120 "$URL" -o "$TMP/gl.zip" 2>/dev/null \
+           && unzip -oq "$TMP/gl.zip" gitleaks.exe -d "$TMP" 2>/dev/null; then
+          FETCHED=1
+        fi
+      else
+        BIN=gitleaks
+        URL="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_${OS}_${ARCH}.tar.gz"
+        if curl -sSL --fail --max-time 120 "$URL" -o "$TMP/gl.tgz" 2>/dev/null \
+           && tar -xzf "$TMP/gl.tgz" -C "$TMP" gitleaks 2>/dev/null; then
+          FETCHED=1
+        fi
+      fi
+      if [ "$FETCHED" -eq 1 ]; then
         DEST="${GITLEAKS_DEST:-}"
         if [ -z "$DEST" ]; then
-          if [ -w /usr/local/bin ]; then DEST=/usr/local/bin; else DEST="$HOME/.local/bin"; fi
+          if [ "$OS" != "windows" ] && [ -w /usr/local/bin ]; then DEST=/usr/local/bin; else DEST="$HOME/.local/bin"; fi
         fi
         mkdir -p "$DEST"
-        if install -m 0755 "$TMP/gitleaks" "$DEST/gitleaks" 2>/dev/null; then
+        if install -m 0755 "$TMP/$BIN" "$DEST/$BIN" 2>/dev/null; then
           printf '  got    %-10s v%s -> %s\n' gitleaks "$GITLEAKS_VERSION" "$DEST"
           case ":$PATH:" in
             *":$DEST:"*) ;;
