@@ -24,6 +24,33 @@ recording which checks support each assertion and which abstained.
 
 ---
 
+## Why Arbiter
+
+Every scanner finds things. That was never the gap. The gap is what happens
+next: a clean report from almost any tool looks identical whether it checked
+everything and found nothing, or skipped half the repository and never said
+so. A missing binary, an unconfigured rule, a stack the tool didn't
+recognize — all of it quietly disappears into the same green result as a
+genuine pass.
+
+That distinction sounds small, and it is the entire reason this exists. A
+report that gets used for something that matters — a security review, a
+compliance package, a decision to ship — has to say "checked, and clean" in a
+way that is visibly different from "could not check this part." Arbiter's
+premise is not "find more bugs than the other scanner." It is that a tool
+should never assert something it did not verify, and the gap between
+verified and unverified should be visible in every output, not buried in a
+log nobody reads.
+
+So coverage is a first-class number, not a footnote: every probe that could
+not run records why, the figure it produces is a real denominator over what
+was actually read, and the overall grade is withheld outright — rather than
+estimated or extrapolated — when coverage falls too low. That makes Arbiter a
+more conservative tool than one that always hands back a grade. It's meant
+to be.
+
+---
+
 ## Principles
 
 1. **Coverage is reported, never assumed.** A probe that could not run is
