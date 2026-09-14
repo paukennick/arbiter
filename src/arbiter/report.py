@@ -78,6 +78,37 @@ def counts_by_severity(findings: list[Finding]) -> dict[str, int]:
     return out
 
 
+def _bluf_lines(report: Report) -> list[str]:
+    """What this report can and cannot claim, worst news first.
+
+    Meant to sit above the findings table, not below it: a reader who never
+    scrolls past the top should still learn the scan was partial, the grade
+    is withheld, checks were skipped, or findings carry an unverified,
+    doc-sourced scope note -- before seeing a clean-looking table that could
+    otherwise read as more complete than it is.
+    """
+    lines: list[str] = []
+    sc = report.scorecard
+    ss = report.scan_scope or {}
+    if ss.get("mode") == "partial":
+        lines.append(
+            f"Partial scan -- read {ss.get('fraction_read', 0):.0%} of lines "
+            f"({ss.get('basis', 'changed files only')}); checks that read across files did not run."
+        )
+    if sc.withheld:
+        lines.append(f"Grade withheld -- {sc.withheld_reason}")
+    skipped = [p for p in report.probes if p.status != "ran"]
+    if skipped:
+        lines.append(f"{len(skipped)} probe(s) not assessed: {', '.join(p.name for p in skipped)}.")
+    noted = sum(1 for f in report.active() if f.scope_note)
+    if noted:
+        lines.append(
+            f"{noted} finding(s) below carry a scope note from this repo's own docs, "
+            "marked unverified -- a doc's claim, not a check that ran."
+        )
+    return lines
+
+
 # ---------------------------------------------------------------------------
 
 def write_json(report: Report, path: str) -> None:
@@ -120,6 +151,8 @@ def write_sarif(report: Report, path: str) -> None:
                 "confidence": f.confidence,
                 "repo": f.repo_id,
                 "status": f.status,
+                "remediation": _remediation_text(f),
+                "scope_note": f.scope_note,
             },
         })
     doc = {
@@ -138,6 +171,7 @@ def write_sarif(report: Report, path: str) -> None:
                 "properties": {
                     "profile": report.profile,
                     "coverage": report.scorecard.coverage,
+                    "bluf": _bluf_lines(report),
                     "skipped_probes": [
                         {"name": p.name, "reason": p.reason}
                         for p in report.probes if p.status != "ran"
@@ -264,24 +298,41 @@ def render_markdown(report: Report) -> str:
     L.append(f"{verdict} · profile `{report.profile}` · {len(report.repos)} repo(s) · "
              f"{sum(r.loc for r in report.repos):,} lines · {report.duration_s:.1f}s")
     L.append("")
-    if sc.withheld:
-        L.append(f"> **Grade withheld.** {sc.withheld_reason}")
-    else:
+
+    bluf = _bluf_lines(report)
+    if bluf:
+        L.append("> **Read first**")
+        for line in bluf:
+            L.append(f"> - {line}")
+        L.append("")
+
+    if not sc.withheld:
         L.append(f"**Overall {sc.overall}/100** at {sc.coverage:.0%} coverage")
-    L.append("")
+        L.append("")
     L.append("| " + " | ".join(s.capitalize() for s in SEV_ORDER) + " |")
     L.append("|" + "---|" * len(SEV_ORDER))
     L.append("| " + " | ".join(str(counts[s]) for s in SEV_ORDER) + " |")
     L.append("")
 
     if sc.dimensions:
+        gaps: dict[str, list[str]] = defaultdict(list)
+        for p in report.probes:
+            if p.status == "ran":
+                continue
+            for d_name in p.dimensions:
+                gaps[d_name].append(f"{p.name}: {p.reason}" if p.reason else p.name)
+
         L.append("## Dimensions")
         L.append("")
-        L.append("| Dimension | Score | Coverage | Findings |")
-        L.append("|---|---|---|---|")
+        L.append("| Dimension | Score | Coverage | Checks | Findings |")
+        L.append("|---|---|---|---|---|")
         for name, d in sorted(sc.dimensions.items()):
-            L.append(f"| {name} | {d.score} | {d.coverage:.0%} | {d.findings} |")
+            L.append(f"| {name} | {d.score} | {d.coverage:.0%} | {d.checks_run}/{d.checks_applicable} | {d.findings} |")
         L.append("")
+        why_lines = [f"**{name}**: {'; '.join(gaps[name])}" for name in sorted(sc.dimensions) if gaps.get(name)]
+        if why_lines:
+            L.append("Why checks didn't run:  \n" + "  \n".join(why_lines))
+            L.append("")
         legend = [f"**{name}** — {DIMENSION_DESC[name]}"
                   for name in sorted(sc.dimensions) if name in DIMENSION_DESC]
         if legend:
@@ -446,14 +497,31 @@ def render_html(report: Report) -> str:
         return "\n".join(out) or "<tr><td colspan='5' class='muted'>No active findings.</td></tr>"
 
     def rows_dims() -> str:
+        # Checks_run/checks_applicable is a gap with no reason attached to
+        # it in the row itself -- "compliance 28/148" doesn't say why the
+        # other 120 didn't run. The probes that declared this dimension and
+        # didn't run (skipped or errored) are why; show them right here
+        # instead of making the reader hunt for the Probe outcomes table.
+        gaps: dict[str, list[str]] = defaultdict(list)
+        for p in report.probes:
+            if p.status == "ran":
+                continue
+            for d_name in p.dimensions:
+                gaps[d_name].append(f"{p.name}: {p.reason}" if p.reason else p.name)
+
         out = []
         for name, d in sorted(sc.dimensions.items()):
             desc = DIMENSION_DESC.get(name, "")
+            why = gaps.get(name) or []
+            why_html = (
+                "<br><span class='muted' style='font-size:11px'>" + e("; ".join(why)) + "</span>"
+                if why else ""
+            )
             out.append(
                 f"<tr><td title='{e(desc)}'>{e(name)}</td><td class='mono'>{d.score}</td>"
                 f"<td><div class='bar'><i style='width:{d.coverage*100:.0f}%'></i></div>"
                 f"<span class='mono muted'>{d.coverage:.0%}</span></td>"
-                f"<td class='mono'>{d.checks_run}/{d.checks_applicable}</td>"
+                f"<td class='mono'>{d.checks_run}/{d.checks_applicable}{why_html}</td>"
                 f"<td class='mono'>{d.findings}</td></tr>"
             )
         return "\n".join(out)
@@ -482,6 +550,13 @@ def render_html(report: Report) -> str:
     gate = report.gate or {}
     gate_cls = "pass" if gate.get("passed") else "fail"
     gate_txt = "Gate passed" if gate.get("passed") else "Gate failed — " + e("; ".join(gate.get("reasons", [])))
+    # The withheld message already has its own prominent banner below, so it
+    # is not repeated here.
+    bluf = [line for line in _bluf_lines(report) if not line.startswith("Grade withheld")]
+    bluf_html = (
+        "<div class='banner'><b>Read first</b><ul style='margin:6px 0 0 18px'>"
+        + "".join(f"<li>{e(line)}</li>" for line in bluf) + "</ul></div>"
+    ) if bluf else ""
     grade = (
         f"<div class='banner'><b>Grade withheld.</b> {e(sc.withheld_reason)}</div>"
         if sc.withheld else
