@@ -262,6 +262,7 @@ class Adapter:
     def to_findings(self, rows: list[Any], repo_id: str, workdir: str) -> list[Finding]:
         m = self.mapping
         sev_table = {str(k).lower(): v for k, v in (m.get("severity_table") or {}).items()}
+        remediation_table = {str(k): v for k, v in (m.get("remediation_table") or {}).items()}
         out: list[Finding] = []
         for row in rows:
             rule = str(dig(row, m.get("rule_id", ""), "") or "unknown")
@@ -285,11 +286,16 @@ class Adapter:
                 sev = sev_table.get(raw_sev, m.get("severity_default", "medium"))
             logical = str(dig(row, m.get("logical", ""), "") or "")
             desc = str(dig(row, m.get("description", ""), "") or "")
-            remediation = str(dig(row, m.get("remediation", ""), "") or "").strip()
-            if remediation and m.get("remediation_format"):
-                remediation = m["remediation_format"].format(value=remediation)
-            elif remediation.startswith(("http://", "https://")):
-                remediation = f"See {self.name}'s guidance: {remediation}"
+            # A curated, per-rule fix (remediation_table) beats a raw dug
+            # field: "see the tool's docs" is not a fix, and a specific rule
+            # id maps to one well-known mitigation, not a URL to go read.
+            remediation = remediation_table.get(rule, "")
+            if not remediation:
+                remediation = str(dig(row, m.get("remediation", ""), "") or "").strip()
+                if remediation and m.get("remediation_format"):
+                    remediation = m["remediation_format"].format(value=remediation)
+                elif remediation.startswith(("http://", "https://")):
+                    remediation = f"See {self.name}'s guidance: {remediation}"
             if not remediation:
                 remediation = (m.get("remediation_default", "") or "").format(rule_id=rule)
             out.append(Finding(
