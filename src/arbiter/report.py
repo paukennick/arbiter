@@ -106,6 +106,12 @@ def _bluf_lines(report: Report) -> list[str]:
             f"{noted} finding(s) below carry a scope note from this repo's own docs, "
             "marked unverified -- a doc's claim, not a check that ran."
         )
+    no_fix = sum(1 for f in report.active() if f.remediation_source == "default")
+    if no_fix:
+        lines.append(
+            f"{no_fix} finding(s) below have no rule-specific remediation -- "
+            "neither a curated fix nor anything from the tool itself was available for that rule."
+        )
     return lines
 
 
@@ -152,6 +158,7 @@ def write_sarif(report: Report, path: str) -> None:
                 "repo": f.repo_id,
                 "status": f.status,
                 "remediation": _remediation_text(f),
+                "remediation_source": f.remediation_source,
                 "scope_note": f.scope_note,
             },
         })

@@ -259,13 +259,23 @@ class Adapter:
                 rows.extend(select(element, expr))
         return rows
 
-    def _dig_remediation(self, row: Any, m: dict, field_key: str, format_key: str) -> str:
+    def _dig_remediation(self, row: Any, m: dict, field_key: str, format_key: str) -> tuple[str, str]:
+        """Returns (text, source). source is "link" whenever the dug value is
+        itself a URL -- a pointer elsewhere, however it's worded -- and
+        "field" for an inline value (an actual action or code, not a
+        pointer). Judged by the value's shape, not by which config key
+        supplied it, so a custom format string around a URL still reads as
+        a link rather than masquerading as tool-provided fix text.
+        """
         value = str(dig(row, m.get(field_key, ""), "") or "").strip()
-        if value and m.get(format_key):
-            return m[format_key].format(value=value)
-        if value.startswith(("http://", "https://")):
-            return f"See {self.name}'s guidance: {value}"
-        return value
+        if not value:
+            return "", ""
+        source = "link" if value.startswith(("http://", "https://")) else "field"
+        if m.get(format_key):
+            return m[format_key].format(value=value), source
+        if source == "link":
+            return f"See {self.name}'s guidance: {value}", source
+        return value, source
 
     def to_findings(self, rows: list[Any], repo_id: str, workdir: str) -> list[Finding]:
         m = self.mapping
@@ -298,17 +308,20 @@ class Adapter:
             # field: "see the tool's docs" is not a fix, and a specific rule
             # id maps to one well-known mitigation, not a URL to go read.
             remediation = remediation_table.get(rule, "")
+            remediation_source = "table" if remediation else ""
             if not remediation:
-                remediation = self._dig_remediation(row, m, "remediation", "remediation_format")
+                remediation, remediation_source = self._dig_remediation(
+                    row, m, "remediation", "remediation_format")
             # Some tools (ruff, semgrep) put an actual tool-generated fix in
             # one field and a docs link in another. Only fall back to the
             # link -- still labelled as a link, not presented as a fix --
             # when the primary field has nothing.
             if not remediation and m.get("remediation_secondary"):
-                remediation = self._dig_remediation(
+                remediation, remediation_source = self._dig_remediation(
                     row, m, "remediation_secondary", "remediation_secondary_format")
             if not remediation:
                 remediation = (m.get("remediation_default", "") or "").format(rule_id=rule)
+                remediation_source = "default"
             out.append(Finding(
                 rule_id=f"{self.name}/{rule}",
                 title=title[:200],
@@ -320,6 +333,7 @@ class Adapter:
                 location=Location(path=path, start_line=line, logical=logical),
                 description=desc[:1000],
                 remediation=remediation[:500],
+                remediation_source=remediation_source,
                 evidence=f"{rule}@{path}:{logical}" if logical else f"{rule}@{path}",
                 tags=["external-tool", self.name],
             ))
