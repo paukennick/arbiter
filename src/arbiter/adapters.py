@@ -259,6 +259,14 @@ class Adapter:
                 rows.extend(select(element, expr))
         return rows
 
+    def _dig_remediation(self, row: Any, m: dict, field_key: str, format_key: str) -> str:
+        value = str(dig(row, m.get(field_key, ""), "") or "").strip()
+        if value and m.get(format_key):
+            return m[format_key].format(value=value)
+        if value.startswith(("http://", "https://")):
+            return f"See {self.name}'s guidance: {value}"
+        return value
+
     def to_findings(self, rows: list[Any], repo_id: str, workdir: str) -> list[Finding]:
         m = self.mapping
         sev_table = {str(k).lower(): v for k, v in (m.get("severity_table") or {}).items()}
@@ -291,11 +299,14 @@ class Adapter:
             # id maps to one well-known mitigation, not a URL to go read.
             remediation = remediation_table.get(rule, "")
             if not remediation:
-                remediation = str(dig(row, m.get("remediation", ""), "") or "").strip()
-                if remediation and m.get("remediation_format"):
-                    remediation = m["remediation_format"].format(value=remediation)
-                elif remediation.startswith(("http://", "https://")):
-                    remediation = f"See {self.name}'s guidance: {remediation}"
+                remediation = self._dig_remediation(row, m, "remediation", "remediation_format")
+            # Some tools (ruff, semgrep) put an actual tool-generated fix in
+            # one field and a docs link in another. Only fall back to the
+            # link -- still labelled as a link, not presented as a fix --
+            # when the primary field has nothing.
+            if not remediation and m.get("remediation_secondary"):
+                remediation = self._dig_remediation(
+                    row, m, "remediation_secondary", "remediation_secondary_format")
             if not remediation:
                 remediation = (m.get("remediation_default", "") or "").format(rule_id=rule)
             out.append(Finding(
