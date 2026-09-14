@@ -24,11 +24,30 @@ amount of tuning I can do against public repositories.
 
 ## 1. Install
 
+If you're starting fresh, with no repository open yet:
+
 ```bash
 git clone <your arbiter repo>
 cd arbiter
 pip install -e .
 ```
+
+If you're already working from inside the repository you want scanned —
+this session's working directory is the target, not a separate clone of
+Arbiter — skip the clone and just get `arbiter` on the path instead:
+
+```bash
+pip install git+<your arbiter repo>@main
+```
+
+or, if you have a local checkout of Arbiter elsewhere on the same machine:
+
+```bash
+pip install -e /path/to/arbiter
+```
+
+Either way, stay where you are. Step 2 runs in the repository you're already
+in, not in Arbiter's own.
 
 Optional, and worth doing once:
 
@@ -36,12 +55,17 @@ Optional, and worth doing once:
 ./tools/install_tools.sh      # five external analyzers, pinned versions
 ```
 
-They are optional because Arbiter reports what it could not run. Without them
+That script lives in Arbiter's own repo, so run it from there (or point it
+at a local checkout) if you took the second path above. It's optional either
+way, because Arbiter reports what it could not run — without the analyzers
 the coverage figure is lower and nothing pretends otherwise.
 
 ---
 
 ## 2. First full scan
+
+Run from the root of the repository you want scanned. If you were already
+there for step 1, this is the same directory — otherwise, `cd` there first:
 
 ```bash
 cd /path/to/STEP_App
