@@ -1,0 +1,39 @@
+# Pull request check.
+#
+# Runs the fast, deterministic half of verification from HANDOFF.md on every
+# pull request: the test suite and the claim-integrity check. Both are
+# exhaustive/unit-level and finish in well under a minute; the slow,
+# corpus-driven half (injection trials, discrimination, external-tool
+# calibration) already runs nightly in train.yml and has no business gating
+# a PR.
+
+name: pr-check
+
+on:
+  pull_request:
+
+concurrency:
+  group: pr-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Tests
+        run: python -m pytest -q
+
+      - name: Claim invariants
+        run: python tools/integrity.py
