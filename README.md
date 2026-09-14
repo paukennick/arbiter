@@ -49,6 +49,14 @@ estimated or extrapolated — when coverage falls too low. That makes Arbiter a
 more conservative tool than one that always hands back a grade. It's meant
 to be.
 
+The same discipline applies to the fix a finding hands back, not just the
+finding itself. Every finding's remediation is labelled with where it came
+from — a maintained, rule-specific fix; a fix pulled straight from the tool's
+own output that run; a bare reference link; or nothing rule-specific at all —
+so "see the docs" never gets to read the same as an actual, actionable fix,
+and a report can say honestly how much of its advice is real guidance versus
+a shrug.
+
 ---
 
 ## Principles
