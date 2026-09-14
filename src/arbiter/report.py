@@ -305,6 +305,8 @@ def render_markdown(report: Report) -> str:
                     if f.description:
                         L.append(f"  \n  {f.description}")
                     L.append(f"  \n  Fix: {_remediation_text(f)}")
+                    if f.scope_note:
+                        L.append(f"  \n  ⚠ {f.scope_note}")
                     continue
 
                 files = {m.location.path for m in members}
@@ -318,6 +320,9 @@ def render_markdown(report: Report) -> str:
                     f"  `{f.rule_id}`  \n  {loc_text}"
                 )
                 L.append(f"  \n  Fix: {' / '.join(remediations)}")
+                scope_notes = dict.fromkeys(m.scope_note for m in members if m.scope_note)
+                if scope_notes:
+                    L.append(f"  \n  ⚠ {' / '.join(scope_notes)}")
             L.append("")
 
     skipped = [p for p in report.probes if p.status != "ran"]
@@ -409,10 +414,11 @@ def render_html(report: Report) -> str:
                         ", ".join(r.short() for r in f.related)
                     ) + "</span>"
                 fix = f"<br><span class='muted'>Fix: {e(_remediation_text(f))}</span>"
+                scope = f"<br><span class='muted'>&#9888; {e(f.scope_note)}</span>" if f.scope_note else ""
                 out.append(
                     f"<tr><td><span class='pill s-{f.severity}'>{f.severity}</span></td>"
                     f"<td>{e(f.title)}<br><span class='muted mono'>{e(f.rule_id)} · {e(f.id)}"
-                    f"{'' if f.confidence == 'high' else ' · ' + f.confidence + ' confidence'}</span>{fix}</td>"
+                    f"{'' if f.confidence == 'high' else ' · ' + f.confidence + ' confidence'}</span>{fix}{scope}</td>"
                     f"<td class='mono'>{e(f.repo_id)}</td>"
                     f"<td class='mono'>{loc_cell(f)}{related}</td>"
                     f"<td class='mono'>{e(f.dimension)}</td></tr>"
@@ -423,6 +429,8 @@ def render_html(report: Report) -> str:
             repo_ids = dict.fromkeys(m.repo_id for m in members)
             remediations = dict.fromkeys(_remediation_text(m) for m in members)
             fix = f"<br><span class='muted'>Fix: {e(' / '.join(remediations))}</span>"
+            scope_notes = dict.fromkeys(m.scope_note for m in members if m.scope_note)
+            scope = f"<br><span class='muted'>&#9888; {e(' / '.join(scope_notes))}</span>" if scope_notes else ""
             locs = [f"{loc_cell(m)} <span class='muted'>({e(m.repo_id)})</span>" for m in members]
             loc_html = "<br>".join(locs[:GROUP_LOCATION_CAP])
             if len(locs) > GROUP_LOCATION_CAP:
@@ -430,7 +438,7 @@ def render_html(report: Report) -> str:
             out.append(
                 f"<tr><td><span class='pill s-{f.severity}'>{f.severity}</span></td>"
                 f"<td>{e(f.title)} <span class='muted'>(×{len(members)} across {len(files)} file(s))</span>"
-                f"<br><span class='muted mono'>{e(f.rule_id)}</span>{fix}</td>"
+                f"<br><span class='muted mono'>{e(f.rule_id)}</span>{fix}{scope}</td>"
                 f"<td class='mono'>{e(', '.join(repo_ids))}</td>"
                 f"<td class='mono'>{loc_html}</td>"
                 f"<td class='mono'>{e(f.dimension)}</td></tr>"

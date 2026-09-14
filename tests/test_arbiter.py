@@ -3344,3 +3344,40 @@ def test_a_full_scan_tags_nothing_as_outside_the_change(tmp_path):
     rep = run_scan([str(tmp_path)], load_config(None), use_adapters=False)
     assert rep.scan_scope["mode"] == "full"
     assert not any("outside-this-change" in f.tags for f in rep.findings)
+
+
+def test_scope_note_annotates_but_never_suppresses(tmp_path):
+    """A repo's own docs can point a reviewer at a control that covers a
+    finding, but a claim in prose is not a check that ran -- it must not
+    change severity, status, or suppression on its own (controls.py)."""
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "security.md").write_text(
+        "# Security\n\n"
+        "## Known limitations\n\n"
+        "- `deploy/` secrets are placeholders rotated by the deploy pipeline.\n"
+    )
+    (tmp_path / "deploy").mkdir()
+    key = "-----BEGIN PRIVATE KEY-----\nMIIBVQIBADAN\n-----END PRIVATE KEY-----\n"
+    (tmp_path / "deploy" / "server.key").write_text(key)
+
+    found = run_scan([str(tmp_path)], load_config(None), only=["secrets"]).active()
+    assert found and found[0].severity == "critical"
+    assert not found[0].suppressed
+    assert "docs/security.md" in found[0].scope_note
+    assert "unverified" in found[0].scope_note
+
+
+def test_scope_note_requires_a_backtick_path_match(tmp_path):
+    """Free-text scope-note bullets with no quoted path match nothing --
+    guessing at prose similarity would make this module wrong quietly."""
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "security.md").write_text(
+        "## Known limitations\n\n"
+        "- Secrets under the deploy directory are rotated automatically.\n"
+    )
+    (tmp_path / "deploy").mkdir()
+    key = "-----BEGIN PRIVATE KEY-----\nMIIBVQIBADAN\n-----END PRIVATE KEY-----\n"
+    (tmp_path / "deploy" / "server.key").write_text(key)
+
+    found = run_scan([str(tmp_path)], load_config(None), only=["secrets"]).active()
+    assert found and found[0].scope_note == ""

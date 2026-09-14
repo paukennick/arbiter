@@ -95,6 +95,7 @@ class Finding:
     location: Location = field(default_factory=Location)
     description: str = ""
     remediation: str = ""
+    scope_note: str = ""  # a repo's own docs claim this location is covered elsewhere -- unverified, never changes severity/status
     evidence: str = ""
     probe: str = ""
     probe_version: str = ""
