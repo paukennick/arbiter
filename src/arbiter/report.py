@@ -10,11 +10,39 @@ import html
 import json
 import os
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 from .core import SARIF_LEVEL, Finding, Report
 
 SEV_ORDER = ["critical", "high", "medium", "low", "info"]
+
+NO_REMEDIATION = "No fix recorded for this finding."
+
+# Past this many locations, a grouped row lists the rest as a count instead
+# of one more line each — a rule that fires in 40 files should not push the
+# table off the screen.
+GROUP_LOCATION_CAP = 8
+
+
+def _remediation_text(f: Finding) -> str:
+    return f.remediation or NO_REMEDIATION
+
+
+def _grouped(findings: list[Finding], key) -> list[list[Finding]]:
+    """Cluster findings that share `key(f)`, preserving first-seen order.
+
+    Same rule firing across many files renders as one row/entry with all its
+    locations, instead of one line per occurrence drowning the report.
+    """
+    groups: dict[object, list[Finding]] = defaultdict(list)
+    order: list[object] = []
+    for f in findings:
+        k = key(f)
+        if k not in groups:
+            order.append(k)
+        groups[k].append(f)
+    return [groups[k] for k in order]
 
 # One line each, kept short enough to sit in a legend or a table cell.
 # Grounded in what each dimension's probes actually check (docs/probes.md),
@@ -269,13 +297,27 @@ def render_markdown(report: Report) -> str:
                 continue
             L.append(f"### {sev.capitalize()} ({len(group)})")
             L.append("")
-            for f in group:
-                repo = f"`{f.repo_id}` " if len(report.repos) > 1 else ""
-                L.append(f"- {repo}**{f.title}**  \n  `{f.location.short()}` · `{f.rule_id}` · {f.id}")
-                if f.description:
-                    L.append(f"  \n  {f.description}")
-                if f.remediation:
-                    L.append(f"  \n  Fix: {f.remediation}")
+            for members in _grouped(group, lambda f: f.rule_id):
+                f = members[0]
+                if len(members) == 1:
+                    repo = f"`{f.repo_id}` " if len(report.repos) > 1 else ""
+                    L.append(f"- {repo}**{f.title}**  \n  `{f.location.short()}` · `{f.rule_id}` · {f.id}")
+                    if f.description:
+                        L.append(f"  \n  {f.description}")
+                    L.append(f"  \n  Fix: {_remediation_text(f)}")
+                    continue
+
+                files = {m.location.path for m in members}
+                locs = [f"`{m.location.short()}`" for m in members]
+                loc_text = ", ".join(locs[:GROUP_LOCATION_CAP])
+                if len(locs) > GROUP_LOCATION_CAP:
+                    loc_text += f", … {len(locs) - GROUP_LOCATION_CAP} more"
+                remediations = dict.fromkeys(_remediation_text(m) for m in members)
+                L.append(
+                    f"- **{f.title}** (×{len(members)} across {len(files)} file(s))  \n"
+                    f"  `{f.rule_id}`  \n  {loc_text}"
+                )
+                L.append(f"  \n  Fix: {' / '.join(remediations)}")
             L.append("")
 
     skipped = [p for p in report.probes if p.status != "ran"]
@@ -358,19 +400,39 @@ def render_html(report: Report) -> str:
 
     def rows_findings() -> str:
         out = []
-        for f in active:
-            related = ""
-            if f.related:
-                related = "<br><span class='muted mono'>also: " + e(
-                    ", ".join(r.short() for r in f.related)
-                ) + "</span>"
-            fix = f"<br><span class='muted'>Fix: {e(f.remediation)}</span>" if f.remediation else ""
+        for members in _grouped(active, lambda f: (f.severity, f.rule_id)):
+            f = members[0]
+            if len(members) == 1:
+                related = ""
+                if f.related:
+                    related = "<br><span class='muted mono'>also: " + e(
+                        ", ".join(r.short() for r in f.related)
+                    ) + "</span>"
+                fix = f"<br><span class='muted'>Fix: {e(_remediation_text(f))}</span>"
+                out.append(
+                    f"<tr><td><span class='pill s-{f.severity}'>{f.severity}</span></td>"
+                    f"<td>{e(f.title)}<br><span class='muted mono'>{e(f.rule_id)} · {e(f.id)}"
+                    f"{'' if f.confidence == 'high' else ' · ' + f.confidence + ' confidence'}</span>{fix}</td>"
+                    f"<td class='mono'>{e(f.repo_id)}</td>"
+                    f"<td class='mono'>{loc_cell(f)}{related}</td>"
+                    f"<td class='mono'>{e(f.dimension)}</td></tr>"
+                )
+                continue
+
+            files = {m.location.path for m in members}
+            repo_ids = dict.fromkeys(m.repo_id for m in members)
+            remediations = dict.fromkeys(_remediation_text(m) for m in members)
+            fix = f"<br><span class='muted'>Fix: {e(' / '.join(remediations))}</span>"
+            locs = [f"{loc_cell(m)} <span class='muted'>({e(m.repo_id)})</span>" for m in members]
+            loc_html = "<br>".join(locs[:GROUP_LOCATION_CAP])
+            if len(locs) > GROUP_LOCATION_CAP:
+                loc_html += f"<br><span class='muted'>… {len(locs) - GROUP_LOCATION_CAP} more</span>"
             out.append(
                 f"<tr><td><span class='pill s-{f.severity}'>{f.severity}</span></td>"
-                f"<td>{e(f.title)}<br><span class='muted mono'>{e(f.rule_id)} · {e(f.id)}"
-                f"{'' if f.confidence == 'high' else ' · ' + f.confidence + ' confidence'}</span>{fix}</td>"
-                f"<td class='mono'>{e(f.repo_id)}</td>"
-                f"<td class='mono'>{loc_cell(f)}{related}</td>"
+                f"<td>{e(f.title)} <span class='muted'>(×{len(members)} across {len(files)} file(s))</span>"
+                f"<br><span class='muted mono'>{e(f.rule_id)}</span>{fix}</td>"
+                f"<td class='mono'>{e(', '.join(repo_ids))}</td>"
+                f"<td class='mono'>{loc_html}</td>"
                 f"<td class='mono'>{e(f.dimension)}</td></tr>"
             )
         return "\n".join(out) or "<tr><td colspan='5' class='muted'>No active findings.</td></tr>"

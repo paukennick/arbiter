@@ -51,6 +51,21 @@ def select(doc: Any, expr: str) -> list[Any]:
             continue
         if isinstance(cur, dict):
             cur = cur.get(part)
+        elif isinstance(cur, list):
+            # A tool (checkov, across multiple detected frameworks) can emit a
+            # list of sibling result objects instead of one. Fan the key
+            # lookup across them and flatten, rather than failing the whole
+            # path because *a* list turned up where a dict was expected.
+            nxt: list[Any] = []
+            for item in cur:
+                if not isinstance(item, dict):
+                    continue
+                v = item.get(part)
+                if isinstance(v, list):
+                    nxt.extend(v)
+                elif v is not None:
+                    nxt.append(v)
+            cur = nxt
         else:
             return []
         if cur is None:
@@ -259,6 +274,13 @@ class Adapter:
                 sev = sev_table.get(raw_sev, m.get("severity_default", "medium"))
             logical = str(dig(row, m.get("logical", ""), "") or "")
             desc = str(dig(row, m.get("description", ""), "") or "")
+            remediation = str(dig(row, m.get("remediation", ""), "") or "").strip()
+            if remediation and m.get("remediation_format"):
+                remediation = m["remediation_format"].format(value=remediation)
+            elif remediation.startswith(("http://", "https://")):
+                remediation = f"See {self.name}'s guidance: {remediation}"
+            if not remediation:
+                remediation = (m.get("remediation_default", "") or "").format(rule_id=rule)
             out.append(Finding(
                 rule_id=f"{self.name}/{rule}",
                 title=title[:200],
@@ -269,6 +291,7 @@ class Adapter:
                 probe=self.name,
                 location=Location(path=path, start_line=line, logical=logical),
                 description=desc[:1000],
+                remediation=remediation[:500],
                 evidence=f"{rule}@{path}:{logical}" if logical else f"{rule}@{path}",
                 tags=["external-tool", self.name],
             ))

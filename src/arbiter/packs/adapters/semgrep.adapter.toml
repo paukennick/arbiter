@@ -22,6 +22,9 @@ line = "start.line"
 severity = "extra.severity"
 severity_default = "medium"
 dimension = "security"
+remediation = "extra.fix"
+remediation_format = "Suggested fix: `{value}`"
+remediation_default = "See Semgrep's rule metadata for {rule_id} (no autofix offered for this rule)."
 
 [map.severity_table]
 error = "high"

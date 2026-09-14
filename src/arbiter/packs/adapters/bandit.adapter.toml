@@ -23,6 +23,8 @@ line = "line_number"
 severity = "issue_severity"
 severity_default = "medium"
 dimension = "security"
+remediation = "more_info"
+remediation_default = "See Bandit's documentation for {rule_id}."
 
 [map.severity_table]
 high = "high"
