@@ -54,7 +54,7 @@ DIMENSION_DESC = {
     "interface": "cross-repo seams — endpoints and contracts that don't match on both sides",
     "compliance": "provider-neutral infrastructure rules mapped to control frameworks (NIST, FedRAMP, CMMC)",
     "drift": "docs and contracts that no longer match the code they describe",
-    "assurance": "how much of the codebase is excluded from checking — weight 0, never moves the grade",
+    "assurance": "suppressions, exclusions and no-op tests found while checking — weight 0, never moves the grade",
 }
 
 ANSI = {
