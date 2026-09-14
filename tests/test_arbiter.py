@@ -905,9 +905,51 @@ def test_feedback_is_recorded_once_per_finding():
     from arbiter.learn import Knowledge, record
     k = Knowledge()
     f = Finding(rule_id="arbiter/x", title="t", location=Location(path="a.py"), evidence="e")
-    assert record(k, f, "false_positive") is True
-    assert record(k, f, "false_positive") is False, "one finding must not move the stats twice"
+    assert record(k, f, "false_positive", reviewer="tester") is True
+    assert record(k, f, "false_positive", reviewer="tester") is False, "one finding must not move the stats twice"
     assert k.rules["arbiter/x"].observations == 1
+
+
+def test_a_verdict_without_a_reviewer_is_refused():
+    """This ledger refuses re-adjudication, so a mark is permanent. A permanent
+    mark with nobody's name on it cannot be audited or distrusted later."""
+    from arbiter.learn import Knowledge, record
+    f = Finding(rule_id="arbiter/x", title="t", location=Location(path="a.py"))
+    with pytest.raises(ValueError, match="reviewer"):
+        record(Knowledge(), f, "true_positive", reviewer="")
+    with pytest.raises(ValueError, match="reviewer"):
+        record(Knowledge(), f, "true_positive", reviewer="   ")
+
+
+def test_a_schema_1_ledger_migrates_without_losing_a_verdict(tmp_path):
+    """Schema 1 stored a bare string. Those verdicts are real evidence and must
+    survive, but they carry no attribution and must not acquire a plausible one
+    on the way through — an invented name would read as a fact later."""
+    from arbiter.learn import Knowledge, UNATTRIBUTED
+    old = tmp_path / "knowledge.json"
+    old.write_text(json.dumps({
+        "schema_version": 1,
+        "adjudicated": {"f:aaaa1111": "true_positive",
+                        "f:bbbb2222": "false_positive:looked at it, it is a test fixture"},
+        "rules": {"arbiter/x": {"true_positives": 1, "false_positives": 1}},
+    }), encoding="utf-8")
+
+    k = Knowledge.load(str(old))
+    assert set(k.adjudicated) == {"f:aaaa1111", "f:bbbb2222"}, "no verdict may be dropped"
+    assert k.adjudicated["f:aaaa1111"].verdict == "true_positive"
+    assert k.adjudicated["f:bbbb2222"].verdict == "false_positive"
+    assert k.adjudicated["f:bbbb2222"].note == "looked at it, it is a test fixture"
+    assert all(v.reviewer == UNATTRIBUTED for v in k.adjudicated.values()), \
+        "a migrated verdict must say it has no attribution, not guess one"
+    assert k.rules["arbiter/x"].observations == 2, "the counts are untouched"
+
+    # And the migrated ledger round-trips through the new schema unchanged.
+    new = tmp_path / "migrated.json"
+    k.save(str(new))
+    again = Knowledge.load(str(new))
+    assert {i: v.to_dict() for i, v in again.adjudicated.items()} == \
+           {i: v.to_dict() for i, v in k.adjudicated.items()}
+    assert json.loads(new.read_text(encoding="utf-8"))["schema_version"] == 2
 
 
 def test_calibration_waits_for_enough_observations():
@@ -943,7 +985,8 @@ def test_knowledge_version_changes_when_learning_does():
     from arbiter.learn import Knowledge, record
     k = Knowledge()
     before = k.version_hash()
-    record(k, Finding(rule_id="arbiter/x", title="t", location=Location(path="a.py")), "true_positive")
+    record(k, Finding(rule_id="arbiter/x", title="t", location=Location(path="a.py")),
+           "true_positive", reviewer="tester")
     assert k.version_hash() != before
 
 
@@ -1853,11 +1896,11 @@ def test_review_spreads_across_repositories_within_a_rule():
 def test_review_never_re_asks_an_adjudicated_finding(tmp_path):
     """One disputed finding must not move the statistics as many times as
     somebody clicks."""
-    from arbiter.learn import Knowledge
+    from arbiter.learn import Knowledge, Verdict
     from arbiter.review import select
     f = _finding("arbiter/r")
     k = Knowledge()
-    k.adjudicated[f.id] = "true_positive"
+    k.adjudicated[f.id] = Verdict(verdict="true_positive", reviewer="tester")
     assert select([f], k, limit=5) == []
 
 
@@ -1876,7 +1919,7 @@ def test_review_round_trip_records_marks(tmp_path):
             if line.startswith(f"[ ] {fid}"):
                 line = f"[{mark}]" + line[3:]
         out.append(line)
-    res = apply_marks("\n".join(out), findings, k)
+    res = apply_marks("\n".join(out), findings, k, reviewer="tester")
     assert res["recorded"] == 2, "a blank mark must not be recorded either way"
     assert k.rules["arbiter/a"].true_positives == 1
     assert k.rules["arbiter/b"].false_positives == 1
@@ -1886,7 +1929,8 @@ def test_review_round_trip_records_marks(tmp_path):
 def test_review_ignores_marks_for_findings_not_in_the_report(tmp_path):
     from arbiter.learn import Knowledge
     from arbiter.review import apply as apply_marks
-    res = apply_marks("[y] f:deadbeef1234\n", [_finding("arbiter/a")], Knowledge())
+    res = apply_marks("[y] f:deadbeef1234\n", [_finding("arbiter/a")], Knowledge(),
+                      reviewer="tester")
     assert res["recorded"] == 0 and res["unknown"] == ["f:deadbeef1234"]
 
 
@@ -1898,7 +1942,7 @@ def test_review_reports_which_rules_became_proven(tmp_path):
                                      true_positives=MIN_OBSERVATIONS - 1)
     f = _finding("arbiter/a")
     before = {r: s.observations for r, s in k.rules.items()}
-    apply_marks(f"[y] {f.id}\n", [f], k)
+    apply_marks(f"[y] {f.id}\n", [f], k, reviewer="tester")
     assert newly_proven(k, before) == ["arbiter/a"]
 
 
@@ -1909,7 +1953,7 @@ def test_review_can_adjudicate_external_tool_findings(tmp_path):
     from arbiter.review import apply as apply_marks
     f = _finding("checkov/CKV_AWS_16")
     k = Knowledge()
-    apply_marks(f"[n] {f.id}\n", [f], k)
+    apply_marks(f"[n] {f.id}\n", [f], k, reviewer="tester")
     assert k.rules["checkov/CKV_AWS_16"].false_positives == 1
 
 
@@ -2515,7 +2559,7 @@ def test_review_page_output_is_the_same_format_apply_reads(tmp_path):
                      for i, f in enumerate(picked))
     assert len(parse(text)) == len(picked)
     k = Knowledge()
-    assert apply_marks(text, picked, k)["recorded"] == len(picked)
+    assert apply_marks(text, picked, k, reviewer="tester")["recorded"] == len(picked)
 
 
 def test_terminal_review_records_the_same_verdicts(tmp_path, monkeypatch):

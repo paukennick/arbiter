@@ -37,8 +37,16 @@ from typing import Any
 from .claims import wilson_lower_bound
 from .core import Finding
 
-KNOWLEDGE_VERSION = 1
+KNOWLEDGE_VERSION = 2
 DEFAULT_PATH = ".arbiter/knowledge.json"
+
+# Where a verdict came in. Recorded so a batch can be found again later; it
+# says nothing about whether a person typed it.
+ENTRY_POINTS = ("feedback", "review-interactive", "review-apply", "import")
+
+# What a pre-attribution verdict migrates to. Schema 1 stored a bare string,
+# so these three facts are not recoverable for anything already in a ledger.
+UNATTRIBUTED = "unattributed"
 
 # Below this many adjudicated observations a rule's measured precision is not
 # evidence, and the declared confidence stands.
@@ -132,6 +140,48 @@ class RuleStats:
 
 
 @dataclass
+class Verdict:
+    """One adjudication, and who is answerable for it.
+
+    Schema 1 stored `"true_positive"` or `"false_positive:note"` and nothing
+    else, so a wrong mark was permanent AND anonymous — there was no way to
+    find whose marks to distrust. This records who, when and through which
+    door. It does not record whether a person typed it, because nothing here
+    can establish that; `entry_point` narrows where to look, no further.
+    """
+
+    verdict: str
+    reviewer: str
+    at: str = ""
+    entry_point: str = "feedback"
+    note: str = ""
+
+    def to_dict(self) -> dict:
+        d = {"verdict": self.verdict, "reviewer": self.reviewer,
+             "at": self.at, "entry_point": self.entry_point}
+        if self.note:
+            d["note"] = self.note
+        return d
+
+    @staticmethod
+    def from_stored(raw: Any) -> "Verdict":
+        """Read either schema. A schema 1 string carries no attribution, so it
+        migrates to `unattributed` rather than guessing a name that would then
+        look like evidence."""
+        if isinstance(raw, dict):
+            return Verdict(
+                verdict=str(raw.get("verdict", "")),
+                reviewer=str(raw.get("reviewer", UNATTRIBUTED)),
+                at=str(raw.get("at", "")),
+                entry_point=str(raw.get("entry_point", "import")),
+                note=str(raw.get("note", "")),
+            )
+        verdict, _, note = str(raw).partition(":")
+        return Verdict(verdict=verdict, reviewer=UNATTRIBUTED, at="",
+                       entry_point="import", note=note)
+
+
+@dataclass
 class Knowledge:
     schema_version: int = KNOWLEDGE_VERSION
     updated: str = ""
@@ -139,7 +189,7 @@ class Knowledge:
     # Per-repository metric distributions, used for adaptive thresholds.
     profiles: dict[str, dict] = field(default_factory=dict)
     # Fingerprints a human adjudicated, so the same finding is never re-asked.
-    adjudicated: dict[str, str] = field(default_factory=dict)
+    adjudicated: dict[str, Verdict] = field(default_factory=dict)
     # Severities for individual checks of EXTERNAL tools, measured against the
     # corpus by tools/calibrate_external.py.
     #
@@ -167,7 +217,7 @@ class Knowledge:
             "updated": self.updated,
             "rules": {k: v.to_dict() for k, v in sorted(self.rules.items())},
             "profiles": self.profiles,
-            "adjudicated": self.adjudicated,
+            "adjudicated": {k: v.to_dict() for k, v in sorted(self.adjudicated.items())},
             "external_severity": self.external_severity,
         }
         if include_hash:
@@ -176,11 +226,16 @@ class Knowledge:
 
     @staticmethod
     def from_dict(d: dict) -> "Knowledge":
+        # Always the current version: reading IS the migration, so the object
+        # this returns is current-schema whatever the file said. Carrying the
+        # old number forward would make a migrated ledger keep declaring a
+        # layout it no longer has.
         k = Knowledge(
-            schema_version=d.get("schema_version", KNOWLEDGE_VERSION),
+            schema_version=KNOWLEDGE_VERSION,
             updated=d.get("updated", ""),
             profiles=d.get("profiles") or {},
-            adjudicated=d.get("adjudicated") or {},
+            adjudicated={k: Verdict.from_stored(v)
+                         for k, v in (d.get("adjudicated") or {}).items()},
             external_severity=d.get("external_severity") or {},
         )
         for rule_id, raw in (d.get("rules") or {}).items():
@@ -220,14 +275,24 @@ class Knowledge:
 # Feedback
 # ---------------------------------------------------------------------------
 
-def record(knowledge: Knowledge, finding: Finding, verdict: str, note: str = "") -> bool:
+def record(knowledge: Knowledge, finding: Finding, verdict: str, note: str = "",
+           *, reviewer: str, entry_point: str = "feedback") -> bool:
     """Adjudicate one finding. Returns False if it was already adjudicated.
 
     Re-adjudicating the same fingerprint would let one disputed finding move
     the statistics as far as someone cares to click.
+
+    `reviewer` is keyword-only and has no default, so a caller cannot record a
+    verdict without saying who is answerable for it. That is attribution, not
+    authentication: it makes a bad batch findable afterwards, and it is not
+    evidence that a person rather than a script produced the mark.
     """
     if verdict not in ("true_positive", "false_positive"):
         raise ValueError("verdict must be true_positive or false_positive")
+    if not (reviewer or "").strip():
+        raise ValueError(
+            "a verdict needs a reviewer: this ledger refuses re-adjudication, "
+            "so an anonymous mark is permanent and untraceable")
     if finding.id in knowledge.adjudicated:
         return False
     now = _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
@@ -239,7 +304,9 @@ def record(knowledge: Knowledge, finding: Finding, verdict: str, note: str = "")
         stats.true_positives += 1
     else:
         stats.false_positives += 1
-    knowledge.adjudicated[finding.id] = f"{verdict}:{note}" if note else verdict
+    knowledge.adjudicated[finding.id] = Verdict(
+        verdict=verdict, reviewer=reviewer.strip(), at=now,
+        entry_point=entry_point, note=note)
     return True
 
 

@@ -117,6 +117,9 @@ def build_parser() -> argparse.ArgumentParser:
     group.add_argument("--false-positive", action="store_true")
     group.add_argument("--true-positive", action="store_true")
     fb.add_argument("--note", default="")
+    fb.add_argument("--reviewer", default="",
+                    help="who is answerable for these verdicts "
+                         "(default: git config user.email)")
 
     ln = sub.add_parser("learn", help="show what the tool has learned")
     ln.add_argument("--knowledge", help="knowledge file (default .arbiter/knowledge.json)")
@@ -139,6 +142,9 @@ def build_parser() -> argparse.ArgumentParser:
     rv.add_argument("--apply", metavar="FILE",
                     help="read a marked review file back and record the verdicts")
     rv.add_argument("--note", default="", help="note stored with each verdict")
+    rv.add_argument("--reviewer", default="",
+                    help="who is answerable for these verdicts "
+                         "(default: git config user.email)")
     rv.add_argument("--knowledge", help="path to knowledge.json")
     rv.add_argument("--html", metavar="FILE", nargs="?", const="arbiter-out/review.html",
                     help="write a self-contained review page instead of markdown")
@@ -269,6 +275,39 @@ def build_parser() -> argparse.ArgumentParser:
     rh.set_defaults(needs_key=False)
 
     return p
+
+
+def _resolve_reviewer(explicit: str) -> str:
+    """Who is answerable for a verdict. Empty means the command must refuse.
+
+    An explicit `--reviewer` wins. Otherwise git's configured identity, which
+    is the name already attached to every other change here and to the ledger
+    itself, since `.arbiter/knowledge.json` is committed. There is deliberately
+    no fallback beyond that: a default like the OS username would put a name on
+    a permanent record without anyone choosing it.
+    """
+    if (explicit or "").strip():
+        return explicit.strip()
+    import subprocess
+    for key in ("user.email", "user.name"):
+        try:
+            out = subprocess.run(["git", "config", "--get", key],
+                                 capture_output=True, text=True, timeout=5)
+        except (OSError, subprocess.SubprocessError):
+            return ""
+        if out.returncode == 0 and out.stdout.strip():
+            return out.stdout.strip()
+    return ""
+
+
+def _reviewer_or_refuse(explicit: str) -> str | None:
+    reviewer = _resolve_reviewer(explicit)
+    if reviewer:
+        return reviewer
+    print("arbiter: no reviewer. This ledger refuses re-adjudication, so a mark "
+          "is permanent —\n  it does not accept anonymous ones. Pass --reviewer "
+          "or set `git config user.email`.", file=sys.stderr)
+    return None
 
 
 def _load_adapters(disabled: bool) -> None:
@@ -425,6 +464,9 @@ def cmd_feedback(args) -> int:
     by_id = {f.id: f for f in report.findings}
     knowledge = Knowledge.load(args.knowledge)
     verdict = "false_positive" if args.false_positive else "true_positive"
+    reviewer = _reviewer_or_refuse(args.reviewer)
+    if reviewer is None:
+        return EXIT_ERROR
 
     recorded, repeated, unknown = 0, 0, []
     for fid in args.finding_ids:
@@ -432,7 +474,8 @@ def cmd_feedback(args) -> int:
         if target is None:
             unknown.append(fid)
             continue
-        if record(knowledge, target, verdict, args.note):
+        if record(knowledge, target, verdict, args.note,
+                  reviewer=reviewer, entry_point="feedback"):
             recorded += 1
         else:
             repeated += 1
@@ -524,8 +567,12 @@ def cmd_review(args) -> int:
         if not marked.is_file():
             print(f"arbiter: no review file at {marked}", file=sys.stderr)
             return EXIT_ERROR
+        reviewer = _reviewer_or_refuse(args.reviewer)
+        if reviewer is None:
+            return EXIT_ERROR
         before = {r: s.observations for r, s in knowledge.rules.items()}
-        res = apply_marks(marked.read_text(encoding="utf-8"), report.findings, knowledge, args.note)
+        res = apply_marks(marked.read_text(encoding="utf-8"), report.findings,
+                          knowledge, args.note, reviewer=reviewer)
         version = knowledge.save(args.knowledge)
         print()
         print(f"  {res['marked']} marked, {res['recorded']} recorded"
@@ -560,12 +607,16 @@ def cmd_review(args) -> int:
     if args.interactive:
         from .review_ui import run_terminal
         from .learn import record
+        reviewer = _reviewer_or_refuse(args.reviewer)
+        if reviewer is None:
+            return EXIT_ERROR
         before = {r: st.observations for r, st in knowledge.rules.items()}
         marks = run_terminal(picked, knowledge, repo_paths)
         by_id = {f.id: f for f in picked}
         recorded = 0
         for fid, verdict in marks.items():
-            if record(knowledge, by_id[fid], verdict, args.note):
+            if record(knowledge, by_id[fid], verdict, args.note,
+                      reviewer=reviewer, entry_point="review-interactive"):
                 recorded += 1
         version = knowledge.save(args.knowledge)
         print(f"\n  {recorded} recorded of {len(marks)} marked")

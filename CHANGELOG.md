@@ -6,6 +6,29 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 
 ## [Unreleased]
 
+### 2026-09-14
+
+- Gave every adjudication verdict a name. `learn.record()` stored a bare string
+  — `"true_positive"` or `"false_positive:note"` — with no reviewer, no
+  per-verdict timestamp and no record of which command it arrived through; only
+  the rule carried `first_seen`/`last_seen`. Because the ledger refuses to
+  re-adjudicate a fingerprint, a wrong mark was permanent *and* anonymous, so
+  there was no way to work out whose marks to distrust. Verdicts are now a
+  `Verdict` record carrying verdict, reviewer, timestamp and entry point.
+  `reviewer` is keyword-only with no default, so no caller can record a verdict
+  without saying who is answerable for it, and the CLI resolves it from
+  `--reviewer` or `git config user.email` and refuses when it has neither
+  rather than inventing one. This is attribution, not authentication — it makes
+  a bad batch findable and is not evidence that a person produced the mark.
+  Schema 1 ledgers migrate with the reviewer `unattributed`; the verdicts and
+  counts survive and no plausible name is invented for them. `KNOWLEDGE_VERSION`
+  is now 2, and `Knowledge.from_dict` returns a current-schema object rather
+  than carrying the file's old version number forward — a migrated ledger was
+  otherwise saved still declaring schema 1. The committed
+  `.arbiter/knowledge.json` moved from `k:0f258c4ce717` to `k:a37f38560140`
+  with no evidence change, so any scan pinning the old hash must be re-pinned.
+  (REQ-020)
+
 ### 2026-09-13
 
 - Retired the stale one-session instructions in `HANDOFF.md`. It now routes a

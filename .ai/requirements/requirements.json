@@ -2,9 +2,148 @@
   "version": "2.0.0",
   "requirement_id_prefix": "REQ",
   "categories": {
-    "developer-tooling": [],
+    "developer-tooling": [
+      {
+        "id": "REQ-020",
+        "title": "Attribute every adjudication verdict to a reviewer and a time",
+        "description": "learn.record() stores a verdict as the bare string 'true_positive' or 'false_positive:note' in Knowledge.adjudicated, with no reviewer, no per-verdict timestamp and no record of which entry point it arrived through. Only the rule carries first_seen/last_seen. The ledger refuses re-adjudication, so a wrong or machine-written mark is permanent and, today, untraceable: there is no way to find whose marks to distrust. The rule that verdicts come from a person is enforced in assistant instructions, not in the code. This matters more now that agents hold shell access and more again if a second person ever adjudicates.",
+        "priority": "high",
+        "status": "completed",
+        "minimum_access_scope": [
+          "src/arbiter/learn.py",
+          "src/arbiter/cli.py",
+          "tests/test_arbiter.py",
+          "docs/calibration.md"
+        ],
+        "acceptance_criteria": [
+          "Knowledge.adjudicated holds a structured record carrying verdict reviewer timestamp and entry point rather than a bare string/KNOWLEDGE_VERSION is raised and from_dict migrates a version 1 ledger without losing any existing verdict/record() requires a reviewer identity and refuses to write without one/the reviewer is resolved from an explicit flag or git config user rather than defaulted silently/a test asserts a version 1 ledger round-trips through the new schema/a test asserts a verdict without a reviewer is refused"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest -q"
+        ],
+        "documentation_required": [
+          "docs/calibration.md",
+          "CHANGELOG.md",
+          ".ai/project-context.md"
+        ],
+        "risk_notes": [
+          "The ledger is committed and feeds version_hash() so the schema change moves the knowledge version and any pinned scan must be re-pinned/The live ledger has zero adjudications so migration is untested against real data and should be tested against a synthetic version 1 file/Attribution records who not whether they were human and must not be described as proof of personhood"
+        ]
+      },
+      {
+        "id": "REQ-021",
+        "title": "Refuse an adjudication verdict from a non-interactive session",
+        "description": "Nothing distinguishes a verdict typed by a person from one written by a script or an agent. review_ui._getch() falls back to input() when raw terminal mode is unavailable, nothing calls isatty(), and cli.cmd_feedback records a verdict from a fully non-interactive invocation. review --apply reads marks from a markdown file, so anything that can write markdown can adjudicate. This is no barrier against a determined caller and is not claimed to be one; it stops the accidental case, which is a piped script, a CI job or an agent shelling out.",
+        "priority": "high",
+        "status": "pending",
+        "minimum_access_scope": [
+          "src/arbiter/cli.py",
+          "src/arbiter/review_ui.py",
+          "tests/test_arbiter.py",
+          "docs/calibration.md"
+        ],
+        "acceptance_criteria": [
+          "the interactive adjudication paths require stdin to be a terminal and refuse otherwise with a reason/the refusal names an explicit override flag so a deliberate batch import is possible and visible/an overridden verdict is recorded with an entry point that says it was not interactive/docs/calibration.md states plainly that this is a guard against accident and not proof of personhood/a test asserts a piped non-interactive feedback invocation is refused"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest -q"
+        ],
+        "documentation_required": [
+          "docs/calibration.md",
+          "CHANGELOG.md",
+          ".ai/project-context.md"
+        ],
+        "risk_notes": [
+          "Depends on REQ-020 for the entry point field so it should land after it/An override flag that is easy to pass is an override an agent can pass so the value is the record it leaves not the obstacle it creates/Existing tests that record verdicts programmatically will need the override or a direct call to record()"
+        ]
+      },
+      {
+        "id": "REQ-022",
+        "title": "Declare adapter probe scope deliberately and say what a partial scan does not run",
+        "description": "adapters.register_adapters constructs every adapter-backed Probe without a scope argument, so all five external analyzers inherit the repo default from Probe and are recorded as not-assessed in any partial scan. The default is right because nothing has established that ruff bandit checkov semgrep or gitleaks give subset-exact answers on a file subset, but it is inherited rather than chosen. docs/ci.md explains file and repo scope carefully and never names the external analyzers; RUNNING-ON-YOUR-OWN-CODE.md describes the pull-request job without saying it runs native probes only. A reader of either document would reasonably believe their gate runs semgrep. It does not.",
+        "priority": "high",
+        "status": "pending",
+        "minimum_access_scope": [
+          "src/arbiter/adapters.py",
+          "src/arbiter/packs/",
+          "docs/ci.md",
+          "RUNNING-ON-YOUR-OWN-CODE.md",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "every adapter manifest declares its scope explicitly/register_adapters passes the declared scope instead of relying on the Probe default/docs/ci.md names the five external analyzers as repo-scoped and says a partial scan does not run them/RUNNING-ON-YOUR-OWN-CODE.md says the same where it describes the pull-request job/a test asserts no adapter-backed probe relies on the inherited default"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest -q"
+        ],
+        "documentation_required": [
+          "docs/ci.md",
+          "RUNNING-ON-YOUR-OWN-CODE.md",
+          "CHANGELOG.md",
+          ".ai/project-context.md"
+        ],
+        "risk_notes": [
+          "Declaring any adapter file-scoped would assert subset-exactness that has never been measured so every declaration must stay repo until evidence exists/This is a documentation and deliberateness change and must not be described as making partial scans cover more"
+        ]
+      },
+      {
+        "id": "REQ-024",
+        "title": "Exercise the Windows code paths in CI",
+        "description": "The only workflow is .github/workflows/train.yml on ubuntu-latest as a single job with no matrix, so no Windows path is ever exercised by automation. REQ-006 fixed a crash that occurred on every adapter timeout on Windows and it survived to be found by hand because nothing tested it. The platform-specific process kill path, UTF-8 decoding and path handling are all Windows-sensitive and all currently unverified outside a developer's machine.",
+        "priority": "medium",
+        "status": "pending",
+        "minimum_access_scope": [
+          ".github/workflows/",
+          "tests/test_arbiter.py",
+          ".ai/project-configuration.md"
+        ],
+        "acceptance_criteria": [
+          "a workflow runs the test suite on Windows/the run is required rather than advisory/the three currently skipped tests are accounted for as skipped-with-a-reason on each platform rather than silently absent"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest -q"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md",
+          ".ai/project-configuration.md",
+          "docs/ci.md"
+        ],
+        "risk_notes": [
+          "Adding a matrix to the nightly training workflow would double a two-hour job so the test run belongs in a separate fast workflow/Windows runners are slower and some adapter binaries are unavailable there so expect new legitimate skips"
+        ]
+      }
+    ],
     "documentation": [],
-    "training-evidence": [],
+    "training-evidence": [
+      {
+        "id": "REQ-023",
+        "title": "Cover the nightly training job with a requirement and a test",
+        "description": "The nightly calibration job in .github/workflows/train.yml and tools/train_cycle.sh has never been covered by a requirement. Four defects were repaired in it on 2026-09-13 as unplanned work, including one where git add matched a gitignore entry, git exited 1, and bash -e failed the job two seconds after a 55-minute cycle finished successfully, so run 1 measured everything and committed nothing. A job that produces the project's only accumulating evidence and can fail silently after doing all its work needs owned acceptance criteria.",
+        "priority": "medium",
+        "status": "pending",
+        "minimum_access_scope": [
+          ".github/workflows/train.yml",
+          "tools/train_cycle.sh",
+          "tools/worklist.py",
+          "training/",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "the job's outputs and the files it is expected to write back are stated as acceptance criteria/a failure to write back fails the job loudly rather than after the work is complete/the three accumulating files stay tracked while stamped per-run logs stay ignored/a test or a dry-run check covers the write-back path"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest -q"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md",
+          ".ai/project-context.md",
+          "docs/calibration.md"
+        ],
+        "risk_notes": [
+          "The job runs for two hours nightly so a change to it cannot be validated quickly and a dry-run path is worth more than a live trial/It writes to the repository so a defect here can commit wrong evidence"
+        ]
+      }
+    ],
     "legal": [
       {
         "id": "REQ-005",

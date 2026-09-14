@@ -76,6 +76,30 @@ most rules past the twenty-observation line — rules already close to the
 threshold first, spread across files so twenty instances of one mistake are not
 counted as twenty observations, never re-asking an adjudicated finding.
 
+### Every verdict carries a name
+
+A verdict records who is answerable for it, when it was made, and which command
+it came through. The reviewer comes from `--reviewer`, or from
+`git config user.email`; there is no third fallback, and a command with neither
+refuses rather than writing an anonymous mark. Something like the OS username
+would put a name on a permanent record without anyone choosing it.
+
+Permanence is the reason. This ledger refuses to re-adjudicate a fingerprint, so
+a mark cannot be corrected — and a mark that is both permanent and anonymous
+cannot even be distrusted, because there is no way to find which ones to doubt.
+Attribution does not make a verdict right. It makes a bad batch findable.
+
+**It is attribution, not authentication.** Nothing here establishes that a
+person rather than a script produced a mark, and it should never be described
+as though it does. `entry_point` narrows where to look and no further. The rule
+that verdicts come from people is a procedural one; what the code guarantees is
+that every verdict has a name attached and that no verdict is written without
+one.
+
+Verdicts recorded before this existed migrate with the reviewer
+`unattributed`. They are real evidence and are kept, but they are not given a
+plausible name on the way through — an invented one would read as a fact later.
+
 ## Calibrating someone else's tool
 
 Checkov's open build reports `"severity": null` on every finding. Arbiter's

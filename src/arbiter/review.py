@@ -245,8 +245,15 @@ def apply(
     findings: list[Finding],
     knowledge: Knowledge,
     note: str = "",
+    *,
+    reviewer: str,
+    entry_point: str = "review-apply",
 ) -> dict:
-    """Record the marks. Returns a summary; never raises on unknown ids."""
+    """Record the marks. Returns a summary; never raises on unknown ids.
+
+    A marked file is just a file — anything that can write markdown can reach
+    here — so the reviewer is required and travels with every verdict.
+    """
     from .learn import record
     marks = parse(text)
     by_id = {f.id: f for f in findings}
@@ -257,7 +264,8 @@ def apply(
         if target is None:
             unknown.append(fid)
             continue
-        if record(knowledge, target, verdict, note):
+        if record(knowledge, target, verdict, note,
+                  reviewer=reviewer, entry_point=entry_point):
             recorded += 1
             per_rule[target.rule_id]["true" if verdict == "true_positive" else "false"] += 1
         else:

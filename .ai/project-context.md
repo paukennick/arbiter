@@ -654,3 +654,50 @@ and all 399 tests in a Linux-native checkout with the `dev`, `api` and `mcp`
 extras installed: 396 passed and 3 skipped. REQ-018, REQ-019 and REQ-010 were
 then archived in that order. REQ-005 remains the only active requirement and
 still belongs to counsel rather than engineering.
+
+## 2026-09-14 — Verdicts carry a name (REQ-020)
+
+**What changed.** `Knowledge.adjudicated` held `{finding_id: "true_positive"}`
+or `"false_positive:note"` and nothing else. It now holds a `Verdict` record
+with verdict, reviewer, timestamp and entry point. `record()` takes `reviewer`
+as a keyword-only argument with no default, so the type system refuses an
+unattributed mark at every call site rather than trusting three callers to
+remember.
+
+**Why it mattered more than it looked.** The ledger already refused to
+re-adjudicate a fingerprint, which makes a wrong mark permanent — that was a
+deliberate and correct decision. What had not been noticed is what permanence
+costs when combined with anonymity: a mark you cannot correct *and* cannot
+attribute is one you cannot even discount later, because there is no way to
+identify which verdicts came from a batch you have lost confidence in. The two
+properties are fine separately and bad together.
+
+**What this is not.** It is not proof a person made the mark, and the
+documentation says so in those words. `review_ui._getch()` still falls back to
+`input()`, nothing calls `isatty()`, and `review --apply` reads a file that
+anything able to write markdown can produce. The rule that verdicts come from
+people remains procedural — enforced in assistant instructions, not in code.
+REQ-021 adds the guard against the accidental case and will not change that
+sentence.
+
+**Reviewer resolution stops at two sources.** `--reviewer`, then
+`git config user.email`, then refusal. A fallback to the OS username was
+considered and rejected: it would write somebody's name into a permanent record
+without that person choosing it, which is worse than refusing.
+
+**A real defect the migration test caught.** `from_dict` carried the file's
+`schema_version` forward, so a schema 1 ledger read and re-saved was written
+back still declaring schema 1 — the migration happened and then denied itself.
+Reading *is* the migration, so `from_dict` now always returns a current-schema
+object. Nothing outside `learn.py` reads this field, so the blast radius was
+future migrations rather than present behaviour.
+
+**Cost to reproducibility, recorded rather than glossed.** `schema_version` is
+inside `to_dict`, which feeds `version_hash()`, so the committed ledger moved
+`k:0f258c4ce717` → `k:a37f38560140` with zero adjudications and no evidence
+change. Any scan pinning the old hash fails until re-pinned. That is the pin
+working correctly.
+
+**State.** 398 passed, 3 skipped on this machine, up from 396/3 by the two
+tests REQ-020 required. The adjudicated ledger is still empty, so every path
+here is exercised by tests and by nothing else.
