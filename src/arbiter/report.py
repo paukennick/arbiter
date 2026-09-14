@@ -16,6 +16,19 @@ from .core import SARIF_LEVEL, Finding, Report
 
 SEV_ORDER = ["critical", "high", "medium", "low", "info"]
 
+# One line each, kept short enough to sit in a legend or a table cell.
+# Grounded in what each dimension's probes actually check (docs/probes.md),
+# not a general description of the category name.
+DIMENSION_DESC = {
+    "security": "exploitable weaknesses — secrets, disabled TLS checks, open or public cloud resources",
+    "quality": "maintainability — oversized files/functions, complexity, missing tests",
+    "supply_chain": "dependency and pipeline hygiene — unpinned packages, mutable Action refs",
+    "interface": "cross-repo seams — endpoints and contracts that don't match on both sides",
+    "compliance": "provider-neutral infrastructure rules mapped to control frameworks (NIST, FedRAMP, CMMC)",
+    "drift": "docs and contracts that no longer match the code they describe",
+    "assurance": "how much of the codebase is excluded from checking — weight 0, never moves the grade",
+}
+
 ANSI = {
     "critical": "\033[1;31m", "high": "\033[31m", "medium": "\033[33m",
     "low": "\033[36m", "info": "\033[2m", "reset": "\033[0m",
@@ -167,6 +180,10 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
             L.append(_color(color, "dim",
                             "  * share of CHECKS that ran, not of the repository: "
                             "these checks read only the changed files"))
+        for name in sorted(sc.dimensions):
+            desc = DIMENSION_DESC.get(name)
+            if desc:
+                L.append(_color(color, "dim", f"    {name}: {desc}"))
         L.append("")
 
     shown = [f for f in active][:limit]
@@ -237,6 +254,11 @@ def render_markdown(report: Report) -> str:
         for name, d in sorted(sc.dimensions.items()):
             L.append(f"| {name} | {d.score} | {d.coverage:.0%} | {d.findings} |")
         L.append("")
+        legend = [f"**{name}** — {DIMENSION_DESC[name]}"
+                  for name in sorted(sc.dimensions) if name in DIMENSION_DESC]
+        if legend:
+            L.append(" · ".join(legend))
+            L.append("")
 
     if active:
         L.append("## Findings")
@@ -252,6 +274,8 @@ def render_markdown(report: Report) -> str:
                 L.append(f"- {repo}**{f.title}**  \n  `{f.location.short()}` · `{f.rule_id}` · {f.id}")
                 if f.description:
                     L.append(f"  \n  {f.description}")
+                if f.remediation:
+                    L.append(f"  \n  Fix: {f.remediation}")
             L.append("")
 
     skipped = [p for p in report.probes if p.status != "ran"]
@@ -300,6 +324,9 @@ code{background:var(--code);padding:1px 5px;border-radius:3px}
 .bar{height:6px;background:var(--code);border-radius:3px;overflow:hidden;min-width:70px}
 .bar i{display:block;height:100%;background:var(--acc)}
 .muted{color:var(--mut)}
+a{color:var(--acc);text-decoration:none}
+a:hover{text-decoration:underline}
+a.muted{color:var(--mut)}
 """
 
 
@@ -309,6 +336,26 @@ def render_html(report: Report) -> str:
     counts = counts_by_severity(active)
     e = html.escape
 
+    repo_roots = {r.id: r.path for r in report.repos}
+
+    def loc_cell(f: Finding) -> str:
+        text = e(f.location.short())
+        root = repo_roots.get(f.repo_id)
+        if not (root and f.location.path):
+            return text
+        try:
+            abs_path = (Path(root) / f.location.path).resolve()
+        except OSError:
+            return text
+        line = f.location.start_line or 1
+        col = f.location.start_col or 1
+        vscode_href = e(f"vscode://file/{abs_path.as_posix()}:{line}:{col}")
+        file_href = e(abs_path.as_uri())
+        return (
+            f"<a href='{vscode_href}' title='Open in an editor at this line (vscode://)'>{text}</a>"
+            f" <a class='muted' href='{file_href}' title='Open the file'>&#8599;</a>"
+        )
+
     def rows_findings() -> str:
         out = []
         for f in active:
@@ -317,12 +364,13 @@ def render_html(report: Report) -> str:
                 related = "<br><span class='muted mono'>also: " + e(
                     ", ".join(r.short() for r in f.related)
                 ) + "</span>"
+            fix = f"<br><span class='muted'>Fix: {e(f.remediation)}</span>" if f.remediation else ""
             out.append(
                 f"<tr><td><span class='pill s-{f.severity}'>{f.severity}</span></td>"
                 f"<td>{e(f.title)}<br><span class='muted mono'>{e(f.rule_id)} · {e(f.id)}"
-                f"{'' if f.confidence == 'high' else ' · ' + f.confidence + ' confidence'}</span></td>"
+                f"{'' if f.confidence == 'high' else ' · ' + f.confidence + ' confidence'}</span>{fix}</td>"
                 f"<td class='mono'>{e(f.repo_id)}</td>"
-                f"<td class='mono'>{e(f.location.short())}{related}</td>"
+                f"<td class='mono'>{loc_cell(f)}{related}</td>"
                 f"<td class='mono'>{e(f.dimension)}</td></tr>"
             )
         return "\n".join(out) or "<tr><td colspan='5' class='muted'>No active findings.</td></tr>"
@@ -330,14 +378,22 @@ def render_html(report: Report) -> str:
     def rows_dims() -> str:
         out = []
         for name, d in sorted(sc.dimensions.items()):
+            desc = DIMENSION_DESC.get(name, "")
             out.append(
-                f"<tr><td>{e(name)}</td><td class='mono'>{d.score}</td>"
+                f"<tr><td title='{e(desc)}'>{e(name)}</td><td class='mono'>{d.score}</td>"
                 f"<td><div class='bar'><i style='width:{d.coverage*100:.0f}%'></i></div>"
                 f"<span class='mono muted'>{d.coverage:.0%}</span></td>"
                 f"<td class='mono'>{d.checks_run}/{d.checks_applicable}</td>"
                 f"<td class='mono'>{d.findings}</td></tr>"
             )
         return "\n".join(out)
+
+    def dims_legend() -> str:
+        parts = [
+            f"<b>{e(name)}</b> {e(DIMENSION_DESC[name])}"
+            for name in sorted(sc.dimensions) if name in DIMENSION_DESC
+        ]
+        return " · ".join(parts)
 
     def rows_probes() -> str:
         out = []
@@ -379,6 +435,7 @@ def render_html(report: Report) -> str:
 <h2>Dimensions</h2><div class="tw"><table>
 <thead><tr><th>Dimension</th><th>Score</th><th>Coverage</th><th>Checks</th><th>Findings</th></tr></thead>
 <tbody>{rows_dims()}</tbody></table></div>
+<p class="sub" style="margin-top:6px">{dims_legend()}</p>
 <h2>Findings ({len(active)})</h2><div class="tw"><table>
 <thead><tr><th>Severity</th><th>Finding</th><th>Repo</th><th>Location</th><th>Dimension</th></tr></thead>
 <tbody>{rows_findings()}</tbody></table></div>
