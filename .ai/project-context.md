@@ -696,7 +696,9 @@ future migrations rather than present behaviour.
 inside `to_dict`, which feeds `version_hash()`, so the committed ledger moved
 `k:0f258c4ce717` → `k:a37f38560140` with zero adjudications and no evidence
 change. Any scan pinning the old hash fails until re-pinned. That is the pin
-working correctly.
+working correctly. On merging with training run 2 the schema-2 migration was
+re-applied to that run's ledger instead of text-merging two versions of the
+same artifact, landing at `k:2e88d7a07351` — the hash on `main`.
 
 **State.** 398 passed, 3 skipped on this machine, up from 396/3 by the two
 tests REQ-020 required. The adjudicated ledger is still empty, so every path

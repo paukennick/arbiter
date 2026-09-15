@@ -23,6 +23,7 @@ from .policy import (
     compute_scorecard,
     evaluate_gate,
 )
+from .scope_notes import apply_scope_notes
 from .probes import REGISTRY, ProbeContext, probe_by_name
 
 ARBITER_VERSION = "0.1.0"
@@ -309,6 +310,7 @@ def run_scan(
     apply_severity_overrides(findings, config)
     apply_baseline(findings, baseline)
     apply_suppressions(findings, config)
+    apply_scope_notes(findings, inv)
 
     report = Report(
         system=system_name,

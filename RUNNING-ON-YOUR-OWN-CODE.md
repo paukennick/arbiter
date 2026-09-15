@@ -6,6 +6,20 @@ repositories. This is the part where it looks at code that matters to you.
 Nothing here needs my sandbox. It runs on your machine, against repositories
 that never leave it.
 
+**A note on licensing:** `LICENSE` reserves all rights and grants none — that's
+deliberate, the operative terms are still being drafted (tracked as REQ-005 in
+[docs/licensing.md](docs/licensing.md)). If you got a link to this repository
+from me, you have my go-ahead to run it against your own code; that's the
+actual, current position while the formal grant is unsettled, not just a gap
+in the paperwork.
+
+**A note if you're on Windows:** the `arbiter` CLI itself is pure Python and
+runs the same in PowerShell, cmd.exe, or a terminal — every command below
+works as written. The handful of `.sh` helper scripts (`install_tools.sh`
+below, and a few others under `tools/`) are bash, not PowerShell, so run those
+specific steps from Git Bash (installed alongside Git for Windows) or WSL.
+Nothing else in this walkthrough needs bash.
+
 ---
 
 ## Before you start: what this will and will not tell you
@@ -24,11 +38,30 @@ amount of tuning I can do against public repositories.
 
 ## 1. Install
 
+If you're starting fresh, with no repository open yet:
+
 ```bash
 git clone <your arbiter repo>
 cd arbiter
 pip install -e .
 ```
+
+If you're already working from inside the repository you want scanned —
+this session's working directory is the target, not a separate clone of
+Arbiter — skip the clone and just get `arbiter` on the path instead:
+
+```bash
+pip install git+<your arbiter repo>@main
+```
+
+or, if you have a local checkout of Arbiter elsewhere on the same machine:
+
+```bash
+pip install -e /path/to/arbiter
+```
+
+Either way, stay where you are. Step 2 runs in the repository you're already
+in, not in Arbiter's own.
 
 Optional, and worth doing once:
 
@@ -36,15 +69,20 @@ Optional, and worth doing once:
 ./tools/install_tools.sh      # five external analyzers, pinned versions
 ```
 
-They are optional because Arbiter reports what it could not run. Without them
+That script lives in Arbiter's own repo, so run it from there (or point it
+at a local checkout) if you took the second path above. It's optional either
+way, because Arbiter reports what it could not run — without the analyzers
 the coverage figure is lower and nothing pretends otherwise.
 
 ---
 
 ## 2. First full scan
 
+Run from the root of the repository you want scanned. If you were already
+there for step 1, this is the same directory — otherwise, `cd` there first:
+
 ```bash
-cd /path/to/STEP_App
+cd /path/to/your-repo
 arbiter scan . --out .arbiter/first-run --format json,html,console
 ```
 
@@ -122,9 +160,9 @@ evidence of perfection.
 ## 5. Put it on pull requests
 
 ```bash
-cp examples/pull-request-gate/arbiter.yaml       /path/to/STEP_App/arbiter.yaml
-mkdir -p /path/to/STEP_App/.github/workflows
-cp examples/pull-request-gate/arbiter-pr.yml     /path/to/STEP_App/.github/workflows/
+cp examples/pull-request-gate/arbiter.yaml       /path/to/your-repo/arbiter.yaml
+mkdir -p /path/to/your-repo/.github/workflows
+cp examples/pull-request-gate/arbiter-pr.yml     /path/to/your-repo/.github/workflows/
 ```
 
 Edit one line in the workflow — the `pip install git+https://github.com/OWNER/arbiter.git@main`
@@ -170,7 +208,7 @@ step 3 comes before step 5.
 You do not have to push a workflow to find out what it will say:
 
 ```bash
-cd /path/to/STEP_App
+cd /path/to/your-repo
 git fetch origin main
 arbiter gate . --changed origin/main --baseline .arbiter/baseline.json
 echo "exit code: $?"
@@ -178,19 +216,21 @@ echo "exit code: $?"
 
 ---
 
-## 6. For the migration specifically
+## 6. Comparing two related repositories (system mode)
 
-A migration is two codebases that are supposed to mean the same thing, which is
-the case Arbiter's system mode exists for. Write an `arbiter-system.yaml`:
+If you have two codebases that are supposed to mean the same thing — a
+migration from an old stack to a new one, a rewrite, a service split out of a
+monolith — that is the case Arbiter's system mode exists for. Write an
+`arbiter-system.yaml`:
 
 ```yaml
-system: step
+system: my-system
 repos:
-  - id: legacy
-    path: ../STEP-Migration
+  - id: old
+    path: ../old-repo
     role: source
-  - id: app
-    path: ../STEP_App
+  - id: new
+    path: ../new-repo
     role: target
 ```
 
@@ -256,6 +296,11 @@ coverage figure — that is a machine-checked invariant, CI-6.
 ---
 
 ## What to send back
+
+File it as a GitHub issue on this repository — that's the channel
+`CONTRIBUTING.md` sets up for exactly this: defect reports, reproductions and
+doc corrections. Send code snippets or a description directly to me instead of
+attaching a patch; `CONTRIBUTING.md` explains why.
 
 If you want the next session to be useful, the three most valuable things are:
 

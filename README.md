@@ -24,6 +24,41 @@ recording which checks support each assertion and which abstained.
 
 ---
 
+## Why Arbiter
+
+Every scanner finds things. That was never the gap. The gap is what happens
+next: a clean report from almost any tool looks identical whether it checked
+everything and found nothing, or skipped half the repository and never said
+so. A missing binary, an unconfigured rule, a stack the tool didn't
+recognize — all of it quietly disappears into the same green result as a
+genuine pass.
+
+That distinction sounds small, and it is the entire reason this exists. A
+report that gets used for something that matters — a security review, a
+compliance package, a decision to ship — has to say "checked, and clean" in a
+way that is visibly different from "could not check this part." Arbiter's
+premise is not "find more bugs than the other scanner." It is that a tool
+should never assert something it did not verify, and the gap between
+verified and unverified should be visible in every output, not buried in a
+log nobody reads.
+
+So coverage is a first-class number, not a footnote: every probe that could
+not run records why, the figure it produces is a real denominator over what
+was actually read, and the overall grade is withheld outright — rather than
+estimated or extrapolated — when coverage falls too low. That makes Arbiter a
+more conservative tool than one that always hands back a grade. It's meant
+to be.
+
+The same discipline applies to the fix a finding hands back, not just the
+finding itself. Every finding's remediation is labelled with where it came
+from — a maintained, rule-specific fix; a fix pulled straight from the tool's
+own output that run; a bare reference link; or nothing rule-specific at all —
+so "see the docs" never gets to read the same as an actual, actionable fix,
+and a report can say honestly how much of its advice is real guidance versus
+a shrug.
+
+---
+
 ## Principles
 
 1. **Coverage is reported, never assumed.** A probe that could not run is
@@ -92,6 +127,7 @@ arbiter scan ./my-repo
 
 ```bash
 ./tools/install_tools.sh     # optional: the five external analyzers, pinned
+                              # (bash — on Windows use Git Bash or WSL)
 ```
 
 Full installation, optional extras and training setup: **[SETUP.md](SETUP.md)**.
@@ -108,6 +144,10 @@ arbiter remote scan ./my-repo
 The output is identical, because it is rendered by the same code; the analysis
 happened on the server. HTTPS only — an `http://` address is refused before the
 key is sent.
+
+Pointing this at a repository of your own, rather than the examples above?
+**[RUNNING-ON-YOUR-OWN-CODE.md](RUNNING-ON-YOUR-OWN-CODE.md)** walks through
+install, first scan, baseline and calibration end to end.
 
 ## Commands
 
@@ -224,6 +264,7 @@ enumerates, and any change that regresses on one of them fails the suite.
 | Document | Contents |
 |---|---|
 | [SETUP.md](SETUP.md) | Installation, optional extras, enabling the training loop |
+| [RUNNING-ON-YOUR-OWN-CODE.md](RUNNING-ON-YOUR-OWN-CODE.md) | Start here to point Arbiter at your own repository |
 | [docs/architecture.md](docs/architecture.md) | Pipeline, module layout, fingerprinting, scoring |
 | [docs/cli.md](docs/cli.md) | Full command reference, formats, exit codes |
 | [docs/configuration.md](docs/configuration.md) | `arbiter.yaml`, profiles, gating, suppressions, house rules |

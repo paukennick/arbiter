@@ -51,6 +51,21 @@ def select(doc: Any, expr: str) -> list[Any]:
             continue
         if isinstance(cur, dict):
             cur = cur.get(part)
+        elif isinstance(cur, list):
+            # A tool (checkov, across multiple detected frameworks) can emit a
+            # list of sibling result objects instead of one. Fan the key
+            # lookup across them and flatten, rather than failing the whole
+            # path because *a* list turned up where a dict was expected.
+            nxt: list[Any] = []
+            for item in cur:
+                if not isinstance(item, dict):
+                    continue
+                v = item.get(part)
+                if isinstance(v, list):
+                    nxt.extend(v)
+                elif v is not None:
+                    nxt.append(v)
+            cur = nxt
         else:
             return []
         if cur is None:
@@ -111,7 +126,9 @@ class Adapter:
         if not self.version_argv:
             return ""
         try:
-            r = subprocess.run(self.version_argv, capture_output=True, text=True, timeout=20)
+            version_argv = list(self.version_argv)
+            version_argv[0] = shutil.which(version_argv[0]) or version_argv[0]
+            r = subprocess.run(version_argv, capture_output=True, text=True, timeout=20)
             return (r.stdout or r.stderr).strip().split("\n")[0][:60]
         except Exception:
             return ""
@@ -130,6 +147,15 @@ class Adapter:
         what makes the timeout mean what it says.
         """
         argv = [a.replace("{workdir}", workdir) for a in self.argv]
+        if argv:
+            # On Windows, Popen(shell=False) calls CreateProcess directly,
+            # which -- unlike cmd.exe -- does not search PATHEXT for a bare
+            # name. A tool whose console-script entry point is a .cmd/.bat
+            # shim (checkov) resolves fine via shutil.which() in
+            # missing_binaries() but then fails every invocation with
+            # WinError 2. Resolving to the full, extensioned path here makes
+            # invocation match the availability check.
+            argv[0] = shutil.which(argv[0]) or argv[0]
         cwd = self.cwd.replace("{workdir}", workdir) if self.cwd else None
         env = dict(os.environ)
         env.setdefault("PYTHONIOENCODING", "utf-8")
@@ -233,9 +259,28 @@ class Adapter:
                 rows.extend(select(element, expr))
         return rows
 
+    def _dig_remediation(self, row: Any, m: dict, field_key: str, format_key: str) -> tuple[str, str]:
+        """Returns (text, source). source is "link" whenever the dug value is
+        itself a URL -- a pointer elsewhere, however it's worded -- and
+        "field" for an inline value (an actual action or code, not a
+        pointer). Judged by the value's shape, not by which config key
+        supplied it, so a custom format string around a URL still reads as
+        a link rather than masquerading as tool-provided fix text.
+        """
+        value = str(dig(row, m.get(field_key, ""), "") or "").strip()
+        if not value:
+            return "", ""
+        source = "link" if value.startswith(("http://", "https://")) else "field"
+        if m.get(format_key):
+            return m[format_key].format(value=value), source
+        if source == "link":
+            return f"See {self.name}'s guidance: {value}", source
+        return value, source
+
     def to_findings(self, rows: list[Any], repo_id: str, workdir: str) -> list[Finding]:
         m = self.mapping
         sev_table = {str(k).lower(): v for k, v in (m.get("severity_table") or {}).items()}
+        remediation_table = {str(k): v for k, v in (m.get("remediation_table") or {}).items()}
         out: list[Finding] = []
         for row in rows:
             rule = str(dig(row, m.get("rule_id", ""), "") or "unknown")
@@ -259,6 +304,24 @@ class Adapter:
                 sev = sev_table.get(raw_sev, m.get("severity_default", "medium"))
             logical = str(dig(row, m.get("logical", ""), "") or "")
             desc = str(dig(row, m.get("description", ""), "") or "")
+            # A curated, per-rule fix (remediation_table) beats a raw dug
+            # field: "see the tool's docs" is not a fix, and a specific rule
+            # id maps to one well-known mitigation, not a URL to go read.
+            remediation = remediation_table.get(rule, "")
+            remediation_source = "table" if remediation else ""
+            if not remediation:
+                remediation, remediation_source = self._dig_remediation(
+                    row, m, "remediation", "remediation_format")
+            # Some tools (ruff, semgrep) put an actual tool-generated fix in
+            # one field and a docs link in another. Only fall back to the
+            # link -- still labelled as a link, not presented as a fix --
+            # when the primary field has nothing.
+            if not remediation and m.get("remediation_secondary"):
+                remediation, remediation_source = self._dig_remediation(
+                    row, m, "remediation_secondary", "remediation_secondary_format")
+            if not remediation:
+                remediation = (m.get("remediation_default", "") or "").format(rule_id=rule)
+                remediation_source = "default"
             out.append(Finding(
                 rule_id=f"{self.name}/{rule}",
                 title=title[:200],
@@ -269,6 +332,8 @@ class Adapter:
                 probe=self.name,
                 location=Location(path=path, start_line=line, logical=logical),
                 description=desc[:1000],
+                remediation=remediation[:500],
+                remediation_source=remediation_source,
                 evidence=f"{rule}@{path}:{logical}" if logical else f"{rule}@{path}",
                 tags=["external-tool", self.name],
             ))

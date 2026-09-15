@@ -95,6 +95,14 @@ class Finding:
     location: Location = field(default_factory=Location)
     description: str = ""
     remediation: str = ""
+    # Where `remediation` came from: "table" (curated, hand-written -- can go
+    # stale), "field" (dug straight from the tool's own output this run --
+    # self-refreshing), "link" (a URL wrapped as "see guidance"), "default"
+    # (nothing tool- or curator-specific was available). Empty for findings
+    # that didn't go through Adapter.to_findings() at all. Lets a report
+    # surface curated-table coverage instead of it silently going stale.
+    remediation_source: str = ""
+    scope_note: str = ""  # a repo's own docs claim this location is covered elsewhere -- unverified, never changes severity/status
     evidence: str = ""
     probe: str = ""
     probe_version: str = ""

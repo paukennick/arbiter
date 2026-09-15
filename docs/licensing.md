@@ -15,6 +15,22 @@ rights and assigns scan output to the user (L-4's substance), but it explicitly
 is not the operative grant. L-3 still cannot be drafted, because it follows from
 open questions 1 and 2 below, and L-6 is untouched. What remains needs counsel.
 
+**Progress, 2026-09-14.** Open questions 1 and 2 are answered: copyright is
+held individually by Nicholas J Pauken, not an entity, and the licensing model
+is per-repository-or-per-system — a client buys a licence against either one
+named repository or a named group of them, matching Arbiter's own repository/
+system distinction (`HANDOFF.md`). This scheme is not in force yet: it takes
+effect at a later date to be set, and while testing continues nobody —
+including a prospective client — is bound by any licence restriction; today's
+`LICENSE` (no rights granted) is what actually governs until that date is set.
+A draft of L-3's grant table follows that section below, built from these
+answers plus what L-4 through L-6 had already settled. It is a drafting aid,
+not counsel-reviewed text. Still unanswered and called out inline: how
+repositories are added to or removed from a system licence over its life,
+whether consulting delivery against a client's repository counts as a second
+licensed repository, term/termination, modification rights, and liability
+limits.
+
 ## Contents
 
 - [Current position](#current-position)
@@ -95,6 +111,38 @@ adopted, in source headers.
 | Warranty and liability | disclaimer, limitation |
 
 **Acceptance:** each row answered in the licence text.
+
+#### Draft grant (pending counsel review — not operative)
+
+Built from the two settled points — copyright held individually by
+Nicholas J Pauken; one licence per named repository — plus what L-4 through
+L-6 already decided. Anything marked `[OPEN]` is a real gap, not a style
+choice, and blocks this from being the acceptance-satisfying text on its own.
+
+| Question | Draft answer |
+|---|---|
+| Who may use it | The named licensee (individual or organisation) identified in the licence instrument itself, not transferable without the copyright holder's written consent. |
+| Scope | Resolved 2026-09-14: a licence is purchased against either a single named repository or a named group of repositories (a licensed **system**, matching Arbiter's own system-scan unit in `HANDOFF.md`) — the licence instrument states which, and lists the repository or repositories covered by canonical remote URL as of the licence date. Scanning any repository outside that list, including a fork or mirror of one that is covered, requires a separate licence or an amendment adding it to the existing one. `[OPEN]` — how repositories are added to or removed from an existing system licence over the licence's life is not yet specified. |
+| For what | Internal evaluation and production use against the licensed repository are covered. `[OPEN]` — consulting delivery (running the licensed copy against a client's repository, as opposed to the licensee's own) is a different repository under this scope and is not covered by a single licence; whether that needs its own model is unanswered. |
+| May they modify | Draft default: no, without the copyright holder's written consent. `[OPEN]` — not one of the two answered questions; carried here as the conservative default for proprietary per-unit software, not a decision. |
+| May they redistribute | No. |
+| May output be published | Yes, unambiguously — see L-4; this licence does not narrow it. |
+| Term and termination | `[OPEN]` — perpetual per repository, or subscription, is unanswered. Matters here specifically because "one licence per repository or system" reads differently as a one-time purchase than as a recurring one. |
+| Warranty and liability | Carries `LICENSE` §5's "as is" disclaimer forward. `[OPEN]` — no liability cap or limitation is drafted yet. |
+| Effective date | Resolved 2026-09-14: this scheme is not in force yet. It takes effect at a date to be set later, before which no client-facing enforcement of it exists. |
+
+**During testing, no licence restriction applies.** Until the effective date
+above is set, nobody running Arbiter — including a prospective client
+evaluating it — is bound by the per-repository/per-system scheme drafted here.
+`LICENSE` as it stands today (no rights granted, all rights reserved) is what
+actually governs in the interim; this draft describes what replaces it, not
+what applies now. Nothing in this document should be read as, or communicated
+to a client as, a restriction currently in effect.
+
+**Acceptance (unchanged from above):** each row of the original table answered
+in the licence text — this draft closes "who," "scope," "effective date," and
+narrows "for what" and "redistribute," but does not close the row on its own
+until the remaining `[OPEN]` items are resolved.
 
 ### L-4 — Scan output must belong to the user
 

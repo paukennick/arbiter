@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import webbrowser
 from pathlib import Path
 
 from . import __version__, client
@@ -79,6 +80,12 @@ def build_parser() -> argparse.ArgumentParser:
     sc.add_argument("--out", default="arbiter-out", help="output directory")
     sc.add_argument("--format", default="json,console", help="json,sarif,html,markdown,console")
     sc.add_argument("--limit", type=int, default=40, help="findings shown on the console")
+    sc.add_argument("--open", dest="open", action="store_const", const=True, default=None,
+                     help="open the HTML report in the default browser when the scan finishes "
+                          "(adds html to --format if it isn't already there); on by default when "
+                          "run at a terminal")
+    sc.add_argument("--no-open", dest="open", action="store_const", const=False,
+                     help="never open the HTML report automatically")
 
     gt = common(sub.add_parser("gate", help="analyze and exit non-zero on policy failure"))
     gt.add_argument("--out", default="arbiter-out")
@@ -341,6 +348,13 @@ def cmd_scan(args, gate_mode: bool = False) -> int:
     )
 
     formats = _formats(args.format)
+    open_report = getattr(args, "open", None)
+    if open_report is None:
+        # No explicit --open/--no-open: default to opening only at a real
+        # terminal, so scripted/CI invocations (no tty) are unaffected.
+        open_report = sys.stdout.isatty()
+    if open_report and "html" not in formats:
+        formats = [*formats, "html"]
     written = write_all(report, args.out, [f for f in formats if f != "console"])
     if "console" in formats or not formats:
         print(render_console(report, limit=getattr(args, "limit", 40)))
@@ -348,6 +362,12 @@ def cmd_scan(args, gate_mode: bool = False) -> int:
         print(f"  wrote {kind}: {path}")
     if written:
         print()
+
+    if open_report and "html" in written:
+        try:
+            webbrowser.open(Path(written["html"]).resolve().as_uri())
+        except Exception as exc:
+            print(f"  (could not open the report automatically: {exc})")
 
     if gate_mode and not (report.gate or {}).get("passed"):
         return EXIT_GATE_FAIL

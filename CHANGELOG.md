@@ -27,7 +27,8 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   otherwise saved still declaring schema 1. The committed
   `.arbiter/knowledge.json` moved from `k:0f258c4ce717` to `k:a37f38560140`
   with no evidence change, so any scan pinning the old hash must be re-pinned.
-  (REQ-020)
+  Merging alongside training run 2 moved it again, to `k:2e88d7a07351`; that
+  second move carries the run's evidence and this one does not. (REQ-020)
 
 ### 2026-09-13
 

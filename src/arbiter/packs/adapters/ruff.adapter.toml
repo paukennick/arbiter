@@ -22,3 +22,10 @@ path = "filename"
 line = "location.row"
 severity_const = "low"
 dimension = "quality"
+# Ruff's own fix.message is an actual action ("Remove unused import: `os`"),
+# not a link -- prefer it over the per-rule docs URL, which is only a
+# fallback for rules with no safe autofix.
+remediation = "fix.message"
+remediation_format = "Ruff can autofix this (`ruff check --fix`): {value}"
+remediation_secondary = "url"
+remediation_default = "See Ruff's rule docs for {rule_id} (https://docs.astral.sh/ruff/rules/)."

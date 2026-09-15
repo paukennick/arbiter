@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
-  "generated": "2026-09-12T20:32:22Z",
+  "generated": "2026-09-14T15:31:27Z",
   "repos_scanned": 41,
   "repos_timed_out": [],
   "repos_failed": [],
   "lines_by_population": {
-    "vulnerable": 694772,
-    "clean": 2309276,
-    "examples": 596206
+    "vulnerable": 694842,
+    "clean": 2323855,
+    "examples": 598285
   },
   "bands": [
     [
@@ -27,80 +27,80 @@
   "min_repos_to_promote": 2,
   "lines_by_population_language": {
     "clean": {
-      "yaml": 289951,
       "terraform": 25620,
-      "json": 43728,
-      "markdown": 209100,
-      "unknown": 118442,
-      "go": 811194,
+      "markdown": 209145,
+      "unknown": 116925,
+      "json": 43891,
+      "yaml": 291145,
       "hcl": 163,
-      "shell": 9863,
-      "rst": 23251,
-      "ini": 54,
-      "makefile": 2479,
-      "python": 63407,
+      "go": 819154,
+      "shell": 9866,
       "toml": 10012,
-      "html": 154460,
+      "rst": 23251,
+      "python": 63407,
+      "makefile": 2490,
+      "ini": 54,
+      "html": 159734,
       "css": 6755,
       "sql": 272,
       "javascript": 23042,
-      "typescript": 154706,
+      "typescript": 155489,
       "rust": 56386,
       "ruby": 24133,
-      "cpp": 147949,
+      "cpp": 148538,
       "c": 8660,
-      "java": 56659,
-      "dockerfile": 672,
+      "java": 56733,
       "php": 62702,
+      "dockerfile": 672,
       "r": 5616
     },
     "vulnerable": {
-      "markdown": 63432,
-      "unknown": 114920,
+      "markdown": 63502,
       "json": 139767,
-      "yaml": 17083,
+      "unknown": 114920,
       "terraform": 7505,
       "dockerfile": 7864,
+      "yaml": 17083,
       "javascript": 112164,
       "html": 31933,
-      "css": 35473,
       "shell": 3359,
+      "css": 35473,
       "powershell": 166,
-      "go": 15256,
       "python": 15422,
-      "toml": 2667,
       "typescript": 63571,
+      "toml": 2667,
+      "go": 15256,
       "java": 30584,
       "sql": 15533,
       "ruby": 3580,
       "php": 14242,
       "ini": 188,
-      "c": 7,
-      "dotenv": 56
+      "dotenv": 56,
+      "c": 7
     },
     "examples": {
-      "unknown": 48325,
-      "markdown": 40466,
+      "unknown": 48348,
+      "markdown": 40536,
+      "yaml": 254861,
       "json": 152786,
-      "yaml": 252875,
       "shell": 4154,
       "python": 27093,
       "ini": 19,
       "javascript": 20674,
-      "go": 5560,
-      "css": 7876,
-      "html": 2781,
-      "dockerfile": 1890,
-      "csharp": 3341,
       "java": 6620,
-      "toml": 92,
+      "go": 5560,
+      "dockerfile": 1890,
+      "html": 2781,
+      "css": 7876,
+      "csharp": 3341,
       "typescript": 19709,
-      "makefile": 410,
       "cpp": 972,
-      "php": 44,
-      "dotenv": 11,
-      "sql": 24,
+      "makefile": 410,
+      "toml": 92,
       "c": 79,
+      "sql": 24,
+      "dotenv": 11,
+      "php": 44,
       "rust": 405
     }
   },
@@ -1395,23 +1395,87 @@
         "yaml"
       ],
       "repos_seen": 19,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
-      "ratio": 28.29,
+      "ratio": 28.4,
       "severity": "medium",
       "basis": "measured"
+    },
+    "checkov/CKV2_K8S_1": {
+      "tool": "checkov",
+      "title": "RoleBinding should not allow privilege escalation to a ServiceAccount or Node on other RoleBinding",
+      "clean_hits": 0,
+      "vulnerable_hits": 1,
+      "example_hits": 1,
+      "languages": [
+        "yaml"
+      ],
+      "repos_seen": 2,
+      "clean_kloc": 291.1,
+      "vulnerable_kloc": 17.1,
+      "ratio": "inf",
+      "severity": null,
+      "basis": "insufficient-observations"
+    },
+    "checkov/CKV2_K8S_2": {
+      "tool": "checkov",
+      "title": "Granting `create` permissions to `nodes/proxy` or `pods/exec` sub resources allows potential privilege escalation",
+      "clean_hits": 0,
+      "vulnerable_hits": 1,
+      "example_hits": 1,
+      "languages": [
+        "yaml"
+      ],
+      "repos_seen": 2,
+      "clean_kloc": 291.1,
+      "vulnerable_kloc": 17.1,
+      "ratio": "inf",
+      "severity": null,
+      "basis": "insufficient-observations"
+    },
+    "checkov/CKV2_K8S_3": {
+      "tool": "checkov",
+      "title": "No ServiceAccount/Node should have `impersonate` permissions for groups/users/service-accounts",
+      "clean_hits": 0,
+      "vulnerable_hits": 1,
+      "example_hits": 1,
+      "languages": [
+        "yaml"
+      ],
+      "repos_seen": 2,
+      "clean_kloc": 291.1,
+      "vulnerable_kloc": 17.1,
+      "ratio": "inf",
+      "severity": null,
+      "basis": "insufficient-observations"
+    },
+    "checkov/CKV2_K8S_4": {
+      "tool": "checkov",
+      "title": "ServiceAccounts and nodes that can modify services/status may set the `status.loadBalancer.ingress.ip` field to exploit ",
+      "clean_hits": 0,
+      "vulnerable_hits": 1,
+      "example_hits": 1,
+      "languages": [
+        "yaml"
+      ],
+      "repos_seen": 2,
+      "clean_kloc": 291.1,
+      "vulnerable_kloc": 17.1,
+      "ratio": "inf",
+      "severity": null,
+      "basis": "insufficient-observations"
     },
     "checkov/CKV2_K8S_5": {
       "tool": "checkov",
       "title": "No ServiceAccount/Node should be able to read all secrets",
       "clean_hits": 0,
-      "vulnerable_hits": 2,
-      "example_hits": 0,
+      "vulnerable_hits": 3,
+      "example_hits": 2,
       "languages": [
         "yaml"
       ],
-      "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "repos_seen": 3,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -1420,17 +1484,17 @@
     "checkov/CKV2_K8S_6": {
       "tool": "checkov",
       "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
-      "clean_hits": 13,
-      "vulnerable_hits": 16,
-      "example_hits": 129,
+      "clean_hits": 21,
+      "vulnerable_hits": 22,
+      "example_hits": 176,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 6,
-      "clean_kloc": 333.7,
+      "repos_seen": 8,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 2.62,
+      "ratio": 2.24,
       "severity": "info",
       "basis": "measured"
     },
@@ -1749,7 +1813,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 69.3,
+      "clean_kloc": 69.5,
       "vulnerable_kloc": 147.3,
       "ratio": 0.02,
       "severity": "info",
@@ -1798,7 +1862,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.3,
+      "clean_kloc": 69.5,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -1815,7 +1879,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.3,
+      "clean_kloc": 69.5,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -1832,7 +1896,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.3,
+      "clean_kloc": 69.5,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -2201,7 +2265,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 69.3,
+      "clean_kloc": 69.5,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -2330,7 +2394,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.3,
+      "clean_kloc": 69.5,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -2348,9 +2412,9 @@
         "yaml"
       ],
       "repos_seen": 4,
-      "clean_kloc": 359.3,
+      "clean_kloc": 360.7,
       "vulnerable_kloc": 164.4,
-      "ratio": 26.23,
+      "ratio": 26.33,
       "severity": "medium",
       "basis": "measured"
     },
@@ -2444,7 +2508,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -2462,7 +2526,7 @@
         "yaml"
       ],
       "repos_seen": 4,
-      "clean_kloc": 359.3,
+      "clean_kloc": 360.7,
       "vulnerable_kloc": 164.4,
       "ratio": 1.29,
       "severity": "info",
@@ -2543,7 +2607,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 69.3,
+      "clean_kloc": 69.5,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": "medium",
@@ -2640,7 +2704,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.3,
+      "clean_kloc": 69.5,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -2689,7 +2753,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.3,
+      "clean_kloc": 69.5,
       "vulnerable_kloc": 147.3,
       "ratio": null,
       "severity": null,
@@ -3266,7 +3330,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.3,
+      "clean_kloc": 69.5,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -3459,7 +3523,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 69.3,
+      "clean_kloc": 69.5,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -3525,9 +3589,9 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 359.3,
+      "clean_kloc": 360.7,
       "vulnerable_kloc": 164.4,
-      "ratio": 4.37,
+      "ratio": 4.39,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -3543,9 +3607,9 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 359.3,
+      "clean_kloc": 360.7,
       "vulnerable_kloc": 164.4,
-      "ratio": 4.37,
+      "ratio": 4.39,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -3561,9 +3625,9 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 359.3,
+      "clean_kloc": 360.7,
       "vulnerable_kloc": 164.4,
-      "ratio": 4.37,
+      "ratio": 4.39,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -3579,9 +3643,9 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 359.3,
+      "clean_kloc": 360.7,
       "vulnerable_kloc": 164.4,
-      "ratio": 4.37,
+      "ratio": 4.39,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -3676,7 +3740,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.3,
+      "clean_kloc": 69.5,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -3821,7 +3885,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 69.3,
+      "clean_kloc": 69.5,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": "medium",
@@ -5230,9 +5294,9 @@
         "unknown"
       ],
       "repos_seen": 19,
-      "clean_kloc": 119.1,
+      "clean_kloc": 117.6,
       "vulnerable_kloc": 122.8,
-      "ratio": 57.24,
+      "ratio": 56.51,
       "severity": "medium",
       "basis": "measured"
     },
@@ -5247,9 +5311,9 @@
         "unknown"
       ],
       "repos_seen": 15,
-      "clean_kloc": 119.1,
+      "clean_kloc": 117.6,
       "vulnerable_kloc": 122.8,
-      "ratio": 76.83,
+      "ratio": 75.85,
       "severity": "medium",
       "basis": "measured"
     },
@@ -6207,9 +6271,9 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
-      "ratio": 25.46,
+      "ratio": 25.56,
       "severity": "medium",
       "basis": "measured"
     },
@@ -6217,33 +6281,33 @@
       "tool": "checkov",
       "title": "CPU requests should be set",
       "clean_hits": 9,
-      "vulnerable_hits": 11,
-      "example_hits": 85,
-      "languages": [
-        "json",
-        "yaml"
-      ],
-      "repos_seen": 6,
-      "clean_kloc": 333.7,
-      "vulnerable_kloc": 156.8,
-      "ratio": 2.6,
-      "severity": "info",
-      "basis": "measured"
-    },
-    "checkov/CKV_K8S_11": {
-      "tool": "checkov",
-      "title": "CPU limits should be set",
-      "clean_hits": 11,
-      "vulnerable_hits": 12,
-      "example_hits": 106,
+      "vulnerable_hits": 15,
+      "example_hits": 105,
       "languages": [
         "json",
         "yaml"
       ],
       "repos_seen": 7,
-      "clean_kloc": 333.7,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 2.32,
+      "ratio": 3.56,
+      "severity": "low",
+      "basis": "measured"
+    },
+    "checkov/CKV_K8S_11": {
+      "tool": "checkov",
+      "title": "CPU limits should be set",
+      "clean_hits": 18,
+      "vulnerable_hits": 16,
+      "example_hits": 150,
+      "languages": [
+        "json",
+        "yaml"
+      ],
+      "repos_seen": 8,
+      "clean_kloc": 335.0,
+      "vulnerable_kloc": 156.8,
+      "ratio": 1.9,
       "severity": "info",
       "basis": "measured"
     },
@@ -6251,67 +6315,67 @@
       "tool": "checkov",
       "title": "Memory requests should be set",
       "clean_hits": 9,
-      "vulnerable_hits": 11,
-      "example_hits": 94,
-      "languages": [
-        "json",
-        "yaml"
-      ],
-      "repos_seen": 6,
-      "clean_kloc": 333.7,
-      "vulnerable_kloc": 156.8,
-      "ratio": 2.6,
-      "severity": "info",
-      "basis": "measured"
-    },
-    "checkov/CKV_K8S_13": {
-      "tool": "checkov",
-      "title": "Memory limits should be set",
-      "clean_hits": 11,
-      "vulnerable_hits": 12,
-      "example_hits": 116,
+      "vulnerable_hits": 15,
+      "example_hits": 114,
       "languages": [
         "json",
         "yaml"
       ],
       "repos_seen": 7,
-      "clean_kloc": 333.7,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 2.32,
+      "ratio": 3.56,
+      "severity": "low",
+      "basis": "measured"
+    },
+    "checkov/CKV_K8S_13": {
+      "tool": "checkov",
+      "title": "Memory limits should be set",
+      "clean_hits": 18,
+      "vulnerable_hits": 16,
+      "example_hits": 160,
+      "languages": [
+        "json",
+        "yaml"
+      ],
+      "repos_seen": 8,
+      "clean_kloc": 335.0,
+      "vulnerable_kloc": 156.8,
+      "ratio": 1.9,
       "severity": "info",
       "basis": "measured"
     },
     "checkov/CKV_K8S_14": {
       "tool": "checkov",
       "title": "Image Tag should be fixed - not latest or blank",
-      "clean_hits": 7,
-      "vulnerable_hits": 14,
-      "example_hits": 73,
+      "clean_hits": 8,
+      "vulnerable_hits": 16,
+      "example_hits": 78,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 5,
-      "clean_kloc": 333.7,
+      "repos_seen": 6,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 4.25,
+      "ratio": 4.27,
       "severity": "low",
       "basis": "measured"
     },
     "checkov/CKV_K8S_15": {
       "tool": "checkov",
       "title": "Image Pull Policy should be Always",
-      "clean_hits": 7,
-      "vulnerable_hits": 1,
-      "example_hits": 58,
+      "clean_hits": 15,
+      "vulnerable_hits": 4,
+      "example_hits": 96,
       "languages": [
         "yaml"
       ],
-      "repos_seen": 4,
-      "clean_kloc": 290.0,
+      "repos_seen": 5,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
-      "ratio": 2.42,
-      "severity": "info",
+      "ratio": 4.54,
+      "severity": "low",
       "basis": "measured"
     },
     "checkov/CKV_K8S_153": {
@@ -6324,7 +6388,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": null,
       "severity": null,
@@ -6335,14 +6399,14 @@
       "title": "Minimize ClusterRoles that grant control over validating or mutating admission webhook configurations",
       "clean_hits": 1,
       "vulnerable_hits": 2,
-      "example_hits": 0,
+      "example_hits": 1,
       "languages": [
         "yaml"
       ],
-      "repos_seen": 3,
-      "clean_kloc": 290.0,
+      "repos_seen": 4,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
-      "ratio": 33.95,
+      "ratio": 34.09,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -6356,7 +6420,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6372,7 +6436,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6388,7 +6452,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6399,12 +6463,12 @@
       "title": "Container should not be privileged",
       "clean_hits": 0,
       "vulnerable_hits": 4,
-      "example_hits": 8,
+      "example_hits": 11,
       "languages": [
         "yaml"
       ],
-      "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "repos_seen": 3,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6415,12 +6479,12 @@
       "title": "Containers should not share the host process ID namespace",
       "clean_hits": 0,
       "vulnerable_hits": 4,
-      "example_hits": 4,
+      "example_hits": 7,
       "languages": [
         "yaml"
       ],
-      "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "repos_seen": 3,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6436,7 +6500,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6447,12 +6511,12 @@
       "title": "Containers should not share the host network namespace",
       "clean_hits": 0,
       "vulnerable_hits": 1,
-      "example_hits": 4,
+      "example_hits": 8,
       "languages": [
         "yaml"
       ],
-      "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "repos_seen": 3,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6462,33 +6526,33 @@
       "tool": "checkov",
       "title": "Containers should not run with allowPrivilegeEscalation",
       "clean_hits": 10,
-      "vulnerable_hits": 15,
-      "example_hits": 130,
+      "vulnerable_hits": 20,
+      "example_hits": 165,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 6,
-      "clean_kloc": 333.7,
+      "repos_seen": 7,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 3.19,
+      "ratio": 4.27,
       "severity": "low",
       "basis": "measured"
     },
     "checkov/CKV_K8S_21": {
       "tool": "checkov",
       "title": "The default namespace should not be used",
-      "clean_hits": 404,
-      "vulnerable_hits": 22,
-      "example_hits": 197,
+      "clean_hits": 410,
+      "vulnerable_hits": 25,
+      "example_hits": 352,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 4,
-      "clean_kloc": 333.7,
+      "repos_seen": 6,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 0.12,
+      "ratio": 0.13,
       "severity": "info",
       "basis": "measured"
     },
@@ -6496,16 +6560,16 @@
       "tool": "checkov",
       "title": "Use read-only filesystem for containers where possible",
       "clean_hits": 10,
-      "vulnerable_hits": 16,
-      "example_hits": 130,
+      "vulnerable_hits": 21,
+      "example_hits": 158,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 7,
-      "clean_kloc": 333.7,
+      "repos_seen": 8,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 3.4,
+      "ratio": 4.49,
       "severity": "low",
       "basis": "measured"
     },
@@ -6513,16 +6577,16 @@
       "tool": "checkov",
       "title": "Minimize the admission of root containers",
       "clean_hits": 10,
-      "vulnerable_hits": 15,
-      "example_hits": 130,
+      "vulnerable_hits": 20,
+      "example_hits": 156,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 6,
-      "clean_kloc": 333.7,
+      "repos_seen": 7,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 3.19,
+      "ratio": 4.27,
       "severity": "low",
       "basis": "measured"
     },
@@ -6536,7 +6600,7 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6552,7 +6616,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6562,33 +6626,33 @@
       "tool": "checkov",
       "title": "Minimize the admission of containers with the NET_RAW capability",
       "clean_hits": 10,
-      "vulnerable_hits": 15,
-      "example_hits": 130,
+      "vulnerable_hits": 20,
+      "example_hits": 162,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 6,
-      "clean_kloc": 333.7,
+      "repos_seen": 7,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 3.19,
+      "ratio": 4.27,
       "severity": "low",
       "basis": "measured"
     },
     "checkov/CKV_K8S_29": {
       "tool": "checkov",
       "title": "Apply security context to your pods and containers",
-      "clean_hits": 16,
-      "vulnerable_hits": 18,
-      "example_hits": 130,
+      "clean_hits": 23,
+      "vulnerable_hits": 23,
+      "example_hits": 155,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 7,
-      "clean_kloc": 333.7,
+      "repos_seen": 8,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 2.39,
+      "ratio": 2.14,
       "severity": "info",
       "basis": "measured"
     },
@@ -6596,34 +6660,34 @@
       "tool": "checkov",
       "title": "Apply security context to your containers",
       "clean_hits": 10,
-      "vulnerable_hits": 11,
-      "example_hits": 116,
+      "vulnerable_hits": 16,
+      "example_hits": 137,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 6,
-      "clean_kloc": 333.7,
+      "repos_seen": 7,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 2.34,
-      "severity": "info",
+      "ratio": 3.42,
+      "severity": "low",
       "basis": "measured"
     },
     "checkov/CKV_K8S_31": {
       "tool": "checkov",
       "title": "Ensure that the seccomp profile is set to docker/default or runtime/default",
-      "clean_hits": 11,
-      "vulnerable_hits": 15,
-      "example_hits": 130,
+      "clean_hits": 12,
+      "vulnerable_hits": 19,
+      "example_hits": 165,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 6,
-      "clean_kloc": 333.7,
+      "repos_seen": 7,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 2.9,
-      "severity": "info",
+      "ratio": 3.38,
+      "severity": "low",
       "basis": "measured"
     },
     "checkov/CKV_K8S_35": {
@@ -6631,12 +6695,12 @@
       "title": "Prefer using secrets as files over secrets as environment variables",
       "clean_hits": 0,
       "vulnerable_hits": 1,
-      "example_hits": 1,
+      "example_hits": 6,
       "languages": [
         "yaml"
       ],
-      "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "repos_seen": 3,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6646,67 +6710,83 @@
       "tool": "checkov",
       "title": "Minimize the admission of containers with capabilities assigned",
       "clean_hits": 10,
-      "vulnerable_hits": 15,
-      "example_hits": 130,
+      "vulnerable_hits": 20,
+      "example_hits": 162,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 6,
-      "clean_kloc": 333.7,
+      "repos_seen": 7,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 3.19,
+      "ratio": 4.27,
       "severity": "low",
       "basis": "measured"
     },
     "checkov/CKV_K8S_38": {
       "tool": "checkov",
       "title": "Ensure that Service Account Tokens are only mounted where necessary",
-      "clean_hits": 16,
-      "vulnerable_hits": 19,
-      "example_hits": 130,
+      "clean_hits": 24,
+      "vulnerable_hits": 24,
+      "example_hits": 172,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 7,
-      "clean_kloc": 333.7,
+      "repos_seen": 8,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 2.53,
+      "ratio": 2.14,
       "severity": "info",
       "basis": "measured"
     },
     "checkov/CKV_K8S_40": {
       "tool": "checkov",
       "title": "Containers should run as a high UID to avoid host conflict",
-      "clean_hits": 16,
-      "vulnerable_hits": 17,
-      "example_hits": 130,
+      "clean_hits": 24,
+      "vulnerable_hits": 22,
+      "example_hits": 165,
+      "languages": [
+        "json",
+        "yaml"
+      ],
+      "repos_seen": 8,
+      "clean_kloc": 335.0,
+      "vulnerable_kloc": 156.8,
+      "ratio": 1.96,
+      "severity": "info",
+      "basis": "measured"
+    },
+    "checkov/CKV_K8S_42": {
+      "tool": "checkov",
+      "title": "Ensure that default service accounts are not actively used",
+      "clean_hits": 0,
+      "vulnerable_hits": 1,
+      "example_hits": 1,
+      "languages": [
+        "yaml"
+      ],
+      "repos_seen": 2,
+      "clean_kloc": 291.1,
+      "vulnerable_kloc": 17.1,
+      "ratio": "inf",
+      "severity": null,
+      "basis": "insufficient-observations"
+    },
+    "checkov/CKV_K8S_43": {
+      "tool": "checkov",
+      "title": "Image should use digest",
+      "clean_hits": 19,
+      "vulnerable_hits": 20,
+      "example_hits": 177,
       "languages": [
         "json",
         "yaml"
       ],
       "repos_seen": 7,
-      "clean_kloc": 333.7,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 2.26,
-      "severity": "info",
-      "basis": "measured"
-    },
-    "checkov/CKV_K8S_43": {
-      "tool": "checkov",
-      "title": "Image should use digest",
-      "clean_hits": 11,
-      "vulnerable_hits": 15,
-      "example_hits": 130,
-      "languages": [
-        "json",
-        "yaml"
-      ],
-      "repos_seen": 6,
-      "clean_kloc": 333.7,
-      "vulnerable_kloc": 156.8,
-      "ratio": 2.9,
+      "ratio": 2.25,
       "severity": "info",
       "basis": "measured"
     },
@@ -6715,14 +6795,14 @@
       "title": "Minimize wildcard use in Roles and ClusterRoles",
       "clean_hits": 3,
       "vulnerable_hits": 2,
-      "example_hits": 0,
+      "example_hits": 1,
       "languages": [
         "yaml"
       ],
-      "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "repos_seen": 3,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
-      "ratio": 11.32,
+      "ratio": 11.36,
       "severity": "medium",
       "basis": "measured"
     },
@@ -6730,34 +6810,34 @@
       "tool": "checkov",
       "title": "Liveness Probe Should be Configured",
       "clean_hits": 10,
-      "vulnerable_hits": 11,
-      "example_hits": 124,
+      "vulnerable_hits": 15,
+      "example_hits": 133,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 6,
-      "clean_kloc": 333.7,
+      "repos_seen": 7,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 2.34,
-      "severity": "info",
+      "ratio": 3.2,
+      "severity": "low",
       "basis": "measured"
     },
     "checkov/CKV_K8S_9": {
       "tool": "checkov",
       "title": "Readiness Probe Should be Configured",
       "clean_hits": 10,
-      "vulnerable_hits": 11,
-      "example_hits": 126,
+      "vulnerable_hits": 15,
+      "example_hits": 135,
       "languages": [
         "json",
         "yaml"
       ],
-      "repos_seen": 6,
-      "clean_kloc": 333.7,
+      "repos_seen": 7,
+      "clean_kloc": 335.0,
       "vulnerable_kloc": 156.8,
-      "ratio": 2.34,
-      "severity": "info",
+      "ratio": 3.2,
+      "severity": "low",
       "basis": "measured"
     },
     "checkov/CKV_OCI_10": {
@@ -6834,7 +6914,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6850,7 +6930,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6866,7 +6946,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6882,7 +6962,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6898,7 +6978,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6914,7 +6994,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6947,7 +7027,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 315.6,
+      "clean_kloc": 316.8,
       "vulnerable_kloc": 24.6,
       "ratio": "inf",
       "severity": "medium",
@@ -6963,7 +7043,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6982,9 +7062,9 @@
         "yaml"
       ],
       "repos_seen": 7,
-      "clean_kloc": 360.0,
+      "clean_kloc": 361.3,
       "vulnerable_kloc": 172.2,
-      "ratio": 2.57,
+      "ratio": 2.58,
       "severity": "info",
       "basis": "measured"
     },
@@ -7015,7 +7095,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 315.6,
+      "clean_kloc": 316.8,
       "vulnerable_kloc": 24.6,
       "ratio": "inf",
       "severity": null,
@@ -7032,7 +7112,7 @@
       ],
       "repos_seen": 1,
       "clean_kloc": 209.1,
-      "vulnerable_kloc": 63.4,
+      "vulnerable_kloc": 63.5,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
@@ -7061,9 +7141,9 @@
         "yaml"
       ],
       "repos_seen": 17,
-      "clean_kloc": 1906.6,
-      "vulnerable_kloc": 605.4,
-      "ratio": 4.3,
+      "clean_kloc": 1915.3,
+      "vulnerable_kloc": 605.5,
+      "ratio": 4.32,
       "severity": "low",
       "basis": "measured"
     },
@@ -7098,9 +7178,9 @@
         "unknown"
       ],
       "repos_seen": 7,
-      "clean_kloc": 1373.1,
-      "vulnerable_kloc": 399.9,
-      "ratio": 7.85,
+      "clean_kloc": 1380.5,
+      "vulnerable_kloc": 400.0,
+      "ratio": 7.89,
       "severity": "low",
       "basis": "measured"
     },
@@ -7114,7 +7194,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": null,
       "severity": null,
@@ -7130,7 +7210,7 @@
         "yaml"
       ],
       "repos_seen": 4,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": 0.47,
       "severity": "info",
@@ -7154,8 +7234,8 @@
         "yaml"
       ],
       "repos_seen": 8,
-      "clean_kloc": 1719.4,
-      "vulnerable_kloc": 454.8,
+      "clean_kloc": 1728.1,
+      "vulnerable_kloc": 454.9,
       "ratio": 0.48,
       "severity": "info",
       "basis": "measured"
@@ -7171,7 +7251,7 @@
       ],
       "repos_seen": 1,
       "clean_kloc": 209.1,
-      "vulnerable_kloc": 63.4,
+      "vulnerable_kloc": 63.5,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
@@ -7283,9 +7363,9 @@
         "unknown"
       ],
       "repos_seen": 3,
-      "clean_kloc": 181.8,
+      "clean_kloc": 180.3,
       "vulnerable_kloc": 130.3,
-      "ratio": 1.4,
+      "ratio": 1.38,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -7332,7 +7412,7 @@
         "unknown"
       ],
       "repos_seen": 6,
-      "clean_kloc": 181.8,
+      "clean_kloc": 180.3,
       "vulnerable_kloc": 130.3,
       "ratio": "inf",
       "severity": "medium",
@@ -7509,9 +7589,9 @@
         "unknown"
       ],
       "repos_seen": 8,
-      "clean_kloc": 119.1,
+      "clean_kloc": 117.6,
       "vulnerable_kloc": 122.8,
-      "ratio": 29.1,
+      "ratio": 28.73,
       "severity": "medium",
       "basis": "measured"
     },
@@ -7541,7 +7621,7 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 118.4,
+      "clean_kloc": 116.9,
       "vulnerable_kloc": 114.9,
       "ratio": "inf",
       "severity": null,
@@ -7557,7 +7637,7 @@
         "unknown"
       ],
       "repos_seen": 2,
-      "clean_kloc": 118.4,
+      "clean_kloc": 116.9,
       "vulnerable_kloc": 114.9,
       "ratio": "inf",
       "severity": null,
@@ -7573,7 +7653,7 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 118.4,
+      "clean_kloc": 116.9,
       "vulnerable_kloc": 114.9,
       "ratio": "inf",
       "severity": null,
@@ -7590,7 +7670,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 315.6,
+      "clean_kloc": 316.8,
       "vulnerable_kloc": 24.6,
       "ratio": "inf",
       "severity": null,
@@ -7607,7 +7687,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 315.6,
+      "clean_kloc": 316.8,
       "vulnerable_kloc": 24.6,
       "ratio": "inf",
       "severity": null,
@@ -7625,9 +7705,9 @@
         "unknown"
       ],
       "repos_seen": 4,
-      "clean_kloc": 350.6,
-      "vulnerable_kloc": 290.5,
-      "ratio": 1.21,
+      "clean_kloc": 349.1,
+      "vulnerable_kloc": 290.6,
+      "ratio": 1.2,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -7643,7 +7723,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 467.5,
+      "clean_kloc": 473.9,
       "vulnerable_kloc": 161.2,
       "ratio": "inf",
       "severity": null,
@@ -7661,9 +7741,9 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 523.2,
-      "vulnerable_kloc": 84.1,
-      "ratio": 3.11,
+      "clean_kloc": 524.4,
+      "vulnerable_kloc": 84.2,
+      "ratio": 3.12,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -7682,9 +7762,9 @@
         "unknown"
       ],
       "repos_seen": 6,
-      "clean_kloc": 716.4,
-      "vulnerable_kloc": 416.6,
-      "ratio": 16.34,
+      "clean_kloc": 721.1,
+      "vulnerable_kloc": 416.7,
+      "ratio": 16.44,
       "severity": "medium",
       "basis": "measured"
     },
@@ -7699,7 +7779,7 @@
       ],
       "repos_seen": 1,
       "clean_kloc": 209.1,
-      "vulnerable_kloc": 63.4,
+      "vulnerable_kloc": 63.5,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
@@ -7715,7 +7795,7 @@
         "unknown"
       ],
       "repos_seen": 5,
-      "clean_kloc": 327.5,
+      "clean_kloc": 326.1,
       "vulnerable_kloc": 178.4,
       "ratio": 0.26,
       "severity": "info",
@@ -7731,7 +7811,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 154.7,
+      "clean_kloc": 155.5,
       "vulnerable_kloc": 63.6,
       "ratio": null,
       "severity": null,
@@ -7747,7 +7827,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": "inf",
       "severity": null,
@@ -7763,7 +7843,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": "inf",
       "severity": null,
@@ -7779,7 +7859,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7795,7 +7875,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7811,7 +7891,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7827,7 +7907,7 @@
         "go"
       ],
       "repos_seen": 4,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7843,7 +7923,7 @@
         "go"
       ],
       "repos_seen": 2,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7859,9 +7939,9 @@
         "go"
       ],
       "repos_seen": 2,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
-      "ratio": 159.52,
+      "ratio": 161.08,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -7875,7 +7955,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7891,7 +7971,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7907,9 +7987,9 @@
         "go"
       ],
       "repos_seen": 3,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
-      "ratio": 17.72,
+      "ratio": 17.9,
       "severity": "medium",
       "basis": "measured"
     },
@@ -7923,7 +8003,7 @@
         "go"
       ],
       "repos_seen": 2,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": "inf",
       "severity": null,
@@ -7939,9 +8019,9 @@
         "go"
       ],
       "repos_seen": 4,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
-      "ratio": 35.45,
+      "ratio": 35.8,
       "severity": "medium",
       "basis": "measured"
     },
@@ -7955,9 +8035,9 @@
         "go"
       ],
       "repos_seen": 4,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
-      "ratio": 26.59,
+      "ratio": 26.85,
       "severity": "medium",
       "basis": "measured"
     },
@@ -7971,7 +8051,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": "inf",
       "severity": null,
@@ -7987,7 +8067,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -8003,9 +8083,9 @@
         "go"
       ],
       "repos_seen": 5,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
-      "ratio": 42.54,
+      "ratio": 42.96,
       "severity": "medium",
       "basis": "measured"
     },
@@ -8019,7 +8099,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": "inf",
       "severity": null,
@@ -8035,7 +8115,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -8051,9 +8131,9 @@
         "go"
       ],
       "repos_seen": 4,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
-      "ratio": 3.8,
+      "ratio": 3.84,
       "severity": "low",
       "basis": "measured"
     },
@@ -8067,9 +8147,9 @@
         "go"
       ],
       "repos_seen": 4,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
-      "ratio": 4.09,
+      "ratio": 4.13,
       "severity": "low",
       "basis": "measured"
     },
@@ -8083,9 +8163,9 @@
         "go"
       ],
       "repos_seen": 4,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
-      "ratio": 53.17,
+      "ratio": 53.69,
       "severity": "medium",
       "basis": "measured"
     },
@@ -8099,7 +8179,7 @@
         "go"
       ],
       "repos_seen": 2,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": "inf",
       "severity": null,
@@ -8115,7 +8195,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -8131,7 +8211,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -8147,9 +8227,9 @@
         "go"
       ],
       "repos_seen": 3,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
-      "ratio": 13.29,
+      "ratio": 13.42,
       "severity": "medium",
       "basis": "measured"
     },
@@ -8163,9 +8243,9 @@
         "go"
       ],
       "repos_seen": 3,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
-      "ratio": 53.17,
+      "ratio": 53.69,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -8179,9 +8259,9 @@
         "html"
       ],
       "repos_seen": 10,
-      "clean_kloc": 154.5,
+      "clean_kloc": 159.7,
       "vulnerable_kloc": 31.9,
-      "ratio": 3.17,
+      "ratio": 3.28,
       "severity": "low",
       "basis": "measured"
     },
@@ -8195,9 +8275,9 @@
         "html"
       ],
       "repos_seen": 6,
-      "clean_kloc": 154.5,
+      "clean_kloc": 159.7,
       "vulnerable_kloc": 31.9,
-      "ratio": 2.42,
+      "ratio": 2.5,
       "severity": "info",
       "basis": "measured"
     },
@@ -8500,7 +8580,7 @@
         "typescript"
       ],
       "repos_seen": 3,
-      "clean_kloc": 177.7,
+      "clean_kloc": 178.5,
       "vulnerable_kloc": 175.7,
       "ratio": 0.51,
       "severity": null,
@@ -8517,7 +8597,7 @@
         "typescript"
       ],
       "repos_seen": 4,
-      "clean_kloc": 177.7,
+      "clean_kloc": 178.5,
       "vulnerable_kloc": 175.7,
       "ratio": "inf",
       "severity": "medium",
@@ -8581,7 +8661,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 154.7,
+      "clean_kloc": 155.5,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": null,
@@ -8694,7 +8774,7 @@
         "typescript"
       ],
       "repos_seen": 2,
-      "clean_kloc": 177.7,
+      "clean_kloc": 178.5,
       "vulnerable_kloc": 175.7,
       "ratio": "inf",
       "severity": null,
@@ -8710,7 +8790,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 154.7,
+      "clean_kloc": 155.5,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": null,
@@ -8742,7 +8822,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 154.7,
+      "clean_kloc": 155.5,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": null,
@@ -8774,9 +8854,9 @@
         "unknown"
       ],
       "repos_seen": 2,
-      "clean_kloc": 118.4,
+      "clean_kloc": 116.9,
       "vulnerable_kloc": 114.9,
-      "ratio": 3.09,
+      "ratio": 3.05,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -8791,7 +8871,7 @@
         "unknown"
       ],
       "repos_seen": 2,
-      "clean_kloc": 272.9,
+      "clean_kloc": 276.7,
       "vulnerable_kloc": 146.9,
       "ratio": "inf",
       "severity": null,
@@ -8807,7 +8887,7 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 118.4,
+      "clean_kloc": 116.9,
       "vulnerable_kloc": 114.9,
       "ratio": "inf",
       "severity": null,
@@ -8823,7 +8903,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 154.7,
+      "clean_kloc": 155.5,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": null,
@@ -8840,7 +8920,7 @@
         "typescript"
       ],
       "repos_seen": 2,
-      "clean_kloc": 177.7,
+      "clean_kloc": 178.5,
       "vulnerable_kloc": 175.7,
       "ratio": "inf",
       "severity": null,
@@ -8857,9 +8937,9 @@
         "typescript"
       ],
       "repos_seen": 10,
-      "clean_kloc": 177.7,
+      "clean_kloc": 178.5,
       "vulnerable_kloc": 175.7,
-      "ratio": 0.93,
+      "ratio": 0.94,
       "severity": "info",
       "basis": "measured"
     },
@@ -8873,7 +8953,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 154.7,
+      "clean_kloc": 155.5,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": null,
@@ -8905,9 +8985,9 @@
         "typescript"
       ],
       "repos_seen": 2,
-      "clean_kloc": 154.7,
+      "clean_kloc": 155.5,
       "vulnerable_kloc": 63.6,
-      "ratio": 2.43,
+      "ratio": 2.45,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -8922,9 +9002,9 @@
         "typescript"
       ],
       "repos_seen": 4,
-      "clean_kloc": 177.7,
+      "clean_kloc": 178.5,
       "vulnerable_kloc": 175.7,
-      "ratio": 4.05,
+      "ratio": 4.06,
       "severity": "low",
       "basis": "measured"
     },
@@ -8938,7 +9018,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 154.7,
+      "clean_kloc": 155.5,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": null,
@@ -8955,7 +9035,7 @@
         "typescript"
       ],
       "repos_seen": 5,
-      "clean_kloc": 177.7,
+      "clean_kloc": 178.5,
       "vulnerable_kloc": 175.7,
       "ratio": 0.51,
       "severity": null,
@@ -8973,7 +9053,7 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 390.9,
+      "clean_kloc": 389.5,
       "vulnerable_kloc": 193.8,
       "ratio": "inf",
       "severity": "low",
@@ -8989,7 +9069,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 154.7,
+      "clean_kloc": 155.5,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": "low",
@@ -9005,9 +9085,9 @@
         "yaml"
       ],
       "repos_seen": 7,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
-      "ratio": 3.39,
+      "ratio": 3.41,
       "severity": "low",
       "basis": "measured"
     },
@@ -9021,9 +9101,9 @@
         "unknown"
       ],
       "repos_seen": 5,
-      "clean_kloc": 118.4,
+      "clean_kloc": 116.9,
       "vulnerable_kloc": 114.9,
-      "ratio": 1.03,
+      "ratio": 1.02,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -9053,7 +9133,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": null,
       "severity": null,
@@ -9245,7 +9325,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -9357,9 +9437,9 @@
         "html"
       ],
       "repos_seen": 8,
-      "clean_kloc": 154.5,
+      "clean_kloc": 159.7,
       "vulnerable_kloc": 31.9,
-      "ratio": 59.98,
+      "ratio": 62.03,
       "severity": "medium",
       "basis": "measured"
     },
@@ -9805,7 +9885,7 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 118.4,
+      "clean_kloc": 116.9,
       "vulnerable_kloc": 114.9,
       "ratio": null,
       "severity": null,
@@ -10093,7 +10173,7 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 118.4,
+      "clean_kloc": 116.9,
       "vulnerable_kloc": 114.9,
       "ratio": "inf",
       "severity": null,
@@ -10109,7 +10189,7 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 118.4,
+      "clean_kloc": 116.9,
       "vulnerable_kloc": 114.9,
       "ratio": "inf",
       "severity": null,
@@ -10125,7 +10205,7 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 118.4,
+      "clean_kloc": 116.9,
       "vulnerable_kloc": 114.9,
       "ratio": "inf",
       "severity": null,
@@ -10141,7 +10221,7 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 118.4,
+      "clean_kloc": 116.9,
       "vulnerable_kloc": 114.9,
       "ratio": "inf",
       "severity": null,
@@ -10797,9 +10877,9 @@
         "go"
       ],
       "repos_seen": 2,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
-      "ratio": 17.72,
+      "ratio": 17.9,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -10813,7 +10893,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -10829,7 +10909,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 811.2,
+      "clean_kloc": 819.2,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -10861,7 +10941,7 @@
         "yaml"
       ],
       "repos_seen": 5,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": "medium",
@@ -10877,7 +10957,7 @@
         "yaml"
       ],
       "repos_seen": 5,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": "medium",
@@ -10893,25 +10973,25 @@
         "yaml"
       ],
       "repos_seen": 4,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
-      "ratio": 3.39,
+      "ratio": 3.41,
       "severity": "low",
       "basis": "measured"
     },
     "semgrep/yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag": {
       "tool": "semgrep",
       "title": "GitHub Actions step uses a mutable tag or branch reference. Tags and branch names can be silently repointed by the actio",
-      "clean_hits": 53,
+      "clean_hits": 54,
       "vulnerable_hits": 33,
       "example_hits": 6,
       "languages": [
         "yaml"
       ],
       "repos_seen": 28,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
-      "ratio": 10.57,
+      "ratio": 10.42,
       "severity": "medium",
       "basis": "measured"
     },
@@ -10925,23 +11005,23 @@
         "yaml"
       ],
       "repos_seen": 9,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
-      "ratio": 12.12,
+      "ratio": 12.17,
       "severity": "medium",
       "basis": "measured"
     },
     "semgrep/yaml.kubernetes.security.allow-privilege-escalation-no-securitycontext.allow-privilege-escalation-no-securitycontext": {
       "tool": "semgrep",
       "title": "In Kubernetes, each pod runs in its own isolated environment with its own set of security policies. However, certain con",
-      "clean_hits": 215,
+      "clean_hits": 216,
       "vulnerable_hits": 11,
       "example_hits": 113,
       "languages": [
         "yaml"
       ],
       "repos_seen": 8,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": 0.87,
       "severity": "info",
@@ -10957,7 +11037,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -10973,9 +11053,9 @@
         "yaml"
       ],
       "repos_seen": 5,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
-      "ratio": 16.97,
+      "ratio": 17.04,
       "severity": "medium",
       "basis": "measured"
     },
@@ -10989,7 +11069,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -11005,7 +11085,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -11021,9 +11101,9 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
-      "ratio": 16.97,
+      "ratio": 17.04,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -11037,7 +11117,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -11053,7 +11133,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -11062,14 +11142,14 @@
     "semgrep/yaml.kubernetes.security.run-as-non-root.run-as-non-root": {
       "tool": "semgrep",
       "title": "When running containers in Kubernetes, it's important to ensure that they  are properly secured to prevent privilege esc",
-      "clean_hits": 176,
+      "clean_hits": 177,
       "vulnerable_hits": 14,
       "example_hits": 127,
       "languages": [
         "yaml"
       ],
       "repos_seen": 8,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": 1.35,
       "severity": "info",
@@ -11085,7 +11165,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 290.0,
+      "clean_kloc": 291.1,
       "vulnerable_kloc": 17.1,
       "ratio": null,
       "severity": null,
