@@ -1,6 +1,6 @@
 # What to work on next
 
-Generated 2026-09-14T16:47:53+00:00 by `tools/worklist.py` from the last training cycle.
+Generated 2026-09-15T14:14:46+00:00 by `tools/worklist.py` from the last training cycle.
 
 Nothing here is a decision. Each entry says what the measurement shows and what question it raises.
 
@@ -10,7 +10,7 @@ Nothing here is a decision. Each entry says what the measurement shows and what 
 
 A language that appears only in well-maintained repositories cannot be measured. There is nothing to compare its rules against, so they can be asserted but never tested.
 
-- **go** — 819,154 lines of good code, 15,256 broken
+- **go** — 819,386 lines of good code, 15,256 broken
 - **cpp** — 148,538 lines of good code, 0 broken
 - **rust** — 56,386 lines of good code, 0 broken
 - **rst** — 23,251 lines of good code, 0 broken

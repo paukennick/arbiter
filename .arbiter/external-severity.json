@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
-  "generated": "2026-09-14T15:31:27Z",
+  "generated": "2026-09-15T14:07:47Z",
   "repos_scanned": 41,
   "repos_timed_out": [],
   "repos_failed": [],
   "lines_by_population": {
-    "vulnerable": 694842,
-    "clean": 2323855,
-    "examples": 598285
+    "vulnerable": 694847,
+    "clean": 2325700,
+    "examples": 598888
   },
   "bands": [
     [
@@ -27,13 +27,13 @@
   "min_repos_to_promote": 2,
   "lines_by_population_language": {
     "clean": {
-      "terraform": 25620,
-      "markdown": 209145,
-      "unknown": 116925,
+      "terraform": 26679,
+      "markdown": 209273,
+      "unknown": 116941,
       "json": 43891,
-      "yaml": 291145,
+      "yaml": 291152,
       "hcl": 163,
-      "go": 819154,
+      "go": 819386,
       "shell": 9866,
       "toml": 10012,
       "rst": 23251,
@@ -44,12 +44,12 @@
       "css": 6755,
       "sql": 272,
       "javascript": 23042,
-      "typescript": 155489,
+      "typescript": 155636,
       "rust": 56386,
       "ruby": 24133,
       "cpp": 148538,
       "c": 8660,
-      "java": 56733,
+      "java": 56989,
       "php": 62702,
       "dockerfile": 672,
       "r": 5616
@@ -57,7 +57,7 @@
     "vulnerable": {
       "markdown": 63502,
       "json": 139767,
-      "unknown": 114920,
+      "unknown": 114925,
       "terraform": 7505,
       "dockerfile": 7864,
       "yaml": 17083,
@@ -81,7 +81,7 @@
     "examples": {
       "unknown": 48348,
       "markdown": 40536,
-      "yaml": 254861,
+      "yaml": 255464,
       "json": 152786,
       "shell": 4154,
       "python": 27093,
@@ -643,7 +643,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -659,9 +659,9 @@
         "terraform"
       ],
       "repos_seen": 4,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 11.95,
+      "ratio": 12.44,
       "severity": "medium",
       "basis": "measured"
     },
@@ -675,9 +675,9 @@
         "terraform"
       ],
       "repos_seen": 4,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 2.28,
+      "ratio": 2.37,
       "severity": "info",
       "basis": "measured"
     },
@@ -691,7 +691,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": null,
       "severity": null,
@@ -707,7 +707,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": null,
       "severity": null,
@@ -723,7 +723,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -739,7 +739,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -755,7 +755,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": null,
       "severity": null,
@@ -771,7 +771,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": null,
       "severity": null,
@@ -787,7 +787,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -803,7 +803,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -819,9 +819,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 2.28,
+      "ratio": 2.37,
       "severity": "info",
       "basis": "measured"
     },
@@ -835,7 +835,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -851,9 +851,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 14.51,
+      "ratio": 15.11,
       "severity": "medium",
       "basis": "measured"
     },
@@ -867,7 +867,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -883,7 +883,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -899,7 +899,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -915,9 +915,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 20.48,
+      "ratio": 21.33,
       "severity": "medium",
       "basis": "measured"
     },
@@ -931,9 +931,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 6.83,
+      "ratio": 7.11,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -947,43 +947,43 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 40.96,
+      "ratio": 42.66,
       "severity": "medium",
       "basis": "measured"
     },
     "checkov/CKV2_AWS_62": {
       "tool": "checkov",
       "title": "Ensure S3 buckets should have event notifications enabled",
-      "clean_hits": 17,
+      "clean_hits": 19,
       "vulnerable_hits": 12,
       "example_hits": 0,
       "languages": [
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 2.41,
+      "ratio": 2.25,
       "severity": "info",
       "basis": "measured"
     },
     "checkov/CKV2_AWS_64": {
       "tool": "checkov",
       "title": "Ensure KMS key Policy is defined",
-      "clean_hits": 4,
+      "clean_hits": 0,
       "vulnerable_hits": 2,
       "example_hits": 0,
       "languages": [
         "terraform"
       ],
-      "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "repos_seen": 2,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 1.71,
-      "severity": "info",
-      "basis": "measured"
+      "ratio": "inf",
+      "severity": null,
+      "basis": "insufficient-observations"
     },
     "checkov/CKV2_AWS_65": {
       "tool": "checkov",
@@ -995,7 +995,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": null,
       "severity": null,
@@ -1011,7 +1011,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1027,7 +1027,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -1043,7 +1043,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1059,7 +1059,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1075,7 +1075,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -1091,7 +1091,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1107,7 +1107,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1123,7 +1123,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1139,7 +1139,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1155,7 +1155,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1171,7 +1171,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1187,7 +1187,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1203,7 +1203,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1219,7 +1219,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1235,7 +1235,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -1251,7 +1251,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1267,7 +1267,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1379,7 +1379,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1395,9 +1395,9 @@
         "yaml"
       ],
       "repos_seen": 19,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
-      "ratio": 28.4,
+      "ratio": 28.41,
       "severity": "medium",
       "basis": "measured"
     },
@@ -1411,7 +1411,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -1427,7 +1427,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -1443,7 +1443,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -1459,7 +1459,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -1475,7 +1475,7 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -1508,7 +1508,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1524,7 +1524,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1540,7 +1540,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1556,7 +1556,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1572,7 +1572,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1588,7 +1588,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1604,7 +1604,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1620,7 +1620,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1636,7 +1636,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1652,7 +1652,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1668,7 +1668,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1684,7 +1684,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1700,7 +1700,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1716,7 +1716,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1732,7 +1732,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": null,
       "severity": null,
@@ -1748,7 +1748,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1764,7 +1764,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -1780,7 +1780,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1796,7 +1796,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1813,7 +1813,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 69.5,
+      "clean_kloc": 70.6,
       "vulnerable_kloc": 147.3,
       "ratio": 0.02,
       "severity": "info",
@@ -1829,9 +1829,9 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -1845,7 +1845,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": 0.04,
       "severity": "info",
@@ -1862,7 +1862,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.5,
+      "clean_kloc": 70.6,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -1879,7 +1879,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.5,
+      "clean_kloc": 70.6,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -1896,7 +1896,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.5,
+      "clean_kloc": 70.6,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -1912,9 +1912,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 6.83,
+      "ratio": 7.11,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -1928,9 +1928,9 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 1.71,
+      "ratio": 1.78,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -1944,7 +1944,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1960,9 +1960,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": "low",
       "basis": "measured"
     },
@@ -1976,7 +1976,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -1992,9 +1992,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 6.83,
+      "ratio": 7.11,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -2008,7 +2008,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -2024,7 +2024,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -2040,7 +2040,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2056,9 +2056,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": "low",
       "basis": "measured"
     },
@@ -2072,7 +2072,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2088,7 +2088,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2104,7 +2104,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -2120,9 +2120,9 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -2136,7 +2136,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2152,7 +2152,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2161,32 +2161,32 @@
     "checkov/CKV_AWS_144": {
       "tool": "checkov",
       "title": "Ensure that S3 bucket has cross-region replication enabled",
-      "clean_hits": 17,
+      "clean_hits": 19,
       "vulnerable_hits": 12,
       "example_hits": 0,
       "languages": [
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 2.41,
+      "ratio": 2.25,
       "severity": "info",
       "basis": "measured"
     },
     "checkov/CKV_AWS_145": {
       "tool": "checkov",
       "title": "Ensure that S3 buckets are encrypted with KMS by default",
-      "clean_hits": 17,
+      "clean_hits": 19,
       "vulnerable_hits": 11,
       "example_hits": 0,
       "languages": [
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 2.21,
+      "ratio": 2.06,
       "severity": "info",
       "basis": "measured"
     },
@@ -2200,7 +2200,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": null,
       "severity": null,
@@ -2216,9 +2216,9 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -2232,7 +2232,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -2248,9 +2248,9 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -2265,7 +2265,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 69.5,
+      "clean_kloc": 70.6,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -2281,9 +2281,9 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -2297,9 +2297,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 6.83,
+      "ratio": 7.11,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -2313,7 +2313,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -2329,7 +2329,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2345,7 +2345,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2361,7 +2361,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2377,7 +2377,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2394,7 +2394,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.5,
+      "clean_kloc": 70.6,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -2412,9 +2412,9 @@
         "yaml"
       ],
       "repos_seen": 4,
-      "clean_kloc": 360.7,
+      "clean_kloc": 361.7,
       "vulnerable_kloc": 164.4,
-      "ratio": 26.33,
+      "ratio": 26.41,
       "severity": "medium",
       "basis": "measured"
     },
@@ -2428,7 +2428,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -2444,7 +2444,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2460,7 +2460,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2469,14 +2469,14 @@
     "checkov/CKV_AWS_19": {
       "tool": "checkov",
       "title": "Ensure all data stored in the S3 bucket is securely encrypted at rest",
-      "clean_hits": 16,
+      "clean_hits": 18,
       "vulnerable_hits": 0,
       "example_hits": 0,
       "languages": [
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": null,
       "severity": null,
@@ -2492,7 +2492,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -2508,7 +2508,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -2517,7 +2517,7 @@
     "checkov/CKV_AWS_21": {
       "tool": "checkov",
       "title": "Ensure all data stored in the S3 bucket have versioning enabled",
-      "clean_hits": 17,
+      "clean_hits": 19,
       "vulnerable_hits": 10,
       "example_hits": 2,
       "languages": [
@@ -2526,9 +2526,9 @@
         "yaml"
       ],
       "repos_seen": 4,
-      "clean_kloc": 360.7,
+      "clean_kloc": 361.7,
       "vulnerable_kloc": 164.4,
-      "ratio": 1.29,
+      "ratio": 1.16,
       "severity": "info",
       "basis": "measured"
     },
@@ -2542,9 +2542,9 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -2558,7 +2558,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2574,7 +2574,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -2590,7 +2590,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2607,7 +2607,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 69.5,
+      "clean_kloc": 70.6,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": "medium",
@@ -2623,7 +2623,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2639,7 +2639,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2655,7 +2655,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2671,7 +2671,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2687,7 +2687,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2704,7 +2704,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.5,
+      "clean_kloc": 70.6,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -2720,7 +2720,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -2736,7 +2736,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2753,7 +2753,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.5,
+      "clean_kloc": 70.6,
       "vulnerable_kloc": 147.3,
       "ratio": null,
       "severity": null,
@@ -2769,7 +2769,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2785,9 +2785,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 1.37,
+      "ratio": 1.42,
       "severity": "info",
       "basis": "measured"
     },
@@ -2801,7 +2801,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2817,7 +2817,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2833,7 +2833,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -2849,7 +2849,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -2865,7 +2865,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -2881,7 +2881,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -2897,7 +2897,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -2913,7 +2913,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -2929,9 +2929,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 6.83,
+      "ratio": 7.11,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -2945,7 +2945,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -2954,14 +2954,14 @@
     "checkov/CKV_AWS_300": {
       "tool": "checkov",
       "title": "Ensure S3 lifecycle configuration sets period for aborting failed uploads",
-      "clean_hits": 17,
+      "clean_hits": 19,
       "vulnerable_hits": 0,
       "example_hits": 0,
       "languages": [
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": null,
       "severity": null,
@@ -2977,7 +2977,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -2993,7 +2993,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3009,7 +3009,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3025,7 +3025,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3041,7 +3041,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3057,7 +3057,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3073,7 +3073,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -3089,7 +3089,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -3105,7 +3105,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -3121,7 +3121,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -3137,7 +3137,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3153,7 +3153,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3169,7 +3169,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3185,9 +3185,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 1.28,
+      "ratio": 1.33,
       "severity": "info",
       "basis": "measured"
     },
@@ -3201,7 +3201,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3217,7 +3217,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3233,9 +3233,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 5.46,
+      "ratio": 5.69,
       "severity": "low",
       "basis": "measured"
     },
@@ -3249,7 +3249,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": 0.02,
       "severity": "info",
@@ -3265,7 +3265,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3281,7 +3281,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3297,7 +3297,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3313,7 +3313,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3330,7 +3330,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.5,
+      "clean_kloc": 70.6,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -3346,7 +3346,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3362,7 +3362,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3378,7 +3378,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -3394,7 +3394,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3410,7 +3410,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -3426,7 +3426,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3442,7 +3442,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3458,9 +3458,9 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 0.31,
+      "ratio": 0.32,
       "severity": "info",
       "basis": "measured"
     },
@@ -3474,7 +3474,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3490,7 +3490,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3506,7 +3506,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3523,7 +3523,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 69.5,
+      "clean_kloc": 70.6,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -3539,7 +3539,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3555,7 +3555,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3571,7 +3571,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3589,9 +3589,9 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 360.7,
+      "clean_kloc": 361.7,
       "vulnerable_kloc": 164.4,
-      "ratio": 4.39,
+      "ratio": 4.4,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -3607,9 +3607,9 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 360.7,
+      "clean_kloc": 361.7,
       "vulnerable_kloc": 164.4,
-      "ratio": 4.39,
+      "ratio": 4.4,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -3625,9 +3625,9 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 360.7,
+      "clean_kloc": 361.7,
       "vulnerable_kloc": 164.4,
-      "ratio": 4.39,
+      "ratio": 4.4,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -3643,9 +3643,9 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 360.7,
+      "clean_kloc": 361.7,
       "vulnerable_kloc": 164.4,
-      "ratio": 4.39,
+      "ratio": 4.4,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -3659,7 +3659,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3675,7 +3675,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3691,7 +3691,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3707,7 +3707,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3723,7 +3723,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3740,7 +3740,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 69.5,
+      "clean_kloc": 70.6,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": null,
@@ -3756,7 +3756,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3765,18 +3765,18 @@
     "checkov/CKV_AWS_7": {
       "tool": "checkov",
       "title": "Ensure rotation for customer created CMKs is enabled",
-      "clean_hits": 4,
+      "clean_hits": 0,
       "vulnerable_hits": 2,
       "example_hits": 0,
       "languages": [
         "terraform"
       ],
-      "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "repos_seen": 2,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 1.71,
-      "severity": "info",
-      "basis": "measured"
+      "ratio": "inf",
+      "severity": null,
+      "basis": "insufficient-observations"
     },
     "checkov/CKV_AWS_71": {
       "tool": "checkov",
@@ -3788,7 +3788,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3804,9 +3804,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": "low",
       "basis": "measured"
     },
@@ -3820,9 +3820,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": "low",
       "basis": "measured"
     },
@@ -3836,7 +3836,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3852,7 +3852,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3868,7 +3868,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": null,
       "severity": null,
@@ -3885,7 +3885,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 69.5,
+      "clean_kloc": 70.6,
       "vulnerable_kloc": 147.3,
       "ratio": "inf",
       "severity": "medium",
@@ -3901,9 +3901,9 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -3917,7 +3917,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -3933,7 +3933,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3949,7 +3949,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3965,7 +3965,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3981,7 +3981,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -3997,7 +3997,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4013,7 +4013,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4029,7 +4029,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -4045,9 +4045,9 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -4061,7 +4061,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4077,7 +4077,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4093,7 +4093,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4109,7 +4109,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4125,7 +4125,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4141,7 +4141,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4157,7 +4157,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4173,7 +4173,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4189,7 +4189,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4205,7 +4205,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4221,7 +4221,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4237,7 +4237,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4253,7 +4253,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4269,7 +4269,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4285,7 +4285,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4301,7 +4301,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4317,7 +4317,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4333,7 +4333,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4349,7 +4349,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4365,7 +4365,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4381,7 +4381,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4397,7 +4397,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4413,7 +4413,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4429,7 +4429,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4445,7 +4445,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4461,7 +4461,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4477,7 +4477,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4493,7 +4493,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4509,7 +4509,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4525,7 +4525,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4541,7 +4541,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4557,7 +4557,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4573,7 +4573,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4589,7 +4589,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4605,7 +4605,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4621,7 +4621,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4637,7 +4637,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -4653,7 +4653,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4669,7 +4669,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -4685,7 +4685,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -4701,7 +4701,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4717,7 +4717,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4733,7 +4733,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -4749,7 +4749,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4765,7 +4765,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4781,7 +4781,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4797,7 +4797,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4813,7 +4813,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4829,7 +4829,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4845,7 +4845,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4861,7 +4861,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4877,7 +4877,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4893,7 +4893,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4909,7 +4909,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4925,9 +4925,9 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -4941,7 +4941,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4957,7 +4957,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4973,7 +4973,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -4989,7 +4989,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5005,7 +5005,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "low",
@@ -5021,7 +5021,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5037,7 +5037,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5053,7 +5053,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5069,7 +5069,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5085,7 +5085,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5101,7 +5101,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5117,7 +5117,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5133,7 +5133,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5149,7 +5149,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5165,7 +5165,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5181,7 +5181,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5197,7 +5197,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5213,7 +5213,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5229,7 +5229,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5245,7 +5245,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5261,7 +5261,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5313,7 +5313,7 @@
       "repos_seen": 15,
       "clean_kloc": 117.6,
       "vulnerable_kloc": 122.8,
-      "ratio": 75.85,
+      "ratio": 75.86,
       "severity": "medium",
       "basis": "measured"
     },
@@ -5407,7 +5407,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5423,7 +5423,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5439,7 +5439,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5455,7 +5455,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5471,7 +5471,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5487,7 +5487,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5503,7 +5503,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5519,7 +5519,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5535,7 +5535,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5551,7 +5551,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5567,7 +5567,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5583,7 +5583,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5599,7 +5599,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5615,7 +5615,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5631,7 +5631,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5647,7 +5647,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5663,7 +5663,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5679,7 +5679,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5695,7 +5695,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5711,7 +5711,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5727,7 +5727,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5743,7 +5743,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5759,7 +5759,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5775,7 +5775,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5791,7 +5791,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5807,7 +5807,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5823,7 +5823,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5839,7 +5839,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5855,7 +5855,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5871,7 +5871,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5887,7 +5887,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5903,7 +5903,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5919,7 +5919,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5935,7 +5935,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5951,7 +5951,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5967,7 +5967,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5983,7 +5983,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -5999,7 +5999,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6015,7 +6015,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6031,7 +6031,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6047,7 +6047,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6063,7 +6063,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6079,7 +6079,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6095,7 +6095,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6111,7 +6111,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6127,7 +6127,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6143,7 +6143,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6159,7 +6159,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6175,7 +6175,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6191,7 +6191,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6207,7 +6207,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6223,7 +6223,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6239,7 +6239,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6255,7 +6255,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6271,9 +6271,9 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
-      "ratio": 25.56,
+      "ratio": 25.57,
       "severity": "medium",
       "basis": "measured"
     },
@@ -6372,7 +6372,7 @@
         "yaml"
       ],
       "repos_seen": 5,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": 4.54,
       "severity": "low",
@@ -6388,7 +6388,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": null,
       "severity": null,
@@ -6404,7 +6404,7 @@
         "yaml"
       ],
       "repos_seen": 4,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": 34.09,
       "severity": null,
@@ -6420,7 +6420,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6436,7 +6436,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6452,7 +6452,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6468,7 +6468,7 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6484,7 +6484,7 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6500,7 +6500,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6516,7 +6516,7 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6600,7 +6600,7 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6616,7 +6616,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6700,7 +6700,7 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6767,7 +6767,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6800,7 +6800,7 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": 11.36,
       "severity": "medium",
@@ -6850,7 +6850,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6866,7 +6866,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6882,7 +6882,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6898,7 +6898,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -6914,7 +6914,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6930,7 +6930,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6946,7 +6946,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6962,7 +6962,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6978,7 +6978,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -6994,7 +6994,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -7010,7 +7010,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -7027,7 +7027,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 316.8,
+      "clean_kloc": 317.8,
       "vulnerable_kloc": 24.6,
       "ratio": "inf",
       "severity": "medium",
@@ -7043,7 +7043,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -7062,196 +7062,24 @@
         "yaml"
       ],
       "repos_seen": 7,
-      "clean_kloc": 361.3,
+      "clean_kloc": 362.4,
       "vulnerable_kloc": 172.2,
-      "ratio": 2.58,
+      "ratio": 2.59,
       "severity": "info",
       "basis": "measured"
     },
     "checkov/CKV_TF_1": {
       "tool": "checkov",
       "title": "Ensure Terraform module sources use a commit hash",
-      "clean_hits": 13,
+      "clean_hits": 18,
       "vulnerable_hits": 0,
       "example_hits": 0,
       "languages": [
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": null,
-      "severity": null,
-      "basis": "insufficient-observations"
-    },
-    "gitleaks/aws-access-token": {
-      "tool": "gitleaks",
-      "title": "Identified a pattern that may indicate AWS credentials, risking unauthorized cloud resource access and data breaches on ",
-      "clean_hits": 0,
-      "vulnerable_hits": 2,
-      "example_hits": 0,
-      "languages": [
-        "terraform",
-        "yaml"
-      ],
-      "repos_seen": 2,
-      "clean_kloc": 316.8,
-      "vulnerable_kloc": 24.6,
-      "ratio": "inf",
-      "severity": null,
-      "basis": "insufficient-observations"
-    },
-    "gitleaks/curl-auth-header": {
-      "tool": "gitleaks",
-      "title": "curl-auth-header",
-      "clean_hits": 1,
-      "vulnerable_hits": 0,
-      "example_hits": 0,
-      "languages": [
-        "markdown"
-      ],
-      "repos_seen": 1,
-      "clean_kloc": 209.1,
-      "vulnerable_kloc": 63.5,
-      "ratio": null,
-      "severity": null,
-      "basis": "insufficient-observations"
-    },
-    "gitleaks/generic-api-key": {
-      "tool": "gitleaks",
-      "title": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
-      "clean_hits": 30,
-      "vulnerable_hits": 41,
-      "example_hits": 19,
-      "languages": [
-        "dockerfile",
-        "dotenv",
-        "go",
-        "java",
-        "javascript",
-        "json",
-        "markdown",
-        "php",
-        "python",
-        "rst",
-        "ruby",
-        "terraform",
-        "typescript",
-        "unknown",
-        "yaml"
-      ],
-      "repos_seen": 17,
-      "clean_kloc": 1915.3,
-      "vulnerable_kloc": 605.5,
-      "ratio": 4.32,
-      "severity": "low",
-      "basis": "measured"
-    },
-    "gitleaks/hashicorp-tf-password": {
-      "tool": "gitleaks",
-      "title": "Identified a HashiCorp Terraform password field, risking unauthorized infrastructure configuration and security breaches",
-      "clean_hits": 0,
-      "vulnerable_hits": 3,
-      "example_hits": 0,
-      "languages": [
-        "terraform"
-      ],
-      "repos_seen": 2,
-      "clean_kloc": 25.6,
-      "vulnerable_kloc": 7.5,
-      "ratio": "inf",
-      "severity": null,
-      "basis": "insufficient-observations"
-    },
-    "gitleaks/jwt": {
-      "tool": "gitleaks",
-      "title": "Uncovered a JSON Web Token, which may lead to unauthorized access to web applications and sensitive user data.",
-      "clean_hits": 7,
-      "vulnerable_hits": 16,
-      "example_hits": 0,
-      "languages": [
-        "go",
-        "java",
-        "javascript",
-        "markdown",
-        "typescript",
-        "unknown"
-      ],
-      "repos_seen": 7,
-      "clean_kloc": 1380.5,
-      "vulnerable_kloc": 400.0,
-      "ratio": 7.89,
-      "severity": "low",
-      "basis": "measured"
-    },
-    "gitleaks/jwt-base64": {
-      "tool": "gitleaks",
-      "title": "Detected a Base64-encoded JSON Web Token, posing a risk of exposing encoded authentication and data exchange information",
-      "clean_hits": 1,
-      "vulnerable_hits": 0,
-      "example_hits": 0,
-      "languages": [
-        "yaml"
-      ],
-      "repos_seen": 1,
-      "clean_kloc": 291.1,
-      "vulnerable_kloc": 17.1,
-      "ratio": null,
-      "severity": null,
-      "basis": "insufficient-observations"
-    },
-    "gitleaks/kubernetes-secret-yaml": {
-      "tool": "gitleaks",
-      "title": "Possible Kubernetes Secret detected, posing a risk of leaking credentials/tokens from your deployments",
-      "clean_hits": 73,
-      "vulnerable_hits": 2,
-      "example_hits": 8,
-      "languages": [
-        "yaml"
-      ],
-      "repos_seen": 4,
-      "clean_kloc": 291.1,
-      "vulnerable_kloc": 17.1,
-      "ratio": 0.47,
-      "severity": "info",
-      "basis": "measured"
-    },
-    "gitleaks/private-key": {
-      "tool": "gitleaks",
-      "title": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
-      "clean_hits": 63,
-      "vulnerable_hits": 8,
-      "example_hits": 0,
-      "languages": [
-        "go",
-        "java",
-        "json",
-        "markdown",
-        "terraform",
-        "toml",
-        "typescript",
-        "unknown",
-        "yaml"
-      ],
-      "repos_seen": 8,
-      "clean_kloc": 1728.1,
-      "vulnerable_kloc": 454.9,
-      "ratio": 0.48,
-      "severity": "info",
-      "basis": "measured"
-    },
-    "gitleaks/slack-bot-token": {
-      "tool": "gitleaks",
-      "title": "Identified a Slack Bot token, which may compromise bot integrations and communication channel security.",
-      "clean_hits": 1,
-      "vulnerable_hits": 0,
-      "example_hits": 0,
-      "languages": [
-        "markdown"
-      ],
-      "repos_seen": 1,
-      "clean_kloc": 209.1,
-      "vulnerable_kloc": 63.5,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
@@ -7591,7 +7419,7 @@
       "repos_seen": 8,
       "clean_kloc": 117.6,
       "vulnerable_kloc": 122.8,
-      "ratio": 28.73,
+      "ratio": 28.74,
       "severity": "medium",
       "basis": "measured"
     },
@@ -7663,15 +7491,16 @@
       "tool": "semgrep",
       "title": "AWS Access Key ID Value detected. This is a sensitive credential and should not be hardcoded here. Instead, read this va",
       "clean_hits": 0,
-      "vulnerable_hits": 2,
+      "vulnerable_hits": 4,
       "example_hits": 0,
       "languages": [
         "terraform",
+        "unknown",
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 316.8,
-      "vulnerable_kloc": 24.6,
+      "clean_kloc": 434.8,
+      "vulnerable_kloc": 139.5,
       "ratio": "inf",
       "severity": null,
       "basis": "insufficient-observations"
@@ -7687,7 +7516,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 316.8,
+      "clean_kloc": 317.8,
       "vulnerable_kloc": 24.6,
       "ratio": "inf",
       "severity": null,
@@ -7705,7 +7534,7 @@
         "unknown"
       ],
       "repos_seen": 4,
-      "clean_kloc": 349.1,
+      "clean_kloc": 349.3,
       "vulnerable_kloc": 290.6,
       "ratio": 1.2,
       "severity": null,
@@ -7715,43 +7544,45 @@
       "tool": "semgrep",
       "title": "Generic API Key detected",
       "clean_hits": 0,
-      "vulnerable_hits": 3,
+      "vulnerable_hits": 5,
       "example_hits": 0,
       "languages": [
         "html",
         "javascript",
+        "unknown",
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 473.9,
-      "vulnerable_kloc": 161.2,
+      "clean_kloc": 590.9,
+      "vulnerable_kloc": 276.1,
       "ratio": "inf",
-      "severity": null,
-      "basis": "insufficient-observations"
+      "severity": "medium",
+      "basis": "measured"
     },
     "semgrep/generic.secrets.security.detected-generic-secret.detected-generic-secret": {
       "tool": "semgrep",
       "title": "Generic Secret detected",
-      "clean_hits": 2,
-      "vulnerable_hits": 1,
+      "clean_hits": 3,
+      "vulnerable_hits": 2,
       "example_hits": 0,
       "languages": [
         "markdown",
         "ruby",
+        "unknown",
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 524.4,
-      "vulnerable_kloc": 84.2,
-      "ratio": 3.12,
-      "severity": null,
-      "basis": "insufficient-observations"
+      "clean_kloc": 641.5,
+      "vulnerable_kloc": 199.1,
+      "ratio": 2.15,
+      "severity": "info",
+      "basis": "measured"
     },
     "semgrep/generic.secrets.security.detected-jwt-token.detected-jwt-token": {
       "tool": "semgrep",
       "title": "JWT token detected",
-      "clean_hits": 2,
-      "vulnerable_hits": 19,
+      "clean_hits": 5,
+      "vulnerable_hits": 23,
       "example_hits": 0,
       "languages": [
         "html",
@@ -7761,25 +7592,26 @@
         "typescript",
         "unknown"
       ],
-      "repos_seen": 6,
-      "clean_kloc": 721.1,
+      "repos_seen": 7,
+      "clean_kloc": 721.6,
       "vulnerable_kloc": 416.7,
-      "ratio": 16.44,
-      "severity": "medium",
+      "ratio": 7.97,
+      "severity": "low",
       "basis": "measured"
     },
     "semgrep/generic.secrets.security.detected-pgp-private-key-block.detected-pgp-private-key-block": {
       "tool": "semgrep",
       "title": "Something that looks like a PGP private key block is detected. This is a potential hardcoded secret that could be leaked",
-      "clean_hits": 1,
+      "clean_hits": 2,
       "vulnerable_hits": 0,
       "example_hits": 0,
       "languages": [
-        "markdown"
+        "markdown",
+        "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 209.1,
-      "vulnerable_kloc": 63.5,
+      "clean_kloc": 326.2,
+      "vulnerable_kloc": 178.4,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
@@ -7795,7 +7627,7 @@
         "unknown"
       ],
       "repos_seen": 5,
-      "clean_kloc": 326.1,
+      "clean_kloc": 326.2,
       "vulnerable_kloc": 178.4,
       "ratio": 0.26,
       "severity": "info",
@@ -7811,7 +7643,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 155.5,
+      "clean_kloc": 155.6,
       "vulnerable_kloc": 63.6,
       "ratio": null,
       "severity": null,
@@ -7827,7 +7659,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": "inf",
       "severity": null,
@@ -7843,7 +7675,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": "inf",
       "severity": null,
@@ -7859,7 +7691,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7875,7 +7707,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7891,7 +7723,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7907,7 +7739,7 @@
         "go"
       ],
       "repos_seen": 4,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7923,7 +7755,7 @@
         "go"
       ],
       "repos_seen": 2,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7939,9 +7771,9 @@
         "go"
       ],
       "repos_seen": 2,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
-      "ratio": 161.08,
+      "ratio": 161.13,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -7955,7 +7787,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7971,7 +7803,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -7987,7 +7819,7 @@
         "go"
       ],
       "repos_seen": 3,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": 17.9,
       "severity": "medium",
@@ -8003,7 +7835,7 @@
         "go"
       ],
       "repos_seen": 2,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": "inf",
       "severity": null,
@@ -8019,9 +7851,9 @@
         "go"
       ],
       "repos_seen": 4,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
-      "ratio": 35.8,
+      "ratio": 35.81,
       "severity": "medium",
       "basis": "measured"
     },
@@ -8035,7 +7867,7 @@
         "go"
       ],
       "repos_seen": 4,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": 26.85,
       "severity": "medium",
@@ -8051,7 +7883,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": "inf",
       "severity": null,
@@ -8067,7 +7899,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -8083,9 +7915,9 @@
         "go"
       ],
       "repos_seen": 5,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
-      "ratio": 42.96,
+      "ratio": 42.97,
       "severity": "medium",
       "basis": "measured"
     },
@@ -8099,7 +7931,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": "inf",
       "severity": null,
@@ -8115,7 +7947,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -8131,7 +7963,7 @@
         "go"
       ],
       "repos_seen": 4,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": 3.84,
       "severity": "low",
@@ -8147,7 +7979,7 @@
         "go"
       ],
       "repos_seen": 4,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": 4.13,
       "severity": "low",
@@ -8163,9 +7995,9 @@
         "go"
       ],
       "repos_seen": 4,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
-      "ratio": 53.69,
+      "ratio": 53.71,
       "severity": "medium",
       "basis": "measured"
     },
@@ -8179,7 +8011,7 @@
         "go"
       ],
       "repos_seen": 2,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": "inf",
       "severity": null,
@@ -8195,7 +8027,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -8211,7 +8043,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -8227,9 +8059,9 @@
         "go"
       ],
       "repos_seen": 3,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
-      "ratio": 13.42,
+      "ratio": 13.43,
       "severity": "medium",
       "basis": "measured"
     },
@@ -8243,9 +8075,9 @@
         "go"
       ],
       "repos_seen": 3,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
-      "ratio": 53.69,
+      "ratio": 53.71,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -8291,7 +8123,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8307,7 +8139,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8323,7 +8155,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8339,7 +8171,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": "low",
@@ -8355,7 +8187,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": "low",
@@ -8371,7 +8203,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8387,7 +8219,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": "low",
@@ -8403,7 +8235,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8419,7 +8251,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8435,7 +8267,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8451,7 +8283,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8467,7 +8299,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8483,7 +8315,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8499,7 +8331,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8515,7 +8347,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8531,7 +8363,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8547,7 +8379,7 @@
         "java"
       ],
       "repos_seen": 1,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": null,
@@ -8563,7 +8395,7 @@
         "java"
       ],
       "repos_seen": 2,
-      "clean_kloc": 56.7,
+      "clean_kloc": 57.0,
       "vulnerable_kloc": 30.6,
       "ratio": "inf",
       "severity": "medium",
@@ -8580,7 +8412,7 @@
         "typescript"
       ],
       "repos_seen": 3,
-      "clean_kloc": 178.5,
+      "clean_kloc": 178.7,
       "vulnerable_kloc": 175.7,
       "ratio": 0.51,
       "severity": null,
@@ -8597,7 +8429,7 @@
         "typescript"
       ],
       "repos_seen": 4,
-      "clean_kloc": 178.5,
+      "clean_kloc": 178.7,
       "vulnerable_kloc": 175.7,
       "ratio": "inf",
       "severity": "medium",
@@ -8661,7 +8493,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 155.5,
+      "clean_kloc": 155.6,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": null,
@@ -8774,7 +8606,7 @@
         "typescript"
       ],
       "repos_seen": 2,
-      "clean_kloc": 178.5,
+      "clean_kloc": 178.7,
       "vulnerable_kloc": 175.7,
       "ratio": "inf",
       "severity": null,
@@ -8790,7 +8622,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 155.5,
+      "clean_kloc": 155.6,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": null,
@@ -8822,7 +8654,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 155.5,
+      "clean_kloc": 155.6,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": null,
@@ -8903,7 +8735,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 155.5,
+      "clean_kloc": 155.6,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": null,
@@ -8920,7 +8752,7 @@
         "typescript"
       ],
       "repos_seen": 2,
-      "clean_kloc": 178.5,
+      "clean_kloc": 178.7,
       "vulnerable_kloc": 175.7,
       "ratio": "inf",
       "severity": null,
@@ -8937,7 +8769,7 @@
         "typescript"
       ],
       "repos_seen": 10,
-      "clean_kloc": 178.5,
+      "clean_kloc": 178.7,
       "vulnerable_kloc": 175.7,
       "ratio": 0.94,
       "severity": "info",
@@ -8953,7 +8785,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 155.5,
+      "clean_kloc": 155.6,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": null,
@@ -8985,7 +8817,7 @@
         "typescript"
       ],
       "repos_seen": 2,
-      "clean_kloc": 155.5,
+      "clean_kloc": 155.6,
       "vulnerable_kloc": 63.6,
       "ratio": 2.45,
       "severity": null,
@@ -9002,9 +8834,9 @@
         "typescript"
       ],
       "repos_seen": 4,
-      "clean_kloc": 178.5,
+      "clean_kloc": 178.7,
       "vulnerable_kloc": 175.7,
-      "ratio": 4.06,
+      "ratio": 4.07,
       "severity": "low",
       "basis": "measured"
     },
@@ -9018,7 +8850,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 155.5,
+      "clean_kloc": 155.6,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": null,
@@ -9035,7 +8867,7 @@
         "typescript"
       ],
       "repos_seen": 5,
-      "clean_kloc": 178.5,
+      "clean_kloc": 178.7,
       "vulnerable_kloc": 175.7,
       "ratio": 0.51,
       "severity": null,
@@ -9053,7 +8885,7 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 389.5,
+      "clean_kloc": 389.6,
       "vulnerable_kloc": 193.8,
       "ratio": "inf",
       "severity": "low",
@@ -9069,7 +8901,7 @@
         "typescript"
       ],
       "repos_seen": 1,
-      "clean_kloc": 155.5,
+      "clean_kloc": 155.6,
       "vulnerable_kloc": 63.6,
       "ratio": "inf",
       "severity": "low",
@@ -9085,7 +8917,7 @@
         "yaml"
       ],
       "repos_seen": 7,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": 3.41,
       "severity": "low",
@@ -9133,7 +8965,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": null,
       "severity": null,
@@ -9325,7 +9157,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -10317,7 +10149,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10333,7 +10165,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10349,9 +10181,9 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 6.83,
+      "ratio": 7.11,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -10365,7 +10197,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10381,7 +10213,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10397,7 +10229,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10413,7 +10245,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -10429,9 +10261,9 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 1.71,
+      "ratio": 1.78,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -10445,7 +10277,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10461,7 +10293,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10470,18 +10302,18 @@
     "semgrep/terraform.aws.security.aws-kms-no-rotation.aws-kms-no-rotation": {
       "tool": "semgrep",
       "title": "The AWS KMS has no rotation. Missing rotation can cause leaked key to be used by attackers. To fix this, set a `enable_k",
-      "clean_hits": 4,
+      "clean_hits": 0,
       "vulnerable_hits": 2,
       "example_hits": 0,
       "languages": [
         "terraform"
       ],
-      "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "repos_seen": 2,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 1.71,
-      "severity": "info",
-      "basis": "measured"
+      "ratio": "inf",
+      "severity": null,
+      "basis": "insufficient-observations"
     },
     "semgrep/terraform.aws.security.aws-lambda-environment-unencrypted.aws-lambda-environment-unencrypted": {
       "tool": "semgrep",
@@ -10493,7 +10325,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10509,7 +10341,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10525,7 +10357,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10541,7 +10373,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10557,7 +10389,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10573,7 +10405,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10589,7 +10421,7 @@
         "terraform"
       ],
       "repos_seen": 3,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -10605,7 +10437,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": "medium",
@@ -10621,7 +10453,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10637,9 +10469,9 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
-      "ratio": 3.41,
+      "ratio": 3.55,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -10653,7 +10485,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10669,7 +10501,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10685,7 +10517,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10701,7 +10533,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10717,7 +10549,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10733,7 +10565,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10749,7 +10581,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10765,7 +10597,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10781,7 +10613,7 @@
         "terraform"
       ],
       "repos_seen": 2,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10797,7 +10629,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10813,7 +10645,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10829,7 +10661,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10845,7 +10677,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10861,7 +10693,7 @@
         "terraform"
       ],
       "repos_seen": 1,
-      "clean_kloc": 25.6,
+      "clean_kloc": 26.7,
       "vulnerable_kloc": 7.5,
       "ratio": "inf",
       "severity": null,
@@ -10877,7 +10709,7 @@
         "go"
       ],
       "repos_seen": 2,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": 17.9,
       "severity": null,
@@ -10893,7 +10725,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -10909,7 +10741,7 @@
         "go"
       ],
       "repos_seen": 1,
-      "clean_kloc": 819.2,
+      "clean_kloc": 819.4,
       "vulnerable_kloc": 15.3,
       "ratio": null,
       "severity": null,
@@ -10941,7 +10773,7 @@
         "yaml"
       ],
       "repos_seen": 5,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": "medium",
@@ -10957,7 +10789,7 @@
         "yaml"
       ],
       "repos_seen": 5,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": "medium",
@@ -10973,7 +10805,7 @@
         "yaml"
       ],
       "repos_seen": 4,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": 3.41,
       "severity": "low",
@@ -10989,7 +10821,7 @@
         "yaml"
       ],
       "repos_seen": 28,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": 10.42,
       "severity": "medium",
@@ -11005,7 +10837,7 @@
         "yaml"
       ],
       "repos_seen": 9,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": 12.17,
       "severity": "medium",
@@ -11021,7 +10853,7 @@
         "yaml"
       ],
       "repos_seen": 8,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": 0.87,
       "severity": "info",
@@ -11037,7 +10869,7 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -11053,7 +10885,7 @@
         "yaml"
       ],
       "repos_seen": 5,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": 17.04,
       "severity": "medium",
@@ -11069,7 +10901,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -11085,7 +10917,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -11101,7 +10933,7 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": 17.04,
       "severity": null,
@@ -11117,7 +10949,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -11133,7 +10965,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": "inf",
       "severity": null,
@@ -11149,7 +10981,7 @@
         "yaml"
       ],
       "repos_seen": 8,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": 1.35,
       "severity": "info",
@@ -11165,7 +10997,7 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 291.1,
+      "clean_kloc": 291.2,
       "vulnerable_kloc": 17.1,
       "ratio": null,
       "severity": null,
