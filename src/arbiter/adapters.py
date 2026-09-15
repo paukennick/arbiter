@@ -26,6 +26,23 @@ from .probes import Probe, ProbeContext, register
 PACKS = Path(__file__).parent / "packs" / "adapters"
 
 
+def cache_dir() -> Path:
+    """Where an adapter's own fetched-at-install-time content lives.
+
+    Not the tool binary (that goes wherever pip/the OS puts it) and not
+    `{workdir}` (that's the thing being scanned) -- this is for content an
+    adapter needs alongside the binary, such as semgrep's rules, fetched once
+    by `tools/install_tools.sh` rather than over the network on every scan.
+    `ARBITER_CACHE_DIR` overrides it for a machine that wants it elsewhere;
+    the default sits under the operator's home directory on every platform
+    rather than following each OS's own convention, because one path that
+    bash, PowerShell and Python all agree on beats a "correct" one that three
+    scripts each compute differently.
+    """
+    base = os.environ.get("ARBITER_CACHE_DIR")
+    return Path(base) if base else Path.home() / ".cache" / "arbiter"
+
+
 # ---------------------------------------------------------------------------
 # Minimal selector: $, $.a.b, $.a[0].b, trailing [*] to fan out
 # ---------------------------------------------------------------------------
@@ -152,7 +169,8 @@ class Adapter:
         Starting the tool in its own process group and signalling the group is
         what makes the timeout mean what it says.
         """
-        argv = [a.replace("{workdir}", workdir) for a in self.argv]
+        argv = [a.replace("{workdir}", workdir).replace("{cache}", str(cache_dir()))
+                for a in self.argv]
         if argv:
             # On Windows, Popen(shell=False) calls CreateProcess directly,
             # which -- unlike cmd.exe -- does not search PATHEXT for a bare
@@ -162,15 +180,31 @@ class Adapter:
             # WinError 2. Resolving to the full, extensioned path here makes
             # invocation match the availability check.
             argv[0] = shutil.which(argv[0]) or argv[0]
-        cwd = self.cwd.replace("{workdir}", workdir) if self.cwd else None
+        cwd = (self.cwd.replace("{workdir}", workdir).replace("{cache}", str(cache_dir()))
+               if self.cwd else None)
         env = dict(os.environ)
         env.setdefault("PYTHONIOENCODING", "utf-8")
+        # PYTHONIOENCODING covers stdio; it does not cover a Python tool's own
+        # Path.read_text() calls, which fall back to the OS codepage on
+        # Windows. Semgrep reads its rule YAML that way, so a rule file with a
+        # non-ASCII byte (an em dash, a smart quote) crashed it here with
+        # `'charmap' codec can't decode byte ...` on an otherwise fine config.
+        # PYTHONUTF8 makes UTF-8 the default everywhere the caller didn't ask
+        # for something else, for every adapter, not only the Python-based
+        # ones -- ruff and gitleaks just ignore it.
+        env.setdefault("PYTHONUTF8", "1")
 
         popen_kwargs: dict = {}
         if hasattr(os, "setsid"):
             popen_kwargs["start_new_session"] = True
         proc = subprocess.Popen(
             argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            # `text=True` alone decodes the child's output using *this*
+            # process's locale encoding -- cp1252 on Windows -- no matter what
+            # PYTHONUTF8 tells the child to write. Every adapter here emits
+            # JSON, which is UTF-8 by its own spec, so decoding as anything
+            # else is never correct, only sometimes lucky.
+            encoding="utf-8", errors="replace",
             cwd=cwd, env=env, **popen_kwargs,
         )
         try:

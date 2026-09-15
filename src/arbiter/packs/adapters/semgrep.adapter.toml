@@ -8,11 +8,58 @@ scope = "repo"
 
 [requires]
 binaries = ["semgrep"]
-network = true
+# `--config auto` fetched the ruleset from semgrep.dev on every scan and used
+# the target's own project URL to do it -- fine for a one-off, wrong for an
+# unattended nightly job and unusable wherever that registry can't be
+# reached. `tools/install_tools.sh` now fetches a pinned commit of
+# semgrep/semgrep-rules once, into {cache}/semgrep-rules, the same way it
+# already fetches the semgrep binary itself. Scanning needs no network at
+# all now; only the install step does.
+network = false
 timeout = 600
 
 [invoke]
-argv = ["semgrep", "scan", "--json", "--quiet", "--config", "auto", "{workdir}"]
+# Named subdirectories, not the checkout root: semgrep-rules carries
+# repository files at its root (.pre-commit-config.yaml, template.yaml) that
+# are themselves `.yaml` and not valid rule files, and `--config <dir>` loads
+# every `.yaml` under it. One bad file there fails the whole run --
+# `InvalidRuleSchemaError`, zero results -- rather than skipping just that
+# file. Naming directories also scopes this to what Arbiter's corpus actually
+# covers; semgrep only applies a rule where its target language is present,
+# so listing a directory a given repo has no matching files for is harmless.
+#
+# `--config` is given RELATIVE to `cwd` below, not as an absolute path under
+# {cache}. Semgrep's default rule-id rewriting (folds a rule's location into
+# its id so `dockerfile-source-not-pinned` in a subdirectory becomes
+# `dockerfile.audit.dockerfile-source-not-pinned`, which is what disambiguates
+# two rules that share a short name) uses whatever string was passed to
+# --config as that prefix. An absolute path there put this machine's home
+# directory into every check id Arbiter records -- calibrated severities
+# would have matched nothing on any other machine, or even this one under a
+# different ARBITER_CACHE_DIR. Relative to a fixed `cwd`, the prefix is just
+# "semgrep-rules", identical everywhere. The scan target stays a real
+# absolute path regardless of cwd, so this changes nothing about what gets
+# scanned or how results map back to files.
+cwd = "{cache}"
+argv = ["semgrep", "scan", "--json", "--quiet",
+        "--config", "semgrep-rules/terraform",
+        "--config", "semgrep-rules/yaml/kubernetes",
+        "--config", "semgrep-rules/yaml/docker-compose",
+        "--config", "semgrep-rules/yaml/github-actions",
+        "--config", "semgrep-rules/generic/secrets",
+        "--config", "semgrep-rules/generic/dockerfile",
+        "--config", "semgrep-rules/dockerfile",
+        "--config", "semgrep-rules/python",
+        "--config", "semgrep-rules/javascript",
+        "--config", "semgrep-rules/typescript",
+        "--config", "semgrep-rules/go",
+        "--config", "semgrep-rules/ruby",
+        "--config", "semgrep-rules/java",
+        "--config", "semgrep-rules/php",
+        "--config", "semgrep-rules/rust",
+        "--config", "semgrep-rules/bash",
+        "--config", "semgrep-rules/c",
+        "{workdir}"]
 version_argv = ["semgrep", "--version"]
 parse = "json"
 ok_exit = [0, 1]

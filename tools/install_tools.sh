@@ -44,6 +44,16 @@ BANDIT_VERSION="${BANDIT_VERSION:-1.9.4}"
 RUFF_VERSION="${RUFF_VERSION:-0.15.11}"
 GITLEAKS_VERSION="${GITLEAKS_VERSION:-8.21.2}"
 
+# Pinned the same way the tool versions above are: bump it deliberately, then
+# re-run tools/calibrate_external.py, because a ruleset that changes
+# underneath you changes your findings same as a tool that does.
+# HEAD of https://github.com/semgrep/semgrep-rules as of 2026-09-15.
+SEMGREP_RULES_REF="${SEMGREP_RULES_REF:-40b8c63f75dc7c22c8a77482d73bfb864b146f7e}"
+
+# Must match arbiter.adapters.cache_dir() -- the adapter reads the rules from
+# here at scan time, so a mismatch here is a silent "config not found" there.
+ARBITER_CACHE_DIR="${ARBITER_CACHE_DIR:-$HOME/.cache/arbiter}"
+
 TOOL_LICENSES=(
   "checkov:Apache-2.0"
   "semgrep:LGPL-2.1"
@@ -112,10 +122,89 @@ pip_install() {
   fi
 }
 
+# semgrep's own `cli.py` imports `mcp.server.fastmcp` unconditionally -- for
+# its own optional `semgrep mcp` subcommand, which scanning never touches --
+# and that API doesn't exist in mcp>=2, which Arbiter's own MCP transport
+# requires. Installed into the same site-packages as Arbiter, whichever one
+# lands second breaks the other. A venv used by nothing but semgrep ends the
+# collision instead of picking a loser.
+install_semgrep_isolated() {
+  local venv="$ARBITER_CACHE_DIR/semgrep-venv" marker="$ARBITER_CACHE_DIR/.semgrep-isolated"
+  if [ -f "$marker" ] && [ "$(cat "$marker" 2>/dev/null)" = "$SEMGREP_VERSION" ] \
+     && [ -x "$HOME/.local/bin/semgrep" -o -x "$HOME/.local/bin/semgrep.exe" ]; then
+    printf '  have   %-10s %s (isolated)\n' semgrep "$SEMGREP_VERSION"
+    return 0
+  fi
+  local py
+  py="$(command -v python3 || command -v python)"
+  if [ -z "$py" ]; then
+    printf '  MISSED %-10s no python3 to build an isolated venv\n' semgrep
+    return 0
+  fi
+  if ! "$py" -m venv "$venv" >/dev/null 2>&1; then
+    printf '  MISSED %-10s could not create an isolated venv\n' semgrep
+    return 0
+  fi
+  local venv_bin="$venv/bin"
+  [ -d "$venv_bin" ] || venv_bin="$venv/Scripts"
+  if ! "$venv_bin/pip" install --quiet "semgrep==${SEMGREP_VERSION}" >/dev/null 2>&1; then
+    printf '  MISSED %-10s isolated install failed\n' semgrep
+    return 0
+  fi
+  mkdir -p "$HOME/.local/bin"
+  local src="$venv_bin/semgrep"
+  [ -f "$src" ] || src="$venv_bin/semgrep.exe"
+  cp "$src" "$HOME/.local/bin/" 2>/dev/null
+  # A venv console-script launcher embeds its own venv's python by absolute
+  # path at creation time, so the copy above keeps working from outside the
+  # venv folder -- it does not need to stay next to it, only PATH does.
+  printf '%s' "$SEMGREP_VERSION" > "$marker"
+  printf '  got    %-10s %s -> %s (isolated from Arbiter'"'"'s own deps)\n' \
+    semgrep "$SEMGREP_VERSION" "$HOME/.local/bin"
+  if command -v pip >/dev/null 2>&1 && pip show semgrep >/dev/null 2>&1; then
+    pip uninstall -y semgrep >/dev/null 2>&1
+  fi
+}
+
+# semgrep needs a ruleset as well as the binary. Fetched once here, by exact
+# commit, into a directory the adapter reads at scan time -- not `--config
+# auto`, which fetched this same content from semgrep.dev on every scan.
+# A pinned SHA rather than a branch, so a re-run gets the same rules
+# regardless of what upstream has committed since: `git fetch` a specific
+# commit works against GitHub without cloning its history first.
+fetch_semgrep_rules() {
+  local dest="$ARBITER_CACHE_DIR/semgrep-rules" marker
+  marker="$dest/.arbiter-ref"
+  if [ -f "$marker" ] && [ "$(cat "$marker" 2>/dev/null)" = "$SEMGREP_RULES_REF" ]; then
+    printf '  have   %-10s rules @ %s\n' semgrep "${SEMGREP_RULES_REF:0:12}"
+    return 0
+  fi
+  if ! command -v git >/dev/null 2>&1; then
+    printf '  MISSED %-10s rules — git not on PATH\n' semgrep
+    return 0
+  fi
+  local tmp
+  tmp="$(mktemp -d)"
+  if git -C "$tmp" init --quiet >/dev/null 2>&1 \
+     && git -C "$tmp" remote add origin https://github.com/semgrep/semgrep-rules.git >/dev/null 2>&1 \
+     && git -C "$tmp" fetch --quiet --depth 1 origin "$SEMGREP_RULES_REF" >/dev/null 2>&1 \
+     && git -C "$tmp" checkout --quiet FETCH_HEAD >/dev/null 2>&1; then
+    rm -rf "$dest"
+    mkdir -p "$(dirname "$dest")"
+    mv "$tmp" "$dest"
+    printf '%s' "$SEMGREP_RULES_REF" > "$marker"
+    printf '  got    %-10s rules @ %s -> %s\n' semgrep "${SEMGREP_RULES_REF:0:12}" "$dest"
+  else
+    rm -rf "$tmp"
+    printf '  MISSED %-10s rules — fetch failed, semgrep will find no config\n' semgrep
+  fi
+}
+
 echo "External analyzers"
 
 wants checkov && pip_install checkov "checkov==${CHECKOV_VERSION}"
-wants semgrep && pip_install semgrep "semgrep==${SEMGREP_VERSION}"
+wants semgrep && install_semgrep_isolated
+wants semgrep && fetch_semgrep_rules
 wants bandit  && pip_install bandit  "bandit==${BANDIT_VERSION}"
 wants ruff    && pip_install ruff    "ruff==${RUFF_VERSION}"
 
