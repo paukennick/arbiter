@@ -116,6 +116,12 @@ class Adapter:
     checks: int = 10
     mapping: dict = field(default_factory=dict)
     version_argv: list[str] = field(default_factory=list)
+    # Declared in the manifest, never inherited. Every shipped adapter says
+    # "repo", and that is a statement about evidence rather than about the
+    # tool: none of these has been measured for subset-exactness, so none may
+    # claim it. A manifest that omits the key still gets "repo", because the
+    # conservative answer is the only safe one to assume on someone's behalf.
+    scope: str = "repo"
     raw: dict = field(default_factory=dict)
 
     # -- lifecycle ---------------------------------------------------------
@@ -352,6 +358,24 @@ class Adapter:
         return findings
 
 
+SCOPE_REASON = ("no measurement establishes that this external analyzer returns "
+                "the same findings from a subset of the files")
+
+
+def _scope_of(data: dict) -> str:
+    """Read a declared scope, and refuse a value that is not one of the two.
+
+    A typo would otherwise sail through as a scope no partial scan recognises,
+    which is the quiet kind of wrong this whole mechanism exists to prevent.
+    """
+    scope = data.get("scope", "repo")
+    if scope not in ("file", "repo"):
+        raise ValueError(
+            f"adapter {data.get('name', '?')!r} declares scope {scope!r}; "
+            "it must be 'file' or 'repo'")
+    return scope
+
+
 def load_adapter(path: Path) -> Adapter:
     data = tomllib.loads(path.read_text())
     req = data.get("requires", {})
@@ -371,6 +395,7 @@ def load_adapter(path: Path) -> Adapter:
         version_argv=inv.get("version_argv", []),
         checks=int(data.get("checks", 10)),
         mapping=data.get("map", {}),
+        scope=_scope_of(data),
         raw=data,
     )
 
@@ -412,6 +437,8 @@ def register_adapters(extra_dirs: list[str] | None = None) -> list[Adapter]:
             stacks=a.stacks,
             binaries=a.binaries,
             network=a.network,
+            scope=a.scope,
+            scope_reason=SCOPE_REASON,
             version=a.tool_version() or "",
         ))
     return adapters

@@ -3259,6 +3259,49 @@ def test_every_probe_declares_a_scope_we_understand():
     assert bad == [], f"probes with an unrecognised scope: {bad}"
 
 
+def test_every_shipped_adapter_declares_its_scope_rather_than_inheriting_one():
+    """An inherited default is not a decision. The value must be right *and*
+    written down, because the next person to add an adapter copies a manifest
+    and needs to see that the question was asked (REQ-022)."""
+    import tomllib
+    from arbiter.adapters import PACKS
+    manifests = sorted(PACKS.glob("*.adapter.toml"))
+    assert len(manifests) == 5, f"expected five shipped adapters, found {len(manifests)}"
+    for p in manifests:
+        data = tomllib.loads(p.read_text(encoding="utf-8"))
+        assert "scope" in data, f"{p.name} does not declare a scope"
+        # Nothing has measured subset-exactness for any external analyzer, so
+        # nothing may claim it. This assertion is the evidence gate: it fails
+        # the day someone declares "file" without a measurement to point at.
+        assert data["scope"] == "repo", (
+            f"{p.name} claims scope {data['scope']!r}; that asserts the tool "
+            "returns identical findings from a file subset, which has never "
+            "been measured for any of these")
+
+
+def test_an_adapter_backed_probe_carries_the_scope_its_manifest_declared():
+    from arbiter.probes import REGISTRY
+    from arbiter.adapters import register_adapters, load_all, SCOPE_REASON
+    register_adapters()
+    declared = {a.name: a.scope for a in load_all()}
+    seen = {p.name: p for p in REGISTRY if p.name in declared}
+    assert set(seen) == set(declared), "an adapter registered no probe"
+    for name, probe in seen.items():
+        assert probe.scope == declared[name]
+        # And it must not borrow the native probes' explanation, which is a
+        # different and untrue claim about why it was held back.
+        assert probe.scope_reason == SCOPE_REASON
+        assert "relationships between files" not in probe.scope_reason
+
+
+def test_an_adapter_with_an_unrecognised_scope_is_refused():
+    from arbiter.adapters import _scope_of
+    assert _scope_of({"name": "x"}) == "repo"
+    assert _scope_of({"name": "x", "scope": "file"}) == "file"
+    with pytest.raises(ValueError, match="must be 'file' or 'repo'"):
+        _scope_of({"name": "x", "scope": "Repo"})
+
+
 def test_a_partial_scan_does_not_run_repo_scoped_probes(tmp_path):
     base = _git_repo(tmp_path / "r", {"a.py": CLEAN_PY}, {"b.py": LEAKY_PY})
     rep = run_scan([str(tmp_path / "r")], load_config(None), use_adapters=False,

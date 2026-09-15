@@ -60,6 +60,11 @@ class Probe:
     #
     # Conservative by default: a probe is "repo" unless it is known not to be.
     scope: str = "repo"
+    # Why this probe is repo-scoped, in the words a report will print. The
+    # default is true of the native repo probes and false of an external
+    # analyzer, which is held back because nobody has measured it rather than
+    # because it reasons across files -- so an adapter supplies its own.
+    scope_reason: str = "this check reads relationships between files"
     version: str = "0.1.0"
 
     def applicable(self, ctx: ProbeContext) -> tuple[bool, str]:

@@ -1,6 +1,10 @@
 name = "ruff"
 dimensions = ["quality"]
 checks = 40
+# Declared, not inherited. No measurement has established that this tool
+# returns the same findings from a file subset, so a partial scan records
+# it as not assessed rather than running it and believing the answer.
+scope = "repo"
 selects = { stacks = ["python"] }
 
 [requires]

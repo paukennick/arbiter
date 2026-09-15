@@ -8,6 +8,21 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 
 ### 2026-09-14
 
+- Made adapter scope a declaration instead of an inheritance, and said out loud
+  what a partial scan does not run. All five external analyzers (ruff, bandit,
+  checkov, semgrep, gitleaks) were constructed without a `scope` argument, so
+  they took `Probe`'s `repo` default. The value was right; nobody had chosen
+  it. Each manifest now carries `scope = "repo"` with the reason, `load_adapter`
+  refuses a scope that is neither `file` nor `repo`, and a test fails if a
+  manifest omits the key or claims `file` — which would assert a subset-exactness
+  nobody has measured. The skip reason was also wrong: every repo-scoped probe
+  printed "this check reads relationships between files", true of the native
+  probes and false of an external analyzer, which is held back only because it
+  is unmeasured. `Probe.scope_reason` now carries the real one. `docs/ci.md` and
+  `RUNNING-ON-YOUR-OWN-CODE.md` state plainly that a pull-request gate runs
+  Arbiter's own probes and no third-party analyzer at all. Nothing about what
+  runs changed. (REQ-022)
+
 - Gave every adjudication verdict a name. `learn.record()` stored a bare string
   — `"true_positive"` or `"false_positive:note"` — with no reviewer, no
   per-verdict timestamp and no record of which command it arrived through; only

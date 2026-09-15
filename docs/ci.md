@@ -71,6 +71,16 @@ are the changed ones plus dependency manifests, lockfiles, CI workflows and
 Terraform, which is where a rule genuinely reasons about a file it is not
 reporting on.
 
+**All five external analyzers are repo-scoped, so a partial scan does not run
+them.** ruff, bandit, checkov, semgrep and gitleaks each declare `scope = "repo"`
+in their manifest, and a `--changed` run records all five as not assessed. The
+reason is different from the one that holds back a native repo probe: those
+genuinely reason across files, whereas nobody has measured whether these five
+return the same findings from a subset. Until someone does, claiming they do
+would be a guess printed as a fact. The practical consequence is worth stating
+plainly — **a pull-request gate runs Arbiter's own probes and no third-party
+analyzer at all.**
+
 Traefik, 171 changed files of 2,293: **59s → 6s**. The file-scoped findings are
 identical to the full scan's on the files both read — 158 and 158, nothing
 missing, nothing extra. `scope="file"` is a claim of exactness, so it is tested

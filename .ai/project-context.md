@@ -703,3 +703,47 @@ same artifact, landing at `k:2e88d7a07351` — the hash on `main`.
 **State.** 398 passed, 3 skipped on this machine, up from 396/3 by the two
 tests REQ-020 required. The adjudicated ledger is still empty, so every path
 here is exercised by tests and by nothing else.
+
+## 2026-09-14 — Adapter scope is declared, not inherited (REQ-022)
+
+**What was wrong, and it was not the behaviour.** `register_adapters` built
+every adapter-backed `Probe` without a `scope` argument, so all five external
+analyzers took `Probe`'s conservative `repo` default. That default is correct —
+nothing has ever measured whether ruff, bandit, checkov, semgrep or gitleaks
+return the same findings from a subset of the files. But it was inherited
+rather than chosen, and an inherited default is not a decision. The next person
+to write an adapter copies a manifest, and a manifest that never mentions scope
+does not show that the question was asked.
+
+Each manifest now declares `scope = "repo"` with the reason beside it,
+`load_adapter` refuses a value that is neither `file` nor `repo`, and a test
+fails if a shipped manifest omits the key *or* claims `file`. That last
+assertion is the real mechanism: declaring `file` asserts subset-exactness, so
+the test is an evidence gate that fails the day someone claims it without a
+measurement to point at.
+
+**The defect found on the way, which was a false statement in the output.**
+Every repo-scoped probe skipped in a partial scan reported the same reason:
+"this check reads relationships between files and cannot answer from a subset."
+That is true of `drift`, `interface` and the suppression counters. It is false
+of semgrep, which reasons about one file at a time and is held back only
+because nobody has checked whether running it on a subset gives the same
+answer. The report was stating a mechanism it had not established, about a tool
+it does not own — the exact failure mode this project exists to refuse, sitting
+in its own skip reason. `Probe.scope_reason` now carries the real one, defaulted
+to the relationships wording for native probes and overridden for adapters.
+
+**The documentation gap was the user-visible half.** `docs/ci.md` explained file
+and repo scope carefully and never named the external analyzers.
+`RUNNING-ON-YOUR-OWN-CODE.md` described the pull-request job without saying it
+runs native probes only. A reader of either would reasonably believe their PR
+gate runs semgrep. Both now say plainly that a pull-request gate runs Arbiter's
+own probes and no third-party analyzer at all, and both give the reason as
+absence of measurement rather than as a property of the tools.
+
+**What this is not.** Nothing about what runs changed, and this must never be
+described as making partial scans cover more. It makes an existing limit
+visible and gives it an honest reason.
+
+**State.** 403 passed, 3 skipped, up from 400/3 by the three tests REQ-022
+required.

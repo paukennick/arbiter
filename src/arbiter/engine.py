@@ -256,8 +256,8 @@ def run_scan(
             # rather than merely incomplete. Recorded as not-assessed so it
             # stays in the coverage denominator.
             oc.status = "skipped"
-            oc.reason = (f"partial scan ({scan_scope['basis']}): this check reads "
-                         "relationships between files and cannot answer from a subset")
+            oc.reason = (f"partial scan ({scan_scope['basis']}): {probe.scope_reason}, "
+                         "so it cannot answer from a subset")
             outcomes.append(oc)
             continue
         ok, why = probe.applicable(ctx)

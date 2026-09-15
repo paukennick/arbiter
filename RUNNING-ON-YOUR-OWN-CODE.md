@@ -184,6 +184,14 @@ scan named as the reason. The grade is withheld outright, because a number that
 looks like a repository grade but describes a diff is exactly the thing this
 tool exists not to produce.
 
+**The pull-request job runs Arbiter's own probes and no external analyzer.**
+ruff, bandit, checkov, semgrep and gitleaks are all repo-scoped, so all five are
+recorded as not assessed on a `--changed` run. They are held back not because
+they reason across files but because nobody has measured whether they answer the
+same way from a subset, and Arbiter will not assume that on their behalf. If you
+want semgrep's opinion on a branch, run a full scan; the nightly job already
+does.
+
 So: **a green pull-request check means "this change introduced nothing that
 crosses a threshold". It never means "this repository is clean."** The nightly
 job is the one whose result may be quoted as being about the repository.

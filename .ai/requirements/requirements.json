@@ -62,7 +62,7 @@
         "title": "Declare adapter probe scope deliberately and say what a partial scan does not run",
         "description": "adapters.register_adapters constructs every adapter-backed Probe without a scope argument, so all five external analyzers inherit the repo default from Probe and are recorded as not-assessed in any partial scan. The default is right because nothing has established that ruff bandit checkov semgrep or gitleaks give subset-exact answers on a file subset, but it is inherited rather than chosen. docs/ci.md explains file and repo scope carefully and never names the external analyzers; RUNNING-ON-YOUR-OWN-CODE.md describes the pull-request job without saying it runs native probes only. A reader of either document would reasonably believe their gate runs semgrep. It does not.",
         "priority": "high",
-        "status": "pending",
+        "status": "completed",
         "minimum_access_scope": [
           "src/arbiter/adapters.py",
           "src/arbiter/packs/",
