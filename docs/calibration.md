@@ -10,6 +10,7 @@ two.
 - [Offline learning, pinned execution](#offline-learning-pinned-execution)
 - [Three limits that keep it honest](#three-limits-that-keep-it-honest)
 - [Adjudication](#adjudication)
+- [The nightly job](#the-nightly-job)
 - [Calibrating someone else's tool](#calibrating-someone-elses-tool)
 
 ---
@@ -131,6 +132,44 @@ have been produced by something that was not a person.
 keypress interface driven by something that is not a keyboard is a batch import
 wearing another name, so the refusal points at `--apply`, which is honest about
 what it is.
+
+## The nightly job
+
+`.github/workflows/train.yml` runs `tools/train_cycle.sh` at 08:00 UTC. It
+downloads the practice repositories, runs every rule against them, measures
+discrimination, plants faults, checks the tool never overclaims, runs the
+tests, and writes the results back to the repository. **Nothing in it changes a
+rule.** It measures and records; deciding what a result means needs a person,
+and `training/WORKLIST.md` is the handoff.
+
+Five files accumulate across runs and are committed:
+
+| File | What it holds |
+|---|---|
+| `.arbiter/knowledge.json` | the ledger — synthetic counts, and any adjudications |
+| `.arbiter/external-severity.json` | measured severities for external checks |
+| `training/WORKLIST.md` | what to look at next, and why |
+| `training/fix-pairs.json` | real before/after pairs mined from history |
+| `training/disagreements.json` | where two analyzers contradict each other |
+
+Everything else the cycle writes is stamped per run and deliberately ignored.
+It is one night's logs, and keeping it would grow the repository without
+telling a later run anything.
+
+### The write-back is checked before the work, not after
+
+Run 1 measured for fifty-five minutes and committed none of it. `training/`
+matched a gitignore entry, so `git add -A .arbiter training` exited 1, and
+`bash -e` failed the job two seconds after the cycle had finished successfully.
+Every number was thrown away, and the failure looked like the measurement had
+broken rather than the bookkeeping.
+
+`tools/check_writeback.sh` now runs first, in CI as its own step and inside the
+cycle itself. It asserts none of the five is ignored and dry-runs the exact
+`git add` the job ends with. The check is instant and the cycle is not, so a
+write-back that cannot happen is a reason not to start. A push that loses a race
+to another commit is the same lost night by a different route, so the job
+rebases before pushing and fails the step if that does not work.
 
 ## Calibrating someone else's tool
 

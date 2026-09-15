@@ -78,6 +78,14 @@ jobs:
       - name: External analyzers
         run: ./tools/install_tools.sh
 
+      # Before the expensive part, not after it. Run 1 measured everything and
+      # committed nothing: `training/` matched a gitignore entry, `git add -A`
+      # exited 1, and the job failed two seconds after fifty-five minutes of
+      # work. The cycle runs this itself too; having it as its own step means
+      # the log says plainly which thing broke.
+      - name: Check the results can be saved
+        run: ./tools/check_writeback.sh
+
       - name: Run a training cycle
         env:
           TRIALS: ${{ github.event.inputs.trials || '20000' }}
@@ -124,5 +132,10 @@ jobs:
 
           Measurements only — no rule was changed by this job.
           See training/WORKLIST.md for what the results raise."
-            git push
+            # A push that loses a race is the same lost night's work as a
+            # gitignore mistake, arriving by a different route. Rebase onto
+            # whatever landed while the cycle ran, then push; if that still
+            # fails, fail the step rather than exiting 0 with nothing saved.
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
           fi

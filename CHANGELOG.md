@@ -8,6 +8,23 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 
 ### 2026-09-14
 
+- Gave the nightly training job an owned contract and a preflight. The job
+  produces the project's only accumulating evidence and had never been covered
+  by a requirement; four defects were repaired in it on 2026-09-13 as unplanned
+  work, including one where `git add -A .arbiter training` matched a gitignore
+  entry, exited 1, and failed the job two seconds after a fifty-five-minute
+  cycle had finished — so run 1 measured everything and committed nothing. The
+  five accumulating files (`.arbiter/knowledge.json`,
+  `.arbiter/external-severity.json`, `training/WORKLIST.md`,
+  `training/fix-pairs.json`, `training/disagreements.json`) are now named in one
+  place, `tools/check_writeback.sh` asserts none is ignored and dry-runs the
+  exact `git add` the job ends with, and both CI and a laptop run it *before*
+  the cycle rather than discovering the problem after the work. The push now
+  rebases first, because losing a race to another commit is the same lost night
+  by a different route. Four tests cover it, including one that reproduces the
+  original gitignore arrangement in a temporary repository and asserts the check
+  refuses it. (REQ-023)
+
 - Made adjudication require a terminal. `arbiter feedback` and
   `arbiter review --interactive` now check `stdin.isatty()` and refuse when
   nothing is typing, so a piped script, a CI step or an agent shelling out

@@ -120,7 +120,7 @@
         "title": "Cover the nightly training job with a requirement and a test",
         "description": "The nightly calibration job in .github/workflows/train.yml and tools/train_cycle.sh has never been covered by a requirement. Four defects were repaired in it on 2026-09-13 as unplanned work, including one where git add matched a gitignore entry, git exited 1, and bash -e failed the job two seconds after a 55-minute cycle finished successfully, so run 1 measured everything and committed nothing. A job that produces the project's only accumulating evidence and can fail silently after doing all its work needs owned acceptance criteria.",
         "priority": "medium",
-        "status": "pending",
+        "status": "completed",
         "minimum_access_scope": [
           ".github/workflows/train.yml",
           "tools/train_cycle.sh",

@@ -784,3 +784,38 @@ to look like one. The claim stays exactly as small as the mechanism.
 
 **State.** 406 passed, 3 skipped, up from 403/3 by the three tests REQ-021
 required.
+
+## 2026-09-14 — The nightly job owns its write-back (REQ-023)
+
+**Why it needed a requirement at all.** The job produces the only evidence this
+project accumulates, and it had never been covered by one. Four defects were
+repaired in it on 2026-09-13 as unplanned work. The expensive one: `training/`
+matched a gitignore entry, so `git add -A .arbiter training` exited 1, and
+`bash -e` failed the job two seconds after a fifty-five-minute cycle finished
+successfully. Run 1 measured everything and committed nothing, and the failure
+read as though the measurement had broken rather than the bookkeeping.
+
+**The shape of the fix is ordering, not cleverness.** The check is instant and
+the cycle is not, so the check goes first. `tools/check_writeback.sh` names the
+five accumulating files in one place, asserts none of them is ignored, and
+dry-runs the exact `git add` the job ends with. CI runs it as its own step
+before the cycle so the log says which thing broke; `train_cycle.sh` runs it too
+so a laptop cannot skip what CI enforces. A write-back that cannot happen is a
+reason not to start.
+
+**The second route to the same loss.** A push that loses a race to another
+commit throws away the night just as completely as a gitignore mistake. The job
+now rebases onto whatever landed while it ran and fails the step if that does
+not work, rather than exiting 0 having saved nothing.
+
+**What the tests actually pin.** One reproduces the original arrangement — a
+temporary repository with `training/` ignored as a directory — and asserts the
+check refuses it, then restores the negations and asserts it passes. Another
+reads `.gitignore` and the script and fails if they stop agreeing, because two
+places naming the same five files drift silently and the drift surfaces months
+later as a lost night. A third asserts the check appears before the cycle in
+both callers, which is the whole point and the easiest thing to undo by
+accident.
+
+**State.** 410 passed, 3 skipped, up from 406/3 by the four tests REQ-023
+required.

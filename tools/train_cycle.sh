@@ -31,6 +31,11 @@ STAMP="$(date -u +%Y-%m-%dT%H%M%SZ)"
 cd "$ROOT"
 mkdir -p "$RESULTS" .arbiter
 
+echo "==> 0a/9  can the results be saved?"
+# First, because it is instant and the rest is not. Run 1 measured for
+# fifty-five minutes and then could not commit any of it.
+bash "$ROOT/tools/check_writeback.sh"
+
 echo "==> 0/9  external analyzers"
 # Pinned versions, idempotent, never fails the cycle. A missing analyzer is
 # recorded as "not assessed" in the scan, which is the honest outcome.

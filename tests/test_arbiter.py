@@ -3106,6 +3106,96 @@ def test_the_workflow_installs_the_analyzers_from_the_script():
     assert "pip install checkov" not in wf, "CI must not install analyzers inline"
 
 
+# The five files the nightly job accumulates across runs. Per-run logs are
+# stamped and deliberately ignored; these are the evidence and must survive.
+ACCUMULATING = (
+    ".arbiter/knowledge.json",
+    ".arbiter/external-severity.json",
+    "training/WORKLIST.md",
+    "training/fix-pairs.json",
+    "training/disagreements.json",
+)
+
+
+def _is_ignored(path: str) -> bool:
+    import subprocess
+    return subprocess.run(["git", "check-ignore", "-q", path],
+                          cwd=str(ROOT), capture_output=True).returncode == 0
+
+
+def test_the_accumulating_training_files_are_committable(tmp_path):
+    """The nightly job's only product is these five files. A gitignore rule that
+    swallows one turns a successful cycle into a lost night (REQ-023)."""
+    for path in ACCUMULATING:
+        assert not _is_ignored(path), f".gitignore excludes {path}, which the job commits"
+    # And the converse: a stamped per-run log must stay out, or the repository
+    # grows by a cycle's worth of tables every night for no later reader.
+    assert _is_ignored("training/corpus-2026-01-01T000000Z/summary.json")
+    assert _is_ignored("training/discriminate-2026-01-01T000000Z.json")
+
+
+def test_the_training_job_checks_it_can_write_back_before_it_measures():
+    """Run 1 measured for fifty-five minutes and committed nothing, because the
+    thing that was broken was only discovered at the end. The check is instant
+    and the cycle is not, so the check goes first."""
+    wf = (ROOT / ".github" / "workflows" / "train.yml").read_text(encoding="utf-8")
+    assert "check_writeback.sh" in wf, "the job does not verify it can save results"
+    assert wf.index("check_writeback.sh") < wf.index("train_cycle.sh"), (
+        "the write-back check runs after the cycle, which is the defect it exists "
+        "to prevent")
+    cycle = (ROOT / "tools" / "train_cycle.sh").read_text(encoding="utf-8")
+    assert "check_writeback.sh" in cycle, "a laptop run skips the check CI makes"
+
+
+def test_the_writeback_check_refuses_a_ledger_it_could_not_commit(tmp_path):
+    """The check has to actually fail on the arrangement that cost run 1 —
+    `training/` ignored as a directory — and pass once the negations are back."""
+    import shutil
+    import subprocess
+    bash = shutil.which("bash")
+    if not bash:
+        pytest.skip("bash not available")
+
+    repo = tmp_path / "r"
+    (repo / "tools").mkdir(parents=True)
+    shutil.copy(ROOT / "tools" / "check_writeback.sh", repo / "tools")
+    for path in ACCUMULATING:
+        p = repo / path
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text("{}", encoding="utf-8")
+    subprocess.run(["git", "-C", str(repo), "init", "-q", "-b", "main"], check=True)
+
+    def check():
+        return subprocess.run([bash, "tools/check_writeback.sh"], cwd=str(repo),
+                              capture_output=True, text=True)
+
+    # The exact mistake: the directory itself ignored, so `git add` errors out.
+    (repo / ".gitignore").write_text("training/\n", encoding="utf-8")
+    bad = check()
+    assert bad.returncode != 0, "an unsaveable ledger was allowed to start a cycle"
+    assert "IGNORED" in bad.stderr
+    assert "training/WORKLIST.md" in bad.stderr
+
+    # Ignoring the per-run logs while keeping the accumulating files is correct.
+    (repo / ".gitignore").write_text(
+        "training/*\n!training/WORKLIST.md\n!training/fix-pairs.json\n"
+        "!training/disagreements.json\n", encoding="utf-8")
+    assert check().returncode == 0, check().stderr
+
+
+def test_the_writeback_check_lists_what_gitignore_keeps():
+    """Two places name these files. They drift silently unless something reads
+    both — and the drift shows up as a lost night, months later."""
+    script = (ROOT / "tools" / "check_writeback.sh").read_text(encoding="utf-8")
+    ignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
+    kept = {line[1:].strip() for line in ignore.splitlines()
+            if line.startswith("!training/") and not line.endswith(".gitkeep")}
+    for path in kept:
+        assert path in script, f".gitignore keeps {path}; the write-back check ignores it"
+    for path in ACCUMULATING:
+        assert path in script, f"{path} is not checked before a cycle starts"
+
+
 # ---------------------------------------------------------------------------
 # The holdout comparison, corrected.
 #
