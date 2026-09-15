@@ -1,6 +1,6 @@
 # What to work on next
 
-Generated 2026-09-15T14:14:46+00:00 by `tools/worklist.py` from the last training cycle.
+Generated 2026-09-15T20:00:53+00:00 by `tools/worklist.py` from the last training cycle.
 
 Nothing here is a decision. Each entry says what the measurement shows and what question it raises.
 
@@ -10,7 +10,7 @@ Nothing here is a decision. Each entry says what the measurement shows and what 
 
 A language that appears only in well-maintained repositories cannot be measured. There is nothing to compare its rules against, so they can be asserted but never tested.
 
-- **go** — 819,386 lines of good code, 15,256 broken
+- **go** — 819,986 lines of good code, 15,256 broken
 - **cpp** — 148,538 lines of good code, 0 broken
 - **rust** — 56,386 lines of good code, 0 broken
 - **rst** — 23,251 lines of good code, 0 broken
@@ -36,28 +36,28 @@ arbiter learn
 
 Twenty adjudications on one rule is the point where `arbiter learn` stops calling it unproven. A dozen on the noisiest rules is worth more than another million trials.
 
-### 3. [HIGH] 14 real-world fix pairs waiting for a verdict
+### 3. [HIGH] 162 real-world fix pairs waiting for a verdict
 
 A commit where a maintainer changed code a rule fired on, after which it stopped firing. This is the only evidence in the whole system that the tool did not generate for itself — nobody wrote these commits to be found by a scanner.
 
+- `arbiter/supply.unpinned-npm-dep` — 148 candidate pair(s)
 - `arbiter/secrets.pg-url` — 3 candidate pair(s)
-- `arbiter/resource.k8s-no-security-context` — 2 candidate pair(s)
-- `arbiter/resource.k8s-privilege-escalation-not-disabled` — 2 candidate pair(s)
-- `arbiter/resource.k8s-not-run-as-non-root` — 2 candidate pair(s)
-- `arbiter/resource.k8s-writable-root-filesystem` — 2 candidate pair(s)
-- `arbiter/resource.k8s-capabilities-not-dropped` — 2 candidate pair(s)
+- `arbiter/resource.public-object-store` — 2 candidate pair(s)
 - `arbiter/supply.unpinned-action` — 1 candidate pair(s)
+- `arbiter/resource.host-network` — 1 candidate pair(s)
+- `arbiter/resource.unencrypted-queue` — 1 candidate pair(s)
+- `arbiter/resource.k8s-no-security-context` — 1 candidate pair(s)
+- `arbiter/resource.k8s-privilege-escalation-not-disabled` — 1 candidate pair(s)
 
 Each one is a CANDIDATE: a finding also disappears when the code around it is rewritten for unrelated reasons. Confirm that the change addressed the finding, then it becomes a permanent regression case — this rule must fire on the parent commit and must not fire on the child, forever. A rule that fires on both sides of a commit that plainly fixed the thing is wrong, and nothing else in the pipeline would have told you.
 
 ### 4. [HIGH] Contested findings, ready to adjudicate
 
-317 findings where both Arbiter and an external analyzer cover the kind of defect, and only one of them fired. Exactly one is wrong about that line, so a verdict there resolves a real uncertainty instead of confirming a settled one.
+347 findings where both Arbiter and an external analyzer cover the kind of defect, and only one of them fired. Exactly one is wrong about that line, so a verdict there resolves a real uncertainty instead of confirming a settled one.
 
 - 173 where only **checkov** fired
-- 97 where only **arbiter** fired
-- 45 where only **semgrep** fired
-- 2 where only **gitleaks** fired
+- 96 where only **arbiter** fired
+- 78 where only **semgrep** fired
 
 A batch is already prepared. Twenty of these are worth more than twenty random findings, because a finding two independent tools agree on is the least informative thing a person can spend a verdict on.
 
