@@ -148,7 +148,7 @@
       {
         "id": "REQ-005",
         "title": "Establish licensing terms for arbiter",
-        "description": "pyproject.toml declares a proprietary licence but the repository carries no LICENSE file and no copyright notice so no terms are granted in writing. docs/licensing.md records the requirements the instrument must satisfy and the questions that block drafting it.",
+        "description": "Partly closed by engineering as of 2026-09-14; the remainder needs counsel and cannot be completed here. LICENSE exists at the repository root and pyproject.toml references it, copyright is asserted to Nicholas J Pauken, and LICENSE section 3 assigns scan output to the user -- the first three acceptance criteria. LICENSE is explicitly an interim notice and not the operative grant: it reserves all rights and grants none. The fourth criterion is L-6, the redistribution review for the five bundled analyzers, recorded in NOTICE.md with a date and a named reviewer. That is a legal determination about semgrep's LGPL-2.1 terms and it must not be signed by anyone who did not perform it, so this requirement stays pending until a person does. It blocks the air-gapped bundle and nothing else; docs/licensing.md records the open questions.",
         "priority": "high",
         "status": "pending",
         "minimum_access_scope": [

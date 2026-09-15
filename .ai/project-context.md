@@ -104,14 +104,20 @@ its outcome is recorded in `CHANGELOG.md` and this file. Rationale lives here
 permanently; the registry holds only live work. Not every change earns a REQ —
 routine maintenance rides an existing one or is a CHANGELOG line.
 
-**Licensing (REQ-005).** `pyproject.toml` declares `Proprietary` but there is no
-`LICENSE` file and no copyright notice, so no terms are granted in writing;
-`omni doctor` independently flags this. `docs/licensing.md` states eight
-requirements (L-1…L-8) and the open questions that block drafting. Two points
-are load-bearing: scan output must belong to the user, since reports are meant
-for accreditation packages and PR comments; and `semgrep` is LGPL-2.1, so the
-air-gapped bundle cannot ship until the redistribution review in L-6 is done.
-Engineering cannot close this one — it needs counsel.
+**Licensing (REQ-005).** Three of its four acceptance criteria are closed and
+the fourth cannot be closed here. `LICENSE` exists at the repository root and
+`pyproject.toml` references it, copyright is asserted to Nicholas J Pauken, and
+`LICENSE` §3 assigns scan output to the user. `LICENSE` is deliberately an
+interim notice rather than the operative grant: it reserves all rights and
+grants none, which is a defensible position to hand someone a copy under and is
+not a licence. `docs/licensing.md` states eight requirements (L-1…L-8) and the
+questions still open. Two points are load-bearing: scan output must belong to
+the user, since reports are meant for accreditation packages and PR comments;
+and `semgrep` is LGPL-2.1, so the air-gapped bundle cannot ship until the
+redistribution review in L-6 is done and recorded with a date and a reviewer.
+That review is a legal determination, so engineering cannot close this one —
+it needs counsel, and a signature from someone who did not perform the review
+would be worse than the gap it filled.
 
 ## 2026-09-12 — Adapter timeouts on Windows (REQ-006)
 

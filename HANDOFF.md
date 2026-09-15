@@ -24,8 +24,11 @@ transports (REQ-010) passed their requirement-specific tests and the full Linux
 completion gate, then closed in that dependency order. Their outcomes are in
 `CHANGELOG.md`, `.ai/project-context.md`, and the requirement archive.
 
-REQ-005 is the only active requirement. It requires counsel; do not represent
-engineering work as resolving its licensing questions.
+Two requirements are active. REQ-005 (licensing) requires counsel; do not
+represent engineering work as resolving its licensing questions — its first
+three acceptance criteria are met, and the fourth is a redistribution review
+that has to be performed and signed by a person. REQ-024 (exercise the Windows
+code paths in CI) is engineering work and is unblocked.
 
 ## Validation
 
