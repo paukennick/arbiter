@@ -6,6 +6,17 @@
 # corpus-driven half (injection trials, discrimination, external-tool
 # calibration) already runs nightly in train.yml and has no business gating
 # a PR.
+#
+# Two platforms, because one was not enough. REQ-006 was a crash on every
+# adapter timeout on Windows -- `os.killpg` does not exist there, so the
+# process-group path raised AttributeError and the analyzer outlived its own
+# timeout. It survived to be found by hand because no automation had ever run
+# on Windows. The kill path, UTF-8 decoding and path handling are all
+# platform-sensitive, and a developer's machine is not a control.
+#
+# The matrix lives here rather than in train.yml on purpose: this job takes
+# about a minute, and a matrix over a two-hour nightly cycle would cost four
+# hours to learn the same thing.
 
 name: pr-check
 
@@ -18,7 +29,13 @@ concurrency:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    strategy:
+      # Both platforms report. Cancelling Windows because Linux failed hides
+      # exactly the class of defect this matrix was added to find.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +49,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .[dev]
 
+      # -rs prints the reason for every skip. Windows runners legitimately skip
+      # things Linux does not, and a skip that is silently absent from the log
+      # is indistinguishable from a test that was never collected.
       - name: Tests
-        run: python -m pytest -q
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python -m pytest -q -rs
 
       - name: Claim invariants
+        env:
+          PYTHONIOENCODING: utf-8
         run: python tools/integrity.py

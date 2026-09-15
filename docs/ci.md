@@ -8,6 +8,7 @@
 - [Scanning only what changed](#scanning-only-what-changed)
 - [A ready-made workflow](#a-ready-made-workflow)
 - [Choosing a gate](#choosing-a-gate)
+- [Arbiter's own CI](#arbiters-own-ci)
 - [Continuous training](#continuous-training)
 
 ---
@@ -156,6 +157,49 @@ Refresh the baseline deliberately, never automatically:
 ```bash
 arbiter baseline arbiter-out/report.json
 ```
+
+## Arbiter's own CI
+
+Two workflows, split by how long they take rather than by what they cover.
+
+| | `pr-check.yml` | `train.yml` |
+|---|---|---|
+| when | every pull request | 08:00 UTC nightly |
+| what | the test suite, then `tools/integrity.py` | the full measurement cycle |
+| how long | about a minute | about two hours |
+| platforms | ubuntu-latest **and** windows-latest | ubuntu-latest |
+| writes to the repo | no | yes — the five accumulating files |
+
+**Why the pull-request check runs on two platforms.** REQ-006 was a crash on
+every adapter timeout on Windows: `os.killpg` does not exist there, so the
+process-group kill path raised `AttributeError` and the analyzer outlived the
+timeout meant to stop it. It was found by hand, months later, because no
+automation had ever run on Windows. UTF-8 decoding (REQ-007) and path handling
+are sensitive the same way, and a developer's machine is not a control.
+
+The matrix is on this workflow and not the nightly one deliberately. Running a
+two-hour measurement cycle twice would cost four hours to learn what a one-minute
+test run already tells you, and the corpus measurements are not platform-
+sensitive — the code paths around them are.
+
+`fail-fast: false`, because cancelling the Windows job when Linux fails hides
+precisely the class of defect the matrix was added to find. Neither job carries
+`continue-on-error`: an advisory check is a check nobody reads.
+
+**Skips are printed, not counted.** The pull-request check runs `pytest -rs`,
+so every skip appears in the log with its reason. Windows legitimately skips
+things Linux does not, and a skip that is silently absent from the output reads
+exactly like a test that was never collected. The nightly cycle still runs
+`pytest -q` and tails three lines, because its job is the corpus measurements
+and the pull-request check has already answered this question on both
+platforms by then.
+
+**The Windows branch is also tested on Linux.** `_kill_tree` is unreachable on a
+machine that has process groups, so four tests take the platform away instead of
+waiting for one — deleting `os.killpg`, then asserting the fallback kills a real
+process, uses `taskkill /T` rather than killing only the direct child, and still
+kills the process when `taskkill` is missing or refuses. The matrix and those
+tests answer different questions and neither replaces the other.
 
 ## Continuous training
 

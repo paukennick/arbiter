@@ -89,7 +89,7 @@
       {
         "id": "REQ-024",
         "title": "Exercise the Windows code paths in CI",
-        "description": "The only workflow is .github/workflows/train.yml on ubuntu-latest as a single job with no matrix, so no Windows path is ever exercised by automation. REQ-006 fixed a crash that occurred on every adapter timeout on Windows and it survived to be found by hand because nothing tested it. The platform-specific process kill path, UTF-8 decoding and path handling are all Windows-sensitive and all currently unverified outside a developer's machine.",
+        "description": "Originally: no workflow ran on Windows, so no Windows path was ever exercised by automation. REQ-006 fixed a crash that occurred on every adapter timeout on Windows and it survived to be found by hand because nothing tested it. Closed 2026-09-14 except for one point. pr-check.yml is now a matrix over ubuntu-latest and windows-latest with fail-fast false and no continue-on-error, running the suite with -rs so each platform's skips appear with reasons, then tools/integrity.py -- which was verified on Windows first. Seven tests were added; four of them delete os.killpg so the taskkill fallback, unreachable on a machine that has process groups, is exercised on Linux too. Still pending: the run is non-advisory but not required, because this repository has no rulesets and main is unprotected, so no check is required at all. Making one required is a repository setting rather than a file and is the owner's call.",
         "priority": "medium",
         "status": "pending",
         "minimum_access_scope": [

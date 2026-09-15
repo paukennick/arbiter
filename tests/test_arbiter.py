@@ -3197,6 +3197,146 @@ def test_the_writeback_check_lists_what_gitignore_keeps():
 
 
 # ---------------------------------------------------------------------------
+# REQ-024 -- the Windows code paths.
+#
+# REQ-006 was a crash on every adapter timeout on Windows: `os.killpg` does not
+# exist there, so the process-group path raised AttributeError and the analyzer
+# outlived the timeout that was supposed to stop it. It survived to be found by
+# hand because no automation had ever run on Windows, and because the fix --
+# `_kill_tree` -- is unreachable on a machine that has process groups.
+#
+# So there are two halves here and both are needed. The tests below take the
+# platform away rather than waiting for a platform, which means the Windows
+# branch is exercised on every Linux run too; and the CI matrix makes sure a
+# real Windows runner sees the rest of the suite, which no amount of
+# monkeypatching can stand in for.
+# ---------------------------------------------------------------------------
+
+def _no_process_groups(monkeypatch):
+    """Make this machine look like Windows to the kill path."""
+    import os as _os
+    monkeypatch.delattr(_os, "killpg", raising=False)
+
+
+class _FakeProc:
+    """Enough of Popen for the kill path, and it remembers what was done to it."""
+
+    def __init__(self, pid: int = 4242):
+        self.pid = pid
+        self.killed = False
+        self.waited = False
+
+    def kill(self):
+        self.killed = True
+
+    def wait(self, timeout=None):
+        self.waited = True
+        return 0
+
+
+def test_a_timeout_still_kills_the_process_where_there_are_no_process_groups(monkeypatch):
+    """REQ-006 itself, against a real process rather than a mock.
+
+    The original defect was not that the wrong process died -- it was that
+    `_kill_group` raised before killing anything, so the analyzer ran on.
+    """
+    import subprocess
+    from arbiter.adapters import Adapter
+
+    _no_process_groups(monkeypatch)
+    proc = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+    try:
+        Adapter._kill_group(proc)   # raised AttributeError before REQ-006
+        assert proc.poll() is not None, "the analyzer outlived its own timeout"
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+            proc.wait(timeout=5)
+
+
+def test_the_no_process_group_path_kills_the_whole_tree_not_just_the_child(monkeypatch):
+    """`/T` is the entire point. checkov and semgrep fan out into workers, and
+    killing only the process we spawned leaves those running -- which is the
+    failure the process-group path exists to prevent, arriving by another
+    route."""
+    from arbiter import adapters as A
+
+    calls = []
+    monkeypatch.setattr(A.shutil, "which",
+                        lambda name: "taskkill" if name == "taskkill" else None)
+    monkeypatch.setattr(A.subprocess, "run",
+                        lambda argv, **kw: calls.append(list(argv)))
+    proc = _FakeProc()
+    A.Adapter._kill_tree(proc)
+
+    assert calls, "taskkill was on PATH and the kill path did not use it"
+    assert "/T" in calls[0], "only the direct child is killed; the workers survive"
+    assert "/F" in calls[0]
+    assert str(proc.pid) in calls[0]
+    assert not proc.killed, "taskkill succeeded, so the fallback should not have run"
+
+
+def test_the_no_process_group_path_falls_back_when_taskkill_is_missing(monkeypatch):
+    """A stripped image without taskkill must still lose the process, not the
+    exception."""
+    from arbiter import adapters as A
+
+    monkeypatch.setattr(A.shutil, "which", lambda name: None)
+    proc = _FakeProc()
+    A.Adapter._kill_tree(proc)
+    assert proc.killed, "no taskkill and no kill either — the process survived"
+
+
+def test_the_no_process_group_path_falls_back_when_taskkill_fails(monkeypatch):
+    """taskkill present but refusing (a permissions case) is not a reason to
+    leave the process running."""
+    from arbiter import adapters as A
+
+    def _boom(argv, **kw):
+        raise OSError("access denied")
+
+    monkeypatch.setattr(A.shutil, "which", lambda name: "taskkill")
+    monkeypatch.setattr(A.subprocess, "run", _boom)
+    proc = _FakeProc()
+    A.Adapter._kill_tree(proc)
+    assert proc.killed, "taskkill failed and nothing else tried"
+
+
+def _pr_check_workflow():
+    import yaml
+    path = ROOT / ".github" / "workflows" / "pr-check.yml"
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def test_the_test_suite_runs_on_windows_in_ci():
+    """The gap REQ-024 exists to close. A developer's machine is not a control."""
+    job = _pr_check_workflow()["jobs"]["check"]
+    oses = job["strategy"]["matrix"]["os"]
+    assert any("windows" in o for o in oses),         "no automation runs on Windows; REQ-006 is how that ends"
+    assert any("ubuntu" in o for o in oses),         "Linux is the deployment target and must not be dropped for Windows"
+
+
+def test_the_windows_run_is_required_rather_than_advisory():
+    """An advisory check is a check nobody reads. It also has to not be
+    cancelled by the other platform failing, or the matrix reports one result
+    and hides the one it was added for."""
+    job = _pr_check_workflow()["jobs"]["check"]
+    assert not job.get("continue-on-error"), "the whole job is advisory"
+    assert job["strategy"].get("fail-fast") is False,         "a Linux failure cancels Windows, which is the result being sought"
+    for step in job["steps"]:
+        assert not step.get("continue-on-error"),             f"step {step.get('name', '?')!r} cannot fail the run"
+
+
+def test_ci_records_why_each_platform_skipped_what_it_skipped():
+    """Windows legitimately skips things Linux does not. A skip that is silently
+    absent from the log reads the same as a test that was never collected."""
+    job = _pr_check_workflow()["jobs"]["check"]
+    tests = next(s for s in job["steps"] if s.get("name") == "Tests")
+    assert "-rs" in tests["run"].split(),         "pytest is not asked to print skip reasons, so skips vanish from the log"
+    assert tests.get("env", {}).get("PYTHONIOENCODING") == "utf-8",         "Windows writes the console codepage without this; REQ-007 was that bug"
+
+
+# ---------------------------------------------------------------------------
 # The holdout comparison, corrected.
 #
 # It reported Kubernetes as 2.09x worse on held-out code. Three things were

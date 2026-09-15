@@ -8,6 +8,27 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 
 ### 2026-09-14
 
+- Ran the test suite on Windows in CI, and made the Windows-only code paths
+  testable everywhere. No automation had ever run on Windows: `pr-check.yml`
+  was ubuntu-only and `train.yml` is a single ubuntu job. That is how REQ-006
+  survived to be found by hand — a crash on *every* adapter timeout on Windows,
+  because `os.killpg` does not exist there and the process-group path raised
+  `AttributeError` while the analyzer ran on past the timeout meant to stop it.
+  The pull-request check is now a matrix over ubuntu-latest and windows-latest
+  with `fail-fast: false`, so a Linux failure cannot cancel the Windows job and
+  hide the result the matrix was added for, and both jobs run `pytest -rs` so
+  each platform's skips appear in the log with reasons rather than silently
+  absent. The matrix went on the one-minute pull-request workflow rather than
+  the two-hour nightly one, which would have cost four hours to learn the same
+  thing. Separately, `_kill_tree` is unreachable on a machine that has process
+  groups, so four of the seven new tests take the platform away instead of
+  waiting for one: they delete `os.killpg` and assert the fallback kills a real
+  process, uses `taskkill /T` rather than killing only the direct child and
+  leaving the fanned-out workers alive, and still kills the process when
+  `taskkill` is absent or refuses. `tools/integrity.py` was verified on Windows
+  before CI was made to depend on it — 354,294 reports enumerated, 0 integrity
+  failures. 410 tests to 417. (REQ-024)
+
 - Gave the nightly training job an owned contract and a preflight. The job
   produces the project's only accumulating evidence and had never been covered
   by a requirement; four defects were repaired in it on 2026-09-13 as unplanned

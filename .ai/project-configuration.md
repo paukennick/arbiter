@@ -46,6 +46,15 @@ These settings correspond to the `configuration` block in
   (`LICENSE`, `NOTICE`, `TRADEMARKS.md` — arbiter is proprietary and has its
   own `NOTICE.md`). Its root-placement WARNs about `src/`, `tests/` etc. are
   expected for an adopter repo. Any FAIL outside these lists is real drift.
+- **CI.** Two workflows. `.github/workflows/pr-check.yml` runs on every pull
+  request over a matrix of `ubuntu-latest` and `windows-latest` — the test
+  suite with `-rs`, then `tools/integrity.py` — and finishes in about a
+  minute. `.github/workflows/train.yml` runs the two-hour measurement cycle
+  nightly on ubuntu only and commits its results back. The matrix is on the
+  fast workflow deliberately (REQ-024); `fail-fast: false` so a Linux failure
+  cannot cancel the Windows job. Neither is a *required* check: this repository
+  has no rulesets and `main` is unprotected, so both are informative until that
+  changes.
 - **Headroom** is installed at local scope in `.claude/settings.local.json`
   (git-ignored): `ANTHROPIC_BASE_URL=http://127.0.0.1:8787` plus
   SessionStart/PreToolUse hooks that run `headroom init hook ensure` to keep

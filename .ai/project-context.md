@@ -825,3 +825,50 @@ accident.
 
 **State.** 410 passed, 3 skipped, up from 406/3 by the four tests REQ-023
 required.
+
+## 2026-09-14 — The Windows code paths run in CI (REQ-024)
+
+**The gap was structural, not a missing test.** Neither workflow had ever run
+on Windows — `pr-check.yml` was ubuntu-only and `train.yml` is a single ubuntu
+job — so every Windows-specific branch was verified by one developer's machine
+or not at all. REQ-006 is what that costs: a crash on every adapter timeout on
+Windows, because `os.killpg` is absent there and the process-group path raised
+`AttributeError` while the analyzer outlived the timeout that was supposed to
+kill it. It was found by hand.
+
+**Two different answers were needed, and neither substitutes for the other.**
+A matrix gets a real Windows runner over the whole suite, which no amount of
+monkeypatching can imitate. But `_kill_tree` is unreachable on a machine that
+*has* process groups, so on Linux it would still never execute. Four of the
+seven new tests therefore take the platform away rather than waiting for one:
+delete `os.killpg`, then assert the fallback kills a real subprocess, reaches
+for `taskkill /T` instead of killing only the direct child — checkov and
+semgrep fan out into workers, and killing the parent alone is the same failure
+by another route — and still kills the process when `taskkill` is missing or
+refuses with a permissions error.
+
+**Where the matrix went, and why not the other workflow.** On `pr-check.yml`,
+which takes about a minute. Putting it on the nightly cycle would have spent
+four hours to learn what one minute already reports, and the corpus
+measurements are not platform-sensitive; the code paths around them are.
+`fail-fast: false` matters more than it looks: the default cancels the Windows
+job the moment Linux fails, which suppresses exactly the result the matrix
+exists to produce.
+
+**Skips are printed rather than counted.** Both jobs run `pytest -rs`. Windows
+legitimately skips what Linux does not, and an unlisted skip is
+indistinguishable in a log from a test that was never collected. Three skip
+here today: tree-sitter twice and the uncloned corpus once.
+
+**Verified before depending on it.** `tools/integrity.py` was run on Windows
+first — 354,294 reports enumerated, 0 integrity failures, exit 0 — rather than
+adding a CI step on the assumption it would work.
+
+**What is not done.** The check is non-advisory (no `continue-on-error`
+anywhere in the job) but it is not *required*, because nothing on this
+repository requires any check: `repos/:owner/:repo/rulesets` returns `[]` and
+`main` reports "Branch not protected". Making it required is a repository
+setting, not a file, and the last ruleset here blocked a push earlier the same
+day. REQ-024 stays pending on that one point.
+
+**State.** 417 passed, 3 skipped, up from 410/3.
