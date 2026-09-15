@@ -42,7 +42,14 @@ DEFAULT_PATH = ".arbiter/knowledge.json"
 
 # Where a verdict came in. Recorded so a batch can be found again later; it
 # says nothing about whether a person typed it.
-ENTRY_POINTS = ("feedback", "review-interactive", "review-apply", "import")
+ENTRY_POINTS = ("feedback", "feedback-batch", "review-interactive",
+                "review-apply", "import")
+
+# The entry points that reached the ledger without a terminal on the other end.
+# Not a lesser class of verdict -- a batch import is a legitimate thing to do --
+# but the one fact worth being able to filter on later, because it is the set
+# that could have been produced by something that was not a person.
+NON_INTERACTIVE_ENTRY_POINTS = ("feedback-batch", "review-apply", "import")
 
 # What a pre-attribution verdict migrates to. Schema 1 stored a bare string,
 # so these three facts are not recoverable for anything already in a ledger.

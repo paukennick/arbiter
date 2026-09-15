@@ -8,6 +8,20 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 
 ### 2026-09-14
 
+- Made adjudication require a terminal. `arbiter feedback` and
+  `arbiter review --interactive` now check `stdin.isatty()` and refuse when
+  nothing is typing, so a piped script, a CI step or an agent shelling out
+  cannot write a permanent verdict by accident into a ledger that refuses to
+  re-adjudicate it. A deliberate batch import stays possible: `feedback --batch`
+  records the entry point `feedback-batch`, and `review --apply` already
+  recorded `review-apply`. Both join `import` in a new
+  `NON_INTERACTIVE_ENTRY_POINTS`, which is the set worth filtering on later.
+  `review --interactive` has no override, because a keypress interface driven
+  by something that is not a keyboard is a batch import under another name and
+  `--apply` already is one. This is a guard against accident and not proof of
+  personhood — anything determined allocates a pseudo-terminal — and
+  `docs/calibration.md` says so in those words. (REQ-021)
+
 - Made adapter scope a declaration instead of an inheritance, and said out loud
   what a partial scan does not run. All five external analyzers (ruff, bandit,
   checkov, semgrep, gitleaks) were constructed without a `scope` argument, so

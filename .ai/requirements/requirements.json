@@ -35,7 +35,7 @@
         "title": "Refuse an adjudication verdict from a non-interactive session",
         "description": "Nothing distinguishes a verdict typed by a person from one written by a script or an agent. review_ui._getch() falls back to input() when raw terminal mode is unavailable, nothing calls isatty(), and cli.cmd_feedback records a verdict from a fully non-interactive invocation. review --apply reads marks from a markdown file, so anything that can write markdown can adjudicate. This is no barrier against a determined caller and is not claimed to be one; it stops the accidental case, which is a piped script, a CI job or an agent shelling out.",
         "priority": "high",
-        "status": "pending",
+        "status": "completed",
         "minimum_access_scope": [
           "src/arbiter/cli.py",
           "src/arbiter/review_ui.py",

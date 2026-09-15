@@ -127,6 +127,9 @@ def build_parser() -> argparse.ArgumentParser:
     fb.add_argument("--reviewer", default="",
                     help="who is answerable for these verdicts "
                          "(default: git config user.email)")
+    fb.add_argument("--batch", action="store_true",
+                    help="record verdicts without a terminal; they are marked "
+                         "as a batch import rather than a typed verdict")
 
     ln = sub.add_parser("learn", help="show what the tool has learned")
     ln.add_argument("--knowledge", help="knowledge file (default .arbiter/knowledge.json)")
@@ -305,6 +308,33 @@ def _resolve_reviewer(explicit: str) -> str:
         if out.returncode == 0 and out.stdout.strip():
             return out.stdout.strip()
     return ""
+
+
+def _terminal_or_refuse(batch: bool, command: str, batch_flag: str = "--batch") -> bool:
+    """Is there plausibly a person on the other end of this adjudication?
+
+    `stdin.isatty()` is the only signal available, and it is a weak one: a
+    determined caller allocates a pty and walks straight through. It is not
+    meant to stop that. It stops the accidental case — a piped script, a CI
+    step, an agent shelling out — which is the one that actually happens, and
+    which produces permanent marks nobody remembers making.
+
+    The override is deliberately easy, because an override an agent cannot pass
+    is an override a person cannot pass either. What it buys is not resistance
+    but a record: an overridden verdict lands with an entry point that says so.
+    """
+    if sys.stdin.isatty():
+        return True
+    if batch:
+        print(f"arbiter: {command} running without a terminal; recording these "
+              f"verdicts as a batch import.", file=sys.stderr)
+        return True
+    print(f"arbiter: {command} refuses to adjudicate without a terminal. "
+          f"Verdicts are permanent\n  and this ledger refuses to re-adjudicate, "
+          f"so a mark made by a script is a mark nobody\n  can correct. If you "
+          f"mean it, pass {batch_flag} — the verdicts are recorded as a batch "
+          f"import\n  and stay findable as one.", file=sys.stderr)
+    return False
 
 
 def _reviewer_or_refuse(explicit: str) -> str | None:
@@ -487,6 +517,9 @@ def cmd_feedback(args) -> int:
     reviewer = _reviewer_or_refuse(args.reviewer)
     if reviewer is None:
         return EXIT_ERROR
+    if not _terminal_or_refuse(args.batch, "feedback"):
+        return EXIT_ERROR
+    entry_point = "feedback" if sys.stdin.isatty() else "feedback-batch"
 
     recorded, repeated, unknown = 0, 0, []
     for fid in args.finding_ids:
@@ -495,7 +528,7 @@ def cmd_feedback(args) -> int:
             unknown.append(fid)
             continue
         if record(knowledge, target, verdict, args.note,
-                  reviewer=reviewer, entry_point="feedback"):
+                  reviewer=reviewer, entry_point=entry_point):
             recorded += 1
         else:
             repeated += 1
@@ -629,6 +662,13 @@ def cmd_review(args) -> int:
         from .learn import record
         reviewer = _reviewer_or_refuse(args.reviewer)
         if reviewer is None:
+            return EXIT_ERROR
+        # No override here, because there is no coherent one: a keypress UI
+        # driven by something that is not a keyboard is not an overridden
+        # interactive review, it is a batch import wearing its name. --apply
+        # is the batch path, and it records itself as one.
+        if not _terminal_or_refuse(False, "review --interactive",
+                                   batch_flag="--apply with a marked review file"):
             return EXIT_ERROR
         before = {r: st.observations for r, st in knowledge.rules.items()}
         marks = run_terminal(picked, knowledge, repo_paths)

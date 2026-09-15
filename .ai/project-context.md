@@ -747,3 +747,40 @@ visible and gives it an honest reason.
 
 **State.** 403 passed, 3 skipped, up from 400/3 by the three tests REQ-022
 required.
+
+## 2026-09-14 — Adjudicating needs a terminal (REQ-021)
+
+**The hole REQ-020 left open.** Every verdict now carries a name, but nothing
+checked that a person was on the other end when it was made. `cmd_feedback`
+recorded happily from a fully non-interactive invocation, and
+`review_ui._getch()` falls back to `input()` when raw terminal mode is
+unavailable, so a piped stdin fed the keypress loop without complaint. Combined
+with a ledger that refuses re-adjudication, that meant a stray script could
+write a permanent mark nobody could correct or even remember making.
+
+`arbiter feedback` and `arbiter review --interactive` now require
+`sys.stdin.isatty()` and refuse otherwise.
+
+**Why the override is deliberately easy.** `feedback --batch` walks straight
+through and records the entry point `feedback-batch`. An override an agent
+cannot pass is an override a person cannot pass either, so making it hard would
+cost legitimate batch imports and buy nothing — the value is the record it
+leaves, not the resistance it offers. `NON_INTERACTIVE_ENTRY_POINTS`
+(`feedback-batch`, `review-apply`, `import`) names the set that could have been
+produced by something that was not a person, which is the question worth being
+able to ask of the ledger later.
+
+**Why `review --interactive` has no override.** There is no coherent one. A
+keypress interface driven by something that is not a keyboard is a batch import
+wearing another name, and `--apply` already is that path and already records
+itself as one. So the refusal points there instead of inventing a second way to
+say the same thing.
+
+**What this is not, stated in the docs in these words.** A guard against
+accident, not proof of personhood. Anything determined allocates a
+pseudo-terminal and walks through, and that is not a gap to close later — no
+check available to a local CLI distinguishes a person from a program that wants
+to look like one. The claim stays exactly as small as the mechanism.
+
+**State.** 406 passed, 3 skipped, up from 403/3 by the three tests REQ-021
+required.

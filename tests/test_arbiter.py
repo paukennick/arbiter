@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -919,6 +920,91 @@ def test_a_verdict_without_a_reviewer_is_refused():
         record(Knowledge(), f, "true_positive", reviewer="")
     with pytest.raises(ValueError, match="reviewer"):
         record(Knowledge(), f, "true_positive", reviewer="   ")
+
+
+class _NotATerminal:
+    """stdin as a pipe sees it: readable, and nobody is typing."""
+
+    def isatty(self):
+        return False
+
+    def read(self, *a):
+        return ""
+
+    def readline(self, *a):
+        return ""
+
+
+def _one_finding_report(tmp_path):
+    """A report on disk plus the id of the single finding in it."""
+    from arbiter.core import Report
+    rep = Report()
+    rep.findings.append(Finding(rule_id="arbiter/x", title="t",
+                                location=Location(path="a.py", start_line=1)))
+    path = tmp_path / "report.json"
+    d = rep.to_dict()
+    path.write_text(json.dumps(d), encoding="utf-8")
+    return path, rep.findings[0].id
+
+
+def test_a_piped_feedback_invocation_is_refused(tmp_path, monkeypatch, capsys):
+    """An agent shelling out, a CI step or a stray script must not be able to
+    write a permanent verdict by accident. The ledger refuses re-adjudication,
+    so there is no undo for a mark nobody remembers making (REQ-021)."""
+    from arbiter.cli import main
+    from arbiter.learn import Knowledge
+    report, fid = _one_finding_report(tmp_path)
+    ledger = tmp_path / "knowledge.json"
+    monkeypatch.setattr(sys, "stdin", _NotATerminal())
+
+    code = main(["feedback", fid, "--false-positive", "--report", str(report),
+                 "--knowledge", str(ledger), "--reviewer", "tester"])
+
+    assert code != 0
+    assert "refuses to adjudicate without a terminal" in capsys.readouterr().err
+    # And nothing was written: a refusal that still records is not a refusal.
+    assert not ledger.exists() or not Knowledge.load(str(ledger)).adjudicated
+
+
+def test_an_overridden_batch_verdict_says_it_was_not_typed(tmp_path, monkeypatch):
+    """The override exists so a deliberate import is possible. Its value is the
+    record it leaves, not the obstacle it fails to be: anything an agent cannot
+    pass is something a person cannot pass either."""
+    from arbiter.cli import main
+    from arbiter.learn import Knowledge, NON_INTERACTIVE_ENTRY_POINTS
+    report, fid = _one_finding_report(tmp_path)
+    ledger = tmp_path / "knowledge.json"
+    monkeypatch.setattr(sys, "stdin", _NotATerminal())
+
+    code = main(["feedback", fid, "--false-positive", "--batch",
+                 "--report", str(report), "--knowledge", str(ledger),
+                 "--reviewer", "tester"])
+
+    assert code == 0
+    verdict = Knowledge.load(str(ledger)).adjudicated[fid]
+    assert verdict.verdict == "false_positive"
+    assert verdict.reviewer == "tester"
+    assert verdict.entry_point == "feedback-batch"
+    assert verdict.entry_point in NON_INTERACTIVE_ENTRY_POINTS
+
+
+def test_an_interactive_review_without_a_terminal_is_refused(tmp_path, monkeypatch, capsys):
+    """There is no coherent override for this one. A keypress UI driven by
+    something that is not a keyboard is a batch import wearing another name,
+    so the refusal points at --apply, which records itself as one."""
+    from arbiter.cli import main
+    report, _ = _one_finding_report(tmp_path)
+    ledger = tmp_path / "knowledge.json"
+    monkeypatch.setattr(sys, "stdin", _NotATerminal())
+
+    code = main(["review", str(report), "--interactive",
+                 "--knowledge", str(ledger), "--reviewer", "tester"])
+
+    assert code != 0
+    err = capsys.readouterr().err
+    assert "review --interactive refuses to adjudicate without a terminal" in err
+    assert "--apply" in err
+    assert not ledger.exists()
 
 
 def test_a_schema_1_ledger_migrates_without_losing_a_verdict(tmp_path):

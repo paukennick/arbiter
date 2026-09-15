@@ -100,6 +100,38 @@ Verdicts recorded before this existed migrate with the reviewer
 `unattributed`. They are real evidence and are kept, but they are not given a
 plausible name on the way through — an invented one would read as a fact later.
 
+### Adjudicating needs a terminal
+
+`arbiter feedback` and `arbiter review --interactive` check that stdin is a
+terminal and refuse when it is not. Piping into either one — from a script, a
+CI step, an agent shelling out — gets a refusal rather than a verdict.
+
+**This is a guard against accident, not proof of personhood.** Anything
+determined allocates a pseudo-terminal and walks straight through, and that is
+not a gap to be closed later; no check available to a local CLI can tell a
+person from a program that wants to look like one. What it stops is the case
+that actually happens: something writes a permanent mark nobody remembers
+making, into a ledger that refuses to re-adjudicate it.
+
+A deliberate batch import is legitimate, so there is a way to do one:
+
+```bash
+arbiter feedback f:8c41d2ae9b07 --false-positive --batch   # recorded as an import
+arbiter review report.json --apply review.md               # the batch path proper
+```
+
+The override is easy to pass on purpose. An override an agent cannot pass is an
+override a person cannot pass either, so the value is not the obstacle — it is
+the record. Both paths record an entry point that says no terminal was
+involved: `feedback-batch` and `review-apply`, alongside `import`. Those three
+are the set worth filtering on later, because they are the verdicts that could
+have been produced by something that was not a person.
+
+`review --interactive` has no override, because there is no coherent one. A
+keypress interface driven by something that is not a keyboard is a batch import
+wearing another name, so the refusal points at `--apply`, which is honest about
+what it is.
+
 ## Calibrating someone else's tool
 
 Checkov's open build reports `"severity": null` on every finding. Arbiter's
