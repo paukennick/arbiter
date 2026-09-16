@@ -5067,8 +5067,11 @@ def test_stdio_still_dispatches_with_nobody_to_identify(tmp_path, monkeypatch):
 
 def test_the_tool_schemas_still_build_against_the_installed_sdk():
     """`TOOLS` is plain data so tests can read it without the SDK, which means
-    nothing else notices when the SDK renames the field it maps to -- as it did
-    at 2.0, where `inputSchema` became `input_schema`."""
+    nothing else notices when the SDK renames the field it maps to -- it did
+    once already, briefly, to `input_schema`, and the installed SDK answers to
+    `inputSchema` again now. This assertion is the one place that would catch
+    the next rename; update the attribute name here, not the code under test,
+    when it does."""
     pytest.importorskip("mcp", reason="the mcp extra is not installed")
     from mcp.types import Tool
 
@@ -5076,7 +5079,7 @@ def test_the_tool_schemas_still_build_against_the_installed_sdk():
     for tool in surface.TOOLS:
         built = Tool(**tool)
         assert built.name == tool["name"]
-        assert built.input_schema == tool["inputSchema"]
+        assert built.inputSchema == tool["inputSchema"]
 
 
 def test_the_stdio_server_actually_starts_and_answers_a_real_client(tmp_path):
@@ -5126,17 +5129,17 @@ def test_the_stdio_server_actually_starts_and_answers_a_real_client(tmp_path):
     started, listed, worked, refused = asyncio.run(talk())
 
     from arbiter import mcp
-    assert started.server_info.name == "arbiter"
+    assert started.serverInfo.name == "arbiter"
     assert {tool.name for tool in listed.tools} == set(mcp.HANDLERS)
 
     # An empty report is a legitimate thing to send and comes back as an empty
     # queue -- a result, not a failure, and with no mark in it.
-    assert worked.is_error is False
+    assert worked.isError is False
     assert json.loads(worked.content[0].text)["entry_count"] == 0
 
     # And a refusal arrives as a refusal rather than as text an agent would read
     # back as a finding.
-    assert refused.is_error is True
+    assert refused.isError is True
     assert "no report at" in refused.content[0].text
 
 

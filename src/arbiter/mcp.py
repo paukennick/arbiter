@@ -55,6 +55,7 @@ from __future__ import annotations
 import json
 import sys
 import time
+from contextlib import AsyncExitStack
 from contextvars import ContextVar
 from pathlib import Path
 from typing import Any
@@ -225,35 +226,59 @@ def _build_server(audit: Any = None, root: str | Path | None = None):
     `TOOLS` is splatted straight into `Tool`, which still accepts `inputSchema`
     under its newer `input_schema` name -- so the schemas stay plain data that a
     test can read without the SDK installed.
+
+    The SDK changed how a `Server` learns its handlers: older releases took
+    `on_list_tools`/`on_call_tool` as constructor keywords, current ones expect
+    `@server.list_tools()`/`@server.call_tool()` decorators applied after
+    construction. Picking one shape and pinning a version range in the manifest
+    would drift the moment either side upgrades without the other -- this
+    inspects the installed `Server.__init__` and calls whichever shape it
+    actually declares, so a resinstalled or upgraded SDK is read, not guessed.
     """
     import asyncio
+    import inspect
 
     from mcp.server import Server
     from mcp.types import CallToolResult, ListToolsResult, TextContent, Tool
 
-    async def on_list_tools(_context, _params=None) -> ListToolsResult:
-        return ListToolsResult(tools=[Tool(**tool) for tool in TOOLS])
-
-    async def on_call_tool(_context, params) -> CallToolResult:
+    def dispatch_call_tool(name: str, arguments: dict | None) -> CallToolResult:
         # The caller was resolved by the HTTP layer before the protocol saw the
         # request, and is None over stdio. It is read here and passed on, so
         # `dispatch` takes it as an argument rather than consulting ambient state.
         caller = CALLER.get()
         try:
-            result = await asyncio.to_thread(dispatch, params.name,
-                                             params.arguments or {},
-                                             caller, audit, root)
+            result = dispatch(name, arguments or {}, caller, audit, root)
         except ServiceError as exc:
             # Flagged as an error rather than returned as ordinary text: a
             # refusal an agent reads as a result is a refusal it will act on.
             return CallToolResult(
                 content=[TextContent(type="text", text=f"error: {exc}")],
-                is_error=True)
+                isError=True)
         return CallToolResult(
             content=[TextContent(type="text", text=json.dumps(result, indent=2))])
 
-    return Server("arbiter", version=__version__,
-                  on_list_tools=on_list_tools, on_call_tool=on_call_tool)
+    if "on_list_tools" in inspect.signature(Server.__init__).parameters:
+        async def on_list_tools(_context, _params=None) -> ListToolsResult:
+            return ListToolsResult(tools=[Tool(**tool) for tool in TOOLS])
+
+        async def on_call_tool(_context, params) -> CallToolResult:
+            return await asyncio.to_thread(
+                dispatch_call_tool, params.name, params.arguments)
+
+        return Server("arbiter", version=__version__,  # type: ignore[call-arg]
+                      on_list_tools=on_list_tools, on_call_tool=on_call_tool)
+
+    server = Server("arbiter", version=__version__)
+
+    @server.list_tools()
+    async def _list_tools() -> list[Tool]:
+        return [Tool(**tool) for tool in TOOLS]
+
+    @server.call_tool()
+    async def _call_tool(name: str, arguments: dict) -> CallToolResult:
+        return await asyncio.to_thread(dispatch_call_tool, name, arguments)
+
+    return server
 
 
 def serve() -> int:
@@ -366,32 +391,65 @@ def build_http_app(key_path: Path | None = None, root: str | Path | None = None,
     # which is not a loopback name, so every real request comes back 421. Naming
     # the hostname with --allowed-host is what that arrangement needs, and it
     # cannot be inferred from here -- a forwarded request looks like any other.
-    transport: dict[str, Any] = {}
-    if allowed_hosts:
-        from mcp.server.transport_security import TransportSecuritySettings
+    #
+    # The SDK's own default (`security_settings=None`) disables this guard
+    # entirely, kept only for callers that never asked for it. Arbiter always
+    # asked for it, so an explicit loopback-only setting is built here instead
+    # of inheriting a permissive default the moment it changes upstream.
+    from mcp.server.transport_security import TransportSecuritySettings
 
-        # Each name is allowed on any port as well as bare, because the port a
-        # proxy forwards is not something the operator should have to predict.
-        names = [entry for host_name in allowed_hosts
-                 for entry in (host_name, f"{host_name}:*")]
-        transport["transport_security"] = TransportSecuritySettings(
-            allowed_hosts=names,
-            allowed_origins=[f"https://{name}" for name in names])
+    if allowed_hosts:
+        hosts = list(allowed_hosts)
     else:
-        # No explicit list: hand the bind address over and let the SDK apply its
-        # loopback defaults, which are right for a local instance.
-        transport["host"] = host
+        # No explicit list: fall back to the bind address and localhost, which
+        # is right for a local instance and matches this transport's own
+        # stated default of "loopback only".
+        hosts = [host, "localhost", "127.0.0.1"]
+    # Each name is allowed on any port as well as bare, because the port a
+    # proxy forwards is not something the operator should have to predict.
+    names = [entry for host_name in hosts for entry in (host_name, f"{host_name}:*")]
+    security_settings = TransportSecuritySettings(
+        allowed_hosts=names,
+        allowed_origins=[f"https://{name}" for name in names])
 
     # Stateless: no session is kept between requests, so there is nothing
     # holding one caller's state for another to resume, and nothing to expire.
     # It matches what the rest of the service promises -- that it keeps nothing.
-    inner = server.streamable_http_app(streamable_http_path=path,
-                                       json_response=json_response,
-                                       stateless_http=True, **transport)
+    #
+    # The SDK dropped `Server.streamable_http_app()`, the single-call helper
+    # this used to build on, in favour of wiring a `StreamableHTTPSessionManager`
+    # by hand. That manager owns a task group that must live for exactly the
+    # ASGI app's lifespan, so this app answers `lifespan` itself instead of
+    # delegating it, entering the manager's `run()` on startup and leaving it
+    # on shutdown.
+    from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
+
+    session_manager = StreamableHTTPSessionManager(
+        app=server, json_response=json_response, stateless=True,
+        security_settings=security_settings)
 
     async def app(scope, receive, send):
+        if scope["type"] == "lifespan":
+            async with AsyncExitStack() as stack:
+                while True:
+                    message = await receive()
+                    if message["type"] == "lifespan.startup":
+                        try:
+                            await stack.enter_async_context(session_manager.run())
+                        except Exception as exc:
+                            await send({"type": "lifespan.startup.failed",
+                                       "message": str(exc)})
+                            return
+                        await send({"type": "lifespan.startup.complete"})
+                    elif message["type"] == "lifespan.shutdown":
+                        await send({"type": "lifespan.shutdown.complete"})
+                        return
+
         if scope["type"] != "http":
-            await inner(scope, receive, send)
+            return
+
+        if scope["path"] != path:
+            await _refuse(send, 404, "not found")
             return
 
         headers = _headers_from(scope)
@@ -428,7 +486,7 @@ def build_http_app(key_path: Path | None = None, root: str | Path | None = None,
 
         reset = CALLER.set(record)
         try:
-            await inner(scope, receive, hsts)
+            await session_manager.handle_request(scope, receive, hsts)
         finally:
             CALLER.reset(reset)
 

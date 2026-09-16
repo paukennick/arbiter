@@ -292,6 +292,12 @@ def _run(argv: list[str], timeout: int = DEFAULT_TIMEOUT) -> subprocess.Complete
         return subprocess.run(
             _console_command() + argv, capture_output=True, text=True,
             timeout=timeout, env=env, encoding="utf-8", errors="replace",
+            # Left unredirected, the child inherits this process's stdin. Over
+            # MCP's stdio transport that handle is the live pipe the protocol
+            # itself reads from -- inheriting it into a subprocess that never
+            # touches it holds the pipe open and the request that spawned this
+            # process never sees its response.
+            stdin=subprocess.DEVNULL,
         )
     except subprocess.TimeoutExpired as exc:
         raise ServiceError(f"arbiter did not finish within {timeout}s") from exc

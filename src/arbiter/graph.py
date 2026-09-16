@@ -694,19 +694,42 @@ def parse_cfn(path: Path, rel: str, repo_id: str) -> list[Resource]:
             return []
     if not isinstance(doc, dict) or not isinstance(doc.get("Resources"), dict):
         return []
+    resources_block = doc["Resources"]
+    # Aurora/Neptune cluster members (AWS::RDS::DBInstance, AWS::Neptune::DBInstance)
+    # never carry StorageEncrypted/KmsKeyId/DeletionProtection themselves -- those
+    # are cluster-level settings in the CFN schema. Evaluating a member instance in
+    # isolation reports the cluster's own encryption and deletion protection as
+    # missing on every instance, even when the parent DBCluster has both set.
+    cluster_props: dict[str, dict] = {}
+    for logical_id, block in resources_block.items():
+        if isinstance(block, dict) and block.get("Type", "").endswith("::DBCluster"):
+            props = block.get("Properties")
+            if isinstance(props, dict):
+                cluster_props[logical_id] = props
     out: list[Resource] = []
-    for logical_id, block in doc["Resources"].items():
+    for logical_id, block in resources_block.items():
         if not isinstance(block, dict):
             continue
         native = block.get("Type", "")
         props = block.get("Properties") or {}
+        props = props if isinstance(props, dict) else {}
+        if native.endswith("::DBInstance"):
+            cluster_ref = props.get("DBClusterIdentifier")
+            cluster_id = cluster_ref.get("Ref") if isinstance(cluster_ref, dict) else None
+            parent = cluster_props.get(cluster_id) if cluster_id else None
+            if parent:
+                inherited = dict(props)
+                for key in ("StorageEncrypted", "KmsKeyId", "DeletionProtection"):
+                    if key not in inherited and key in parent:
+                        inherited[key] = parent[key]
+                props = inherited
         out.append(
             Resource(
                 address=logical_id,
                 kind=CFN_KINDS.get(native, "other"),
                 provider="aws",
                 native=native,
-                properties=props if isinstance(props, dict) else {},
+                properties=props,
                 repo_id=repo_id,
                 origin=Location(path=rel, logical=logical_id),
                 source="cfn",

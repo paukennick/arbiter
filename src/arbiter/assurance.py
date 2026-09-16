@@ -99,6 +99,14 @@ _EXPECTED_SUPPRESSIONS = re.compile(
     r"|\.(pb|generated|g)\.[a-z]+$"
 )
 
+# checkov/tfsec/trivy suppression comments are only meaningful inside the IaC
+# manifests those scanners read (classify()'s "iac" role, plus generic source
+# or config files they might annotate). A "docs" or "test" file quoting the
+# syntax to describe or test it (e.g. a changelog entry, a requirements
+# writeup, or a test asserting the gate rejects an inline skip) is not a
+# suppression in effect anywhere a scan would honor it.
+_IAC_ONLY_SUPPRESSIONS = {"checkov", "tfsec", "trivy"}
+
 # ---------------------------------------------------------------------------
 # 2. Configuration that excludes code from analysis
 # ---------------------------------------------------------------------------
@@ -167,6 +175,15 @@ _ASSERTION = re.compile(
     r"|\b\w*(?:assert|check|verify|validate|expect)\w*\s*\("
     # snapshot and golden-file comparisons
     r"|toMatchSnapshot|golden|\bcmp\.Diff\s*\("
+    # AWS CDK's Template/Match assertion API (aws_cdk.assertions in Python,
+    # aws-cdk-lib/assertions in TS): these raise internally on a mismatch,
+    # same as a bare assert, but their names don't contain assert/check/
+    # verify/validate/expect so the generic helper pattern above misses them.
+    r"|\.(?:resource_count_is|resourceCountIs|has_resource_properties|"
+    r"hasResourceProperties|has_resource\b|hasResource\b|find_resources|"
+    r"findResources|has_output|hasOutput|has_condition|hasCondition|"
+    r"has_mapping|hasMapping|has_parameter|hasParameter|template_matches|"
+    r"templateMatches)\s*\("
 )
 
 # Go's test harness entry point. It is not a test and has nothing to assert.
@@ -209,6 +226,8 @@ def _suppressions(ctx: ProbeContext, repo_id: str) -> list[Finding]:
         if not text:
             continue
         for tool, pattern, gi in SUPPRESSION_PATTERNS:
+            if tool in _IAC_ONLY_SUPPRESSIONS and f.role in ("docs", "test"):
+                continue
             for m in pattern.finditer(text):
                 total += 1
                 per_tool[tool] += 1

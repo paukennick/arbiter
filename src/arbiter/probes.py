@@ -553,7 +553,20 @@ def _rule_properties(rule: dict) -> list[str]:
     return [p for p in props if p]
 
 
-def _eval_assert(res: Resource, rule: dict) -> str:
+def _is_referenced_by(res: Resource, dotted: str, all_resources: list) -> bool:
+    """True if some other resource's `dotted` property points back at res."""
+    for other in all_resources:
+        if other is res:
+            continue
+        val = other.get(dotted)
+        if isinstance(val, dict) and val.get("Ref") == res.address:
+            return True
+        if isinstance(val, str) and val == res.address:
+            return True
+    return False
+
+
+def _eval_assert(res: Resource, rule: dict, all_resources: list | None = None) -> str:
     """Three outcomes, not two.
 
     A plan can leave a value undetermined until apply. Treating that as absent
@@ -565,6 +578,23 @@ def _eval_assert(res: Resource, rule: dict) -> str:
     # with a public-access block stops being reported for a public ACL.
     for p in rule.get("unless_truthy", []):
         if _truthy(res.get(p)):
+            return SATISFIED
+
+    # A resource can be exempt because of what points AT it rather than what's
+    # in its own properties -- e.g. a bucket that IS the delivery destination
+    # for other buckets' access logs has no LoggingConfiguration of its own,
+    # by design: logging a log bucket to itself is a delivery loop, not a gap.
+    for p in rule.get("unless_referenced_by", []):
+        if all_resources and _is_referenced_by(res, p, all_resources):
+            return SATISFIED
+
+    # Same idea as unless_truthy, but for cases the compensating control isn't
+    # a boolean-ish property -- it's a string value nested inside a list, e.g.
+    # a listener whose DefaultActions entry has Type=redirect. A port-80
+    # listener that only redirects to port 443 never forwards a plaintext
+    # request; the plaintext-listener rule shouldn't fire on it.
+    for needle in rule.get("unless_text_present", []):
+        if str(needle).lower() in res.flat_text():
             return SATISFIED
 
     kind = rule.get("assert")
@@ -678,7 +708,7 @@ def probe_resource_policy(ctx: ProbeContext) -> list[Finding]:
                 continue
             if res.native in excluded_natives:
                 continue
-            verdict = _eval_assert(res, rule)
+            verdict = _eval_assert(res, rule, ctx.graph)
             if verdict == SATISFIED:
                 continue
             if verdict == UNKNOWN:
@@ -1409,6 +1439,14 @@ def probe_interface(ctx: ProbeContext) -> list[Finding]:
                     )
         if is_infra:
             for m in _IAM_ACTION.finditer(text):
+                # "aws:" is IAM's global condition context key namespace
+                # (aws:PrincipalArn, aws:SourceIp, aws:SecureTransport, ...),
+                # never a grantable action namespace. The regex can't tell an
+                # Action entry from a Condition key by shape alone -- both are
+                # "prefix:Suffix" strings -- so exclude the one prefix that's
+                # never a real service and always a condition key.
+                if m.group(1) == "aws":
+                    continue
                 # Keep where the grant was written, the way the sibling
                 # collections above do. Only the service name was kept before,
                 # so the finding had nothing to point at but the string

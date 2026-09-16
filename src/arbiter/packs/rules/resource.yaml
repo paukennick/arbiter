@@ -141,6 +141,10 @@ rules:
     assert: property_not_in
     any_of: [protocol, Protocol]
     values: [HTTP, http, TCP, tcp]
+    # An HTTP listener whose only action is a redirect to HTTPS never forwards
+    # a plaintext request to a target -- it's the standard, recommended way to
+    # get HTTP clients onto TLS, not a plaintext data path.
+    unless_text_present: ['"type": "redirect"']
     severity: high
     confidence: medium
     dimension: security
@@ -245,6 +249,9 @@ rules:
              logs, enabled_log,
              # GCP
              log_config, logging_service]
+    # The bucket other buckets deliver their access logs to has none of its
+    # own -- pointing it at itself would be a delivery loop, not a gap.
+    unless_referenced_by: [LoggingConfiguration.DestinationBucketName]
     severity: low
     confidence: medium
     dimension: compliance

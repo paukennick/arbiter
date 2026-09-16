@@ -90,6 +90,7 @@ _MODULE_TO_PACKAGE = {
     "psycopg2": "psycopg2-binary", "MySQLdb": "mysqlclient", "Crypto": "pycryptodome",
     "jose": "python-jose", "multipart": "python-multipart", "pkg_resources": "setuptools",
     "setuptools": "setuptools", "grpc": "grpcio", "faker": "faker",
+    "aws_cdk": "aws-cdk-lib",
 }
 
 # An import inside try/except is the conventional way to declare an optional
