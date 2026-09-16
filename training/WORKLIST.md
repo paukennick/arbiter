@@ -1,6 +1,6 @@
 # What to work on next
 
-Generated 2026-09-15T20:00:53+00:00 by `tools/worklist.py` from the last training cycle.
+Generated 2026-09-16T16:43:42+00:00 by `tools/worklist.py` from the last training cycle.
 
 Nothing here is a decision. Each entry says what the measurement shows and what question it raises.
 
@@ -81,6 +81,7 @@ Not a defect — a gap. Fewer than five findings in total, so the ratio beside e
 - `arbiter/resource.privileged-container` — 0 good, 4 broken
 - `arbiter/resource.public-object-store` — 0 good, 1 broken
 - `arbiter/resource.unencrypted-queue` — 1 good, 1 broken
+- `arbiter/secrets.slack-token` — 1 good, 0 broken
 
 More repetitions will not help. Effective sample size is bounded by how many different kinds of code and fault exist, not by trial count. These need more varied code.
 

@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
-  "generated": "2026-09-15T17:39:15Z",
+  "generated": "2026-09-16T14:19:49Z",
   "repos_scanned": 41,
   "repos_timed_out": [],
   "repos_failed": [],
   "lines_by_population": {
-    "vulnerable": 694847,
-    "clean": 2327030,
-    "examples": 598888
+    "vulnerable": 697914,
+    "clean": 2332362,
+    "examples": 599609
   },
   "bands": [
     [
@@ -29,7 +29,7 @@
     "clean": {
       "terraform": 26679,
       "markdown": 209396,
-      "unknown": 116941,
+      "unknown": 122273,
       "json": 43916,
       "yaml": 291154,
       "hcl": 163,
@@ -55,9 +55,9 @@
       "r": 5616
     },
     "vulnerable": {
+      "unknown": 117992,
       "markdown": 63502,
       "json": 139767,
-      "unknown": 114925,
       "terraform": 7505,
       "dockerfile": 7864,
       "yaml": 17083,
@@ -79,7 +79,7 @@
       "c": 7
     },
     "examples": {
-      "unknown": 48348,
+      "unknown": 49069,
       "markdown": 40536,
       "yaml": 255464,
       "json": 152786,
@@ -1470,7 +1470,7 @@
       "title": "No ServiceAccount/Node should be able to read all secrets",
       "clean_hits": 0,
       "vulnerable_hits": 3,
-      "example_hits": 2,
+      "example_hits": 4,
       "languages": [
         "yaml"
       ],
@@ -1486,7 +1486,7 @@
       "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
       "clean_hits": 21,
       "vulnerable_hits": 22,
-      "example_hits": 176,
+      "example_hits": 187,
       "languages": [
         "json",
         "yaml"
@@ -5294,9 +5294,9 @@
         "unknown"
       ],
       "repos_seen": 19,
-      "clean_kloc": 117.6,
-      "vulnerable_kloc": 122.8,
-      "ratio": 56.51,
+      "clean_kloc": 122.9,
+      "vulnerable_kloc": 125.9,
+      "ratio": 57.64,
       "severity": "medium",
       "basis": "measured"
     },
@@ -5311,9 +5311,9 @@
         "unknown"
       ],
       "repos_seen": 15,
-      "clean_kloc": 117.6,
-      "vulnerable_kloc": 122.8,
-      "ratio": 75.86,
+      "clean_kloc": 122.9,
+      "vulnerable_kloc": 125.9,
+      "ratio": 77.37,
       "severity": "medium",
       "basis": "measured"
     },
@@ -6282,7 +6282,7 @@
       "title": "CPU requests should be set",
       "clean_hits": 9,
       "vulnerable_hits": 15,
-      "example_hits": 105,
+      "example_hits": 110,
       "languages": [
         "json",
         "yaml"
@@ -6299,7 +6299,7 @@
       "title": "CPU limits should be set",
       "clean_hits": 18,
       "vulnerable_hits": 16,
-      "example_hits": 150,
+      "example_hits": 161,
       "languages": [
         "json",
         "yaml"
@@ -6316,7 +6316,7 @@
       "title": "Memory requests should be set",
       "clean_hits": 9,
       "vulnerable_hits": 15,
-      "example_hits": 114,
+      "example_hits": 119,
       "languages": [
         "json",
         "yaml"
@@ -6333,7 +6333,7 @@
       "title": "Memory limits should be set",
       "clean_hits": 18,
       "vulnerable_hits": 16,
-      "example_hits": 160,
+      "example_hits": 171,
       "languages": [
         "json",
         "yaml"
@@ -6367,7 +6367,7 @@
       "title": "Image Pull Policy should be Always",
       "clean_hits": 15,
       "vulnerable_hits": 4,
-      "example_hits": 96,
+      "example_hits": 107,
       "languages": [
         "yaml"
       ],
@@ -6399,7 +6399,7 @@
       "title": "Minimize ClusterRoles that grant control over validating or mutating admission webhook configurations",
       "clean_hits": 1,
       "vulnerable_hits": 2,
-      "example_hits": 1,
+      "example_hits": 2,
       "languages": [
         "yaml"
       ],
@@ -6479,7 +6479,7 @@
       "title": "Containers should not share the host process ID namespace",
       "clean_hits": 0,
       "vulnerable_hits": 4,
-      "example_hits": 7,
+      "example_hits": 9,
       "languages": [
         "yaml"
       ],
@@ -6511,7 +6511,7 @@
       "title": "Containers should not share the host network namespace",
       "clean_hits": 0,
       "vulnerable_hits": 1,
-      "example_hits": 8,
+      "example_hits": 10,
       "languages": [
         "yaml"
       ],
@@ -6527,7 +6527,7 @@
       "title": "Containers should not run with allowPrivilegeEscalation",
       "clean_hits": 10,
       "vulnerable_hits": 20,
-      "example_hits": 165,
+      "example_hits": 169,
       "languages": [
         "json",
         "yaml"
@@ -6544,7 +6544,7 @@
       "title": "The default namespace should not be used",
       "clean_hits": 410,
       "vulnerable_hits": 25,
-      "example_hits": 352,
+      "example_hits": 426,
       "languages": [
         "json",
         "yaml"
@@ -6561,7 +6561,7 @@
       "title": "Use read-only filesystem for containers where possible",
       "clean_hits": 10,
       "vulnerable_hits": 21,
-      "example_hits": 158,
+      "example_hits": 162,
       "languages": [
         "json",
         "yaml"
@@ -6627,7 +6627,7 @@
       "title": "Minimize the admission of containers with the NET_RAW capability",
       "clean_hits": 10,
       "vulnerable_hits": 20,
-      "example_hits": 162,
+      "example_hits": 167,
       "languages": [
         "json",
         "yaml"
@@ -6661,7 +6661,7 @@
       "title": "Apply security context to your containers",
       "clean_hits": 10,
       "vulnerable_hits": 16,
-      "example_hits": 137,
+      "example_hits": 139,
       "languages": [
         "json",
         "yaml"
@@ -6678,7 +6678,7 @@
       "title": "Ensure that the seccomp profile is set to docker/default or runtime/default",
       "clean_hits": 12,
       "vulnerable_hits": 19,
-      "example_hits": 165,
+      "example_hits": 170,
       "languages": [
         "json",
         "yaml"
@@ -6695,7 +6695,7 @@
       "title": "Prefer using secrets as files over secrets as environment variables",
       "clean_hits": 0,
       "vulnerable_hits": 1,
-      "example_hits": 6,
+      "example_hits": 7,
       "languages": [
         "yaml"
       ],
@@ -6711,7 +6711,7 @@
       "title": "Minimize the admission of containers with capabilities assigned",
       "clean_hits": 10,
       "vulnerable_hits": 20,
-      "example_hits": 162,
+      "example_hits": 167,
       "languages": [
         "json",
         "yaml"
@@ -6728,7 +6728,7 @@
       "title": "Ensure that Service Account Tokens are only mounted where necessary",
       "clean_hits": 24,
       "vulnerable_hits": 24,
-      "example_hits": 172,
+      "example_hits": 181,
       "languages": [
         "json",
         "yaml"
@@ -6745,7 +6745,7 @@
       "title": "Containers should run as a high UID to avoid host conflict",
       "clean_hits": 24,
       "vulnerable_hits": 22,
-      "example_hits": 165,
+      "example_hits": 168,
       "languages": [
         "json",
         "yaml"
@@ -6778,7 +6778,7 @@
       "title": "Image should use digest",
       "clean_hits": 19,
       "vulnerable_hits": 20,
-      "example_hits": 177,
+      "example_hits": 188,
       "languages": [
         "json",
         "yaml"
@@ -6811,7 +6811,7 @@
       "title": "Liveness Probe Should be Configured",
       "clean_hits": 10,
       "vulnerable_hits": 15,
-      "example_hits": 133,
+      "example_hits": 134,
       "languages": [
         "json",
         "yaml"
@@ -6828,7 +6828,7 @@
       "title": "Readiness Probe Should be Configured",
       "clean_hits": 10,
       "vulnerable_hits": 15,
-      "example_hits": 135,
+      "example_hits": 136,
       "languages": [
         "json",
         "yaml"
@@ -7191,9 +7191,9 @@
         "unknown"
       ],
       "repos_seen": 3,
-      "clean_kloc": 180.3,
-      "vulnerable_kloc": 130.3,
-      "ratio": 1.38,
+      "clean_kloc": 185.7,
+      "vulnerable_kloc": 133.4,
+      "ratio": 1.39,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -7240,8 +7240,8 @@
         "unknown"
       ],
       "repos_seen": 6,
-      "clean_kloc": 180.3,
-      "vulnerable_kloc": 130.3,
+      "clean_kloc": 185.7,
+      "vulnerable_kloc": 133.4,
       "ratio": "inf",
       "severity": "medium",
       "basis": "measured"
@@ -7369,9 +7369,9 @@
         "unknown"
       ],
       "repos_seen": 6,
-      "clean_kloc": 126.8,
-      "vulnerable_kloc": 118.3,
-      "ratio": 4.29,
+      "clean_kloc": 132.1,
+      "vulnerable_kloc": 121.4,
+      "ratio": 4.36,
       "severity": "low",
       "basis": "measured"
     },
@@ -7386,9 +7386,9 @@
         "unknown"
       ],
       "repos_seen": 14,
-      "clean_kloc": 126.8,
-      "vulnerable_kloc": 118.3,
-      "ratio": 1.72,
+      "clean_kloc": 132.1,
+      "vulnerable_kloc": 121.4,
+      "ratio": 1.74,
       "severity": "info",
       "basis": "measured"
     },
@@ -7435,9 +7435,9 @@
         "unknown"
       ],
       "repos_seen": 20,
-      "clean_kloc": 117.6,
-      "vulnerable_kloc": 122.8,
-      "ratio": 56.1,
+      "clean_kloc": 122.9,
+      "vulnerable_kloc": 125.9,
+      "ratio": 57.22,
       "severity": "medium",
       "basis": "measured"
     },
@@ -7548,9 +7548,9 @@
         "unknown"
       ],
       "repos_seen": 6,
-      "clean_kloc": 117.6,
-      "vulnerable_kloc": 122.8,
-      "ratio": 20.11,
+      "clean_kloc": 122.9,
+      "vulnerable_kloc": 125.9,
+      "ratio": 20.51,
       "severity": "medium",
       "basis": "measured"
     },
@@ -7741,9 +7741,9 @@
         "unknown"
       ],
       "repos_seen": 8,
-      "clean_kloc": 117.6,
-      "vulnerable_kloc": 122.8,
-      "ratio": 28.74,
+      "clean_kloc": 122.9,
+      "vulnerable_kloc": 125.9,
+      "ratio": 29.31,
       "severity": "medium",
       "basis": "measured"
     },
@@ -7776,9 +7776,9 @@
         "yaml"
       ],
       "repos_seen": 4,
-      "clean_kloc": 644.2,
-      "vulnerable_kloc": 203.0,
-      "ratio": 12.69,
+      "clean_kloc": 649.5,
+      "vulnerable_kloc": 206.1,
+      "ratio": 12.61,
       "severity": "medium",
       "basis": "measured"
     },
@@ -7802,9 +7802,9 @@
         "yaml"
       ],
       "repos_seen": 19,
-      "clean_kloc": 1843.7,
-      "vulnerable_kloc": 586.6,
-      "ratio": 4.36,
+      "clean_kloc": 1849.0,
+      "vulnerable_kloc": 589.6,
+      "ratio": 4.35,
       "severity": "low",
       "basis": "measured"
     },
@@ -7838,9 +7838,9 @@
         "unknown"
       ],
       "repos_seen": 7,
-      "clean_kloc": 562.5,
-      "vulnerable_kloc": 384.7,
-      "ratio": 6.21,
+      "clean_kloc": 567.9,
+      "vulnerable_kloc": 387.8,
+      "ratio": 6.22,
       "severity": "low",
       "basis": "measured"
     },
@@ -7855,8 +7855,8 @@
         "yaml"
       ],
       "repos_seen": 1,
-      "clean_kloc": 408.1,
-      "vulnerable_kloc": 132.0,
+      "clean_kloc": 413.4,
+      "vulnerable_kloc": 135.1,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
@@ -7878,8 +7878,8 @@
         "yaml"
       ],
       "repos_seen": 8,
-      "clean_kloc": 911.3,
-      "vulnerable_kloc": 439.6,
+      "clean_kloc": 916.6,
+      "vulnerable_kloc": 442.7,
       "ratio": 0.69,
       "severity": "info",
       "basis": "measured"
@@ -7895,8 +7895,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 326.3,
-      "vulnerable_kloc": 178.4,
+      "clean_kloc": 331.7,
+      "vulnerable_kloc": 181.5,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
@@ -7913,8 +7913,8 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 434.8,
-      "vulnerable_kloc": 139.5,
+      "clean_kloc": 440.1,
+      "vulnerable_kloc": 142.6,
       "ratio": "inf",
       "severity": null,
       "basis": "insufficient-observations"
@@ -7948,9 +7948,9 @@
         "unknown"
       ],
       "repos_seen": 4,
-      "clean_kloc": 349.4,
-      "vulnerable_kloc": 290.6,
-      "ratio": 1.2,
+      "clean_kloc": 354.7,
+      "vulnerable_kloc": 293.7,
+      "ratio": 1.21,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -7967,8 +7967,8 @@
         "yaml"
       ],
       "repos_seen": 2,
-      "clean_kloc": 590.9,
-      "vulnerable_kloc": 276.1,
+      "clean_kloc": 596.2,
+      "vulnerable_kloc": 279.2,
       "ratio": "inf",
       "severity": "medium",
       "basis": "measured"
@@ -7986,9 +7986,9 @@
         "yaml"
       ],
       "repos_seen": 3,
-      "clean_kloc": 641.6,
-      "vulnerable_kloc": 199.1,
-      "ratio": 2.15,
+      "clean_kloc": 647.0,
+      "vulnerable_kloc": 202.2,
+      "ratio": 2.13,
       "severity": "info",
       "basis": "measured"
     },
@@ -8042,8 +8042,8 @@
         "unknown"
       ],
       "repos_seen": 7,
-      "clean_kloc": 722.3,
-      "vulnerable_kloc": 416.7,
+      "clean_kloc": 727.6,
+      "vulnerable_kloc": 419.7,
       "ratio": 7.97,
       "severity": "low",
       "basis": "measured"
@@ -8059,8 +8059,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 326.3,
-      "vulnerable_kloc": 178.4,
+      "clean_kloc": 331.7,
+      "vulnerable_kloc": 181.5,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
@@ -8076,8 +8076,8 @@
         "unknown"
       ],
       "repos_seen": 5,
-      "clean_kloc": 326.3,
-      "vulnerable_kloc": 178.4,
+      "clean_kloc": 331.7,
+      "vulnerable_kloc": 181.5,
       "ratio": 0.26,
       "severity": "info",
       "basis": "measured"
@@ -8812,8 +8812,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 116.9,
-      "vulnerable_kloc": 114.9,
+      "clean_kloc": 122.3,
+      "vulnerable_kloc": 118.0,
       "ratio": "inf",
       "severity": "low",
       "basis": "measured-single-repo"
@@ -8828,8 +8828,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 116.9,
-      "vulnerable_kloc": 114.9,
+      "clean_kloc": 122.3,
+      "vulnerable_kloc": 118.0,
       "ratio": "inf",
       "severity": null,
       "basis": "insufficient-observations"
@@ -8844,8 +8844,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 116.9,
-      "vulnerable_kloc": 114.9,
+      "clean_kloc": 122.3,
+      "vulnerable_kloc": 118.0,
       "ratio": "inf",
       "severity": null,
       "basis": "insufficient-observations"
@@ -8940,8 +8940,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 116.9,
-      "vulnerable_kloc": 114.9,
+      "clean_kloc": 122.3,
+      "vulnerable_kloc": 118.0,
       "ratio": "inf",
       "severity": null,
       "basis": "insufficient-observations"
@@ -8956,8 +8956,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 116.9,
-      "vulnerable_kloc": 114.9,
+      "clean_kloc": 122.3,
+      "vulnerable_kloc": 118.0,
       "ratio": "inf",
       "severity": null,
       "basis": "insufficient-observations"
@@ -9096,7 +9096,7 @@
       "tool": "semgrep",
       "title": "User controlled data in methods like `innerHTML`, `outerHTML` or `document.write` is an anti-pattern that can lead to XS",
       "clean_hits": 2,
-      "vulnerable_hits": 17,
+      "vulnerable_hits": 15,
       "example_hits": 0,
       "languages": [
         "javascript",
@@ -9105,7 +9105,7 @@
       "repos_seen": 8,
       "clean_kloc": 179.2,
       "vulnerable_kloc": 175.7,
-      "ratio": 8.67,
+      "ratio": 7.65,
       "severity": "low",
       "basis": "measured"
     },
@@ -9113,7 +9113,7 @@
       "tool": "semgrep",
       "title": "User controlled data in a `li.innerHTML` is an anti-pattern that can lead to XSS vulnerabilities",
       "clean_hits": 2,
-      "vulnerable_hits": 17,
+      "vulnerable_hits": 15,
       "example_hits": 0,
       "languages": [
         "javascript",
@@ -9122,45 +9122,13 @@
       "repos_seen": 8,
       "clean_kloc": 179.2,
       "vulnerable_kloc": 175.7,
-      "ratio": 8.67,
+      "ratio": 7.65,
       "severity": "low",
       "basis": "measured"
-    },
-    "semgrep/semgrep-rules.javascript.browser.security.js-open-redirect-from-function": {
-      "tool": "semgrep",
-      "title": "The application accepts potentially user-controlled input `i` which can control the location of the current window conte",
-      "clean_hits": 0,
-      "vulnerable_hits": 1,
-      "example_hits": 0,
-      "languages": [
-        "javascript"
-      ],
-      "repos_seen": 1,
-      "clean_kloc": 23.0,
-      "vulnerable_kloc": 112.2,
-      "ratio": "inf",
-      "severity": null,
-      "basis": "insufficient-observations"
     },
     "semgrep/semgrep-rules.javascript.browser.security.raw-html-concat": {
       "tool": "semgrep",
       "title": "User controlled data in a HTML string may result in XSS",
-      "clean_hits": 0,
-      "vulnerable_hits": 1,
-      "example_hits": 0,
-      "languages": [
-        "javascript"
-      ],
-      "repos_seen": 1,
-      "clean_kloc": 23.0,
-      "vulnerable_kloc": 112.2,
-      "ratio": "inf",
-      "severity": null,
-      "basis": "insufficient-observations"
-    },
-    "semgrep/semgrep-rules.javascript.browser.security.wildcard-postmessage-configuration": {
-      "tool": "semgrep",
-      "title": "The target origin of the window.postMessage() API is set to \"*\". This could allow for information disclosure due to the ",
       "clean_hits": 0,
       "vulnerable_hits": 1,
       "example_hits": 0,
@@ -9409,9 +9377,9 @@
         "unknown"
       ],
       "repos_seen": 2,
-      "clean_kloc": 116.9,
-      "vulnerable_kloc": 114.9,
-      "ratio": 3.05,
+      "clean_kloc": 122.3,
+      "vulnerable_kloc": 118.0,
+      "ratio": 3.11,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -9442,8 +9410,8 @@
         "unknown"
       ],
       "repos_seen": 2,
-      "clean_kloc": 276.7,
-      "vulnerable_kloc": 146.9,
+      "clean_kloc": 282.0,
+      "vulnerable_kloc": 149.9,
       "ratio": "inf",
       "severity": null,
       "basis": "insufficient-observations"
@@ -9474,8 +9442,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 116.9,
-      "vulnerable_kloc": 114.9,
+      "clean_kloc": 122.3,
+      "vulnerable_kloc": 118.0,
       "ratio": "inf",
       "severity": null,
       "basis": "insufficient-observations"
@@ -9609,22 +9577,6 @@
       "severity": null,
       "basis": "insufficient-observations"
     },
-    "semgrep/semgrep-rules.javascript.lang.best-practice.javascript-prompt": {
-      "tool": "semgrep",
-      "title": "found prompt() call; should this be in production code?",
-      "clean_hits": 0,
-      "vulnerable_hits": 1,
-      "example_hits": 0,
-      "languages": [
-        "javascript"
-      ],
-      "repos_seen": 1,
-      "clean_kloc": 23.0,
-      "vulnerable_kloc": 112.2,
-      "ratio": "inf",
-      "severity": null,
-      "basis": "insufficient-observations"
-    },
     "semgrep/semgrep-rules.javascript.lang.best-practice.lazy-load-module": {
       "tool": "semgrep",
       "title": "Lazy loading can complicate code bundling if care is not taken, also `require`s are run synchronously by Node.js. If the",
@@ -9644,9 +9596,9 @@
     },
     "semgrep/semgrep-rules.javascript.lang.correctness.eqeq-is-bad": {
       "tool": "semgrep",
-      "title": "Detected a useless comparison operation `timer == timer` or `timer != timer`. This operation is always true. If testing ",
+      "title": "Detected a useless comparison operation `r == r` or `r != r`. This operation is always true. If testing for floating poi",
       "clean_hits": 0,
-      "vulnerable_hits": 2,
+      "vulnerable_hits": 1,
       "example_hits": 0,
       "languages": [
         "javascript"
@@ -9712,16 +9664,16 @@
       "tool": "semgrep",
       "title": "`const` is assigned twice; the first assignment is useless",
       "clean_hits": 1,
-      "vulnerable_hits": 13,
+      "vulnerable_hits": 11,
       "example_hits": 7,
       "languages": [
         "javascript",
         "typescript"
       ],
-      "repos_seen": 9,
+      "repos_seen": 8,
       "clean_kloc": 179.2,
       "vulnerable_kloc": 175.7,
-      "ratio": 13.26,
+      "ratio": 11.22,
       "severity": "medium",
       "basis": "measured"
     },
@@ -9761,9 +9713,9 @@
     },
     "semgrep/semgrep-rules.javascript.lang.security.audit.detect-non-literal-regexp": {
       "tool": "semgrep",
-      "title": "RegExp() called with a `component` function argument, this might allow an attacker to cause a Regular Expression Denial-",
+      "title": "RegExp() called with a `t` function argument, this might allow an attacker to cause a Regular Expression Denial-of-Servi",
       "clean_hits": 13,
-      "vulnerable_hits": 12,
+      "vulnerable_hits": 11,
       "example_hits": 3,
       "languages": [
         "javascript",
@@ -9772,7 +9724,7 @@
       "repos_seen": 10,
       "clean_kloc": 179.2,
       "vulnerable_kloc": 175.7,
-      "ratio": 0.94,
+      "ratio": 0.86,
       "severity": "info",
       "basis": "measured"
     },
@@ -9857,22 +9809,6 @@
       "severity": null,
       "basis": "insufficient-observations"
     },
-    "semgrep/semgrep-rules.javascript.lang.security.audit.prototype-pollution.prototype-pollution-assignment": {
-      "tool": "semgrep",
-      "title": "Possibility of prototype polluting assignment detected. By adding or modifying attributes of an object prototype, it is ",
-      "clean_hits": 0,
-      "vulnerable_hits": 1,
-      "example_hits": 0,
-      "languages": [
-        "javascript"
-      ],
-      "repos_seen": 1,
-      "clean_kloc": 23.0,
-      "vulnerable_kloc": 112.2,
-      "ratio": "inf",
-      "severity": null,
-      "basis": "insufficient-observations"
-    },
     "semgrep/semgrep-rules.javascript.lang.security.audit.prototype-pollution.prototype-pollution-loop": {
       "tool": "semgrep",
       "title": "Possibility of prototype polluting function detected. By adding or modifying attributes of an object prototype, it is po",
@@ -9910,7 +9846,7 @@
       "tool": "semgrep",
       "title": "Using non-static data to retrieve and run functions from the object is dangerous. If the data is user-controlled, it may",
       "clean_hits": 4,
-      "vulnerable_hits": 21,
+      "vulnerable_hits": 20,
       "example_hits": 0,
       "languages": [
         "javascript",
@@ -9919,7 +9855,7 @@
       "repos_seen": 7,
       "clean_kloc": 179.2,
       "vulnerable_kloc": 175.7,
-      "ratio": 5.35,
+      "ratio": 5.1,
       "severity": "low",
       "basis": "measured"
     },
@@ -9952,8 +9888,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 389.7,
-      "vulnerable_kloc": 193.8,
+      "clean_kloc": 395.1,
+      "vulnerable_kloc": 196.9,
       "ratio": "inf",
       "severity": "low",
       "basis": "measured-single-repo"
@@ -10738,9 +10674,9 @@
         "unknown"
       ],
       "repos_seen": 3,
-      "clean_kloc": 180.3,
-      "vulnerable_kloc": 130.3,
-      "ratio": 4.15,
+      "clean_kloc": 185.7,
+      "vulnerable_kloc": 133.4,
+      "ratio": 4.18,
       "severity": null,
       "basis": "insufficient-observations"
     },
@@ -10787,9 +10723,9 @@
         "unknown"
       ],
       "repos_seen": 9,
-      "clean_kloc": 180.3,
-      "vulnerable_kloc": 130.3,
-      "ratio": 2.25,
+      "clean_kloc": 185.7,
+      "vulnerable_kloc": 133.4,
+      "ratio": 2.26,
       "severity": "info",
       "basis": "measured"
     },
@@ -11044,9 +10980,9 @@
         "unknown"
       ],
       "repos_seen": 5,
-      "clean_kloc": 180.3,
-      "vulnerable_kloc": 130.3,
-      "ratio": 0.61,
+      "clean_kloc": 185.7,
+      "vulnerable_kloc": 133.4,
+      "ratio": 0.62,
       "severity": "info",
       "basis": "measured"
     },
@@ -11220,8 +11156,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 116.9,
-      "vulnerable_kloc": 114.9,
+      "clean_kloc": 122.3,
+      "vulnerable_kloc": 118.0,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
@@ -11588,8 +11524,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 116.9,
-      "vulnerable_kloc": 114.9,
+      "clean_kloc": 122.3,
+      "vulnerable_kloc": 118.0,
       "ratio": "inf",
       "severity": null,
       "basis": "insufficient-observations"
@@ -11604,8 +11540,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 116.9,
-      "vulnerable_kloc": 114.9,
+      "clean_kloc": 122.3,
+      "vulnerable_kloc": 118.0,
       "ratio": "inf",
       "severity": null,
       "basis": "insufficient-observations"
@@ -11620,8 +11556,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 116.9,
-      "vulnerable_kloc": 114.9,
+      "clean_kloc": 122.3,
+      "vulnerable_kloc": 118.0,
       "ratio": "inf",
       "severity": null,
       "basis": "insufficient-observations"
@@ -11636,8 +11572,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 116.9,
-      "vulnerable_kloc": 114.9,
+      "clean_kloc": 122.3,
+      "vulnerable_kloc": 118.0,
       "ratio": "inf",
       "severity": null,
       "basis": "insufficient-observations"
@@ -11652,8 +11588,8 @@
         "unknown"
       ],
       "repos_seen": 1,
-      "clean_kloc": 116.9,
-      "vulnerable_kloc": 114.9,
+      "clean_kloc": 122.3,
+      "vulnerable_kloc": 118.0,
       "ratio": "inf",
       "severity": null,
       "basis": "insufficient-observations"
@@ -11813,7 +11749,7 @@
       ],
       "repos_seen": 1,
       "clean_kloc": 56.4,
-      "vulnerable_kloc": 694.8,
+      "vulnerable_kloc": 697.9,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
@@ -11829,7 +11765,7 @@
       ],
       "repos_seen": 1,
       "clean_kloc": 56.4,
-      "vulnerable_kloc": 694.8,
+      "vulnerable_kloc": 697.9,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
@@ -11845,7 +11781,7 @@
       ],
       "repos_seen": 1,
       "clean_kloc": 56.4,
-      "vulnerable_kloc": 694.8,
+      "vulnerable_kloc": 697.9,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
@@ -11861,7 +11797,7 @@
       ],
       "repos_seen": 1,
       "clean_kloc": 56.4,
-      "vulnerable_kloc": 694.8,
+      "vulnerable_kloc": 697.9,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
@@ -11877,7 +11813,7 @@
       ],
       "repos_seen": 1,
       "clean_kloc": 56.4,
-      "vulnerable_kloc": 694.8,
+      "vulnerable_kloc": 697.9,
       "ratio": null,
       "severity": null,
       "basis": "insufficient-observations"
