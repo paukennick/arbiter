@@ -6077,7 +6077,7 @@
       "title": "Generic API Key detected",
       "severity": "high",
       "family": "secret",
-      "where": "-:28",
+      "where": "-:628",
       "tool": "semgrep",
       "other_side": [
         "arbiter/secrets.aws-access-key"
