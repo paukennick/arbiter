@@ -1447,6 +1447,58 @@ def test_unterminated_pem_block_is_kept(tmp_path):
     assert _scan_text(tmp_path, "deploy/partial.key", doc, ["secrets"])
 
 
+def test_pem_header_quoted_in_code_is_not_a_key(tmp_path):
+    """`ecdsa`'s own keys.py searches for the PEM header as a byte string to
+    parse a real key someone else handed it; there is no key here, just code
+    and prose that happen to contain a colon somewhere in the next few
+    thousand characters. A no-END-marker block used to grab that trailing
+    text as its "body" and call any colon in it an encrypted preamble,
+    reporting the library's own source as a leaked key -- found scanning a
+    CDK Lambda asset that vendored the package."""
+    doc = ('        private_key_index = string.find(b"-----BEGIN EC PRIVATE KEY-----")\n'
+           "        if private_key_index == -1:\n"
+           "            private_key_index = string.index(b\"-----BEGIN PRIVATE KEY-----\")\n"
+           "            return cls.from_der(\n"
+           "                der.unpem(string[private_key_index:]),\n")
+    found = _scan_text(tmp_path, "ecdsa/keys.py", doc, ["secrets"])
+    assert not [f for f in found if "private-key" in f.rule_id]
+
+
+def test_renamed_cdk_output_directory_is_still_generated():
+    """CDK_OUTDIR lets a project redirect synth output to a renamed directory
+    (`cdk.out.chk`, seen on a real system); classify() must recognise it the
+    same as the default `cdk.out`, or everything inside it -- including a
+    Lambda asset bundle's vendored dependencies -- reads as first-party
+    source, the other half of what made the false positive above possible."""
+    from arbiter.inventory import classify
+    assert classify("cdk.out.chk/asset.abc123/ecdsa/keys.py", "python") == "generated"
+    assert classify("cdk.out/asset.abc123/ecdsa/keys.py", "python") == "generated"
+
+
+def test_cdk_synthesized_template_is_iac_not_generated():
+    """The synthesized template is the one thing under cdk.out* this scanner
+    deliberately wants (SKIP_DIRS says so explicitly) -- it must not be
+    swallowed by the directory-wide "generated" classification that correctly
+    applies to everything else CDK writes alongside it."""
+    from arbiter.inventory import classify
+    assert classify("cdk.out.chk/MyStack.template.json", "json") == "iac"
+
+
+def test_secrets_probe_skips_a_vendored_bundle_under_a_renamed_cdk_output_dir(tmp_path):
+    """End-to-end version of the two classify() tests above, against the
+    probe a real system's false positive actually came through."""
+    key = "-----BEGIN PRIVATE KEY-----\nMIIBVQIBADAN\n-----END PRIVATE KEY-----\n"
+    vendored = tmp_path / "cdk.out.chk" / "asset.abc123" / "vendored.py"
+    vendored.parent.mkdir(parents=True)
+    vendored.write_text(f'KEY = "{key}"\n')
+    (tmp_path / "real.py").write_text(f'KEY = "{key}"\n')
+
+    found = run_scan([str(tmp_path)], load_config(None), only=["secrets"], use_adapters=False).active()
+    paths = {f.location.path for f in found if "private-key" in f.rule_id}
+    assert "real.py" in paths
+    assert not any("cdk.out.chk" in p for p in paths)
+
+
 @pytest.mark.parametrize("path", [
     "integration/resources/tls/consul.key",   # traefik
     "e2e/certs/server.key",
@@ -5067,11 +5119,12 @@ def test_stdio_still_dispatches_with_nobody_to_identify(tmp_path, monkeypatch):
 
 def test_the_tool_schemas_still_build_against_the_installed_sdk():
     """`TOOLS` is plain data so tests can read it without the SDK, which means
-    nothing else notices when the SDK renames the field it maps to -- it did
-    once already, briefly, to `input_schema`, and the installed SDK answers to
-    `inputSchema` again now. This assertion is the one place that would catch
-    the next rename; update the attribute name here, not the code under test,
-    when it does."""
+    nothing else notices if the SDK's own models stop matching it. The SDK's
+    pydantic models take a `camelCase` alias on construction (`inputSchema`,
+    matching `TOOLS`' own wire-shaped keys) but expose the field back out as
+    the `snake_case` Python attribute (`input_schema`) via an alias generator
+    -- reading the alias name back off a built object is the mistake, not a
+    version drift, and this is the one place that would catch either."""
     pytest.importorskip("mcp", reason="the mcp extra is not installed")
     from mcp.types import Tool
 
@@ -5079,7 +5132,7 @@ def test_the_tool_schemas_still_build_against_the_installed_sdk():
     for tool in surface.TOOLS:
         built = Tool(**tool)
         assert built.name == tool["name"]
-        assert built.inputSchema == tool["inputSchema"]
+        assert built.input_schema == tool["inputSchema"]
 
 
 def test_the_stdio_server_actually_starts_and_answers_a_real_client(tmp_path):
@@ -5129,17 +5182,17 @@ def test_the_stdio_server_actually_starts_and_answers_a_real_client(tmp_path):
     started, listed, worked, refused = asyncio.run(talk())
 
     from arbiter import mcp
-    assert started.serverInfo.name == "arbiter"
+    assert started.server_info.name == "arbiter"
     assert {tool.name for tool in listed.tools} == set(mcp.HANDLERS)
 
     # An empty report is a legitimate thing to send and comes back as an empty
     # queue -- a result, not a failure, and with no mark in it.
-    assert worked.isError is False
+    assert worked.is_error is False
     assert json.loads(worked.content[0].text)["entry_count"] == 0
 
     # And a refusal arrives as a refusal rather than as text an agent would read
     # back as a finding.
-    assert refused.isError is True
+    assert refused.is_error is True
     assert "no report at" in refused.content[0].text
 
 

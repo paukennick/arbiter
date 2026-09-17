@@ -285,6 +285,10 @@ _PEM_PLACEHOLDER = re.compile(
 # deliberately truncated keys that test suites commit as fixtures, which are
 # short but are still key-shaped and still worth reporting.
 _BASE64_BODY = re.compile(r"^[A-Za-z0-9+/=]+$")
+# An encrypted PEM's preamble is a bare `Key: value` pair per line (`Proc-Type:
+# 4,ENCRYPTED`, `DEK-Info: ...`) -- not prose or code that happens to contain a
+# colon somewhere in the next few thousand characters.
+_PEM_HEADER_LINE = re.compile(r"^[A-Za-z][A-Za-z0-9-]*:\s*\S")
 _MIN_PEM_BODY = 8
 
 
@@ -295,20 +299,37 @@ def _pem_has_key_material(text: str, start: int) -> bool:
     with no END marker at all, or one whose body cannot be read, is treated as
     real. The only thing rejected is a block that is demonstrably a stand-in --
     a body that is not base64, or is one of the usual written placeholders.
+
+    Line-by-line, not a raw slice: a BEGIN marker quoted or referenced inside
+    source code (a PEM parser's own string literals, a library's docstring) has
+    ordinary code or prose sitting after it, not a key body, and that text
+    almost always contains a colon somewhere within a few thousand characters --
+    a type hint, a slice, a docstring's field list. Stopping at the first line
+    that is neither base64 nor a header line means that surrounding code cannot
+    manufacture a body; only lines that are actually PEM-shaped count towards
+    one, so `ecdsa`'s own `keys.py` calling `string.find(b"-----BEGIN EC
+    PRIVATE KEY-----")` to parse a real key stops being mistaken for one.
     """
     head_end = text.find("\n", start)
     if head_end == -1:
         return False
     end = _PEM_END.search(text, head_end)
-    body = text[head_end + 1:end.start()] if end else text[head_end + 1:head_end + 4000]
-    stripped = "".join(body.split())
+    window_end = end.start() if end else head_end + 4000
+    collected: list[str] = []
+    for line in text[head_end + 1:window_end].splitlines():
+        stripped_line = line.strip()
+        if not stripped_line:
+            continue
+        if _BASE64_BODY.match(stripped_line) or _PEM_HEADER_LINE.match(stripped_line):
+            collected.append(stripped_line)
+            continue
+        break  # the first line that is not PEM-shaped ends the body
+    stripped = "".join(collected)
     if len(stripped) < _MIN_PEM_BODY:
         return False
     if _PEM_PLACEHOLDER.match(stripped):
         return False
-    # Header lines such as "Proc-Type: 4,ENCRYPTED" are legitimate PEM content
-    # and are not base64, so an encrypted key keeps its colon-bearing preamble.
-    return bool(_BASE64_BODY.match(stripped)) or ":" in stripped
+    return True
 
 
 # Passwords that mean "this is a local dev stack", not "this is a secret".

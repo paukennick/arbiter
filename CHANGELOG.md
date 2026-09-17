@@ -8,6 +8,43 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 
 ### 2026-09-16
 
+- Stopped vendored and generated content from being scanned as first-party
+  source, found by running Arbiter as a system over two real repositories
+  (STEP-Migration + STEP_App) rather than the fixture corpus. Three
+  compounding gaps together reported a third-party library's own source as a
+  leaked private key and buried real findings under noise: `_pem_has_key_material`
+  judged a PEM block real if any text after a `BEGIN` marker contained a colon
+  anywhere in the next ~4000 characters — a check meant to allow encrypted-key
+  preambles (`Proc-Type: 4,ENCRYPTED`) but satisfied by ordinary code and
+  prose, so `ecdsa`'s own PEM-parsing source and packaging metadata were
+  reported as committed keys; it now walks forward line by line and stops at
+  the first line that is not base64 or a `Key: value` header, so surrounding
+  text cannot manufacture a body. `inventory.classify()` hardcoded the literal
+  name `cdk.out`, so a project using `CDK_OUTDIR` to redirect synth output to
+  a renamed directory (`cdk.out.chk`, seen on the real system) fell through to
+  `role=source`, and a branch-ordering bug meant even the unrenamed case would
+  have classified a CDK stack's own synthesized `*.template.json` as
+  `generated` rather than the `iac` role that exempts nothing — losing the
+  ground-truth scanning `SKIP_DIRS` already says is deliberate; `IAC_HINTS` is
+  now checked first, and both hint patterns accept a `cdk.out*` suffix.
+  Bandit and checkov each walk `{workdir}` with their own traversal,
+  independent of `SKIP_DIRS`, so both walked into a full vendored `.venv` and
+  a Lambda asset bundle's dependencies regardless of role — bandit alone
+  produced 129,379 raw findings and consumed 669s of its 900s budget on one
+  such tree; both are now invoked with exclusions mirroring `SKIP_DIRS`, plus
+  a CDK asset-bundle pattern for bandit (which gets no value from a synthesized
+  template — it only reads Python) and a narrower one for checkov (which
+  still needs the templates). A real system scan went from 3 critical / 6,011
+  total findings to 0 critical / 1,121, with bandit's runtime dropping from
+  669s to 4s. (REQ-026)
+- Fixed two MCP tests reading pydantic alias names instead of the field
+  names the installed SDK actually exposes (`.serverInfo`, `.isError`,
+  `.inputSchema`) — those models take the camelCase alias on construction
+  but expose the field back out as the snake_case Python attribute via an
+  alias generator, confirmed directly from the installed SDK's own
+  `model_fields`. Pre-existing on `main`, unrelated to REQ-026; found while
+  running the full suite during that work and confirmed by reproducing it
+  against plain `main` with REQ-026's changes stashed. (REQ-027)
 - Registered Arbiter's own MCP server for this repo and made OmniEngineering
   verify it rather than take it on faith. `.mcp.json` now names an "arbiter"
   server that runs `arbiter mcp` (stdio), so an assistant working here can

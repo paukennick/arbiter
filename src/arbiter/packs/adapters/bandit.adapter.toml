@@ -10,10 +10,38 @@ selects = { stacks = ["python"] }
 [requires]
 binaries = ["bandit"]
 network = false
-timeout = 300
+# The real fix for the timeout below is the -x exclusion in [invoke]: bandit
+# was walking a full vendored .venv (one real system measured 129,379 raw
+# findings, 669s of a 900s budget, almost all of it aws_cdk's own bundled
+# Python) because `-r {workdir}` is bandit's own traversal, separate from
+# inventory.SKIP_DIRS, which only governs Arbiter's native probes. This
+# timeout stays generous as a backstop for a repository that is legitimately
+# all first-party Python, not as the primary defense.
+timeout = 900
 
 [invoke]
-argv = ["bandit", "-r", "{workdir}", "-f", "json", "-q"]
+# The exclude list mirrors inventory.SKIP_DIRS. Bandit's own defaults
+# (.svn,CVS,.bzr,.hg,.git,__pycache__,.tox,.eggs,*.egg) do not cover
+# .venv/node_modules/site-packages, and -x is additive, not a replacement, so
+# repeating the ones it already covers costs nothing. Bare names do not
+# match a nested directory (`-x .venv` misses `sub/.venv`); glob patterns do,
+# confirmed against a synthetic tree with .venv nested at two depths.
+#
+# cdk.out* is excluded here even though inventory.SKIP_DIRS deliberately does
+# NOT skip it (the synthesized template is ground truth Arbiter's own probes
+# want) -- that reasoning does not carry over to bandit specifically. Bandit
+# only ever reads Python, a CDK template is JSON, and everything else under
+# cdk.out* is a Lambda asset bundle's vendored third-party dependencies,
+# never this repository's own code. `*` after `cdk.out` because CDK_OUTDIR
+# lets a project redirect synth output to a renamed directory (`cdk.out.chk`,
+# seen on a real system).
+argv = ["bandit", "-r", "{workdir}", "-f", "json", "-q", "-x", """\
+*/.git/*,*/.hg/*,*/.svn/*,*/node_modules/*,*/.venv/*,*/venv/*,\
+*/__pycache__/*,*/.mypy_cache/*,*/.pytest_cache/*,*/.ruff_cache/*,\
+*/.terraform/*,*/.tox/*,*/site-packages/*,*/.next/*,*/.nuxt/*,\
+*/.gradle/*,*/.idea/*,*/.vscode/*,*/vendor/*,*/target/*,*/.arbiter/*,\
+*/cdk.out*/*\
+"""]
 version_argv = ["bandit", "--version"]
 parse = "json"
 ok_exit = [0, 1]

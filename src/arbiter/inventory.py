@@ -53,8 +53,14 @@ LANG_BY_EXT = {
 
 TEST_HINTS = re.compile(r"(^|/)(tests?|spec|__tests__)(/|$)|(^|/)test_[^/]+$|_test\.[a-z]+$|\.spec\.[a-z]+$")
 DOC_HINTS = re.compile(r"(^|/)(docs?|\.ai)(/|$)|\.(md|rst|adoc)$", re.IGNORECASE)
-GENERATED_HINTS = re.compile(r"(^|/)(cdk\.out|dist|build|out|coverage|\.next)(/|$)|\.min\.(js|css)$|lock\.json$|\.lock$")
-IAC_HINTS = re.compile(r"\.tf$|\.tfvars$|template\.(ya?ml|json)$|(^|/)cdk\.out/.*\.template\.json$")
+# `cdk\.out[^/]*` rather than `cdk\.out`: CDK_OUTDIR lets a project redirect
+# synth output to a renamed directory (`cdk.out.chk`, seen on a real system),
+# and the un-suffixed pattern silently stopped matching anything under it --
+# a Lambda asset bundle's vendored dependencies then read as first-party
+# source, which is how a third-party library's own PEM-parsing code and test
+# fixtures were reported as secrets committed to the repository.
+GENERATED_HINTS = re.compile(r"(^|/)(cdk\.out[^/]*|dist|build|out|coverage|\.next)(/|$)|\.min\.(js|css)$|lock\.json$|\.lock$")
+IAC_HINTS = re.compile(r"\.tf$|\.tfvars$|template\.(ya?ml|json)$")
 CI_HINTS = re.compile(r"(^|/)\.github/workflows/.*\.ya?ml$|(^|/)\.gitlab-ci\.ya?ml$|(^|/)Jenkinsfile$|(^|/)azure-pipelines\.ya?ml$")
 
 MAX_FILE_BYTES = 2_000_000
@@ -113,12 +119,20 @@ def _is_binary(sample: bytes) -> bool:
 
 
 def classify(rel: str, language: str) -> str:
+    # IAC_HINTS before GENERATED_HINTS: a CDK stack's own `*.template.json` is
+    # the synthesized ground truth this scanner deliberately reads (SKIP_DIRS
+    # above), sitting in the same `cdk.out*/` directory as everything else
+    # CDK writes. Checking GENERATED_HINTS first would classify the template
+    # itself as generated -- true of the tree, not of that one file -- and
+    # nothing downstream treats "iac" as exempt from a probe the way
+    # "generated" is, so this ordering costs nothing for files that only ever
+    # matched GENERATED_HINTS to begin with.
+    if IAC_HINTS.search(rel):
+        return "iac"
     if GENERATED_HINTS.search(rel):
         return "generated"
     if CI_HINTS.search(rel):
         return "ci"
-    if IAC_HINTS.search(rel):
-        return "iac"
     if TEST_HINTS.search(rel):
         return "test"
     if DOC_HINTS.search(rel):

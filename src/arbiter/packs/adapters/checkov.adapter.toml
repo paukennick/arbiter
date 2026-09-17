@@ -13,7 +13,29 @@ network = false
 timeout = 600
 
 [invoke]
-argv = ["checkov", "-d", "{workdir}", "-o", "json", "--compact", "--quiet"]
+# --skip-path is regex, relative to cwd, with no implicit word boundary, so a
+# bare name (unlike bandit's -x, which needs a */name/* glob) already matches
+# at any depth -- confirmed against a synthetic tree with a Terraform file
+# under a nested .venv. Repeated once per name mirrors inventory.SKIP_DIRS,
+# which only governs Arbiter's native probes; checkov walks {workdir} itself.
+#
+# Unlike bandit, cdk.out* itself is not excluded here: checkov's own value is
+# reading the synthesized `*.template.json` this scanner deliberately keeps.
+# What is excluded is only the asset.<64-hex-char-hash> bundle directories
+# CDK writes alongside those templates -- a Lambda's vendored third-party
+# dependencies, never something checkov's CloudFormation/Terraform checks
+# apply to -- confirmed against a real one still finding both templates with
+# zero hits inside an asset bundle.
+argv = ["checkov", "-d", "{workdir}", "-o", "json", "--compact", "--quiet",
+        "--skip-path", ".git", "--skip-path", ".hg", "--skip-path", ".svn",
+        "--skip-path", "node_modules", "--skip-path", ".venv", "--skip-path", "venv",
+        "--skip-path", "__pycache__", "--skip-path", ".mypy_cache",
+        "--skip-path", ".pytest_cache", "--skip-path", ".ruff_cache",
+        "--skip-path", ".terraform", "--skip-path", ".tox",
+        "--skip-path", "site-packages", "--skip-path", ".next", "--skip-path", ".nuxt",
+        "--skip-path", ".gradle", "--skip-path", ".idea", "--skip-path", ".vscode",
+        "--skip-path", "vendor", "--skip-path", "target", "--skip-path", ".arbiter",
+        "--skip-path", "asset\\.[0-9a-f]{16,}"]
 version_argv = ["checkov", "--version"]
 parse = "json"
 ok_exit = [0, 1]

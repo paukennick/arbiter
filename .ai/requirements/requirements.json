@@ -139,6 +139,64 @@
         "risk_notes": [
           "the live check only passes when the optional mcp extra is installed; without it doctor warns instead of failing"
         ]
+      },
+      {
+        "id": "REQ-026",
+        "title": "Stop vendored and generated content from being scanned as first-party source",
+        "description": "Scanning STEP-Migration and STEP_App as a system surfaced three compounding gaps that together reported a third-party library's own source as a leaked private key, and buried real findings under tens of thousands from vendored code. (1) _pem_has_key_material judged a PEM block real by checking whether any text after a BEGIN marker contained a colon anywhere in the next ~4000 characters -- a check meant to allow encrypted-key preambles (Proc-Type: 4,ENCRYPTED), but satisfied by almost any surrounding prose or code, so ecdsa's own PEM-parsing source and packaging metadata were reported as committed keys. (2) inventory.classify()'s GENERATED_HINTS/IAC_HINTS hardcoded the literal name cdk.out, so a project using CDK_OUTDIR to redirect synth output to a renamed directory (cdk.out.chk, seen on the real system) fell through to role=source, and a branch-ordering bug meant that even the unrenamed case would have classified a CDK stack's own synthesized *.template.json as generated rather than the iac role that exempts nothing, losing the ground-truth scanning SKIP_DIRS says is deliberate. (3) bandit and checkov each walk {workdir} with their own traversal, independent of SKIP_DIRS, so both walked into a full vendored .venv and a Lambda asset bundle's dependencies regardless of role -- bandit alone produced 129,379 raw findings and consumed 669s of its 900s budget on one such tree.",
+        "priority": "high",
+        "status": "completed",
+        "minimum_access_scope": [
+          "src/arbiter/probes.py",
+          "src/arbiter/inventory.py",
+          "src/arbiter/packs/adapters/bandit.adapter.toml",
+          "src/arbiter/packs/adapters/checkov.adapter.toml",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "_pem_has_key_material walks forward line by line and stops at the first line that is not base64 or a Key: value header",
+          "so surrounding code or prose cannot manufacture a body",
+          "classify() recognises a CDK_OUTDIR-renamed cdk.out* directory and classifies its synthesized *.template.json as iac rather than letting the directory-wide generated match swallow it",
+          "bandit and checkov are invoked with exclusions mirroring inventory.SKIP_DIRS plus a CDK asset-bundle pattern",
+          "verified empirically against a real vendored tree rather than assumed from documentation"
+        ],
+        "validation_required": [
+          "python -m pytest tests/ -q is 421 passed 3 skipped 0 failed",
+          "a real cross-repo scan of STEP-Migration + STEP_App dropped from 3 critical / 6011 total findings to 0 critical / 1121 total",
+          "with 0 findings remaining inside a vendored asset bundle and bandit's runtime dropping from 669s to 4s"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md"
+        ],
+        "risk_notes": [
+          "the bandit/checkov exclude patterns are a fixed list mirroring SKIP_DIRS rather than reading it programmatically",
+          "so the two lists can drift apart if SKIP_DIRS changes without the adapters being updated to match"
+        ]
+      },
+      {
+        "id": "REQ-027",
+        "title": "Fix MCP client tests reading pydantic alias names instead of the field names",
+        "description": "test_the_tool_schemas_still_build_against_the_installed_sdk and test_the_stdio_server_actually_starts_and_answers_a_real_client read .inputSchema, .serverInfo and .isError off objects the installed mcp SDK returns. Those models take a camelCase alias on construction but expose the field back out as the snake_case Python attribute via an alias generator, confirmed directly from Tool.model_fields/InitializeResult.model_fields/CallToolResult.model_fields on the installed SDK -- the camelCase name only exists on the wire. This was a pre-existing failure on main, unrelated to REQ-026, found while running the full suite during that work; confirmed by stashing REQ-026's changes and reproducing the same two failures against plain main.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "the two tests read .input_schema",
+          ".server_info and .is_error rather than the camelCase alias",
+          "python -m pytest tests/ -q shows 0 failed"
+        ],
+        "validation_required": [
+          "python -m pytest tests/ -q is 421 passed 3 skipped 0 failed"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md"
+        ],
+        "risk_notes": [
+          "none -- test-only change",
+          "no production code touched"
+        ]
       }
     ],
     "documentation": [],
