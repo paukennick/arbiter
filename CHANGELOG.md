@@ -6,6 +6,20 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 
 ## [Unreleased]
 
+### 2026-09-16
+
+- Registered Arbiter's own MCP server for this repo and made OmniEngineering
+  verify it rather than take it on faith. `.mcp.json` now names an "arbiter"
+  server that runs `arbiter mcp` (stdio), so an assistant working here can
+  call `arbiter_scan`, `arbiter_gate` and `arbiter_review_queue` directly
+  instead of shelling out to the CLI — the CLI stays the only way to run
+  `arbiter review --apply`, since no MCP tool records a verdict. `omni
+  doctor` gained `validate_mcp_server`, which imports `arbiter.mcp` and
+  builds the server for real rather than grepping `.mcp.json`'s text for the
+  right command, because the `mcp` SDK's own shape has moved under this
+  project before (`23bc43e`, same day) and a static check would not have
+  caught that. (REQ-025)
+
 ### 2026-09-14
 
 - Ran the test suite on Windows in CI, and made the Windows-only code paths

@@ -111,6 +111,34 @@
         "risk_notes": [
           "Adding a matrix to the nightly training workflow would double a two-hour job so the test run belongs in a separate fast workflow/Windows runners are slower and some adapter binaries are unavailable there so expect new legitimate skips"
         ]
+      },
+      {
+        "id": "REQ-025",
+        "title": "Have OmniEngineering register and verify Arbiter's live MCP server",
+        "description": "omni doctor never checked that an assistant working in this repo could actually reach Arbiter as MCP tools -- there was no .mcp.json, and nothing in make_ai.py exercised the MCP server at all, only static text in files unrelated to it. Add .mcp.json registering `arbiter mcp` (stdio) as server \"arbiter\", and a doctor check (validate_mcp_server) that imports arbiter.mcp and calls _build_server() for real rather than grepping for file text, because the mcp SDK's own shape has moved under this project before (23bc43e, same day). Document in .ai/project-configuration.md that arbiter_scan/arbiter_gate/arbiter_review_queue should be called through MCP when available, with the CLI remaining the only way to run arbiter review --apply since no MCP tool records a verdict.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          ".mcp.json",
+          "make_ai.py",
+          ".ai/project-configuration.md"
+        ],
+        "acceptance_criteria": [
+          ".mcp.json registers an \"arbiter\" server running `arbiter mcp`",
+          "omni doctor's validate_mcp_server builds the live MCP server and fails if it cannot rather than only checking .mcp.json's text",
+          ".ai/project-configuration.md tells assistants to prefer the MCP tools over the CLI when they are available"
+        ],
+        "validation_required": [
+          "python omni doctor shows the new MCP check passing",
+          "python -m pytest tests/ -q stays green"
+        ],
+        "documentation_required": [
+          ".ai/project-configuration.md",
+          "CHANGELOG.md"
+        ],
+        "risk_notes": [
+          "the live check only passes when the optional mcp extra is installed; without it doctor warns instead of failing"
+        ]
       }
     ],
     "documentation": [],

@@ -341,6 +341,7 @@ ALLOWED_ROOT_FILES = {
     "CONTRIBUTING.md",
     "LICENSE",
     "LLM_CONTEXT.md",
+    ".mcp.json",
     "NOTICE",
     "README.md",
     "TRADEMARKS.md",
@@ -1150,6 +1151,59 @@ def validate_cli_entrypoints(report: DoctorReport) -> None:
         report.pass_check("Installable omni console script is configured")
 
 
+def validate_mcp_server(report: DoctorReport) -> None:
+    """Confirm assistants can reach Arbiter through its MCP server.
+
+    A static check can only confirm `.mcp.json` names the right command; it
+    cannot tell whether that command still builds a server, because the `mcp`
+    SDK's own shape has moved under this project before (see git history on
+    `src/arbiter/mcp.py`). So this check imports the module and builds the
+    server for real, the same way a client launching `arbiter mcp` would.
+    """
+    mcp_json_path = Path(".mcp.json")
+    if not mcp_json_path.is_file():
+        report.error("Missing .mcp.json; assistants will fall back to the arbiter "
+                     "CLI instead of calling it through MCP")
+        return
+
+    try:
+        registration = json.loads(mcp_json_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        report.error(f".mcp.json is not valid JSON: {exc}")
+        return
+
+    server_config = registration.get("mcpServers", {}).get("arbiter")
+    if not server_config or server_config.get("command") != "arbiter" or \
+            "mcp" not in server_config.get("args", []):
+        report.error(".mcp.json does not register an \"arbiter\" server that "
+                     "runs `arbiter mcp`")
+        return
+
+    try:
+        from arbiter import mcp as mcp_surface
+    except ImportError as exc:
+        report.error(f"arbiter package is not importable, so the registered MCP "
+                     f"server cannot run: {exc}")
+        return
+
+    if not mcp_surface.TOOLS:
+        report.error("arbiter.mcp.TOOLS is empty; the registered server would expose no tools")
+        return
+
+    try:
+        mcp_surface._build_server()
+    except ImportError as exc:
+        report.warning(f"The `mcp` SDK extra is not installed, so the registered "
+                        f"server cannot start yet (`pip install -e .[mcp]`): {exc}")
+        return
+    except Exception as exc:  # noqa: BLE001
+        report.error(f"Arbiter's MCP server failed to build: {type(exc).__name__}: {exc}")
+        return
+
+    tool_names = ", ".join(tool["name"] for tool in mcp_surface.TOOLS)
+    report.pass_check(f".mcp.json registers a live Arbiter MCP server ({tool_names})")
+
+
 def find_placeholders(value: Any) -> set[str]:
     placeholders: set[str] = set()
     if isinstance(value, str):
@@ -1431,6 +1485,7 @@ def run_doctor() -> int:
     validate_markdown_assets(report)
     validate_project_map(report)
     validate_cli_entrypoints(report)
+    validate_mcp_server(report)
     report.print()
     return 0 if report.ok else 1
 

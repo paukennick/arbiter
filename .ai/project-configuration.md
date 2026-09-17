@@ -30,6 +30,17 @@ These settings correspond to the `configuration` block in
 - The OmniEngineering CLI is at the repo root: run `python omni doctor`,
   `python omni map` (regenerates `.ai/project-map.md`; safe here because the
   map is not hand-curated) and `python omni sync`.
+- **`.mcp.json` registers Arbiter's own MCP server** (`arbiter mcp`, stdio,
+  tools `arbiter_scan`, `arbiter_gate`, `arbiter_review_queue` — see
+  `docs/mcp.md`). When those tools are available, call Arbiter through them
+  instead of shelling out to the `arbiter` CLI — same `src/arbiter/service.py`
+  underneath, no `Bash` permission prompt, and the result comes back as
+  structured JSON rather than text to reparse. The CLI is still the right
+  choice for anything the tool surface deliberately omits, chiefly
+  `arbiter review --apply`: no MCP tool records a verdict (see `mcp.py`'s
+  module docstring). `omni doctor` checks this registration by actually
+  building the server (`validate_mcp_server`), not just reading `.mcp.json`,
+  because the `mcp` SDK's own shape has moved under this project before.
 - **Known `omni doctor` gaps.** The scaffold was assembled from local
   STEP-Migration copies because no pristine OmniEngineering upstream is on
   this machine. These required files do not exist in any local copy and are
