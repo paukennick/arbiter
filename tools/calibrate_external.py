@@ -186,7 +186,36 @@ def main() -> int:
     def _alarm(_sig, _frame):
         raise _Timeout()
 
-    signal.signal(signal.SIGALRM, _alarm)
+    # Windows has no SIGALRM, the same gap Adapter._kill_group already works
+    # around for process-group signalling. There's no portable way to
+    # interrupt a blocked call in the main thread without also aliasing a
+    # real Ctrl+C, so the Windows path is shaped differently rather than
+    # faked with the same primitive: the scan runs in a worker thread, and
+    # the budget stops *waiting* for it instead of stopping it. The abandoned
+    # worker still exits on its own -- every adapter already enforces its own
+    # subprocess timeout -- it just isn't blocking this loop's progress.
+    has_alarm = hasattr(signal, "SIGALRM")
+    if has_alarm:
+        signal.signal(signal.SIGALRM, _alarm)
+    else:
+        from concurrent.futures import ThreadPoolExecutor
+        from concurrent.futures import TimeoutError as _FutureTimeout
+        _executor = ThreadPoolExecutor(max_workers=1)
+
+    def _run_bounded(path: Path, budget: int):
+        if has_alarm:
+            signal.alarm(max(0, int(budget)))
+            try:
+                return run_scan([str(path)], cfg, only=only, use_adapters=True)
+            except _Timeout:
+                raise TimeoutError from None
+            finally:
+                signal.alarm(0)
+        future = _executor.submit(run_scan, [str(path)], cfg, only=only, use_adapters=True)
+        try:
+            return future.result(timeout=max(0, int(budget)))
+        except _FutureTimeout:
+            raise TimeoutError from None
 
     for name, (population, _stack) in CORPUS.items():
         path = root / name
@@ -201,10 +230,9 @@ def main() -> int:
         # of time is RECORDED as skipped rather than silently dropped, because
         # a check seen in fewer repositories has weaker evidence and the table
         # should say so.
-        signal.alarm(max(0, int(args.timeout_per_repo)))
         try:
-            rep = run_scan([str(path)], cfg, only=only, use_adapters=True)
-        except _Timeout:
+            rep = _run_bounded(path, args.timeout_per_repo)
+        except TimeoutError:
             timed_out.append(name)
             print(f"  {name:<20}{population:<11}   timed out after "
                   f"{args.timeout_per_repo}s — skipped", flush=True)
@@ -212,8 +240,6 @@ def main() -> int:
         except Exception as exc:  # noqa: BLE001
             failed.append((name, f"{type(exc).__name__}: {exc}"[:120]))
             continue
-        finally:
-            signal.alarm(0)
         loc[population] += max(1, sum(r.loc for r in rep.repos))
         for lang, count in rep.loc_by_language.items():
             loc_lang[population][lang] += count
