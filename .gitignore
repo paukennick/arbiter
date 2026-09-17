@@ -24,3 +24,7 @@ training/*
 # Headroom marker files. All of it is per-machine and none of it describes the
 # project, so the whole directory stays out rather than one file at a time.
 .claude/
+
+# Same reasoning as .claude/ above, for Codex CLI: local Headroom wiring with
+# a machine-specific path and profile id, not project configuration.
+.codex/
