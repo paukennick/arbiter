@@ -5,7 +5,7 @@
     "/tmp/corpus/kubernetes-goat"
   ],
   "counts": {
-    "contested": 347,
+    "contested": 346,
     "severity_disagreement": 76,
     "corroborated": 290,
     "coverage_gap": 12
@@ -2751,9 +2751,9 @@
       "only": "checkov"
     },
     {
-      "id": "f:0235c5c1d811",
-      "rule": "checkov/CKV2_K8S_1",
-      "title": "RoleBinding should not allow privilege escalation to a ServiceAccount or Node on other RoleBinding",
+      "id": "f:2cd4ae2d1182",
+      "rule": "checkov/CKV2_K8S_2",
+      "title": "Granting `create` permissions to `nodes/proxy` or `pods/exec` sub resources allows potential privilege escalation",
       "severity": "medium",
       "family": "privilege",
       "where": "infrastructure/helm-tiller/pwnchart/templates/clusterrolebinding.yaml:3",
@@ -2762,9 +2762,9 @@
       "only": "checkov"
     },
     {
-      "id": "f:2cd4ae2d1182",
-      "rule": "checkov/CKV2_K8S_2",
-      "title": "Granting `create` permissions to `nodes/proxy` or `pods/exec` sub resources allows potential privilege escalation",
+      "id": "f:0235c5c1d811",
+      "rule": "checkov/CKV2_K8S_1",
+      "title": "RoleBinding should not allow privilege escalation to a ServiceAccount or Node on other RoleBinding",
       "severity": "medium",
       "family": "privilege",
       "where": "infrastructure/helm-tiller/pwnchart/templates/clusterrolebinding.yaml:3",
@@ -3145,17 +3145,6 @@
       "tool": "semgrep",
       "other_side": [],
       "only": "semgrep"
-    },
-    {
-      "id": "f:876df115e4e6",
-      "rule": "arbiter/assurance.test-asserts-nothing",
-      "title": "Test `test_sqs_queue_created` contains no assertion",
-      "severity": "low",
-      "family": "encryption",
-      "where": "root:platforms/aws-setup/aws-kind-ec2-cdk/tests/unit/test_aws_kind_ec2_cdk_stack.py:8",
-      "tool": "arbiter",
-      "other_side": [],
-      "only": "arbiter"
     },
     {
       "id": "f:40f04ce1f301",
@@ -6077,7 +6066,7 @@
       "title": "Generic API Key detected",
       "severity": "high",
       "family": "secret",
-      "where": "-:628",
+      "where": "-:1228",
       "tool": "semgrep",
       "other_side": [
         "arbiter/secrets.aws-access-key"

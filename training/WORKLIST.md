@@ -1,6 +1,6 @@
 # What to work on next
 
-Generated 2026-09-16T22:54:58+00:00 by `tools/worklist.py` from the last training cycle.
+Generated 2026-09-17T17:46:50+00:00 by `tools/worklist.py` from the last training cycle.
 
 Nothing here is a decision. Each entry says what the measurement shows and what question it raises.
 
@@ -53,10 +53,10 @@ Each one is a CANDIDATE: a finding also disappears when the code around it is re
 
 ### 4. [HIGH] Contested findings, ready to adjudicate
 
-347 findings where both Arbiter and an external analyzer cover the kind of defect, and only one of them fired. Exactly one is wrong about that line, so a verdict there resolves a real uncertainty instead of confirming a settled one.
+346 findings where both Arbiter and an external analyzer cover the kind of defect, and only one of them fired. Exactly one is wrong about that line, so a verdict there resolves a real uncertainty instead of confirming a settled one.
 
 - 173 where only **checkov** fired
-- 96 where only **arbiter** fired
+- 95 where only **arbiter** fired
 - 78 where only **semgrep** fired
 
 A batch is already prepared. Twenty of these are worth more than twenty random findings, because a finding two independent tools agree on is the least informative thing a person can spend a verdict on.
