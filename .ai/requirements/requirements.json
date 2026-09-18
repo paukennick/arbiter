@@ -2614,6 +2614,47 @@
         "CHANGELOG.md"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-153",
+      "category": "developer-tooling",
+      "title": "Turn on adaptive quality thresholds and pin them per repository",
+      "description": "The adaptive-threshold mechanism existed in learn.py (metrics_from_inventory, adaptive_threshold, resolve_quality_config) but had never run: it was gated behind a quality.adaptive config flag set nowhere, and the profiles it produced were computed fresh each scan, used, and thrown away. knowledge.json's profiles store was empty. Enabled it in arbiter.yaml rather than in the shipped defaults, since flipping the default would move every existing user's thresholds without them asking. Added an `arbiter profile` command, which learns a repository's metric distributions and writes them to the ledger; a scan now prefers the learned profile and falls back to measuring from its own inventory. Writing is deliberately a separate command because profiles are part of the version hash: if a scan stored one, every run would move the hash it had just recorded into its own report and --pin-knowledge would fail against a ledger the pinned run itself produced. Reports carry learning.profile_source so a reader can tell a pinned profile from one measured off the code being judged, which the numbers alone do not show. The first implementation keyed profiles on the scan's repo id, which is the literal string 'root' for any single-target scan, so a learned profile was never found again and every repository scanned alone would have shared one entry; keys now come from the directory.",
+      "priority": "medium",
+      "status": "needs_review",
+      "minimum_access_scope": [
+        "src/arbiter/learn.py",
+        "src/arbiter/engine.py",
+        "src/arbiter/cli.py",
+        "arbiter.yaml",
+        "tests/test_measurement.py",
+        "tools/mutate_tests.py",
+        "docs/calibration.md",
+        "tests/test_review_learn.py",
+        "docs/cli.md"
+      ],
+      "acceptance_criteria": [
+        "arbiter profile writes a per-repository profile and moves the knowledge version",
+        "a scan with a learned profile reports profile_source learned and one without reports measured",
+        "profiles are keyed so two repositories never share an entry",
+        "a profile under 30 samples leaves the fixed threshold in place",
+        "the configured threshold caps the adaptive one; so a uniformly bad codebase cannot raise its own limit and a tenfold uniform degradation cannot leave the flagged set unchanged"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/ -q",
+        "python tools/mutate_tests.py"
+      ],
+      "documentation_required": [
+        "docs/calibration.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Only the first repository's profile is consulted because quality thresholds are resolved once for the whole run; a multi-repo system scan cannot yet hold one set per repository",
+        "Learning a profile moves the knowledge version so any pinned scan must be re-pinned deliberately",
+        "Adaptive is on for this repository only; the shipped default is unchanged",
+        "Ported 2026-10-25 from local commit 7fd2ab7 where it was written as REQ-031; upstream later used that id for a different requirement"
+      ]
     }
   ]
 }

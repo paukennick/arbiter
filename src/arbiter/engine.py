@@ -437,7 +437,8 @@ def run_scan(
     # Learning is read here and nowhere else: one pinned version per run, with
     # its hash recorded, so the same commit plus the same knowledge version
     # always produces the same bytes.
-    from .learn import Knowledge, metrics_from_inventory, resolve_quality_config
+    from .learn import (Knowledge, metrics_from_inventory, profile_for,
+                        profile_key, resolve_quality_config)
     knowledge = Knowledge.load(knowledge_path)
     knowledge_version = knowledge.version_hash()
     if pin_knowledge and pin_knowledge != knowledge_version:
@@ -446,7 +447,29 @@ def run_scan(
             "Learning changed since this run was pinned; re-pin deliberately."
         )
 
-    profiles = metrics_from_inventory(inv) if (config.get("quality") or {}).get("adaptive") else {}
+    # A learned profile is preferred over one measured from this run's own
+    # inventory. Both are deterministic, but only the stored one is pinned: a
+    # measured profile is drawn from the code being judged, so adding a long
+    # file moves the threshold that decides whether long files are reported,
+    # and the tool grades on a curve it redraws each time. `arbiter profile`
+    # writes the stored one deliberately.
+    profiles: dict = {}
+    profile_source = "none"
+    if (config.get("quality") or {}).get("adaptive"):
+        # Keyed on the directory, not on `repos[0].id`: a single-target scan
+        # calls its repository "root" for display, so every repository scanned
+        # on its own would share one profile and the first one written would
+        # set the thresholds for all of them.
+        #
+        # Only the first repository's profile is consulted. Quality thresholds
+        # are resolved once for the whole run, so a multi-repo system scan
+        # cannot currently hold one set per repository; that is a limitation of
+        # where thresholds live, not of the store.
+        profiles = profile_for(knowledge, profile_key(repos[0].path)) if repos else {}
+        profile_source = "learned"
+        if not profiles:
+            profiles = metrics_from_inventory(inv)
+            profile_source = "measured" if profiles else "none"
     run_config = dict(config)
     if profiles:
         run_config["quality"] = resolve_quality_config(config, profiles)
@@ -620,6 +643,11 @@ def run_scan(
         "externally_graded": calibration.get("externally_graded", 0),
         "external_checks_measured": len(knowledge.external_severity),
         "adaptive_thresholds": (run_config.get("quality") or {}).get("_adaptive_source", ""),
+        # "learned" means the thresholds came from the pinned ledger and are
+        # reproducible from the knowledge version alone; "measured" means they
+        # were drawn from this run's own inventory, so they move with the code
+        # being judged. A reader cannot tell the two apart from the numbers.
+        "profile_source": profile_source,
         "profiles": {k: v for k, v in profiles.items() if v},
     }
     report.scorecard = compute_scorecard(

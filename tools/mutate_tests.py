@@ -89,6 +89,26 @@ MUTATIONS = [
         test="tests/test_metamorphic.py::test_every_carrier_survives_windows_line_endings",
     ),
     Mutation(
+        name="adaptive-threshold-can-loosen",
+        defect="The configured threshold no longer caps the adaptive one, so a "
+               "sprawling repository raises its own limit and uniform "
+               "degradation leaves the flagged set unchanged.",
+        path="src/arbiter/learn.py",
+        old="    return max(bottom, min(value, fixed))",
+        new="    return max(bottom, value)",
+        test="tests/test_measurement.py::test_a_uniformly_bad_codebase_cannot_normalize_its_way_clean",
+    ),
+    Mutation(
+        name="profile-key-from-display-id",
+        defect="The profile key comes from a scan's display id again, so every "
+               "repository scanned on its own shares one profile and a learned "
+               "one is never found.",
+        path="src/arbiter/learn.py",
+        old='    return Path(path).resolve().name or "root"',
+        new='    return "root"',
+        test="tests/test_measurement.py::test_the_profile_key_does_not_depend_on_a_scans_display_id",
+    ),
+    Mutation(
         name="synthetic-counts-as-evidence",
         defect="Generated trials count toward the observations that decide a rule "
                "is proven, so a night of injection manufactures confidence.",

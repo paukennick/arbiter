@@ -11,6 +11,15 @@ gate:
 quality:
   max_file_lines: 900
   max_function_lines: 140
+  # Draw the thresholds above from this repository's own distribution instead,
+  # where one has been learned with `arbiter profile`. The numbers above are
+  # the ceiling, not a starting point: adaptive can only tighten them, never
+  # loosen them, so a codebase cannot raise its own limit by sprawling. A
+  # profile built from fewer than 30 samples is ignored entirely.
+  #
+  # On in this repo rather than in the shipped defaults, because turning it on
+  # globally would move every existing user's thresholds without them asking.
+  adaptive: true
 
 suppress:
   # The fixtures ARE the defects. Suppressing them here is the point of the

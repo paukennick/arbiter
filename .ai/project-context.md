@@ -1362,3 +1362,77 @@ a no-op under the default but still overrides `report.show: verified` for
 one run, which is what the existing `run with --advisory to include them`
 hint relies on. The two flags are mutually exclusive.
 
+## 2026-09-18 — Thresholds that fit the repository (ARB-153)
+
+**What prompted it.** The adaptive-threshold mechanism was already written --
+`metrics_from_inventory`, `adaptive_threshold`, `resolve_quality_config` --
+and had never once run. It was gated behind a `quality.adaptive` config flag
+that was set nowhere, and the distributions it produced were computed fresh on
+every scan, used, and discarded. The `profiles` store in `knowledge.json` was
+an empty object. This change turned it on and gave the profiles somewhere to
+live.
+
+**Why writing a profile is its own command.** Profiles decide which findings a
+scan reports, so they are part of the knowledge version hash. If a scan stored
+one, every run would move the hash it had just recorded into its own report,
+and `--pin-knowledge` would then fail against a ledger the pinned run itself
+produced. `arbiter profile` writes them deliberately, and running it means
+re-pinning. A scan only ever reads.
+
+**Why the source is in the report.** A threshold measured from the code being
+judged and one drawn from the pinned ledger look identical as numbers, but
+only the second is reproducible from the knowledge version alone -- the first
+moves when the code moves, so adding a long file raises the threshold that
+decides whether long files are reported. `learning.profile_source` says which
+it was: `learned`, `measured`, or `none`.
+
+**One defect introduced and caught here.** The first implementation keyed
+profiles on `repos[0].id`, which is the literal string `root` for any
+single-target scan. A profile written by `arbiter profile` under the directory
+name was therefore never found again, and every repository scanned on its own
+would have shared one entry, with whichever was profiled first setting the
+thresholds for all of them. Nothing failed: the scan ran clean and reported
+`profile_source: measured` while a learned profile sat in the ledger, which is
+the only reason it was noticed. `profile_key()` now derives the name from the
+directory, and `tools/mutate_tests.py` restores the defect to prove the test
+covering it can fail.
+
+**Enabled here, not shipped on.** `adaptive: true` is set in this
+repository's `arbiter.yaml` rather than in the defaults, because flipping the
+default would move every existing user's thresholds without them asking. The
+learned profile for this repository is `file_lines` over 60 files: median 267,
+p95 1066, max 2032. The ledger moved `k:2b2bbb166445` -> `k:bc9c7897df3e`.
+
+**A second defect, found by doing the arithmetic.** The rule shipped as
+`max(p95, floor)` -- a floor and no ceiling. The configured threshold was
+therefore not a bound on anything, and turning the feature on raised this
+repository's own `max_file_lines` from 900 to 1066 and silenced three real
+findings at 954, 975 and 1066 lines. The deeper problem was that the rule was
+scale-equivariant in the percentile: multiplying every file by ten multiplied
+the threshold by ten, so the identical two files stayed flagged where the
+fixed threshold would have gone from 5 findings to 42. Uniform decay could not
+be seen at all, which is grading on a curve in the literal sense -- a
+percentile threshold flags a fixed *fraction* of files no matter how the code
+reads. Three documents asserted the opposite property, and the test named for
+it asserted only `>= floor`, which a threshold of 50,000 satisfies. The
+configured value now caps the result: adaptive tightens, never loosens. The
+asymmetry is an evidence argument rather than a preference -- bootstrapping
+p95 over the 60 files gives a 90% interval of [664, 2032], spanning finding
+counts from 0 to 6, and an estimate that loose can be trusted to fail closed
+but not to fail open. Under the cap, adaptive is inert for `max_file_lines` on
+this repository: it resolves back to 900.
+
+**What this does not yet do.** Only the first repository's profile is
+consulted, because quality thresholds are resolved once for the whole run -- a
+multi-repo system scan cannot hold one set per repository, which is a
+limitation of where thresholds live and not of the store. And `function_lines`
+and `complexity` are measured only when tree-sitter is importable; it is not
+installed on this machine, so the only threshold that actually adapts here is
+`max_file_lines`. The function-length case that motivates the feature in
+`docs/calibration.md` is precisely the one that cannot adapt without it.
+
+**What was deliberately not done.** No adjudicated verdict feeds any of this.
+The thresholds adapt to a repository's shape, not to whether anyone agreed
+with the findings they produced; `docs/proposal-usage-learning.md` argues for
+the latter and remains a proposal, on the grounds that a weak signal nobody
+can calibrate against is how a tool starts grading itself on a curve.

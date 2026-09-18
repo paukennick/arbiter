@@ -36,6 +36,7 @@ every flag of a command; this page explains them and shows what to type.
 | `review` | adjudicate a batch of findings in one pass |
 | `feedback` | adjudicate one or more findings by id |
 | `learn` | show what calibration has learned |
+| `profile` | learn this repository's size distributions so adaptive thresholds can use them ([calibration.md](calibration.md)) |
 | `verify` | check a report's claims against their basis (no model involved) |
 | `controls` | control coverage per framework, including what was not assessed |
 | `dashboard` | render the run history as one self-contained page |
@@ -214,6 +215,8 @@ arbiter review report.json --interactive        # ...or one keypress each, in th
 arbiter review --apply arbiter-out/review.md    # record the verdicts
 arbiter feedback f:8c41d2ae9b07 --false-positive --note "test fixture"   # one finding
 arbiter learn                                   # what has been learned, and what it supports
+arbiter profile . --show                        # the size distributions adaptive thresholds would learn
+arbiter profile .                               # ...and pin them in the ledger (moves the knowledge version)
 ```
 
 Verdicts are attributed to `--reviewer` (default: `git config user.email`).
