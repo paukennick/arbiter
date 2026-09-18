@@ -277,6 +277,32 @@ class Knowledge:
         p.write_text(json.dumps(self.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
         return self.version_hash()
 
+    def merge_external_severity(self, path: str) -> int:
+        """Take measured severities from tools/calibrate_external.py's report.
+
+        That tool writes a full measurement record per check -- hit counts,
+        KLOC, ratio, basis -- and `apply()` needs only the one field. Without
+        this step the two halves never meet: the nightly cycle wrote the
+        report and copied it into .arbiter/, the scanner kept reading the map
+        inside knowledge.json, and nothing moved a value from one to the
+        other. The severities in the live ledger came from a one-off that no
+        longer exists, so the measurement had been running for nothing.
+
+        Checks the tool declined to grade carry `severity: null` (it needs
+        MIN_OBSERVATIONS hits before it will claim anything). Those are
+        skipped rather than stored as None, because absent means "no measured
+        severity, keep the tool's own" to `apply()`, and a stored null would
+        have to be special-cased everywhere it is read.
+        """
+        report = json.loads(Path(path).read_text(encoding="utf-8"))
+        merged = 0
+        for rule_id, record in (report.get("checks") or {}).items():
+            severity = record.get("severity")
+            if severity:
+                self.external_severity[rule_id] = severity
+                merged += 1
+        return merged
+
 
 # ---------------------------------------------------------------------------
 # Feedback

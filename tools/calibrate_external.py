@@ -24,8 +24,6 @@ severity table keyed by check id.
 
     ratio        assigned severity   reading
     ---------    -----------------   --------------------------------------
-    >= 50x       high                fires on broken code, essentially never
-                                     on working code
     >= 10x       medium              clearly discriminating
     >= 3x        low                 discriminating, but common enough in
                                      working code to be worth downgrading

@@ -273,6 +273,7 @@ enumerates, and any change that regresses on one of them fails the suite.
 | [docs/compliance.md](docs/compliance.md) | Control packs and coverage states |
 | [docs/evidence.md](docs/evidence.md) | Claim integrity, injection training, corpus tuning |
 | [docs/calibration.md](docs/calibration.md) | Learning, adjudication, external severity |
+| [docs/testing-parameters.md](docs/testing-parameters.md) | Every constant that decides a verdict, and how firmly each is held |
 | [docs/ab-testing.md](docs/ab-testing.md) | The A/B harness |
 | [docs/ci.md](docs/ci.md) | CI integration and continuous training |
 | [docs/hosted-api.md](docs/hosted-api.md) | Running an instance, reaching one with `arbiter remote`, custody and TLS |

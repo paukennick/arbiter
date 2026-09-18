@@ -71,6 +71,21 @@ class Location:
     logical: str = ""  # resource address, symbol, or logical ID
     repo_id: str = ""  # set on cross-repo findings so related sites stay attributable
 
+    def __post_init__(self) -> None:
+        # Separator normalization belongs here rather than at each producer.
+        # `fingerprint()` hashes this path, adjudications are keyed by that
+        # fingerprint, and `record()` refuses to re-adjudicate -- so a path
+        # that arrives as `a\b\c.tf` on Windows and `a/b/c.tf` elsewhere
+        # silently splits one finding's identity in two, and a verdict
+        # recorded on one platform can never match the same finding on the
+        # other. There are ~54 Location construction sites and normalizing at
+        # each of them is what was tried before: it was missed at one site in
+        # REQ-014, at every probe in REQ-015, at the construction sites again
+        # in REQ-016, and once more in the adapters in REQ-029. One boundary
+        # every site passes through is the only version that stays fixed.
+        if self.path:
+            self.path = self.path.replace("\\", "/")
+
     def to_dict(self) -> dict:
         return asdict(self)
 

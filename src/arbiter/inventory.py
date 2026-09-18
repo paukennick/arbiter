@@ -7,6 +7,7 @@ are even applicable.
 """
 from __future__ import annotations
 
+import codecs
 import os
 import re
 import subprocess
@@ -114,7 +115,31 @@ class Inventory:
         }
 
 
+# Byte-order marks that declare a text file, longest first so UTF-32-LE is not
+# read as UTF-16-LE (its mark starts with the same two bytes).
+_TEXT_BOMS = (
+    codecs.BOM_UTF32_LE, codecs.BOM_UTF32_BE,
+    codecs.BOM_UTF8,
+    codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE,
+)
+
+
 def _is_binary(sample: bytes) -> bool:
+    """A NUL means binary, unless the file opens by declaring it is not.
+
+    UTF-16 puts a NUL between every ASCII character, so the bare NUL test
+    called every UTF-16 file binary -- and binary files are never read. A
+    credential in a file an editor saved as "Unicode" was therefore never
+    looked at. That is a coverage gap rather than a wrong answer, since the
+    file is recorded as unassessed data, but it is invisible in exactly the
+    place a Windows-authored config is most likely to be.
+
+    Only a declared mark overrides the NUL test. Sniffing headerless UTF-16
+    would mean guessing, and guessing wrong turns a real binary into
+    thousands of lines of mojibake to scan.
+    """
+    if sample.startswith(_TEXT_BOMS):
+        return False
     return b"\x00" in sample
 
 

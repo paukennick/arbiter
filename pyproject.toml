@@ -19,7 +19,10 @@ ast = ["tree-sitter>=0.23", "tree-sitter-language-pack>=0.9"]
 tools = ["ruff", "bandit", "checkov", "semgrep"]
 # httpx2 is starlette's test client transport. Without it the app-level tests
 # skip, so the request path -- auth, TLS refusal, the limiter -- goes unexercised.
-dev = ["pytest>=7", "httpx2"]
+# hypothesis generates the inputs for tests/test_properties.py. The parsers it
+# fuzzes are hand-rolled, and every historical bug in them was an edge of the
+# grammar nobody thought to write a fixture for.
+dev = ["pytest>=7", "httpx2", "hypothesis>=6"]
 # 2.2 is a hard floor, not caution: the server API changed shape there --
 # handlers are constructor arguments rather than decorators -- so a 1.x
 # install fails at startup. starlette and uvicorn arrive with it.

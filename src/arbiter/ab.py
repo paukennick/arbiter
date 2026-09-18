@@ -324,7 +324,7 @@ def load_ground_truth(target: str) -> dict | None:
         if p.is_file():
             try:
                 import yaml  # type: ignore
-                return yaml.safe_load(p.read_text()) or {}
+                return yaml.safe_load(p.read_text(encoding="utf-8")) or {}
             except Exception:
                 return None
     return None
@@ -372,7 +372,7 @@ def score_ground_truth(truth: dict, findings: list[Finding]) -> GroundTruthResul
 
 def load_ab_spec(path: str) -> dict:
     import yaml  # type: ignore
-    data = yaml.safe_load(Path(path).read_text()) or {}
+    data = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
     if "arms" not in data:
         raise RuntimeError(f"{path} must define `arms`")
     return data

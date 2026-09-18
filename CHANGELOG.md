@@ -59,6 +59,80 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 
 ### 2026-09-17
 
+- Started testing the scanner against reformulations of its own input, and
+  started testing the code that measures the rules. An audit of every testing
+  parameter and of the whole bug history found nineteen shipped defects
+  collapsing into five recurring causes -- platform and path assumptions,
+  encoding defaults, attribution propagation, heuristic proxies with edges
+  nobody had hit yet, and bugs in the measurement code itself. Each had been
+  fixed with a fixture for the one case that failed, which is why the missing
+  `repo_id` had to be found three separate times. The new tests state the
+  property instead: no finding anywhere may carry a backslash, an absolute or
+  an escaping path; every finding in a multi-repo scan must name a repository
+  that exists; every text read and write under `src/` must name its encoding;
+  a credential must be found under every encoding and every syntactic carrier
+  while placeholders are not reported; and calibrated confidence must not move
+  when synthetic volume does. `tests/test_properties.py` generates inputs for
+  the hand-rolled HCL reader rather than listing them, since every bug those
+  functions have had was an edge of the grammar nobody thought to write down.
+  (REQ-030)
+- Fixed a fingerprint that was not stable across platforms. `Finding.fingerprint()`
+  hashed `location.path` as written, so the same path with backslashes
+  and with forward slashes were two identities for one finding.
+  Adjudications are permanent and keyed by that
+  fingerprint and `record()` refuses to re-adjudicate, so a verdict recorded on
+  one platform could never match the same finding on another, and a baseline
+  built on one reported every finding as new on the other. Normalization now
+  happens at the `Location` boundary that all ~54 construction sites pass
+  through, rather than at each of them -- which is the form that was tried and
+  missed in REQ-014, REQ-015, REQ-016 and again in REQ-029. (REQ-030)
+- Connected the nightly external-severity measurement to the scanner.
+  `tools/calibrate_external.py` wrote its measured severities to
+  `.arbiter/external-severity.json` while `learn.apply()` read a flat map
+  inside `knowledge.json`, and no code path moved a value from one to the
+  other -- so every nightly run since the tool was written had measured 818
+  external checks and changed nothing, and the 178 severities in the live
+  ledger came from a one-off step that no longer exists. Merging the current
+  report yields 288 entries, 110 of them checks that had no measured severity
+  at all. (REQ-030)
+- Stopped reading every UTF-16 file as a binary blob. `inventory._is_binary`
+  treated any NUL byte as binary, and UTF-16 puts one between every ASCII
+  character, so a file an editor saved as "Unicode" was classified as data and
+  never read -- a credential in one was invisible. A declared byte-order mark
+  now means text. Headerless UTF-16 is still left as data on purpose: telling
+  it from a real binary means guessing, and guessing wrong turns a binary into
+  mojibake to scan. (REQ-030)
+- Gave seven configuration reads an explicit encoding. `policy.py`, `ab.py`,
+  `controls.py`, `probes.py` and `adapters.py` read YAML and TOML under the
+  platform default codec, which on Windows is cp1252 and mis-decodes silently
+  rather than raising. This is the same defect as REQ-009 and REQ-012, in
+  seven call sites those fixes did not touch; the new test checks the property
+  across `src/` rather than the two sites that were known. (REQ-030)
+- Kept line endings translated when file reading moved to bytes. Reading a
+  file as bytes rather than as text is what made the byte-order-mark check
+  possible, and it silently dropped Python's newline translation with it: six
+  secret formats stopped being detected on any CRLF file, because the rule
+  that reads `name = value` ends at the end of the line and was seeing a
+  trailing carriage return. The existing suite caught it. The first test
+  written to cover it did not -- it used an AWS key, which is recognised by
+  its own shape wherever it appears and so was found with or without the
+  carriage return; `tools/mutate_tests.py` reported that test as passing with
+  the defect present, which is the whole reason that tool exists. (REQ-030)
+- Added `tools/mutate_tests.py`, which puts each of those defects back and
+  requires the test named after it to fail. A test that has never failed is
+  not evidence, and this is the same discipline `tools/integrity.py` already
+  applies to the claim invariants. It runs in the pull-request check, so a
+  regression test that stops testing anything fails the build. (REQ-030)
+- Wrote `docs/testing-parameters.md`: every constant that governs a verdict,
+  what it decides, and how firmly it is held -- derived, reasoned or
+  arbitrary. Most are arbitrary, which is the honest grade for a number
+  nobody has tested an alternative against. It also records two constants
+  sharing the name `MIN_OBSERVATIONS` while meaning unrelated things, and
+  three unreconciled ratio thresholds deciding closely related questions.
+  Nothing was retuned: changing any of them changes published evidence.
+  (REQ-030)
+
+
 - Fixed four related gaps in how adapters read tool output and what they
   scan, found while continuing REQ-026's cross-repo scanning work. gitleaks
   has no write-JSON-to-stdout mode; `--report-path` took the conventional

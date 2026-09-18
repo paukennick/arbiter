@@ -28,17 +28,8 @@ LEGACY = ROOT / "fixtures" / "legacy-platform"
 SYSTEM = ROOT / "fixtures" / "system" / "arbiter-system.yaml"
 
 
-@pytest.fixture(scope="module")
-def legacy_report():
-    cfg = load_config(None, str(LEGACY))
-    return run_scan([str(LEGACY)], cfg, skip=["checkov", "semgrep", "bandit", "ruff", "gitleaks"])
-
-
-@pytest.fixture(scope="module")
-def system_report():
-    cfg = load_config(None)
-    return run_scan([], cfg, system_path=str(SYSTEM),
-                    skip=["checkov", "semgrep", "bandit", "ruff", "gitleaks"])
+# legacy_report and system_report now live in conftest.py at session scope, so
+# the suite runs each fixture scan once rather than once per test file.
 
 
 # --------------------------------------------------------------------------

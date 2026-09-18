@@ -28,3 +28,8 @@ training/*
 # Same reasoning as .claude/ above, for Codex CLI: local Headroom wiring with
 # a machine-specific path and profile id, not project configuration.
 .codex/
+
+# hypothesis writes an example database here: inputs that have failed before,
+# replayed first on the next run. It is a local cache keyed to this machine's
+# runs, and committing it would replay one developer's failures for everyone.
+.hypothesis/

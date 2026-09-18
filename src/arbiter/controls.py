@@ -134,7 +134,7 @@ class Framework:
 
 
 def load_pack(path: Path) -> Framework:
-    doc = yaml.safe_load(path.read_text()) or {}
+    doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     meta = doc.get("framework") or {}
     fw = Framework(
         id=meta.get("id", path.stem),

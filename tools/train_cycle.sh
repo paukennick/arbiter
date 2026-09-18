@@ -71,6 +71,16 @@ if command -v checkov >/dev/null 2>&1 || command -v bandit >/dev/null 2>&1; then
     --out "$RESULTS/external-severity-$STAMP.json" \
     | tee "$RESULTS/external-$STAMP.txt" | tail -20
   cp "$RESULTS/external-severity-$STAMP.json" .arbiter/external-severity.json
+  # The copy above keeps the full measurement record for reading. This merge
+  # is what actually reaches a scan: apply() reads knowledge.json's
+  # external_severity map, not the report file. Without it the measurement
+  # ran and changed nothing.
+  python - <<'MERGE'
+from arbiter.learn import Knowledge
+k = Knowledge.load(".arbiter/knowledge.json")
+n = k.merge_external_severity(".arbiter/external-severity.json")
+print(f"    merged {n} measured severities -> knowledge {k.save('.arbiter/knowledge.json')}")
+MERGE
 else
   echo "    no external analyzers installed — skipped"
 fi

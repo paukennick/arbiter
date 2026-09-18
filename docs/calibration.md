@@ -13,6 +13,10 @@ two.
 - [The nightly job](#the-nightly-job)
 - [Calibrating someone else's tool](#calibrating-someone-elses-tool)
 
+The constants this page relies on -- twenty observations, the ratio bands,
+the confidence interval -- are listed with how firmly each is held in
+[testing-parameters.md](testing-parameters.md).
+
 ---
 
 ## Offline learning, pinned execution

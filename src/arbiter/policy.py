@@ -83,7 +83,7 @@ def load_config(path: str | None, repo_root: str | None = None) -> dict:
         return dict(DEFAULTS)
     try:
         import yaml  # type: ignore
-        data = yaml.safe_load(candidate.read_text()) or {}
+        data = yaml.safe_load(candidate.read_text(encoding="utf-8")) or {}
     except Exception as exc:  # noqa: BLE001
         raise RuntimeError(f"could not read config {candidate}: {exc}") from exc
     if not isinstance(data, dict):
@@ -93,7 +93,7 @@ def load_config(path: str | None, repo_root: str | None = None) -> dict:
 
 def load_system(path: str) -> dict:
     import yaml  # type: ignore
-    data = yaml.safe_load(Path(path).read_text()) or {}
+    data = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
     if not isinstance(data, dict) or "repos" not in data:
         raise RuntimeError(f"{path} must be a mapping with a `repos` list")
     return data

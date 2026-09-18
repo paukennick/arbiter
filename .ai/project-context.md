@@ -879,3 +879,66 @@ setting, not a file, and the last ruleset here blocked a push earlier the same
 day. REQ-024 stays pending on that one point.
 
 **State.** 417 passed, 3 skipped, up from 410/3.
+
+## 2026-09-17 — Testing the reading, and testing the measurement (REQ-030)
+
+**What prompted it.** A question about whether the testing parameters were
+actually dialed in, and whether the self-testing was good enough for senior
+engineers to rely on routinely. The audit covered every measurement tool, the
+knowledge ledger, the 426-test suite and the whole bug history.
+
+**The finding that frames everything else.** The ledger holds 227,999
+synthetic observations across 27 rules and zero human verdicts.
+`calibrated_confidence()` reads only the adjudicated ledger and returns
+`None` below twenty observations, so no rule is proven and every confidence
+number a report prints is the rule author's guess. Nothing in this change
+touches that, and nothing automated can: a verdict has to come from someone
+looking at a real finding, `record()` makes a wrong mark permanent, and 162
+fix-pairs and 346 contested findings are already queued and waiting. The work
+here is about what the tool can check on its own.
+
+**Five causes, nineteen bugs.** Every historical defect that made Arbiter
+wrong about real code fell into one of: platform and path assumptions,
+encoding defaults, attribution that did not propagate, heuristic proxies with
+edges nobody had hit, and errors in the measurement code itself. Each had been
+fixed with a test for the one case that failed, which is why the missing
+`repo_id` had to be found three separate times (REQ-014, REQ-015, REQ-016) and
+why the path-separator assumption came back in REQ-029. The new tests state
+the property over the whole output of a scan instead, so a new probe or a new
+construction site is covered the day it is written.
+
+**Three defects the audit found, none of them reported by anything.**
+Fingerprints were not stable across platforms, which matters because
+adjudications are permanent and keyed by fingerprint -- a verdict recorded on
+one machine could never match the same finding on another. The nightly
+external-severity measurement wrote to a file nothing read, so 818 checks were
+measured every night and none of it reached a scan; merging the current report
+adds 110 checks that had no measured severity at all. And a severity table
+documented a band its own code cannot produce.
+
+**Two more the new tests found immediately.** Seven configuration reads used
+the platform default codec -- the same defect as REQ-009 and REQ-012, in call
+sites those fixes never touched. And `_is_binary` treated any NUL byte as
+binary, so every UTF-16 file was classified as data and never read; a
+credential in a file saved as "Unicode" was invisible. Headerless UTF-16 is
+still left as data deliberately, because telling it from a real binary means
+guessing and a wrong guess turns a binary into mojibake to scan.
+
+**One defect introduced and caught here.** Moving file reading from text to
+bytes is what made the byte-order-mark check possible, and it dropped Python's
+newline translation along with it, silencing six secret formats on every CRLF
+file. The existing suite caught it. The first test written to cover it did
+not, because it used an AWS key -- recognised by its own shape anywhere, so
+found with or without the carriage return. `tools/mutate_tests.py` reported
+that test as passing while the defect was present, which is the argument for
+that tool in one line: a test that has never failed is not evidence.
+
+**What was deliberately not done.** No threshold was retuned.
+`docs/testing-parameters.md` grades each one derived, reasoned or arbitrary,
+and most are arbitrary -- the honest grade for a number nobody has tested an
+alternative against. Changing any of them changes published evidence, so the
+table records them and leaves the decision alone. `MIN_OBSERVATIONS = 20` is
+the one worth attacking first, since it is currently the reason no rule in the
+tool is proven.
+
+

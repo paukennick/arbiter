@@ -266,6 +266,61 @@
           "The semgrep/bandit/checkov exclude lists are three separate fixed lists mirroring SKIP_DIRS rather than one shared source",
           "so they can still drift apart if SKIP_DIRS changes without all three adapters being updated to match -- same risk REQ-026 already noted for the first two"
         ]
+      },
+      {
+        "id": "REQ-030",
+        "title": "Test the scanner against reformulations of its own input, and test the measurement code",
+        "description": "An audit of every testing parameter and the whole bug history found nineteen shipped defects collapsing into five recurring root causes, each previously fixed with a fixture for the one case that failed: platform and path assumptions, encoding defaults, attribution propagation, heuristic proxies with unhandled edges, and bugs in the measurement code itself. Three live defects were found by the audit. (1) Finding.fingerprint() hashed location.path unnormalized, so the same finding had different identities on Windows and Linux; because adjudications are permanent and keyed by fingerprint, a verdict recorded on one platform could never match the other, and a baseline built on one reported everything as new on the other. Normalization moved to the Location boundary that all ~54 construction sites pass through. (2) tools/calibrate_external.py wrote measured severities to a report file while learn.apply() read a map inside knowledge.json, with no code path between them -- every nightly measurement of the external tools had been changing nothing, and the live map came from a one-off step that no longer exists. (3) calibrate_external.py documented a >=50x -> high band its own BANDS constant cannot produce. Two further defects were found by the new tests: seven config reads used the platform default codec, which on Windows mis-decodes silently rather than raising; and inventory._is_binary treated any NUL byte as binary, so every UTF-16 file was classified as data and never read at all.",
+        "priority": "high",
+        "status": "completed",
+        "minimum_access_scope": [
+          "src/arbiter/core.py",
+          "src/arbiter/inventory.py",
+          "src/arbiter/learn.py",
+          "src/arbiter/probes.py",
+          "src/arbiter/policy.py",
+          "src/arbiter/ab.py",
+          "src/arbiter/adapters.py",
+          "src/arbiter/controls.py",
+          "tests/conftest.py",
+          "tests/test_invariants.py",
+          "tests/test_metamorphic.py",
+          "tests/test_properties.py",
+          "tests/test_measurement.py",
+          "tools/mutate_tests.py",
+          "tools/train_cycle.sh",
+          "tools/calibrate_external.py",
+          "docs/testing-parameters.md",
+          ".github/workflows/pr-check.yml",
+          "pyproject.toml"
+        ],
+        "acceptance_criteria": [
+          "fingerprints are identical for backslash and forward-slash paths",
+          "no finding from any fixture scan carries a backslash absolute or escaping path",
+          "every finding in a multi-repo scan names a repository that exists",
+          "every text read and write under src names an explicit encoding",
+          "a credential is found under every tested encoding and syntactic carrier and placeholders are not reported",
+          "calibrated confidence is unmoved by synthetic volume at any scale",
+          "measured external severities reach apply() and ungraded checks are not stored",
+          "tools/mutate_tests.py reintroduces each defect and every corresponding test fails"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest tests/ -q",
+          "python tools/mutate_tests.py",
+          "python tools/integrity.py"
+        ],
+        "documentation_required": [
+          "docs/testing-parameters.md",
+          "CHANGELOG.md",
+          ".ai/project-context.md"
+        ],
+        "risk_notes": [
+          "The new tests run over committed fixtures rather than the cloned corpus",
+          "so they cover Arbiter's reading of code and not whether a rule's judgement matches a person's; that gap is the empty adjudicated ledger and only a reviewer can close it",
+          "Headerless UTF-16 is still classified as data rather than guessed at",
+          "which is deliberate but leaves those files unassessed",
+          "Most thresholds in docs/testing-parameters.md are graded arbitrary and remain unchanged; the published evidence is conditional on values nobody has tested an alternative against"
+        ]
       }
     ],
     "documentation": [],

@@ -11,6 +11,7 @@ silent pass.
 """
 from __future__ import annotations
 
+import codecs
 import math
 import os
 import re
@@ -111,6 +112,44 @@ def register(p: Probe) -> Probe:
 _READ_CACHE: dict[tuple[str, int, int], str] = {}
 _READ_CACHE_MAX = 20_000
 
+# Byte-order marks, longest first: the UTF-32 marks start with the UTF-16-LE
+# mark, so testing short-first would decode UTF-32-LE as UTF-16-LE.
+_BOMS = (
+    (codecs.BOM_UTF32_LE, "utf-32-le"),
+    (codecs.BOM_UTF32_BE, "utf-32-be"),
+    (codecs.BOM_UTF8, "utf-8-sig"),
+    (codecs.BOM_UTF16_LE, "utf-16-le"),
+    (codecs.BOM_UTF16_BE, "utf-16-be"),
+)
+
+
+def _decode(raw: bytes) -> str:
+    """Decode by declared byte-order mark, falling back to UTF-8.
+
+    Decoding everything as UTF-8 does not fail loudly on a UTF-16 file -- the
+    NUL between every character is a valid code point, so `errors="replace"`
+    yields `a\\x00w\\x00s\\x00...`, no pattern matches it, and the file is
+    reported clean rather than unread. A credential in a file saved as
+    "Unicode" by a Windows editor was invisible, which is the worst shape a
+    miss can take: a confident pass on a file that was never actually read.
+
+    Only a declared BOM is honoured. Guessing at headerless UTF-16 means
+    guessing about every file, and a wrong guess turns readable source into
+    mojibake; a file that declares nothing is still read as UTF-8.
+
+    Line endings are normalized because reading bytes does not do it and
+    `read_text` did: a pattern anchored at end of line sees a trailing `\\r`
+    on every CRLF file otherwise, which silenced six secret formats on
+    Windows the moment this function replaced `read_text`.
+    """
+    for bom, encoding in _BOMS:
+        if raw.startswith(bom):
+            text = raw.decode(encoding, errors="replace")
+            break
+    else:
+        text = raw.decode("utf-8", errors="replace")
+    return text.replace("\r\n", "\n").replace("\r", "\n")
+
 
 def _read(f) -> str:
     path = getattr(f, "abspath", "") or ""
@@ -123,7 +162,7 @@ def _read(f) -> str:
     if cached is not None:
         return cached
     try:
-        text = Path(path).read_text(encoding="utf-8", errors="replace")
+        text = _decode(Path(path).read_bytes())
     except OSError:
         text = ""
     if len(_READ_CACHE) >= _READ_CACHE_MAX:
@@ -504,7 +543,7 @@ def _load_resource_rules() -> list[dict]:
     path = PACKS / "rules" / "resource.yaml"
     try:
         import yaml  # type: ignore
-        data = yaml.safe_load(path.read_text())
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
         return data.get("rules", []) if isinstance(data, dict) else []
     except Exception:
         return []

@@ -444,7 +444,7 @@ def _scope_of(data: dict) -> str:
 
 
 def load_adapter(path: Path) -> Adapter:
-    data = tomllib.loads(path.read_text())
+    data = tomllib.loads(path.read_text(encoding="utf-8"))
     req = data.get("requires", {})
     inv = data.get("invoke", {})
     sel = data.get("selects", {})
