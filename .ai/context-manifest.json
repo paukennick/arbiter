@@ -12,7 +12,8 @@
     "context_brief": ".ai/context-brief.md",
     "playbooks": ".ai/playbooks/README.md",
     "checklists": ".ai/checklists/README.md",
-    "swebok": ".ai/knowledge/swebok/README.md"
+    "swebok": ".ai/knowledge/swebok/README.md",
+    "adapters": ".ai/adapters/README.md"
   },
   "project_context": ".ai/project-context.md",
   "context_profiles": {
@@ -71,7 +72,12 @@
     ".ai/rules/oop-design.json"
   ],
   "adapter_prompts": {
-    "generic_llm": ".ai/entrypoints/universal.md"
+    "generic_llm": ".ai/entrypoints/universal.md",
+    "local_model": ".ai/adapters/local-model.md",
+    "model_router": ".ai/adapters/model-router.md",
+    "openrouter": ".ai/adapters/openrouter.md",
+    "deepseek": ".ai/adapters/deepseek.md",
+    "kiro": ".ai/adapters/kiro.md"
   },
   "task_playbooks": {
     "planning": ".ai/playbooks/planning.md",
@@ -87,7 +93,8 @@
   "checklists": {
     "pre_implementation": ".ai/checklists/pre-implementation.md",
     "pre_completion": ".ai/checklists/pre-completion.md",
-    "security": ".ai/checklists/security.md"
+    "security": ".ai/checklists/security.md",
+    "public_release": ".ai/checklists/public-release.md"
   },
   "knowledge_packs": {
     "swebok": ".ai/knowledge/swebok/README.md"
@@ -109,5 +116,5 @@
       "Use .ai/.ignore to exclude sensitive or irrelevant paths."
     ]
   },
-  "note": "Scaffold assembled from local STEP-Migration copies of OmniEngineering (no pristine upstream on this machine). omni doctor is expected to report .ai/adapters/*, .ai/checklists/public-release.md, .ai/rules/fallback-llm-rules.json and .ai/rules/hci-ui-rules.json as missing until pulled from upstream; see .ai/project-configuration.md."
+  "note": "Resolved 2026-09-17 (REQ-028): .ai/adapters/*, .ai/checklists/public-release.md, .ai/rules/fallback-llm-rules.json and .ai/rules/hci-ui-rules.json were authored directly for arbiter rather than pulled from an OmniEngineering upstream, since no pristine upstream copy exists on this machine; see .ai/project-context.md."
 }

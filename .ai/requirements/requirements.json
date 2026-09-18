@@ -197,6 +197,43 @@
           "none -- test-only change",
           "no production code touched"
         ]
+      },
+      {
+        "id": "REQ-028",
+        "title": "Author the missing OmniEngineering adapter/checklist/rulepack files",
+        "description": "Ten files required by make_ai.py (seven .ai/adapters/ guides, the public-release checklist, and two rule packs: fallback-llm-rules.json, hci-ui-rules.json) were an accepted gap since REQ-001 because no OmniEngineering upstream was available locally. Authored them directly for arbiter instead, wired into .ai/context-manifest.json (indexes.adapters, adapter_prompts, checklists.public_release), and updated project-configuration.md/project-context.md to stop describing this as an open gap. Left the deliberately-not-installed non-Claude assistant pointer files and legal files (LICENSE/NOTICE/TRADEMARKS) untouched, since those remain intentional per project-configuration.md.",
+        "priority": "medium",
+        "status": "completed",
+        "minimum_access_scope": [
+          ".ai/adapters/",
+          ".ai/checklists/public-release.md",
+          ".ai/rules/fallback-llm-rules.json",
+          ".ai/rules/hci-ui-rules.json",
+          ".ai/context-manifest.json",
+          ".ai/project-configuration.md",
+          ".ai/project-context.md",
+          ".ai/checklists/README.md"
+        ],
+        "acceptance_criteria": [
+          "omni doctor reports 0 FAILs outside the documented non-Claude-pointer/legal-file set",
+          "omni sync proceeds past the required-files gate without writing the non-Claude pointer files",
+          "context-manifest.json's adapter_prompts and checklists keys reference every new file",
+          "rule packs validate against .ai/schemas/rulepack.schema.json"
+        ],
+        "validation_required": [
+          "python omni doctor",
+          "PYTHONPATH=src python -m pytest tests/ -q"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md",
+          ".ai/project-context.md",
+          ".ai/project-configuration.md"
+        ],
+        "risk_notes": [
+          "Content is arbiter-authored",
+          "not pulled from a pristine OmniEngineering upstream",
+          "so it may not match whatever that upstream eventually ships; review if/when one becomes available"
+        ]
       }
     ],
     "documentation": [],

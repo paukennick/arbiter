@@ -41,15 +41,17 @@ These settings correspond to the `configuration` block in
   module docstring). `omni doctor` checks this registration by actually
   building the server (`validate_mcp_server`), not just reading `.mcp.json`,
   because the `mcp` SDK's own shape has moved under this project before.
-- **Known `omni doctor` gaps.** The scaffold was assembled from local
-  STEP-Migration copies because no pristine OmniEngineering upstream is on
-  this machine. These required files do not exist in any local copy and are
-  expected to be reported missing until pulled from upstream:
-  `.ai/adapters/*` (6 files), `.ai/checklists/public-release.md`,
-  `.ai/rules/fallback-llm-rules.json`, `.ai/rules/hci-ui-rules.json`.
-  Because `omni sync` verifies required files before writing root shims, it
-  stops after regenerating `.ai/entrypoints/`; `CLAUDE.md` was written from
-  `make_ai.ASSISTANT_POINTERS` so it matches the generated content.
+- **Resolved `omni doctor` gap (REQ-028).** The scaffold was assembled from
+  local STEP-Migration copies because no pristine OmniEngineering upstream is
+  on this machine, and `.ai/adapters/*` (7 files), `.ai/checklists/public-
+  release.md`, `.ai/rules/fallback-llm-rules.json` and
+  `.ai/rules/hci-ui-rules.json` did not exist in any local copy — see
+  `.ai/project-context.md` for the REQ-001 history. Rather than continuing to
+  wait on an upstream that was never available, these were authored directly
+  for arbiter on 2026-09-17 and wired into `.ai/context-manifest.json`'s
+  `indexes`/`adapter_prompts`/`checklists` keys; they are arbiter-specific
+  content, not upstream material, and should be reviewed as such rather than
+  assumed to match whatever OmniEngineering upstream eventually ships.
   Doctor also FAILs on things deliberately not installed: the non-Claude
   pointer files (`LLM_CONTEXT.md`, `AGENTS.md`, `.cursorrules`,
   `.cursorignore`, `.github/copilot-instructions.md`,

@@ -53,11 +53,18 @@ registry, code-notes, archives and CUI-marked project history. Instead:
 - Context brief, manifest, configuration, this file and the requirements
   registry were written fresh for arbiter.
 
-**Known gaps.** `.ai/adapters/*`, `.ai/checklists/public-release.md`,
-`.ai/rules/fallback-llm-rules.json` and `.ai/rules/hci-ui-rules.json` are
-required by `make_ai.py` but exist in no local copy, so `omni doctor` reports
-them and `omni sync` stops before writing root shims. Pull them from the
-OmniEngineering upstream when it is available rather than inventing them.
+**Known gap, resolved 2026-09-17 (REQ-028).** `.ai/adapters/*`,
+`.ai/checklists/public-release.md`, `.ai/rules/fallback-llm-rules.json` and
+`.ai/rules/hci-ui-rules.json` were required by `make_ai.py` but existed in no
+local copy, so `omni doctor` reported them and `omni sync` stopped before
+writing root shims. No OmniEngineering upstream ever became available on this
+machine (checked both `~/dev/STEP-Migration` and
+`~/Documents/GitHub/STEP-Migration` again before writing these — neither has
+them), so they were authored directly for arbiter instead of continuing to
+wait: seven adapter guides, the public-release checklist (marked not
+applicable while arbiter stays proprietary), and two rule packs matching
+`.ai/schemas/rulepack.schema.json`. They are arbiter-specific, not upstream
+content, and are wired into `.ai/context-manifest.json`.
 
 **Headroom.** `headroom init claude` (headroom-ai 0.37.0, installed in the
 STEP-Migration venv and exposed on PATH via `WindowsApps\headroom.cmd`) wrote
