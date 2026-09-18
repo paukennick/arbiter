@@ -1096,12 +1096,16 @@ def test_same_inputs_produce_identical_findings(tmp_path):
     assert len({r.learning["knowledge_version"] for r in runs}) == 1
 
 
-def test_adaptive_thresholds_respect_a_floor():
+def test_adaptive_thresholds_respect_a_floor_and_a_ceiling():
     from arbiter.learn import adaptive_threshold, build_profile
     tiny = build_profile([2.0] * 200)        # a codebase of two-line functions
     assert adaptive_threshold(tiny, 120, "p95", 40) == 40, "cannot tighten below the floor"
     huge = build_profile([400.0] * 200)      # uniformly enormous functions
-    assert adaptive_threshold(huge, 120, "p95", 40) == 400
+    # Asserted == 400 until 2026-09-18, which encoded the defect as the
+    # contract: a codebase of uniformly 400-line functions was allowed to move
+    # a configured limit of 120 up to 400 and report nothing. The configured
+    # value is a ceiling now, so adaptive tightens and never loosens.
+    assert adaptive_threshold(huge, 120, "p95", 40) == 120
 
 
 def test_adaptive_thresholds_ignore_thin_distributions():

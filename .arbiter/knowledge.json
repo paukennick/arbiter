@@ -180,7 +180,18 @@
     "semgrep/yaml.kubernetes.security.allow-privilege-escalation.allow-privilege-escalation": "medium",
     "semgrep/yaml.kubernetes.security.run-as-non-root.run-as-non-root": "info"
   },
-  "profiles": {},
+  "profiles": {
+    "arbiter": {
+      "file_lines": {
+        "max": 2032.0,
+        "median": 267.0,
+        "n": 60,
+        "p90": 763.0,
+        "p95": 1066.0,
+        "p99": 2032.0
+      }
+    }
+  },
   "rules": {
     "arbiter/drift.broken-doc-link": {
       "false_positives": 0,
@@ -751,6 +762,6 @@
     }
   },
   "schema_version": 2,
-  "updated": "2026-09-17T14:33:01+00:00",
-  "version": "k:2b2bbb166445"
+  "updated": "2026-09-18T11:34:24+00:00",
+  "version": "k:bc9c7897df3e"
 }

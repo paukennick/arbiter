@@ -57,6 +57,60 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   project before (`23bc43e`, same day) and a static check would not have
   caught that. (REQ-025)
 
+### 2026-09-18
+
+- Turned on adaptive quality thresholds and gave them somewhere to live. The
+  mechanism was already written -- `metrics_from_inventory`,
+  `adaptive_threshold`, `resolve_quality_config` -- and had never run: it was
+  gated behind a `quality.adaptive` flag set nowhere, and the distributions it
+  produced were computed fresh on every scan, used, and discarded. The
+  `profiles` store in `knowledge.json` was empty. `arbiter profile` now learns
+  a repository's distributions and pins them, and a scan prefers the learned
+  profile over one measured from the code it is judging. Enabled in this
+  repository's `arbiter.yaml` rather than in the shipped defaults, because
+  flipping the default would move every existing user's thresholds without
+  them asking. (REQ-031)
+- Made writing a profile a separate command from scanning, on purpose.
+  Profiles decide which findings a scan reports, so they are part of the
+  knowledge version; a scan that stored one would move the hash it had just
+  recorded into its own report, and `--pin-knowledge` would then fail against
+  a ledger the pinned run itself produced. Reports now carry
+  `learning.profile_source`, which reads `learned` when the thresholds came
+  from the pinned ledger and `measured` when they came from that run's own
+  inventory -- the numbers look identical either way, which is why the field
+  exists. (REQ-031)
+- Fixed the profile key before it shipped. The first version keyed profiles on
+  the scan's repository id, which is the literal string `root` for any
+  single-target scan -- so a profile written by `arbiter profile` under the
+  directory name was never found again, and every repository scanned on its
+  own would have shared one entry with whichever was profiled first setting
+  the thresholds for all of them. Caught because the verification scan
+  reported `profile_source: measured` with a learned profile sitting in the
+  ledger. (REQ-031)
+- Bounded the adaptive threshold from above, which is what makes it safe to
+  turn on. As first written it was `max(p95, floor)` -- a floor but no
+  ceiling, so the configured limit was not a bound at all and this
+  repository's own `max_file_lines: 900` became 1066, silencing three real
+  findings at 954, 975 and 1066 lines. Worse, the rule was scale-equivariant:
+  multiplying every file by ten multiplied the threshold by ten and left the
+  same two files flagged, where the fixed threshold would have gone from 5
+  findings to 42, so uniform decay was invisible by construction. The
+  configured value now caps the result and adaptive can only tighten. The
+  asymmetry is deliberate -- bootstrapping p95 from this repository's 60 files
+  gives a 90% interval of [664, 2032], and an estimate that loose can be
+  trusted to fail closed but not to fail open. The test named for this
+  property had asserted only `>= floor`, which a threshold of 50,000 satisfies;
+  `tools/mutate_tests.py` now removes the cap and requires the test to fail.
+  (REQ-031)
+- Added `docs/proposal-usage-learning.md`: a proposal, not an implementation,
+  for learning from the signal ordinary use already produces -- suppressions,
+  their stated reasons, findings that persist across scans, and findings that
+  get fixed. It argues against reaching for a graph or relational store, since
+  the constraint is not capacity but that the ledger has to stay content-
+  hashed and pinnable, and argues that the sequencing matters: with the
+  adjudicated ledger still empty, a weak signal nobody can calibrate against
+  is how a tool starts grading itself on a curve.
+
 ### 2026-09-17
 
 - Started testing the scanner against reformulations of its own input, and

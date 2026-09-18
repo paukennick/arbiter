@@ -141,13 +141,14 @@ knowledge file and preserves reproducibility:
 ```yaml
 quality:
   adaptive: true
-  max_file_lines: 900       # the floor, still enforced
+  max_file_lines: 900       # the ceiling: adaptive may tighten, never loosen
   max_function_lines: 140
 ```
 
 File length, function length and complexity limits are drawn from that
-codebase's own p95, with a floor so a uniformly bad codebase cannot normalize
-its way to a clean report:
+codebase's own p95, bounded above by the configured value so adaptive can only
+tighten, and below by a floor so a very terse codebase is not held to a
+threshold too strict to mean anything:
 
 ```text
 file_lines      n=30   median=143  p95=795

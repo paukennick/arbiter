@@ -16,7 +16,7 @@ from .ab import (
     Arm, arm_from_dict, load_ab_spec, render_ab_console, render_ab_html, run_ab,
 )
 from .adapters import register_adapters
-from .core import Report
+from .core import RepoInfo, Report
 from .engine import run_scan, write_baseline
 from .policy import PROFILES, load_config
 from .probes import REGISTRY, ProbeContext
@@ -135,6 +135,14 @@ def build_parser() -> argparse.ArgumentParser:
     ln.add_argument("--knowledge", help="knowledge file (default .arbiter/knowledge.json)")
     ln.add_argument("--target", type=float, default=1e-6,
                     help="error rate you want to claim, for the sample-size column")
+
+    pf = sub.add_parser("profile",
+                        help="learn a repository's metric distributions so quality "
+                             "thresholds fit it, and pin them")
+    pf.add_argument("path", nargs="?", default=".", help="repository to profile")
+    pf.add_argument("--knowledge", help="knowledge file (default .arbiter/knowledge.json)")
+    pf.add_argument("--show", action="store_true",
+                    help="print what would be learned without writing it")
 
     vf = sub.add_parser("verify", help="check a report's claims against their basis")
     vf.add_argument("report", nargs="?", default="arbiter-out/report.json")
@@ -542,6 +550,47 @@ def cmd_feedback(args) -> int:
     print(f"  knowledge version now {version}")
     print("  scans pick this up on the next run; pin it with --pin-knowledge to freeze\n")
     return EXIT_OK if not unknown else EXIT_ERROR
+
+
+def cmd_profile(args) -> int:
+    """Learn one repository's metric distributions and pin them.
+
+    Deliberately separate from `scan`. These distributions decide quality
+    thresholds, so they change which findings a scan reports; if a scan wrote
+    them it would move the knowledge version it had just recorded, and a
+    pinned run would fail against a ledger its own execution produced.
+    """
+    from .inventory import build_inventory
+    from .learn import Knowledge, learn_profiles, metrics_from_inventory, profile_key
+
+    inv = build_inventory([RepoInfo(id=Path(args.path).resolve().name, path=args.path)])
+    metrics = metrics_from_inventory(inv)
+    repo_id = profile_key(args.path)
+
+    if not any(metrics.values()):
+        print(f"\n  Nothing to profile in {args.path}: no source files were read.\n")
+        return EXIT_OK
+
+    print(f"\n  {repo_id}")
+    for name, dist in metrics.items():
+        if not dist:
+            continue
+        enough = "" if dist["n"] >= 30 else "   (under 30 samples: the fixed threshold is kept)"
+        print(f"    {name:16} n={dist['n']:<6} median={dist['median']:<8.0f}"
+              f" p95={dist['p95']:<8.0f} max={dist['max']:.0f}{enough}")
+
+    if args.show:
+        print("\n  --show: nothing was written.\n")
+        return EXIT_OK
+
+    knowledge = Knowledge.load(args.knowledge)
+    before = knowledge.version_hash()
+    learn_profiles(knowledge, repo_id, metrics)
+    after = knowledge.save(args.knowledge)
+    print(f"\n  knowledge {before} -> {after}")
+    print("  Thresholds for this repository are now drawn from the ledger rather than")
+    print("  from each run's own inventory. Any pinned scan must be re-pinned.\n")
+    return EXIT_OK
 
 
 def cmd_learn(args) -> int:
@@ -978,6 +1027,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_feedback(args)
         if args.cmd == "learn":
             return cmd_learn(args)
+        if args.cmd == "profile":
+            return cmd_profile(args)
         if args.cmd == "review":
             return cmd_review(args)
         if args.cmd == "controls":
