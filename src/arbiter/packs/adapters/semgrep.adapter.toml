@@ -41,7 +41,27 @@ timeout = 600
 # absolute path regardless of cwd, so this changes nothing about what gets
 # scanned or how results map back to files.
 cwd = "{cache}"
+# `--exclude` mirrors inventory.SKIP_DIRS, the same list bandit's `-x` and
+# checkov's `--skip-path` already carry (see those adapters' comments):
+# semgrep walks `{workdir}` with its own traversal, separate from Arbiter's
+# native inventory, so nothing above stopped it reading a vendored `.venv`
+# or `node_modules` tree and reporting on someone else's code as first-party.
+# `--exclude` takes a gitignore-style pattern, so a bare name (unlike
+# bandit's `-x`, which needs a `*/name/*` glob) already matches at any depth.
+# `cdk.out*` is excluded for the same reason bandit excludes it and checkov
+# does not: none of the rulesets below understand CloudFormation templates,
+# so the only thing semgrep would find inside a synthesized output tree is
+# noise from the Lambda asset bundles' vendored third-party dependencies.
 argv = ["semgrep", "scan", "--json", "--quiet",
+        "--exclude", ".git", "--exclude", ".hg", "--exclude", ".svn",
+        "--exclude", "node_modules", "--exclude", ".venv", "--exclude", "venv",
+        "--exclude", "__pycache__", "--exclude", ".mypy_cache",
+        "--exclude", ".pytest_cache", "--exclude", ".ruff_cache",
+        "--exclude", ".terraform", "--exclude", ".tox",
+        "--exclude", "site-packages", "--exclude", ".next", "--exclude", ".nuxt",
+        "--exclude", ".gradle", "--exclude", ".idea", "--exclude", ".vscode",
+        "--exclude", "vendor", "--exclude", "target", "--exclude", ".arbiter",
+        "--exclude", "cdk.out*",
         "--config", "semgrep-rules/terraform",
         "--config", "semgrep-rules/yaml/kubernetes",
         "--config", "semgrep-rules/yaml/docker-compose",

@@ -234,6 +234,38 @@
           "not pulled from a pristine OmniEngineering upstream",
           "so it may not match whatever that upstream eventually ships; review if/when one becomes available"
         ]
+      },
+      {
+        "id": "REQ-029",
+        "title": "Fix adapter output paths and scan scope that broke on Windows and outside the fixture corpus",
+        "description": "Four related gaps surfaced by continuing REQ-026's cross-repo scanning work. (1) gitleaks has no write-JSON-to-stdout mode; --report-path took the conventional '-' literally, creating a file named '-' inside {workdir} (the repo being scanned, since the adapter never set cwd) full of gitleaks' own JSON output -- itself full of strings shaped like the secrets it exists to find -- for the next scan of any repo to read as content. Adapter.invoke() now substitutes a private temp path for a '{report_file}' placeholder, reads it back after the process exits, and deletes it in a finally block. (2) checkov and bandit hand back backslash-separated relative paths on Windows -- checkov's own output even starts with a bare leading backslash -- but every suppress-rule glob and Location.path in this codebase assumes '/', so path-based rules silently matched zero Windows findings from either tool; Adapter now normalizes backslashes to '/' before the existing './' stripping. (3) REQ-026 gave bandit and checkov exclusions mirroring inventory.SKIP_DIRS but flagged in its own risk_notes that semgrep, which walks {workdir} with its own traversal same as the other two, was not covered; semgrep.adapter.toml now carries the same --exclude list plus a cdk.out* pattern, for the same reason as bandit: none of its configured rulesets understand CloudFormation templates. (4) SKIP_DIRS is a fixed name list and can never cover a fresh arbiter-out/ (or any other untracked, .gitignore-matched directory) left over from a previous run under whatever --out name was given that time; walk_repo now also excludes whatever git itself calls untracked-and-ignored via 'git ls-files --others --ignored --exclude-standard --directory', which is the same plumbing incremental.py already uses for changed-file detection.",
+        "priority": "high",
+        "status": "completed",
+        "minimum_access_scope": [
+          "src/arbiter/adapters.py",
+          "src/arbiter/inventory.py",
+          "src/arbiter/packs/adapters/gitleaks.adapter.toml",
+          "src/arbiter/packs/adapters/semgrep.adapter.toml",
+          "tests/test_arbiter.py"
+        ],
+        "acceptance_criteria": [
+          "Adapter.invoke substitutes {report_file} with a private temp path for tools that require a real output filename",
+          "reads it back",
+          "and always deletes it",
+          "Windows-style backslash paths from any adapter are normalized to forward slashes before suppress-rule matching",
+          "semgrep is invoked with the same exclusion list as bandit/checkov plus cdk.out*",
+          "walk_repo additionally excludes paths git itself reports as untracked and ignored"
+        ],
+        "validation_required": [
+          "PYTHONPATH=src python -m pytest tests/ -q is 423 passed 3 skipped 0 failed"
+        ],
+        "documentation_required": [
+          "CHANGELOG.md"
+        ],
+        "risk_notes": [
+          "The semgrep/bandit/checkov exclude lists are three separate fixed lists mirroring SKIP_DIRS rather than one shared source",
+          "so they can still drift apart if SKIP_DIRS changes without all three adapters being updated to match -- same risk REQ-026 already noted for the first two"
+        ]
       }
     ],
     "documentation": [],

@@ -146,18 +146,57 @@ def classify(rel: str, language: str) -> str:
     return "source"
 
 
+def _gitignored(root: Path) -> tuple[set[str], set[str]]:
+    """Paths git itself calls both untracked and ignored, split dirs from files.
+
+    Only untracked-and-ignored: a file force-added despite matching a later
+    pattern is still tracked, so git omits it here and this still scans it as
+    a deliberate exception. Same plumbing incremental.py already calls for
+    changed-file detection -- this is git answering "is this actually part of
+    the project" rather than Arbiter guessing from directory names, and it is
+    what a static SKIP_DIRS list can never cover: a fresh `arbiter-out/` from
+    an uncleaned previous run, under whatever name `--out` was given that
+    time, is untracked and `.gitignore`-matched without ever being named here.
+    `--directory` reports a fully-ignored directory as one trailing-slash
+    entry instead of walking every file inside it; a directory with a mix of
+    tracked and ignored content can't collapse that way, so its ignored files
+    still come back individually and are handled at the file-name check below.
+    """
+    try:
+        r = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "--others", "--ignored",
+             "--exclude-standard", "--directory", "-z"],
+            capture_output=True, timeout=10)
+    except (OSError, subprocess.TimeoutExpired):
+        return set(), set()
+    if r.returncode != 0:
+        return set(), set()
+    dirs: set[str] = set()
+    files: set[str] = set()
+    for entry in r.stdout.decode("utf-8", errors="replace").split("\0"):
+        if not entry:
+            continue
+        if entry.endswith("/"):
+            dirs.add(str((root / entry[:-1]).resolve()))
+        else:
+            files.add(entry)
+    return dirs, files
+
+
 def walk_repo(root: Path, repo_id: str, exclude: set[str] | None = None) -> list[FileInfo]:
     out: list[FileInfo] = []
     root = root.resolve()
     # Resolved, because the caller passes the output directory as it was typed
     # and `arbiter-out` is relative to the working directory, not to the root.
     excluded = {str(Path(p).resolve()) for p in (exclude or ())}
+    ignored_dirs, ignored_files = _gitignored(root)
     for dirpath, dirnames, filenames in os.walk(root):
         # .git is skipped; .github is emphatically not — CI config is a target.
         dirnames[:] = [
             d for d in dirnames
             if d not in SKIP_DIRS
             and str((Path(dirpath) / d).resolve()) not in excluded
+            and str((Path(dirpath) / d).resolve()) not in ignored_dirs
         ]
         for name in filenames:
             ap = Path(dirpath) / name
@@ -166,6 +205,8 @@ def walk_repo(root: Path, repo_id: str, exclude: set[str] | None = None) -> list
             except OSError:
                 continue
             rel = str(ap.relative_to(root)).replace(os.sep, "/")
+            if rel in ignored_files:
+                continue
             ext = ap.suffix
             language = LANG_BY_EXT.get(ext, LANG_BY_EXT.get(ext.lower(), "unknown"))
             if name in ("Dockerfile", "Containerfile") or name.startswith("Dockerfile."):

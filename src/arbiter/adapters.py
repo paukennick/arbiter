@@ -14,6 +14,7 @@ import os
 import re
 import shutil
 import subprocess
+import tempfile
 import time
 import tomllib
 from dataclasses import dataclass, field
@@ -169,7 +170,24 @@ class Adapter:
         Starting the tool in its own process group and signalling the group is
         what makes the timeout mean what it says.
         """
+        # `{report_file}` is for a tool that has no "write JSON to stdout"
+        # mode at all -- gitleaks' `--report-path` takes only a real filename,
+        # unlike bandit/checkov/ruff/semgrep, which default to stdout. Giving
+        # it the conventional `-` did not mean stdout to this tool: it created
+        # a file *literally named* `-` inside the repository being scanned,
+        # where gitleaks' own JSON output (full of strings that look exactly
+        # like the secrets it exists to find) sat as content for the next
+        # scan to read -- of any repo, not just this one, since the adapter
+        # never set `cwd` and `invoke()`'s default is `{workdir}`. A private
+        # temp path here, read back after the process exits, is what "connect
+        # this tool's output to Arbiter" has to mean for one that insists on
+        # a real file.
+        report_file = None
+        if any("{report_file}" in a for a in self.argv):
+            fd, report_file = tempfile.mkstemp(prefix="arbiter-report-", suffix=".json")
+            os.close(fd)
         argv = [a.replace("{workdir}", workdir).replace("{cache}", str(cache_dir()))
+                .replace("{report_file}", report_file or "")
                 for a in self.argv]
         if argv:
             # On Windows, Popen(shell=False) calls CreateProcess directly,
@@ -209,10 +227,18 @@ class Adapter:
         )
         try:
             out, _err = proc.communicate(timeout=self.timeout)
+            if report_file:
+                try:
+                    out = Path(report_file).read_text(encoding="utf-8", errors="replace")
+                except OSError:
+                    pass  # tool crashed before writing it; stdout/stderr already tell that story
             return out, proc.returncode
         except BaseException:
             self._kill_group(proc)
             raise
+        finally:
+            if report_file:
+                Path(report_file).unlink(missing_ok=True)
 
     @staticmethod
     def _kill_group(proc: "subprocess.Popen") -> None:
@@ -328,6 +354,13 @@ class Adapter:
             path = str(dig(row, m.get("path", ""), "") or "")
             if path.startswith(workdir):
                 path = os.path.relpath(path, workdir)
+            # Tools invoked on Windows (checkov, bandit) hand back a
+            # backslash-separated path -- checkov's own relative output even
+            # starts with a bare leading backslash. Every suppress-rule glob
+            # and every other Location.path in this codebase assumes "/", so
+            # a rule like `path: "fixtures/**"` silently matched zero Windows
+            # findings from either tool without this.
+            path = path.replace("\\", "/")
             # removeprefix, not lstrip: lstrip("./") eats the dot in ".github"
             while path.startswith("./"):
                 path = path[2:]

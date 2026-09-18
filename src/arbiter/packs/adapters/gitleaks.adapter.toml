@@ -12,7 +12,12 @@ network = false
 timeout = 300
 
 [invoke]
-argv = ["gitleaks", "detect", "--no-git", "--no-banner", "--report-format", "json", "--report-path", "-", "-s", "{workdir}"]
+# `--report-path` takes a real filename; gitleaks has no "write JSON to
+# stdout" mode, and passing it the conventional `-` does not ask for one --
+# it creates a file literally named `-`. `{report_file}` gives it a private
+# temp path instead, which `Adapter.invoke()` reads back after the process
+# exits and deletes afterward.
+argv = ["gitleaks", "detect", "--no-git", "--no-banner", "--report-format", "json", "--report-path", "{report_file}", "-s", "{workdir}"]
 version_argv = ["gitleaks", "version"]
 parse = "json"
 ok_exit = [0, 1]

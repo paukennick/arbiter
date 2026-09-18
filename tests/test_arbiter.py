@@ -2276,6 +2276,32 @@ def test_adapter_still_returns_output_normally(tmp_path):
     assert code == 0 and "x" in out
 
 
+def test_adapter_reads_a_tool_that_only_writes_a_report_file(tmp_path):
+    """gitleaks has no "write JSON to stdout" mode; `--report-path` takes only
+    a real filename, and the conventional `-` does not mean stdout to it -- it
+    creates a file literally named `-` inside whatever `cwd` the adapter used,
+    which for a bare `{workdir}` default is the repository being scanned. Any
+    tool shaped that way gets a private temp path substituted for
+    `{report_file}`, read back once the process exits."""
+    from arbiter.adapters import Adapter
+    a = Adapter(name="t", argv=["sh", "-c", 'echo \'{"x":1}\' > "$1"', "_", "{report_file}"],
+                timeout=10)
+    out, code = a.invoke(str(tmp_path))
+    assert code == 0
+    assert "x" in out
+    # Nothing named after the placeholder, or otherwise, is left behind in
+    # the scanned directory or anywhere else findable by a later scan.
+    assert not any(tmp_path.iterdir())
+
+
+def test_adapter_report_file_is_cleaned_up_even_when_the_tool_never_writes_it(tmp_path):
+    from arbiter.adapters import Adapter
+    a = Adapter(name="t", argv=["sh", "-c", "exit 1", "_", "{report_file}"], timeout=10)
+    out, code = a.invoke(str(tmp_path))
+    assert code == 1
+    assert out == ""
+
+
 def test_worklist_flags_a_control_mapped_to_a_check_that_never_fires(tmp_path):
     """A control whose every covering check never fires reads as SATISFIED
     forever, in a compliance report, on any codebase. A permanent pass is the

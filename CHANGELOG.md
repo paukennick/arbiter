@@ -57,6 +57,34 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   project before (`23bc43e`, same day) and a static check would not have
   caught that. (REQ-025)
 
+### 2026-09-17
+
+- Fixed four related gaps in how adapters read tool output and what they
+  scan, found while continuing REQ-026's cross-repo scanning work. gitleaks
+  has no write-JSON-to-stdout mode; `--report-path` took the conventional
+  `-` literally, creating a file named `-` inside the repo being scanned (the
+  adapter never set `cwd`, so `{workdir}` was the default) full of gitleaks'
+  own JSON output for the next scan of any repo to read as content ---
+  `Adapter.invoke()` now substitutes a private temp path for a
+  `{report_file}` placeholder, reads it back once the process exits, and
+  deletes it in a `finally` block. checkov and bandit hand back
+  backslash-separated relative paths on Windows --- checkov's own output even
+  starts with a bare leading backslash --- but every suppress-rule glob and
+  `Location.path` in this codebase assumes `/`, so path-based rules silently
+  matched zero Windows findings from either tool; adapter output is now
+  normalized to forward slashes before that matching. REQ-026's own risk
+  notes flagged that its bandit/checkov exclusions, mirroring
+  `inventory.SKIP_DIRS`, left semgrep uncovered even though it walks
+  `{workdir}` with the same independent traversal; semgrep now carries the
+  same exclusion list plus a `cdk.out*` pattern, since none of its configured
+  rulesets understand CloudFormation templates either. Finally, `SKIP_DIRS`
+  is a fixed name list that can never cover a fresh `arbiter-out/` (or any
+  other untracked, `.gitignore`-matched directory) left over from a previous
+  run under whatever `--out` name was given that time; `walk_repo` now also
+  excludes whatever `git ls-files --others --ignored --exclude-standard
+  --directory` reports, the same plumbing `incremental.py` already uses for
+  changed-file detection. (REQ-029)
+
 ### 2026-09-14
 
 - Ran the test suite on Windows in CI, and made the Windows-only code paths
