@@ -2685,28 +2685,6 @@
       "only": "checkov"
     },
     {
-      "id": "f:0235c5c1d811",
-      "rule": "checkov/CKV2_K8S_1",
-      "title": "RoleBinding should not allow privilege escalation to a ServiceAccount or Node on other RoleBinding",
-      "severity": "medium",
-      "family": "privilege",
-      "where": "infrastructure/helm-tiller/pwnchart/templates/clusterrolebinding.yaml:3",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
-    },
-    {
-      "id": "f:f7d5f4797424",
-      "rule": "checkov/CKV2_K8S_4",
-      "title": "ServiceAccounts and nodes that can modify services/status may set the `status.loadBalancer.ingress.ip` field to exploit ",
-      "severity": "medium",
-      "family": "public-access",
-      "where": "infrastructure/helm-tiller/pwnchart/templates/clusterrolebinding.yaml:3",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
-    },
-    {
       "id": "f:0a490355569b",
       "rule": "checkov/CKV2_K8S_5",
       "title": "No ServiceAccount/Node should be able to read all secrets",
@@ -2723,6 +2701,28 @@
       "title": "Granting `create` permissions to `nodes/proxy` or `pods/exec` sub resources allows potential privilege escalation",
       "severity": "medium",
       "family": "privilege",
+      "where": "infrastructure/helm-tiller/pwnchart/templates/clusterrolebinding.yaml:3",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
+      "id": "f:0235c5c1d811",
+      "rule": "checkov/CKV2_K8S_1",
+      "title": "RoleBinding should not allow privilege escalation to a ServiceAccount or Node on other RoleBinding",
+      "severity": "medium",
+      "family": "privilege",
+      "where": "infrastructure/helm-tiller/pwnchart/templates/clusterrolebinding.yaml:3",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
+      "id": "f:f7d5f4797424",
+      "rule": "checkov/CKV2_K8S_4",
+      "title": "ServiceAccounts and nodes that can modify services/status may set the `status.loadBalancer.ingress.ip` field to exploit ",
+      "severity": "medium",
+      "family": "public-access",
       "where": "infrastructure/helm-tiller/pwnchart/templates/clusterrolebinding.yaml:3",
       "tool": "checkov",
       "other_side": [],
