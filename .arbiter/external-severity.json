@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated": "2026-09-21T16:14:26Z",
+  "generated": "2026-09-22T14:48:50Z",
   "repos_scanned": 41,
   "repos_timed_out": [],
   "repos_failed": [],
@@ -9239,7 +9239,7 @@
       "tool": "semgrep",
       "title": "User controlled data in methods like `innerHTML`, `outerHTML` or `document.write` is an anti-pattern that can lead to XS",
       "clean_hits": 2,
-      "vulnerable_hits": 17,
+      "vulnerable_hits": 15,
       "example_hits": 0,
       "languages": [
         "javascript",
@@ -9248,7 +9248,7 @@
       "repos_seen": 8,
       "clean_kloc": 179.2,
       "vulnerable_kloc": 175.7,
-      "ratio": 8.67,
+      "ratio": 7.65,
       "severity": "low",
       "basis": "measured"
     },
@@ -9256,7 +9256,7 @@
       "tool": "semgrep",
       "title": "User controlled data in a `li.innerHTML` is an anti-pattern that can lead to XSS vulnerabilities",
       "clean_hits": 2,
-      "vulnerable_hits": 17,
+      "vulnerable_hits": 15,
       "example_hits": 0,
       "languages": [
         "javascript",
@@ -9265,7 +9265,7 @@
       "repos_seen": 8,
       "clean_kloc": 179.2,
       "vulnerable_kloc": 175.7,
-      "ratio": 8.67,
+      "ratio": 7.65,
       "severity": "low",
       "basis": "measured"
     },
@@ -9288,22 +9288,6 @@
     "semgrep/semgrep-rules.javascript.browser.security.raw-html-concat": {
       "tool": "semgrep",
       "title": "User controlled data in a HTML string may result in XSS",
-      "clean_hits": 0,
-      "vulnerable_hits": 1,
-      "example_hits": 0,
-      "languages": [
-        "javascript"
-      ],
-      "repos_seen": 1,
-      "clean_kloc": 23.0,
-      "vulnerable_kloc": 112.2,
-      "ratio": "inf",
-      "severity": null,
-      "basis": "insufficient-observations"
-    },
-    "semgrep/semgrep-rules.javascript.browser.security.wildcard-postmessage-configuration": {
-      "tool": "semgrep",
-      "title": "The target origin of the window.postMessage() API is set to \"*\". This could allow for information disclosure due to the ",
       "clean_hits": 0,
       "vulnerable_hits": 1,
       "example_hits": 0,
@@ -9752,22 +9736,6 @@
       "severity": null,
       "basis": "insufficient-observations"
     },
-    "semgrep/semgrep-rules.javascript.lang.best-practice.javascript-prompt": {
-      "tool": "semgrep",
-      "title": "found prompt() call; should this be in production code?",
-      "clean_hits": 0,
-      "vulnerable_hits": 1,
-      "example_hits": 0,
-      "languages": [
-        "javascript"
-      ],
-      "repos_seen": 1,
-      "clean_kloc": 23.0,
-      "vulnerable_kloc": 112.2,
-      "ratio": "inf",
-      "severity": null,
-      "basis": "insufficient-observations"
-    },
     "semgrep/semgrep-rules.javascript.lang.best-practice.lazy-load-module": {
       "tool": "semgrep",
       "title": "Lazy loading can complicate code bundling if care is not taken, also `require`s are run synchronously by Node.js. If the",
@@ -9787,9 +9755,9 @@
     },
     "semgrep/semgrep-rules.javascript.lang.correctness.eqeq-is-bad": {
       "tool": "semgrep",
-      "title": "Detected a useless comparison operation `timer == timer` or `timer != timer`. This operation is always true. If testing ",
+      "title": "Detected a useless comparison operation `r == r` or `r != r`. This operation is always true. If testing for floating poi",
       "clean_hits": 0,
-      "vulnerable_hits": 2,
+      "vulnerable_hits": 1,
       "example_hits": 0,
       "languages": [
         "javascript"
@@ -9855,16 +9823,16 @@
       "tool": "semgrep",
       "title": "`const` is assigned twice; the first assignment is useless",
       "clean_hits": 1,
-      "vulnerable_hits": 13,
+      "vulnerable_hits": 11,
       "example_hits": 7,
       "languages": [
         "javascript",
         "typescript"
       ],
-      "repos_seen": 9,
+      "repos_seen": 8,
       "clean_kloc": 179.2,
       "vulnerable_kloc": 175.7,
-      "ratio": 13.26,
+      "ratio": 11.22,
       "severity": "medium",
       "basis": "measured"
     },
@@ -9904,9 +9872,9 @@
     },
     "semgrep/semgrep-rules.javascript.lang.security.audit.detect-non-literal-regexp": {
       "tool": "semgrep",
-      "title": "RegExp() called with a `component` function argument, this might allow an attacker to cause a Regular Expression Denial-",
+      "title": "RegExp() called with a `$` function argument, this might allow an attacker to cause a Regular Expression Denial-of-Servi",
       "clean_hits": 13,
-      "vulnerable_hits": 12,
+      "vulnerable_hits": 10,
       "example_hits": 3,
       "languages": [
         "javascript",
@@ -9915,7 +9883,7 @@
       "repos_seen": 10,
       "clean_kloc": 179.2,
       "vulnerable_kloc": 175.7,
-      "ratio": 0.94,
+      "ratio": 0.78,
       "severity": "info",
       "basis": "measured"
     },
@@ -10000,22 +9968,6 @@
       "severity": null,
       "basis": "insufficient-observations"
     },
-    "semgrep/semgrep-rules.javascript.lang.security.audit.prototype-pollution.prototype-pollution-assignment": {
-      "tool": "semgrep",
-      "title": "Possibility of prototype polluting assignment detected. By adding or modifying attributes of an object prototype, it is ",
-      "clean_hits": 0,
-      "vulnerable_hits": 1,
-      "example_hits": 0,
-      "languages": [
-        "javascript"
-      ],
-      "repos_seen": 1,
-      "clean_kloc": 23.0,
-      "vulnerable_kloc": 112.2,
-      "ratio": "inf",
-      "severity": null,
-      "basis": "insufficient-observations"
-    },
     "semgrep/semgrep-rules.javascript.lang.security.audit.prototype-pollution.prototype-pollution-loop": {
       "tool": "semgrep",
       "title": "Possibility of prototype polluting function detected. By adding or modifying attributes of an object prototype, it is po",
@@ -10053,7 +10005,7 @@
       "tool": "semgrep",
       "title": "Using non-static data to retrieve and run functions from the object is dangerous. If the data is user-controlled, it may",
       "clean_hits": 4,
-      "vulnerable_hits": 21,
+      "vulnerable_hits": 20,
       "example_hits": 0,
       "languages": [
         "javascript",
@@ -10062,7 +10014,7 @@
       "repos_seen": 7,
       "clean_kloc": 179.2,
       "vulnerable_kloc": 175.7,
-      "ratio": 5.35,
+      "ratio": 5.1,
       "severity": "low",
       "basis": "measured"
     },
