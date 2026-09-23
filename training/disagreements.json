@@ -56,6 +56,17 @@
       "only": "semgrep"
     },
     {
+      "id": "f:1f132cf59f6c",
+      "rule": "checkov/CKV_ALI_12",
+      "title": "Ensure the OSS bucket has access logging enabled",
+      "severity": "medium",
+      "family": "logging",
+      "where": "terraform/alicloud/bucket.tf:1",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
       "id": "f:248103a022e9",
       "rule": "checkov/CKV_ALI_6",
       "title": "Ensure OSS bucket is encrypted with Customer Master Key",
@@ -78,17 +89,6 @@
       "only": "checkov"
     },
     {
-      "id": "f:1f132cf59f6c",
-      "rule": "checkov/CKV_ALI_12",
-      "title": "Ensure the OSS bucket has access logging enabled",
-      "severity": "medium",
-      "family": "logging",
-      "where": "terraform/alicloud/bucket.tf:1",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
-    },
-    {
       "id": "f:c85a1f68c05f",
       "rule": "checkov/CKV_ALI_1",
       "title": "Alibaba Cloud OSS bucket accessible to public",
@@ -100,22 +100,22 @@
       "only": "checkov"
     },
     {
-      "id": "f:04b47e1a0238",
-      "rule": "checkov/CKV_ALI_30",
-      "title": "Ensure RDS instance auto upgrades for minor versions",
+      "id": "f:9569a17de928",
+      "rule": "checkov/CKV_ALI_9",
+      "title": "Ensure database instance is not public",
       "severity": "medium",
-      "family": "pinning",
+      "family": "public-access",
       "where": "terraform/alicloud/rds.tf:1",
       "tool": "checkov",
       "other_side": [],
       "only": "checkov"
     },
     {
-      "id": "f:9569a17de928",
-      "rule": "checkov/CKV_ALI_9",
-      "title": "Ensure database instance is not public",
+      "id": "f:04b47e1a0238",
+      "rule": "checkov/CKV_ALI_30",
+      "title": "Ensure RDS instance auto upgrades for minor versions",
       "severity": "medium",
-      "family": "public-access",
+      "family": "pinning",
       "where": "terraform/alicloud/rds.tf:1",
       "tool": "checkov",
       "other_side": [],
@@ -155,6 +155,17 @@
       "only": "checkov"
     },
     {
+      "id": "f:3c42ade00829",
+      "rule": "checkov/CKV_ALI_12",
+      "title": "Ensure the OSS bucket has access logging enabled",
+      "severity": "medium",
+      "family": "logging",
+      "where": "terraform/alicloud/trail.tf:11",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
       "id": "f:97a7cacd8279",
       "rule": "checkov/CKV_ALI_6",
       "title": "Ensure OSS bucket is encrypted with Customer Master Key",
@@ -171,17 +182,6 @@
       "title": "Ensure OSS bucket has versioning enabled",
       "severity": "medium",
       "family": "pinning",
-      "where": "terraform/alicloud/trail.tf:11",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
-    },
-    {
-      "id": "f:3c42ade00829",
-      "rule": "checkov/CKV_ALI_12",
-      "title": "Ensure the OSS bucket has access logging enabled",
-      "severity": "medium",
-      "family": "logging",
       "where": "terraform/alicloud/trail.tf:11",
       "tool": "checkov",
       "other_side": [],
@@ -232,22 +232,22 @@
       "only": "semgrep"
     },
     {
-      "id": "f:da6c4b3df33a",
-      "rule": "checkov/CKV_AWS_136",
-      "title": "Ensure that ECR repositories are encrypted using KMS",
+      "id": "f:474ab8cc1e8e",
+      "rule": "checkov/CKV_AWS_51",
+      "title": "Ensure ECR Image Tags are immutable",
       "severity": "medium",
-      "family": "encryption",
+      "family": "pinning",
       "where": "terraform/aws/ecr.tf:1",
       "tool": "checkov",
       "other_side": [],
       "only": "checkov"
     },
     {
-      "id": "f:474ab8cc1e8e",
-      "rule": "checkov/CKV_AWS_51",
-      "title": "Ensure ECR Image Tags are immutable",
+      "id": "f:da6c4b3df33a",
+      "rule": "checkov/CKV_AWS_136",
+      "title": "Ensure that ECR repositories are encrypted using KMS",
       "severity": "medium",
-      "family": "pinning",
+      "family": "encryption",
       "where": "terraform/aws/ecr.tf:1",
       "tool": "checkov",
       "other_side": [],
@@ -298,17 +298,6 @@
       "only": "checkov"
     },
     {
-      "id": "f:47f5d9664144",
-      "rule": "checkov/CKV_AWS_38",
-      "title": "Ensure Amazon EKS public endpoint not accessible to 0.0.0.0/0",
-      "severity": "medium",
-      "family": "public-access",
-      "where": "terraform/aws/eks.tf:118",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
-    },
-    {
       "id": "f:5726eb964d0f",
       "rule": "checkov/CKV_AWS_37",
       "title": "Ensure Amazon EKS control plane logging is enabled for all log types",
@@ -342,23 +331,23 @@
       "only": "checkov"
     },
     {
+      "id": "f:47f5d9664144",
+      "rule": "checkov/CKV_AWS_38",
+      "title": "Ensure Amazon EKS public endpoint not accessible to 0.0.0.0/0",
+      "severity": "medium",
+      "family": "public-access",
+      "where": "terraform/aws/eks.tf:118",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
       "id": "f:760ea0269372",
       "rule": "checkov/CKV_AWS_92",
       "title": "Ensure the ELB has access logging enabled",
       "severity": "medium",
       "family": "logging",
       "where": "terraform/aws/elb.tf:2",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
-    },
-    {
-      "id": "f:4731b19800da",
-      "rule": "checkov/CKV_AWS_317",
-      "title": "Ensure Elasticsearch Domain Audit Logging is enabled",
-      "severity": "medium",
-      "family": "logging",
-      "where": "terraform/aws/es.tf:1",
       "tool": "checkov",
       "other_side": [],
       "only": "checkov"
@@ -391,6 +380,17 @@
       "title": "Ensure all data stored in the Elasticsearch is encrypted with a CMK",
       "severity": "medium",
       "family": "encryption",
+      "where": "terraform/aws/es.tf:1",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
+      "id": "f:4731b19800da",
+      "rule": "checkov/CKV_AWS_317",
+      "title": "Ensure Elasticsearch Domain Audit Logging is enabled",
+      "severity": "medium",
+      "family": "logging",
       "where": "terraform/aws/es.tf:1",
       "tool": "checkov",
       "other_side": [],
@@ -485,22 +485,22 @@
       "only": "checkov"
     },
     {
-      "id": "f:049cd21c1535",
-      "rule": "checkov/CKV_AWS_361",
-      "title": "Ensure that Neptune DB cluster has automated backups enabled with adequate retention",
+      "id": "f:c35f5366d574",
+      "rule": "checkov/CKV_AWS_347",
+      "title": "Ensure Neptune is encrypted by KMS using a customer managed Key (CMK)",
       "severity": "medium",
-      "family": "logging",
+      "family": "encryption",
       "where": "terraform/aws/neptune.tf:1",
       "tool": "checkov",
       "other_side": [],
       "only": "checkov"
     },
     {
-      "id": "f:c35f5366d574",
-      "rule": "checkov/CKV_AWS_347",
-      "title": "Ensure Neptune is encrypted by KMS using a customer managed Key (CMK)",
+      "id": "f:049cd21c1535",
+      "rule": "checkov/CKV_AWS_361",
+      "title": "Ensure that Neptune DB cluster has automated backups enabled with adequate retention",
       "severity": "medium",
-      "family": "encryption",
+      "family": "logging",
       "where": "terraform/aws/neptune.tf:1",
       "tool": "checkov",
       "other_side": [],
@@ -628,11 +628,11 @@
       "only": "checkov"
     },
     {
-      "id": "f:1d22c42a0fc0",
-      "rule": "checkov/CKV_AZURE_172",
-      "title": "Ensure autorotation of Secrets Store CSI Driver secrets for AKS clusters",
+      "id": "f:0fd6c087f25b",
+      "rule": "checkov/CKV_AZURE_4",
+      "title": "Ensure AKS logging to Azure Monitoring is Configured",
       "severity": "medium",
-      "family": "secret",
+      "family": "logging",
       "where": "terraform/azure/aks.tf:1",
       "tool": "checkov",
       "other_side": [],
@@ -650,22 +650,22 @@
       "only": "checkov"
     },
     {
-      "id": "f:e8f3c4b646fc",
-      "rule": "checkov/CKV_AZURE_117",
-      "title": "Ensure that AKS uses disk encryption set",
+      "id": "f:1d22c42a0fc0",
+      "rule": "checkov/CKV_AZURE_172",
+      "title": "Ensure autorotation of Secrets Store CSI Driver secrets for AKS clusters",
       "severity": "medium",
-      "family": "encryption",
+      "family": "secret",
       "where": "terraform/azure/aks.tf:1",
       "tool": "checkov",
       "other_side": [],
       "only": "checkov"
     },
     {
-      "id": "f:0fd6c087f25b",
-      "rule": "checkov/CKV_AZURE_4",
-      "title": "Ensure AKS logging to Azure Monitoring is Configured",
+      "id": "f:e8f3c4b646fc",
+      "rule": "checkov/CKV_AZURE_117",
+      "title": "Ensure that AKS uses disk encryption set",
       "severity": "medium",
-      "family": "logging",
+      "family": "encryption",
       "where": "terraform/azure/aks.tf:1",
       "tool": "checkov",
       "other_side": [],
@@ -738,20 +738,9 @@
       "only": "checkov"
     },
     {
-      "id": "f:196448fd8e2e",
-      "rule": "checkov/CKV_AZURE_110",
-      "title": "Ensure that key vault enables purge protection",
-      "severity": "medium",
-      "family": "secret",
-      "where": "terraform/azure/key_vault.tf:1",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
-    },
-    {
-      "id": "f:cfa6c219f54e",
-      "rule": "checkov/CKV_AZURE_109",
-      "title": "Ensure that key vault allows firewall rules settings",
+      "id": "f:349d9ede94af",
+      "rule": "checkov/CKV_AZURE_42",
+      "title": "Ensure the key vault is recoverable",
       "severity": "medium",
       "family": "secret",
       "where": "terraform/azure/key_vault.tf:1",
@@ -771,9 +760,20 @@
       "only": "checkov"
     },
     {
-      "id": "f:349d9ede94af",
-      "rule": "checkov/CKV_AZURE_42",
-      "title": "Ensure the key vault is recoverable",
+      "id": "f:cfa6c219f54e",
+      "rule": "checkov/CKV_AZURE_109",
+      "title": "Ensure that key vault allows firewall rules settings",
+      "severity": "medium",
+      "family": "secret",
+      "where": "terraform/azure/key_vault.tf:1",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
+      "id": "f:196448fd8e2e",
+      "rule": "checkov/CKV_AZURE_110",
+      "title": "Ensure that key vault enables purge protection",
       "severity": "medium",
       "family": "secret",
       "where": "terraform/azure/key_vault.tf:1",
@@ -837,9 +837,9 @@
       "only": "checkov"
     },
     {
-      "id": "f:d68a3b2a09bc",
-      "rule": "checkov/CKV_AZURE_41",
-      "title": "Ensure that the expiration date is set on all secrets",
+      "id": "f:cdc103661fc0",
+      "rule": "checkov/CKV_AZURE_114",
+      "title": "Ensure that key vault secrets have \"content_type\" set",
       "severity": "medium",
       "family": "secret",
       "where": "terraform/azure/key_vault.tf:58",
@@ -848,9 +848,9 @@
       "only": "checkov"
     },
     {
-      "id": "f:cdc103661fc0",
-      "rule": "checkov/CKV_AZURE_114",
-      "title": "Ensure that key vault secrets have \"content_type\" set",
+      "id": "f:d68a3b2a09bc",
+      "rule": "checkov/CKV_AZURE_41",
+      "title": "Ensure that the expiration date is set on all secrets",
       "severity": "medium",
       "family": "secret",
       "where": "terraform/azure/key_vault.tf:58",
@@ -881,22 +881,22 @@
       "only": "checkov"
     },
     {
-      "id": "f:20b2c365763e",
-      "rule": "checkov/CKV_AZURE_59",
-      "title": "Ensure that Storage accounts disallow public access",
+      "id": "f:ae8d2a8739d4",
+      "rule": "checkov/CKV_AZURE_33",
+      "title": "Ensure Storage logging is enabled for Queue service for read, write and delete requests",
       "severity": "medium",
-      "family": "public-access",
+      "family": "logging",
       "where": "terraform/azure/mssql.tf:1",
       "tool": "checkov",
       "other_side": [],
       "only": "checkov"
     },
     {
-      "id": "f:ae8d2a8739d4",
-      "rule": "checkov/CKV_AZURE_33",
-      "title": "Ensure Storage logging is enabled for Queue service for read, write and delete requests",
+      "id": "f:20b2c365763e",
+      "rule": "checkov/CKV_AZURE_59",
+      "title": "Ensure that Storage accounts disallow public access",
       "severity": "medium",
-      "family": "logging",
+      "family": "public-access",
       "where": "terraform/azure/mssql.tf:1",
       "tool": "checkov",
       "other_side": [],
@@ -947,22 +947,22 @@
       "only": "checkov"
     },
     {
-      "id": "f:4f4fd21cf5d1",
-      "rule": "checkov/CKV_AZURE_59",
-      "title": "Ensure that Storage accounts disallow public access",
+      "id": "f:ec62de324921",
+      "rule": "checkov/CKV_AZURE_33",
+      "title": "Ensure Storage logging is enabled for Queue service for read, write and delete requests",
       "severity": "medium",
-      "family": "public-access",
+      "family": "logging",
       "where": "terraform/azure/storage.tf:23",
       "tool": "checkov",
       "other_side": [],
       "only": "checkov"
     },
     {
-      "id": "f:ec62de324921",
-      "rule": "checkov/CKV_AZURE_33",
-      "title": "Ensure Storage logging is enabled for Queue service for read, write and delete requests",
+      "id": "f:4f4fd21cf5d1",
+      "rule": "checkov/CKV_AZURE_59",
+      "title": "Ensure that Storage accounts disallow public access",
       "severity": "medium",
-      "family": "logging",
+      "family": "public-access",
       "where": "terraform/azure/storage.tf:23",
       "tool": "checkov",
       "other_side": [],
@@ -991,17 +991,6 @@
       "only": "checkov"
     },
     {
-      "id": "f:6d8603e5c5ab",
-      "rule": "checkov/CKV_GCP_79",
-      "title": "Ensure SQL database is using latest Major version",
-      "severity": "medium",
-      "family": "pinning",
-      "where": "terraform/gcp/big_data.tf:1",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
-    },
-    {
       "id": "f:fe6b4bfe59f9",
       "rule": "checkov/CKV_GCP_110",
       "title": "Ensure pgAudit is enabled for your GCP PostgreSQL database",
@@ -1018,6 +1007,17 @@
       "title": "Ensure Cloud SQL database does not have public IP",
       "severity": "medium",
       "family": "public-access",
+      "where": "terraform/gcp/big_data.tf:1",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
+      "id": "f:6d8603e5c5ab",
+      "rule": "checkov/CKV_GCP_79",
+      "title": "Ensure SQL database is using latest Major version",
+      "severity": "medium",
+      "family": "pinning",
       "where": "terraform/gcp/big_data.tf:1",
       "tool": "checkov",
       "other_side": [],
@@ -1079,22 +1079,22 @@
       "only": "checkov"
     },
     {
-      "id": "f:0c9e22a12301",
-      "rule": "checkov/CKV_GCP_1",
-      "title": "Ensure Stackdriver Logging is set to Enabled on Kubernetes Engine Clusters",
+      "id": "f:77929577a6ab",
+      "rule": "checkov/CKV_GCP_18",
+      "title": "Ensure GKE Control Plane is not public",
       "severity": "medium",
-      "family": "logging",
+      "family": "public-access",
       "where": "terraform/gcp/gke.tf:6",
       "tool": "checkov",
       "other_side": [],
       "only": "checkov"
     },
     {
-      "id": "f:77929577a6ab",
-      "rule": "checkov/CKV_GCP_18",
-      "title": "Ensure GKE Control Plane is not public",
+      "id": "f:0c9e22a12301",
+      "rule": "checkov/CKV_GCP_1",
+      "title": "Ensure Stackdriver Logging is set to Enabled on Kubernetes Engine Clusters",
       "severity": "medium",
-      "family": "public-access",
+      "family": "logging",
       "where": "terraform/gcp/gke.tf:6",
       "tool": "checkov",
       "other_side": [],
@@ -1123,42 +1123,9 @@
       "only": "checkov"
     },
     {
-      "id": "f:10c909f32cce",
-      "rule": "checkov/CKV_GCP_106",
-      "title": "Ensure Google compute firewall ingress does not allow unrestricted http port 80 access",
-      "severity": "medium",
-      "family": "public-access",
-      "where": "terraform/gcp/networks.tf:19",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
-    },
-    {
       "id": "f:27b387a86f31",
       "rule": "checkov/CKV_GCP_88",
       "title": "Ensure Google compute firewall ingress does not allow unrestricted mysql access",
-      "severity": "medium",
-      "family": "public-access",
-      "where": "terraform/gcp/networks.tf:19",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
-    },
-    {
-      "id": "f:f0e31cc17fb7",
-      "rule": "checkov/CKV_GCP_77",
-      "title": "Ensure Google compute firewall ingress does not allow on ftp port",
-      "severity": "medium",
-      "family": "public-access",
-      "where": "terraform/gcp/networks.tf:19",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
-    },
-    {
-      "id": "f:34094bb74c6e",
-      "rule": "checkov/CKV_GCP_3",
-      "title": "Ensure Google compute firewall ingress does not allow unrestricted rdp access",
       "severity": "medium",
       "family": "public-access",
       "where": "terraform/gcp/networks.tf:19",
@@ -1189,6 +1156,39 @@
       "only": "checkov"
     },
     {
+      "id": "f:34094bb74c6e",
+      "rule": "checkov/CKV_GCP_3",
+      "title": "Ensure Google compute firewall ingress does not allow unrestricted rdp access",
+      "severity": "medium",
+      "family": "public-access",
+      "where": "terraform/gcp/networks.tf:19",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
+      "id": "f:10c909f32cce",
+      "rule": "checkov/CKV_GCP_106",
+      "title": "Ensure Google compute firewall ingress does not allow unrestricted http port 80 access",
+      "severity": "medium",
+      "family": "public-access",
+      "where": "terraform/gcp/networks.tf:19",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
+      "id": "f:f0e31cc17fb7",
+      "rule": "checkov/CKV_GCP_77",
+      "title": "Ensure Google compute firewall ingress does not allow on ftp port",
+      "severity": "medium",
+      "family": "public-access",
+      "where": "terraform/gcp/networks.tf:19",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
       "id": "f:b389cc98cd6d",
       "rule": "arbiter/secrets.assigned-credential",
       "title": "Hardcoded credential assigned to `credentials`",
@@ -1198,17 +1198,6 @@
       "tool": "arbiter",
       "other_side": [],
       "only": "arbiter"
-    },
-    {
-      "id": "f:d79f1b104189",
-      "rule": "checkov/CKV_OCI_10",
-      "title": "Ensure OCI Object Storage is not Public",
-      "severity": "medium",
-      "family": "public-access",
-      "where": "terraform/oracle/bucket.tf:1",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
     },
     {
       "id": "f:80274d4cda67",
@@ -1227,6 +1216,17 @@
       "title": "Ensure OCI Object Storage has versioning enabled",
       "severity": "medium",
       "family": "pinning",
+      "where": "terraform/oracle/bucket.tf:1",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
+      "id": "f:d79f1b104189",
+      "rule": "checkov/CKV_OCI_10",
+      "title": "Ensure OCI Object Storage is not Public",
+      "severity": "medium",
+      "family": "public-access",
       "where": "terraform/oracle/bucket.tf:1",
       "tool": "checkov",
       "other_side": [],
@@ -2707,22 +2707,22 @@
       "only": "checkov"
     },
     {
-      "id": "f:f7d5f4797424",
-      "rule": "checkov/CKV2_K8S_4",
-      "title": "ServiceAccounts and nodes that can modify services/status may set the `status.loadBalancer.ingress.ip` field to exploit ",
+      "id": "f:0a490355569b",
+      "rule": "checkov/CKV2_K8S_5",
+      "title": "No ServiceAccount/Node should be able to read all secrets",
       "severity": "medium",
-      "family": "public-access",
+      "family": "secret",
       "where": "infrastructure/helm-tiller/pwnchart/templates/clusterrolebinding.yaml:3",
       "tool": "checkov",
       "other_side": [],
       "only": "checkov"
     },
     {
-      "id": "f:0a490355569b",
-      "rule": "checkov/CKV2_K8S_5",
-      "title": "No ServiceAccount/Node should be able to read all secrets",
+      "id": "f:f7d5f4797424",
+      "rule": "checkov/CKV2_K8S_4",
+      "title": "ServiceAccounts and nodes that can modify services/status may set the `status.loadBalancer.ingress.ip` field to exploit ",
       "severity": "medium",
-      "family": "secret",
+      "family": "public-access",
       "where": "infrastructure/helm-tiller/pwnchart/templates/clusterrolebinding.yaml:3",
       "tool": "checkov",
       "other_side": [],
@@ -3158,11 +3158,11 @@
       "only": "checkov"
     },
     {
-      "id": "f:b24c159eed6d",
-      "rule": "checkov/CKV_K8S_14",
-      "title": "Image Tag should be fixed - not latest or blank",
+      "id": "f:5cb5c51201cd",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
-      "family": "pinning",
+      "family": "privilege",
       "where": "scenarios/metadata-db/templates/deployment.yaml:3",
       "tool": "checkov",
       "other_side": [],
@@ -3172,17 +3172,6 @@
       "id": "f:fdaa4c74c9f2",
       "rule": "checkov/CKV_K8S_37",
       "title": "Minimize the admission of containers with capabilities assigned",
-      "severity": "low",
-      "family": "privilege",
-      "where": "scenarios/metadata-db/templates/deployment.yaml:3",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
-    },
-    {
-      "id": "f:5cb5c51201cd",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/metadata-db/templates/deployment.yaml:3",
@@ -3202,31 +3191,20 @@
       "only": "checkov"
     },
     {
-      "id": "f:a7f01925c96b",
-      "rule": "checkov/CKV_K8S_28",
-      "title": "Minimize the admission of containers with the NET_RAW capability",
-      "severity": "low",
-      "family": "privilege",
-      "where": "scenarios/metadata-db/templates/tests/test-connection.yaml:3",
-      "tool": "checkov",
-      "other_side": [],
-      "only": "checkov"
-    },
-    {
-      "id": "f:5209f4f227dc",
+      "id": "f:b24c159eed6d",
       "rule": "checkov/CKV_K8S_14",
       "title": "Image Tag should be fixed - not latest or blank",
       "severity": "low",
       "family": "pinning",
-      "where": "scenarios/metadata-db/templates/tests/test-connection.yaml:3",
+      "where": "scenarios/metadata-db/templates/deployment.yaml:3",
       "tool": "checkov",
       "other_side": [],
       "only": "checkov"
     },
     {
-      "id": "f:ab25ac90c008",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:a7f01925c96b",
+      "rule": "checkov/CKV_K8S_28",
+      "title": "Minimize the admission of containers with the NET_RAW capability",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/metadata-db/templates/tests/test-connection.yaml:3",
@@ -3246,11 +3224,33 @@
       "only": "checkov"
     },
     {
+      "id": "f:ab25ac90c008",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
+      "severity": "low",
+      "family": "privilege",
+      "where": "scenarios/metadata-db/templates/tests/test-connection.yaml:3",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
       "id": "f:09b68746169e",
       "rule": "checkov/CKV_K8S_23",
       "title": "Minimize the admission of root containers",
       "severity": "low",
       "family": "privilege",
+      "where": "scenarios/metadata-db/templates/tests/test-connection.yaml:3",
+      "tool": "checkov",
+      "other_side": [],
+      "only": "checkov"
+    },
+    {
+      "id": "f:5209f4f227dc",
+      "rule": "checkov/CKV_K8S_14",
+      "title": "Image Tag should be fixed - not latest or blank",
+      "severity": "low",
+      "family": "pinning",
       "where": "scenarios/metadata-db/templates/tests/test-connection.yaml:3",
       "tool": "checkov",
       "other_side": [],
@@ -5611,6 +5611,18 @@
       ]
     },
     {
+      "id": "f:1ec341608eb8",
+      "rule": "checkov/CKV_AZURE_1",
+      "title": "Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)",
+      "severity": "medium",
+      "family": "secret",
+      "where": "terraform/azure/instance.tf:9",
+      "tool": "checkov",
+      "other_side": [
+        "arbiter/secrets.assigned-credential"
+      ]
+    },
+    {
       "id": "f:44cbf23342dc",
       "rule": "checkov/CKV_AZURE_178",
       "title": "Ensure linux VM enables SSH with keys for secure communication",
@@ -5626,18 +5638,6 @@
       "id": "f:e0b6f2e17551",
       "rule": "checkov/CKV_AZURE_149",
       "title": "Ensure that Virtual machine does not enable password authentication",
-      "severity": "medium",
-      "family": "secret",
-      "where": "terraform/azure/instance.tf:9",
-      "tool": "checkov",
-      "other_side": [
-        "arbiter/secrets.assigned-credential"
-      ]
-    },
-    {
-      "id": "f:1ec341608eb8",
-      "rule": "checkov/CKV_AZURE_1",
-      "title": "Ensure Azure Instance does not use basic authentication(Use SSH Key Instead)",
       "severity": "medium",
       "family": "secret",
       "where": "terraform/azure/instance.tf:9",
@@ -5789,6 +5789,18 @@
       ]
     },
     {
+      "id": "f:84dd6dc16be4",
+      "rule": "checkov/CKV_AZURE_68",
+      "title": "Ensure that PostgreSQL server disables public network access",
+      "severity": "medium",
+      "family": "public-access",
+      "where": "terraform/azure/sql.tf:73",
+      "tool": "checkov",
+      "other_side": [
+        "arbiter/resource.database-publicly-accessible"
+      ]
+    },
+    {
       "id": "f:a37b43715b13",
       "rule": "checkov/CKV_AZURE_147",
       "title": "Ensure PostgreSQL is using the latest version of TLS encryption",
@@ -5813,18 +5825,6 @@
       ]
     },
     {
-      "id": "f:84dd6dc16be4",
-      "rule": "checkov/CKV_AZURE_68",
-      "title": "Ensure that PostgreSQL server disables public network access",
-      "severity": "medium",
-      "family": "public-access",
-      "where": "terraform/azure/sql.tf:73",
-      "tool": "checkov",
-      "other_side": [
-        "arbiter/resource.database-publicly-accessible"
-      ]
-    },
-    {
       "id": "f:2fbc9561f6b7",
       "rule": "semgrep/semgrep-rules.terraform.azure.security.azure-postgresql-server-public-access-disabled",
       "title": "Ensure public network access enabled is set to False for PostgreSQL servers",
@@ -5837,9 +5837,9 @@
       ]
     },
     {
-      "id": "f:595cfd9829e1",
-      "rule": "checkov/CKV_AZURE_93",
-      "title": "Ensure that managed disks use a specific set of disk encryption sets for the customer-managed key encryption",
+      "id": "f:78cdeb3a81e8",
+      "rule": "checkov/CKV_AZURE_2",
+      "title": "Ensure Azure managed disk has encryption enabled",
       "severity": "medium",
       "family": "encryption",
       "where": "terraform/azure/storage.tf:1",
@@ -5849,9 +5849,9 @@
       ]
     },
     {
-      "id": "f:78cdeb3a81e8",
-      "rule": "checkov/CKV_AZURE_2",
-      "title": "Ensure Azure managed disk has encryption enabled",
+      "id": "f:595cfd9829e1",
+      "rule": "checkov/CKV_AZURE_93",
+      "title": "Ensure that managed disks use a specific set of disk encryption sets for the customer-managed key encryption",
       "severity": "medium",
       "family": "encryption",
       "where": "terraform/azure/storage.tf:1",
@@ -5925,9 +5925,9 @@
       ]
     },
     {
-      "id": "f:d7f1f61c7391",
-      "rule": "checkov/CKV_GCP_40",
-      "title": "Ensure that Compute instances do not have public IP addresses",
+      "id": "f:865ac9661fcd",
+      "rule": "checkov/CKV_GCP_38",
+      "title": "Ensure VM disks for critical VMs are encrypted with Customer Supplied Encryption Keys (CSEK)",
       "severity": "medium",
       "family": "encryption",
       "where": "terraform/gcp/instances.tf:3",
@@ -5937,9 +5937,9 @@
       ]
     },
     {
-      "id": "f:865ac9661fcd",
-      "rule": "checkov/CKV_GCP_38",
-      "title": "Ensure VM disks for critical VMs are encrypted with Customer Supplied Encryption Keys (CSEK)",
+      "id": "f:d7f1f61c7391",
+      "rule": "checkov/CKV_GCP_40",
+      "title": "Ensure that Compute instances do not have public IP addresses",
       "severity": "medium",
       "family": "encryption",
       "where": "terraform/gcp/instances.tf:3",
@@ -7172,9 +7172,9 @@
       ]
     },
     {
-      "id": "f:dbc37d44568a",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:625957dead9b",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/batch-check/job.yaml:1",
@@ -7187,9 +7187,9 @@
       ]
     },
     {
-      "id": "f:625957dead9b",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:dbc37d44568a",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/batch-check/job.yaml:1",
@@ -7262,9 +7262,9 @@
       ]
     },
     {
-      "id": "f:8e327d551cfa",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:cdcc9ad9d50c",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/build-code/deployment.yaml:1",
@@ -7277,9 +7277,9 @@
       ]
     },
     {
-      "id": "f:cdcc9ad9d50c",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:8e327d551cfa",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/build-code/deployment.yaml:1",
@@ -7352,9 +7352,9 @@
       ]
     },
     {
-      "id": "f:c7f35bfb8eb0",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:644cda537f97",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/cache-store/deployment.yaml:19",
@@ -7367,9 +7367,9 @@
       ]
     },
     {
-      "id": "f:644cda537f97",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:c7f35bfb8eb0",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/cache-store/deployment.yaml:19",
@@ -7454,21 +7454,9 @@
       ]
     },
     {
-      "id": "f:edd4c106f8d2",
-      "rule": "checkov/CKV_K8S_14",
-      "title": "Image Tag should be fixed - not latest or blank",
-      "severity": "low",
-      "family": "pinning",
-      "where": "scenarios/docker-bench-security/deployment.yaml:12",
-      "tool": "checkov",
-      "other_side": [
-        "arbiter/resource.k8s-mutable-image-tag"
-      ]
-    },
-    {
-      "id": "f:55f97a03649e",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:3e14043cb2ca",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/docker-bench-security/deployment.yaml:12",
@@ -7481,9 +7469,9 @@
       ]
     },
     {
-      "id": "f:3e14043cb2ca",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:55f97a03649e",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/docker-bench-security/deployment.yaml:12",
@@ -7508,6 +7496,18 @@
         "arbiter/resource.k8s-not-run-as-non-root",
         "arbiter/resource.k8s-privilege-escalation-not-disabled",
         "arbiter/resource.k8s-runs-as-root"
+      ]
+    },
+    {
+      "id": "f:edd4c106f8d2",
+      "rule": "checkov/CKV_K8S_14",
+      "title": "Image Tag should be fixed - not latest or blank",
+      "severity": "low",
+      "family": "pinning",
+      "where": "scenarios/docker-bench-security/deployment.yaml:12",
+      "tool": "checkov",
+      "other_side": [
+        "arbiter/resource.k8s-mutable-image-tag"
       ]
     },
     {
@@ -7556,9 +7556,9 @@
       ]
     },
     {
-      "id": "f:bd35207ddb82",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:c7602518b7e3",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/health-check/deployment-simple-alternative.yaml:5",
@@ -7571,9 +7571,9 @@
       ]
     },
     {
-      "id": "f:c7602518b7e3",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:bd35207ddb82",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/health-check/deployment-simple-alternative.yaml:5",
@@ -7658,21 +7658,9 @@
       ]
     },
     {
-      "id": "f:6424cfb66393",
-      "rule": "checkov/CKV_K8S_14",
-      "title": "Image Tag should be fixed - not latest or blank",
-      "severity": "low",
-      "family": "pinning",
-      "where": "scenarios/health-check/deployment.yaml:1",
-      "tool": "checkov",
-      "other_side": [
-        "arbiter/resource.k8s-mutable-image-tag"
-      ]
-    },
-    {
-      "id": "f:42e9ae914c96",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:ee4217350904",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/health-check/deployment.yaml:1",
@@ -7685,9 +7673,9 @@
       ]
     },
     {
-      "id": "f:ee4217350904",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:42e9ae914c96",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/health-check/deployment.yaml:1",
@@ -7712,6 +7700,18 @@
         "arbiter/resource.k8s-not-run-as-non-root",
         "arbiter/resource.k8s-privilege-escalation-not-disabled",
         "arbiter/resource.k8s-writable-root-filesystem"
+      ]
+    },
+    {
+      "id": "f:6424cfb66393",
+      "rule": "checkov/CKV_K8S_14",
+      "title": "Image Tag should be fixed - not latest or blank",
+      "severity": "low",
+      "family": "pinning",
+      "where": "scenarios/health-check/deployment.yaml:1",
+      "tool": "checkov",
+      "other_side": [
+        "arbiter/resource.k8s-mutable-image-tag"
       ]
     },
     {
@@ -7760,9 +7760,9 @@
       ]
     },
     {
-      "id": "f:e98e6d9b18dd",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:c3aaadef44e6",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/hidden-in-layers/deployment.yaml:1",
@@ -7775,9 +7775,9 @@
       ]
     },
     {
-      "id": "f:c3aaadef44e6",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:e98e6d9b18dd",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/hidden-in-layers/deployment.yaml:1",
@@ -7850,9 +7850,9 @@
       ]
     },
     {
-      "id": "f:3b36a7ad0b63",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:f12e25e0d2ec",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/hunger-check/deployment.yaml:55",
@@ -7865,9 +7865,9 @@
       ]
     },
     {
-      "id": "f:f12e25e0d2ec",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:3b36a7ad0b63",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/hunger-check/deployment.yaml:55",
@@ -7940,9 +7940,9 @@
       ]
     },
     {
-      "id": "f:abce6fa45b26",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:56f38feae6c6",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/internal-proxy/deployment.yaml:1",
@@ -7955,9 +7955,9 @@
       ]
     },
     {
-      "id": "f:56f38feae6c6",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:abce6fa45b26",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/internal-proxy/deployment.yaml:1",
@@ -8042,21 +8042,9 @@
       ]
     },
     {
-      "id": "f:b55f78dc9358",
-      "rule": "checkov/CKV_K8S_14",
-      "title": "Image Tag should be fixed - not latest or blank",
-      "severity": "low",
-      "family": "pinning",
-      "where": "scenarios/kube-bench-security/master-job.yaml:2",
-      "tool": "checkov",
-      "other_side": [
-        "arbiter/resource.k8s-mutable-image-tag"
-      ]
-    },
-    {
-      "id": "f:15d4459b2e0e",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:5020cc215552",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/kube-bench-security/master-job.yaml:2",
@@ -8069,9 +8057,9 @@
       ]
     },
     {
-      "id": "f:5020cc215552",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:15d4459b2e0e",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/kube-bench-security/master-job.yaml:2",
@@ -8096,6 +8084,18 @@
         "arbiter/resource.k8s-no-security-context",
         "arbiter/resource.k8s-not-run-as-non-root",
         "arbiter/resource.k8s-privilege-escalation-not-disabled"
+      ]
+    },
+    {
+      "id": "f:b55f78dc9358",
+      "rule": "checkov/CKV_K8S_14",
+      "title": "Image Tag should be fixed - not latest or blank",
+      "severity": "low",
+      "family": "pinning",
+      "where": "scenarios/kube-bench-security/master-job.yaml:2",
+      "tool": "checkov",
+      "other_side": [
+        "arbiter/resource.k8s-mutable-image-tag"
       ]
     },
     {
@@ -8156,21 +8156,9 @@
       ]
     },
     {
-      "id": "f:fb22844e21f5",
-      "rule": "checkov/CKV_K8S_14",
-      "title": "Image Tag should be fixed - not latest or blank",
-      "severity": "low",
-      "family": "pinning",
-      "where": "scenarios/kube-bench-security/node-job.yaml:2",
-      "tool": "checkov",
-      "other_side": [
-        "arbiter/resource.k8s-mutable-image-tag"
-      ]
-    },
-    {
-      "id": "f:64043ebbf889",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:bf6f70ade3aa",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/kube-bench-security/node-job.yaml:2",
@@ -8183,9 +8171,9 @@
       ]
     },
     {
-      "id": "f:bf6f70ade3aa",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:64043ebbf889",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/kube-bench-security/node-job.yaml:2",
@@ -8210,6 +8198,18 @@
         "arbiter/resource.k8s-no-security-context",
         "arbiter/resource.k8s-not-run-as-non-root",
         "arbiter/resource.k8s-privilege-escalation-not-disabled"
+      ]
+    },
+    {
+      "id": "f:fb22844e21f5",
+      "rule": "checkov/CKV_K8S_14",
+      "title": "Image Tag should be fixed - not latest or blank",
+      "severity": "low",
+      "family": "pinning",
+      "where": "scenarios/kube-bench-security/node-job.yaml:2",
+      "tool": "checkov",
+      "other_side": [
+        "arbiter/resource.k8s-mutable-image-tag"
       ]
     },
     {
@@ -8258,9 +8258,9 @@
       ]
     },
     {
-      "id": "f:ef146c0b4c0c",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:cf25814d0809",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/kubernetes-goat-home/deployment.yaml:1",
@@ -8273,9 +8273,9 @@
       ]
     },
     {
-      "id": "f:cf25814d0809",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:ef146c0b4c0c",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/kubernetes-goat-home/deployment.yaml:1",
@@ -8348,9 +8348,9 @@
       ]
     },
     {
-      "id": "f:41ca17cb70f5",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:03a451e5e462",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/poor-registry/deployment.yaml:1",
@@ -8363,9 +8363,9 @@
       ]
     },
     {
-      "id": "f:03a451e5e462",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:41ca17cb70f5",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/poor-registry/deployment.yaml:1",
@@ -8438,9 +8438,9 @@
       ]
     },
     {
-      "id": "f:8b58c079fe90",
-      "rule": "checkov/CKV_K8S_37",
-      "title": "Minimize the admission of containers with capabilities assigned",
+      "id": "f:b5c13d4804db",
+      "rule": "checkov/CKV_K8S_20",
+      "title": "Containers should not run with allowPrivilegeEscalation",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/system-monitor/deployment.yaml:11",
@@ -8453,9 +8453,9 @@
       ]
     },
     {
-      "id": "f:b5c13d4804db",
-      "rule": "checkov/CKV_K8S_20",
-      "title": "Containers should not run with allowPrivilegeEscalation",
+      "id": "f:8b58c079fe90",
+      "rule": "checkov/CKV_K8S_37",
+      "title": "Minimize the admission of containers with capabilities assigned",
       "severity": "low",
       "family": "privilege",
       "where": "scenarios/system-monitor/deployment.yaml:11",
@@ -9123,9 +9123,9 @@
       "only": "checkov"
     },
     {
-      "id": "f:cc97921a6e64",
-      "rule": "checkov/CKV_AZURE_17",
-      "title": "Ensure the web app has 'Client Certificates (Incoming client certificates)' set",
+      "id": "f:3bb1e1ed2917",
+      "rule": "checkov/CKV_AZURE_14",
+      "title": "Ensure web app redirects all HTTP traffic to HTTPS in Azure App Service",
       "severity": "medium",
       "family": "tls",
       "where": "terraform/azure/app_service.tf:22",
@@ -9134,9 +9134,9 @@
       "only": "checkov"
     },
     {
-      "id": "f:3bb1e1ed2917",
-      "rule": "checkov/CKV_AZURE_14",
-      "title": "Ensure web app redirects all HTTP traffic to HTTPS in Azure App Service",
+      "id": "f:cc97921a6e64",
+      "rule": "checkov/CKV_AZURE_17",
+      "title": "Ensure the web app has 'Client Certificates (Incoming client certificates)' set",
       "severity": "medium",
       "family": "tls",
       "where": "terraform/azure/app_service.tf:22",
