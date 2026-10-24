@@ -462,10 +462,13 @@ class Labeller:
 # ---------------------------------------------------------------------------
 
 def heldout_repos() -> set[str]:
+    """Repositories in every held-out set of heldout.json (see label_populations.heldout_repos)."""
     try:
-        return set(json.loads(HELDOUT.read_text(encoding="utf-8"))["held_out"]["gold_repos"])
-    except (OSError, KeyError, ValueError):
+        data = json.loads(HELDOUT.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
         return set()
+    return {r for v in data.values() if isinstance(v, dict) and isinstance(v.get("gold_repos"), list)
+            for r in v["gold_repos"]}
 
 
 _LINK = re.compile(r"\]\(([^)\s#]+)(?:#[^)]*)?\)|`([\w./-]+\.\w{1,5})`|\b([\w-]+(?:/[\w.-]+)+\.\w{1,5})\b")
@@ -643,7 +646,8 @@ def per_rule_sample(findings: list[dict], want: dict[str, int], seed: int) -> li
 
 
 def items_from_report(report: Path, corpus: Path, n: int, seed: int,
-                      per_rule: dict[str, int] | None = None) -> tuple[list[dict], dict]:
+                      per_rule: dict[str, int] | None = None,
+                      source: str = "gold-model") -> tuple[list[dict], dict]:
     data = json.loads(report.read_text(encoding="utf-8"))
     findings = [f for f in ls.findings_from_report(data)
                 if not f["rule"].startswith(EXCLUDE) and claim_for(f["rule"])]
@@ -656,7 +660,7 @@ def items_from_report(report: Path, corpus: Path, n: int, seed: int,
     pops = ls.stratum_populations(findings, lambda f: f["repo"] in held)
     items = []
     for f in rows:
-        it = make_item(f, corpus / f["repo"], "gold-model", f["repo"] in held)
+        it = make_item(f, corpus / f["repo"], source, f["repo"] in held)
         if it:
             it.update(pops[(f["rule"], f["language"])])
             assert it["stratum_size"] == f["stratum_size"]
@@ -1072,6 +1076,8 @@ def main(argv: list[str] | None = None) -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     lab = sub.add_parser("label", help="label findings with two model labellers and an adjudicator")
     lab.add_argument("--report", type=Path, help="gold-report.json written with --raw")
+    lab.add_argument("--source", default="gold-model",
+                     help="report: the source name label records carry (e.g. heldout-r5-model)")
     lab.add_argument("--corpus", type=Path, default=Path("~/wt/corpus-gold"))
     lab.add_argument("--ai-corpus", action="store_true", help="every finding on fixtures/ai-corpus")
     lab.add_argument("--ground-truth", type=Path, nargs="*", default=[],
@@ -1127,7 +1133,8 @@ def main(argv: list[str] | None = None) -> int:
     meta = {}
     if args.report:
         per_rule = json.loads(args.per_rule.read_text(encoding="utf-8")) if args.per_rule else None
-        its, meta = items_from_report(args.report, args.corpus.expanduser(), args.n, args.seed, per_rule)
+        its, meta = items_from_report(args.report, args.corpus.expanduser(), args.n, args.seed, per_rule,
+                                       source=args.source)
         items += its
     if args.ai_corpus:
         items += items_from_ai_corpus()
