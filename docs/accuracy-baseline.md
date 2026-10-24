@@ -1,7 +1,8 @@
 # Accuracy Baseline and Evidence Gaps
 
-Inventory date: 2026-10-24. This records the existing evidence and two
-benchmark-conformance runs; it is not a 99% certification. Machine-readable
+Inventory date: 2026-10-24. This records the existing evidence, two
+benchmark-conformance runs, and one analyzer-differential rehearsal; it is not
+a 99% certification. Machine-readable
 source inventory and run metadata are in
 [accuracy-benchmark-manifest.json](accuracy-benchmark-manifest.json), validated
 by [accuracy-benchmark-manifest.schema.json](accuracy-benchmark-manifest.schema.json).
@@ -134,6 +135,43 @@ remain unchanged. The source, label, and scan-report digests, tool versions,
 environment, and aggregate results are recorded in the separate run report
 and referenced from the benchmark manifest.
 
+## ARB-107: pinned analyzer differential rehearsal
+
+Arbiter native probes, Semgrep, and CodeQL scanned the same 11 pinned,
+license-cleared RealVuln Python snapshots. This is an intentionally vulnerable
+benchmark cohort, not an ordinary or representative production-repository
+sample. No project build, test, setup, or application command was run; CodeQL
+used `--build-mode none`, and target code was not executed. Arbiter ran
+offline with adapters, cache, and history disabled so its Semgrep adapter
+could not duplicate the separately pinned Semgrep run.
+
+| Analyzer | Python security findings | Python files scanned | Result |
+|---|---:|---:|---|
+| Arbiter native probes | 102 | File-level denominator not comparable to other tools | 0 scan errors; internal probe coverage ranged from 96.9% to 98.4% |
+| Semgrep 1.177.0 | 236 | 360 | 0 scan errors; each source repository's `.semgrepignore` was applied |
+| CodeQL 2.27.3 / `codeql/python-queries@1.8.13` | 96 | 459/459 | 11/11 invocations succeeded; 0 error- or warning-level notifications |
+
+The pinned source trees were identical across tools, but their effective file
+sets were not: Semgrep scanned 360 Python files while CodeQL extracted all 459
+Python files. Counts below use normalized repository-relative Python paths
+and intersecting inclusive line spans. A finding can overlap more than one
+finding from another analyzer, so pair totals are not deduplicated
+vulnerability instances.
+
+| Pair | Findings with a location-overlapping counterpart | Unmatched by location | Overlapping pairs with shared CWE tag / without shared CWE tag |
+|---|---:|---:|---:|
+| Arbiter / Semgrep | 75/102 and 121/236 | 27 Arbiter; 115 Semgrep | 91 / 133 |
+| Arbiter / CodeQL | 30/102 and 40/96 | 72 Arbiter; 56 CodeQL | 25 / 53 |
+| Semgrep / CodeQL | 89/236 and 61/96 | 147 Semgrep; 35 CodeQL | 73 / 22 |
+
+These are differential-coverage signals only. Overlap is not a true positive;
+an unmatched result is not a false positive or false negative; and differing
+CWE tags do not adjudicate the underlying issue. No precision, recall, or
+accuracy estimate follows from this run. The aggregate record, tool pins,
+configuration digest, source archive hashes, and matching contract are in
+`docs/accuracy-benchmark-manifest.json`; source archives, databases, and
+case-level analyzer reports remain temporary.
+
 A separate maintainer-authored Python planted-corpus regression run scored
 73/73, including all 8 planted SQL-injection cases, with no reported misses,
 unexpected findings, or safe-twin false positives. It ran on Python 3.14.4
@@ -193,7 +231,8 @@ The evidence is not sufficient for a 99% precision-and-recall claim. The
 AI-heldout recall is 4%, AI-development recall is 28%, and the RealVuln
 multi-CWE manual-review slice measured 89.9% labelled-case precision and
 18.2% labelled-case recall with benchmark-specific cluster intervals. The
-narrow CWE-89 slice remains at 77.8% precision and 80.8% recall. Human
+narrow CWE-89 slice remains at 77.8% precision and 80.8% recall. The
+ARB-107 analyzer differential does not add accuracy evidence. Human
 adjudication, representative populations, blind miss audits, and
 platform/segment coverage remain incomplete.
 

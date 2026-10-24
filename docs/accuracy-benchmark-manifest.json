@@ -591,6 +591,157 @@
         "general_99_percent_claim": false,
         "claim_scope": "Curated RealVuln 3.1.0 11-repository Python manual-review case conformance; not independently adjudicated truth, finding-level precision, or production-population accuracy."
       },
+      "analyzer_differential_run": {
+        "status": "completed_aggregate_only",
+        "requirement_id": "ARB-107",
+        "recorded_at_utc": "2026-10-24T22:56:53Z",
+        "interpretation": "differential_coverage_only",
+        "accuracy_claim_eligible": false,
+        "general_99_percent_claim": false,
+        "source_code_executed": false,
+        "benchmark_commit": "7a710251f55c17d32d3adcb13d37468e2e3b9e4a",
+        "ground_truth_version": "3.0.0",
+        "repository_count": 11,
+        "source_archive_sha256": {
+          "realvuln-damn-vulnerable-graphql-application": "ce16094a23fffb5d9726a3b0684cabf1fda5888e1ba8bc8b105592c3c86604b8",
+          "realvuln-djangoat": "474fa41a799745f7a7af94500e2041ac7e98130c6ae2ababbbe7b470a2e6c864",
+          "realvuln-dsvpwa": "9dec4092898ce7bae7d4ffd854a6a577eeeadd209f7d01053787384935dd1bad",
+          "realvuln-dsvw": "8a9e0d07755bedf2c73c856c88573cb1cfa37ba810231b23ab2113a1a1473b4e",
+          "realvuln-dvpwa": "902ddd5e78673bdbc771e43f89e5b7f7af2f7c3da2544fd9c530d0f571506673",
+          "realvuln-pygoat": "d36746c1537963ba62ad124dcf6eb392e1dc347853f8a578aacd40a048e10cd5",
+          "realvuln-threatbyte": "b0f511d99a2a238a078f46b16a1b1148d135758a577e63a48ddb3dd9e2ac660f",
+          "realvuln-vampi": "42f45bb0612383c57c3f1cfb2c446e742c2104f7766337199de766b6dc5c3e37",
+          "realvuln-vfapi": "eb9fcc598e84643df34f5687eb0855e4f0821a21613d2b8d67f8cfb98ae7be2a",
+          "realvuln-vulnpy": "81c56c7579128db681018d04dbd64bab6a5d2d4a6564bcad35eac48ee2779b6a",
+          "realvuln-vulpy": "a0087359a38d52e977cbc6493bb949629add4038413b52af4372c7ad88f3a091"
+        },
+        "arbiter": {
+          "version": "0.1.0",
+          "commit": "f766cecbb679009f069aebbec6ff56c61a4c0c1a",
+          "worktree_clean": false,
+          "scanner_sources_match_commit": true,
+          "configuration_sha256": "e001cd6a3677c208d28c85a4cd6364b25a467e23405e59d0f7de7b9ab95d34ea",
+          "profile": "offline",
+          "probe_scope": "native_probes_only",
+          "adapters_enabled": false,
+          "cache_enabled": false,
+          "history_enabled": false,
+          "python_security_findings": 102,
+          "scorecard_probe_coverage_range": [
+            0.969,
+            0.984
+          ],
+          "scan_errors": 0
+        },
+        "semgrep": {
+          "version": "1.177.0",
+          "rules_repository": "https://github.com/semgrep/semgrep-rules",
+          "rules_commit": "40b8c63f75dc7c22c8a77482d73bfb864b146f7e",
+          "configuration_subtree": "python",
+          "semgrepignore_applied": true,
+          "python_files_scanned": 360,
+          "non_python_files_scanned": 558,
+          "python_security_findings": 236,
+          "scan_errors": 0
+        },
+        "codeql": {
+          "cli_version": "2.27.3",
+          "cli_archive_sha256": "845075a2fa2fdf72629adc6cbde6264691b698d1f294bd27f10c6b579cd750a4",
+          "query_pack": "codeql/python-queries@1.8.13",
+          "query_pack_build_sha": "a1575b98a8cc19bcfa7bb6cb41be688cb3dae65c",
+          "query_pack_lock_sha256": "682c4c9b757da6b62970eab87443a464019492d406fcefd3fb99897f02e383bd",
+          "query_suite": "codeql-suites/python-code-scanning.qls",
+          "query_dependencies": {
+            "codeql/concepts": "0.0.34",
+            "codeql/controlflow": "2.0.44",
+            "codeql/dataflow": "2.1.16",
+            "codeql/mad": "1.0.60",
+            "codeql/python-all": "7.2.8",
+            "codeql/regex": "1.0.60",
+            "codeql/ssa": "2.0.36",
+            "codeql/suite-helpers": "1.0.60",
+            "codeql/threat-models": "1.1.0",
+            "codeql/tutorial": "1.0.60",
+            "codeql/typetracking": "2.0.44",
+            "codeql/util": "2.0.47",
+            "codeql/xml": "1.0.60",
+            "codeql/yaml": "1.0.60"
+          },
+          "build_mode": "none",
+          "python_files_scanned": 459,
+          "python_files_discovered": 459,
+          "python_security_findings": 96,
+          "successful_invocations": 11,
+          "failed_invocations": 0,
+          "error_notifications": 0,
+          "warning_notifications": 0
+        },
+        "platform": {
+          "operating_system": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+          "architecture": "x86_64",
+          "python_version": "3.14.4"
+        },
+        "coverage": {
+          "same_pinned_source_snapshots": true,
+          "effective_file_sets_identical": false,
+          "file_set_difference": "CodeQL extracted 459/459 Python files. Semgrep scanned 360 Python and 558 non-Python files while applying each source repository's .semgrepignore; tool-level file sets therefore differ."
+        },
+        "results": {
+          "python_security_findings_by_analyzer": {
+            "arbiter_native": 102,
+            "semgrep": 236,
+            "codeql": 96
+          },
+          "pairwise_location_differential": [
+            {
+              "pair": "arbiter_native_vs_semgrep",
+              "left_findings": 102,
+              "right_findings": 236,
+              "line_overlapping_pairs": 224,
+              "left_findings_with_location_counterpart": 75,
+              "right_findings_with_location_counterpart": 121,
+              "left_unmatched_by_location": 27,
+              "right_unmatched_by_location": 115,
+              "pairs_with_shared_cwe_tag": 91,
+              "pairs_without_shared_cwe_tag": 133
+            },
+            {
+              "pair": "arbiter_native_vs_codeql",
+              "left_findings": 102,
+              "right_findings": 96,
+              "line_overlapping_pairs": 78,
+              "left_findings_with_location_counterpart": 30,
+              "right_findings_with_location_counterpart": 40,
+              "left_unmatched_by_location": 72,
+              "right_unmatched_by_location": 56,
+              "pairs_with_shared_cwe_tag": 25,
+              "pairs_without_shared_cwe_tag": 53
+            },
+            {
+              "pair": "semgrep_vs_codeql",
+              "left_findings": 236,
+              "right_findings": 96,
+              "line_overlapping_pairs": 95,
+              "left_findings_with_location_counterpart": 89,
+              "right_findings_with_location_counterpart": 61,
+              "left_unmatched_by_location": 147,
+              "right_unmatched_by_location": 35,
+              "pairs_with_shared_cwe_tag": 73,
+              "pairs_without_shared_cwe_tag": 22
+            }
+          ]
+        },
+        "matching_contract": "Within each repository, normalize repository-relative Python paths and count findings as location-overlapping only when their inclusive line spans intersect. Report pairwise finding pairs and the number of findings with at least one counterpart; count CWE-tag intersection separately. Matching is not deduplicated to vulnerabilities, and one-to-many overlaps are possible.",
+        "limits": [
+          "The cohort is the intentionally vulnerable RealVuln benchmark subset, not ordinary or representative production repositories.",
+          "Differential overlap, unmatched findings, and CWE-tag concordance are not ground truth, precision, recall, or false-positive rates.",
+          "The tools use different rule semantics and effective file sets; Semgrep applied source .semgrepignore files.",
+          "Arbiter was run with native probes only to keep its own Semgrep adapter from duplicating the separately pinned Semgrep scan.",
+          "Only aggregate results are committed. Source archives, databases, and case-level analyzer reports were temporary and are not included.",
+          "No rules were tuned on these evaluation snapshots; no human or model labels were produced for this differential run.",
+          "This does not measure ordinary-repository precision, missed-defect recall, or cross-platform accuracy."
+        ]
+      },
       "selection_gates": [
         "Use only the 11 selected Python source repositories whose license metadata is MIT or Unlicense at the exact pinned source commit; exclude GPL-3.0 and NOASSERTION repositories.",
         "The benchmark manifest and ground-truth metadata are pinned to commit 7a710251f55c17d32d3adcb13d37468e2e3b9e4a.",

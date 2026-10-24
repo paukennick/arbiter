@@ -1461,3 +1461,27 @@ results and per-repository source, label, and report hashes are in
 `docs/accuracy-realvuln-multicwe-run.json`; `docs/accuracy-benchmark-manifest.json`
 references its digest. Prioritize follow-up rule work using development data
 and independent regression cases, not these evaluation examples.
+
+## 2026-10-24 — Pinned analyzer differential rehearsal (ARB-107)
+
+Ran Arbiter native probes, Semgrep 1.177.0 with rules commit
+`40b8c63f75dc7c22c8a77482d73bfb864b146f7e`, and CodeQL 2.27.3 with
+`codeql/python-queries@1.8.13` on the same 11 MIT/Unlicense RealVuln Python
+snapshots. CodeQL used `--build-mode none`; Arbiter used offline native probes
+with adapters, cache, and history disabled. No build, test, setup, or
+application command ran, and target code was not executed.
+
+The aggregate Python security finding counts were Arbiter 102, Semgrep 236,
+and CodeQL 96. CodeQL extracted 459/459 Python files; Semgrep scanned 360
+Python files while applying each source repository's `.semgrepignore`, so the
+effective file sets differed. Location-overlap, unmatched-by-location, and
+CWE-tag agreement counts are recorded in the analyzer differential entry of
+`docs/accuracy-benchmark-manifest.json`; raw per-case reports and databases
+were temporary and are not committed. The worktree had the ARB-107 registry
+update and unrelated pre-existing untracked paths, but scanner source files
+matched commit `f766cec`.
+
+These are differential-coverage signals on intentionally vulnerable benchmark
+applications, not accuracy, precision, recall, or ground truth. The separate
+ordinary-repository precision study, blinded review, and human miss audit
+remain unmeasured. No detection rules were tuned.

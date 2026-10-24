@@ -1,7 +1,7 @@
 # External Accuracy Measurement Expansion
 
-This records the source-vetting design and the first additive measurement
-execution. It is not a 99% claim. The immediate work is
+This records the source-vetting design and completed additive measurement
+executions. It is not a 99% claim. The immediate work is
 split into (1) real-repository finding precision, using Semgrep and CodeQL as
 differential signals with blinded model labels for now; (2) external
 AI-generated-code conformance; and (3) expanding the existing RealVuln
@@ -12,10 +12,13 @@ measurement beyond Python CWE-89.
 - ARB-105 was a design-only milestone. ARB-106 later reacquired and scanned
   only the 11 previously approved pinned MIT/Unlicense Python repositories;
   the sources and per-repository reports were kept in temporary storage.
+- ARB-107 completed a pinned Arbiter/Semgrep/CodeQL differential on those same
+  11 snapshots. It reports analyzer coverage and location overlap only; it is
+  not the ordinary-repository precision study.
 - No benchmark target code was executed. The committed output contains
-  aggregate labels and metrics only.
-- `semgrep` 1.177.0 and its locked rules are available locally. CodeQL is not
-  installed or provisioned in the current environment.
+  aggregate labels and differential counts only.
+- Semgrep 1.177.0 and its locked rules were used. CodeQL 2.27.3 and the pinned
+  `codeql/python-queries@1.8.13` pack were provisioned for the rehearsal.
 - Semgrep/CodeQL agreement is **not ground truth**. Each tool has its own
   coverage, rule semantics, false positives, and false negatives.
 - Until human review is available, sampled labels produced by a model must be
@@ -39,13 +42,13 @@ measurement beyond Python CWE-89.
 | [RealSec-Bench](https://github.com/DeepSoftwareAnalytics/Realsec-code-Bench) | Describes evaluating LLM-generated code for real-world repository tasks with CodeQL and a multi-LLM voting mechanism. It may inform an external AI-code comparison. | GitHub reports no repository license. Its documented evaluation pipeline includes executing generated code; that behavior is outside this study's no-target-execution boundary. **Do not run it.** Reconsider only after licensing is resolved and a static-only, non-executing path is independently verified. |
 | [MT-Sec](https://github.com/santaboi/Multiturn-secure-code-generation-benchmark) | Potential source of multi-turn secure-code generation tasks. | No repository license is declared, and the reviewed README provides insufficient information about a fixed corpus, ground-truth labels, and scanner-compatible source snapshots. **Not ready for measurement.** |
 
-The current priority is the cleared 11-repository RealVuln Python subset:
-first inventory the pinned ground truth and, if all eligible labels and
-non-scoring exclusions validate, assess its eligible CWE cases at those
-commits. Then expand to another language or AI-authorship stratum only after
-repository-level license and permission checks. This preserves the previous
-source scope while increasing weakness coverage. Do not mix non-scoring
-entries into either side of the metric.
+The multi-CWE label inventory and the first cross-analyzer differential are
+complete for the cleared 11-repository RealVuln Python subset. This preserves
+the approved source scope while extending weakness coverage and measuring
+tool disagreement; it does not estimate production precision. Expand to
+another language or AI-authorship stratum only after repository-level license
+and permission checks. Do not mix non-scoring entries into either side of the
+label-conformance metric.
 
 ## Real-repository precision: differential plus blinded labels
 
@@ -102,13 +105,14 @@ separately and without a human-truth claim.
 
 ### Safe CodeQL extraction
 
-The current environment has Semgrep but not CodeQL. Before installing a pinned
-CodeQL CLI and query pack, record their versions in the study manifest. Use
-CodeQL's `--build-mode none` where supported; the current CLI documentation
-lists C#, Java, JavaScript/TypeScript, Python, and Ruby. Do not invoke
-autobuild/manual builds or benchmark evaluation scripts that run target code.
-If static extraction cannot be completed without building or executing
-untrusted code, mark that language/repository not assessed and state why.
+ARB-107 provisioned CodeQL CLI 2.27.3 and the locked Python query pack
+`codeql/python-queries@1.8.13` with its dependency lock. The Python database
+used `--build-mode none`; all 11 invocations succeeded and extracted 459/459
+Python files without running a project build or target command. This verifies
+only the selected Python snapshots. Do not invoke autobuild/manual builds or
+benchmark evaluation scripts that run target code. If static extraction
+cannot be completed without building or executing untrusted code, mark that
+language/repository not assessed and state why.
 
 ## ARB-106: first multi-CWE baseline
 
@@ -168,14 +172,16 @@ The current evaluator's case-matching behavior remains unchanged.
    and tested. It scores only `manual_review` labels, records exclusions and
    unmatched findings, and preserves the existing matcher and historical
    CWE-89 record.
-3. Confirm CodeQL CLI/query-pack installation and no-build extraction for
-   each selected language. Revalidate Semgrep version and rules lock.
-4. Freeze the repository split, model labeler/rubric, run record, and analysis
-   before running the differential. Do not tune rules on the evaluation data.
-5. Publish only aggregates, provenance, denominators, coverage, and
-   model-label limitations. Keep case-level results private unless their
-   source license explicitly permits release.
+3. **Completed for the selected Python snapshots:** verified the CodeQL CLI
+   checksum, locked query pack, no-build extraction, and Semgrep version/rules
+   pin. Other language extractors remain untested.
+4. **Completed for this differential:** the repository pins and tool settings
+   were frozen before scans; no rules were tuned on the evaluation data.
+5. **Completed for this differential:** published only aggregate counts,
+   provenance, file coverage, and matching limits; case-level results remain
+   temporary.
 
-CodeQL differential scans, model-label runs, and cross-language or
-AI-authorship expansion remain future work pending tool provisioning,
-sampling freeze, and source-rights verification.
+The ordinary public-repository precision sample, blinded labels, independent
+human audit, other-language CodeQL extraction, and cleared external
+AI-authorship expansion remain future work. The RealVuln differential does not
+substitute for any of them.

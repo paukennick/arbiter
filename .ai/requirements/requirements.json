@@ -2732,6 +2732,42 @@
         "Scope includes docs/accuracy-baseline.md and docs/accuracy-realvuln-multicwe-run.json so the current baseline and reproducible aggregate report stay aligned with the new result.",
         "Completed the 11-repository aggregate-only multi-CWE baseline with pinned label provenance and digests; preserved historical CWE-89 output; validated focused and fast suites, schema, lint, mutation guards, Arbiter self-gate, and Omni gate."
       ]
+    },
+    {
+      "id": "ARB-107",
+      "category": "accuracy",
+      "title": "Running pinned analyzer differential rehearsal",
+      "description": "Run a reproducible static differential rehearsal using Arbiter, Semgrep, and CodeQL on the already-cleared, frozen 11-repository RealVuln Python subset. Record tool overlap and unique findings as benchmark differential coverage only; do not interpret analyzer agreement as truth or as ordinary production-repository accuracy. Keep all case-level outputs temporary and publish aggregate-only results; do not tune rules.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "approved public-repository candidate metadata",
+        "aggregate-only differential reports",
+        "temporary pinned analyzer installation"
+      ],
+      "acceptance_criteria": [
+        "Freeze repository snapshot pins before scanning;verify each selected repository license;pin Arbiter",
+        "Semgrep binary and rules",
+        "CodeQL CLI and query pack;run same snapshots in no-target-execution mode;report agreement and unique findings without treating them as ground truth;preserve source privacy and no case-level publication without permission"
+      ],
+      "validation_required": [
+        "verify CodeQL checksums;validate same-snapshot coverage;schema validation;focused tests;python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-baseline.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Differential agreement is not ground truth; a convenience cohort cannot estimate representative production accuracy; model labels require blinding and provenance; CodeQL no-build extraction may be incomplete for some projects",
+        "This first differential cohort is intentionally vulnerable benchmark code, not a representative real-repository population; the separate ordinary-repository precision study remains unmeasured.",
+        "Completed the pinned 11-repository Python analyzer differential. Aggregate-only results and provenance are in docs/accuracy-benchmark-manifest.json. Schema validation, 10 focused conformance tests, Omni doctor, and the project-managed Omni gate passed. This is differential coverage only, not production accuracy."
+      ]
     }
   ]
 }
