@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Held-out set r5 (ARB-092): fetch the 50 pinned repositories of tools/gold/heldout-r5-repos.json.
+# Held-out set r5 (ARB-101): fetch the 50 pinned repositories of tools/gold/heldout-r5-repos.json.
 # Same fetch as tools/fetch_corpus.sh's gold group: one exact commit, no history, hooks off, LFS not
 # smudged, submodules untouched, nothing executed. tools/gold_benchmark.py --fetch-script reads the
 # get_pinned lines.

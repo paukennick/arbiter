@@ -2162,6 +2162,36 @@
       "risk_notes": [
         "the census is informational; counts are not defects"
       ]
+    },
+    {
+      "id": "ARB-101",
+      "category": "precision",
+      "title": "Held-out set r5: 50 repositories frozen before scanning, 1,010 model labels",
+      "description": "A second held-out set (r5) of 50 repositories, 10 per language (Python, Java, Go, Ruby, TypeScript), chosen and committed (2879bca) before any scan. The main-branch scan gave 21,396 findings; 1,010 were sampled per rule and labelled by the calibrated prosecutor/defender model labeller (source heldout-r5-model). Rule authors must not read these findings, labels or excerpts while changing rules. Numbered ARB-092 in commit 2879bca; renumbered because GitHub Copilot's work uses ARB-091..097.",
+      "priority": "high",
+      "status": "needs_review",
+      "minimum_access_scope": [
+        "tools/gold",
+        "tools/fetch_heldout_r5.sh",
+        "tools/label_populations.py"
+      ],
+      "acceptance_criteria": [
+        "repo list committed before scan",
+        "every sampled finding labelled",
+        "labels recorded with source heldout-r5-model"
+      ],
+      "validation_required": [
+        "label count 1010",
+        "pytest suite"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md"
+      ],
+      "risk_notes": [
+        "Labels are model labels",
+        "not human labels. 993 tp / 12 fp / 5 unsure. Only supply.unpinned-action reaches Wilson lower >= 0.99 (0.9924",
+        "500/500); no rule is admitted by this commit."
+      ]
     }
   ]
 }

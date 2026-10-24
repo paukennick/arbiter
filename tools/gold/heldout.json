@@ -153,7 +153,7 @@
     ],
     "repos_file": "tools/gold/heldout-r5-repos.json",
     "fetch": "tools/fetch_heldout_r5.sh",
-    "requirement": "ARB-092",
+    "requirement": "ARB-101",
     "policy": "Same as `policy`: rule authors must not open findings, labels or excerpts from these repositories while changing a rule; only aggregate scores are reported."
   }
 }

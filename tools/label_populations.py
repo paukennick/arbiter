@@ -66,6 +66,7 @@ FIELDS = (*ls.POPULATION_KEYS, "population_from")
 #   ground truth: every finding the benchmark can judge is labelled.
 PLAN: dict[str, str] = {
     "gold-model.jsonl": "report:tools/gold/results/2026-10-23-gold-report-relabel.json.gz",
+    "heldout-r5-model.jsonl": "report:tools/gold/results/2026-10-23-heldout-r5-report.json.gz",
     "ai-corpus-model.jsonl": "census",
     "cve-suspects-model.jsonl": "census",
     "owasp-java.jsonl": "census",
@@ -88,7 +89,7 @@ def encode(path: Path, records: list[dict]) -> bytes:
 
 def heldout_repos() -> set[str]:
     """Gold-style repositories in every held-out set of heldout.json: `held_out` (2026-10-22) and any later
-    set (a top-level key holding `gold_repos`, e.g. `held_out_r5`, ARB-092)."""
+    set (a top-level key holding `gold_repos`, e.g. `held_out_r5`, ARB-101)."""
     data = json.loads(HELDOUT.read_text(encoding="utf-8"))
     return {r for v in data.values() if isinstance(v, dict) for r in v.get("gold_repos", [])
             if isinstance(v.get("gold_repos"), list)}
