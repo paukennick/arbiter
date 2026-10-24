@@ -1411,3 +1411,29 @@ were engaged, no source or sealed dataset was opened, no new labels or audits
 were collected, and no detection rules were tuned. Before executing the
 protocol, secure an independent coordinator/reviewers, approve source and
 license terms, and freeze the study sampling and analysis plan.
+
+ARB-105 records the next measurement design in
+`docs/accuracy-measurement-expansion.md`. The first RealVuln extension should
+inventory the pinned ground truth and, if label completeness and exclusions
+validate, score eligible CWEs on the previously cleared 11 Python repo pins,
+keeping the existing case matcher and historical run untouched.
+RealVuln's pinned benchmark metadata reports 90 LLM-generated repositories
+across Python and TypeScript/JavaScript, but their per-repository rights are
+not established by the benchmark repository's Apache-2.0 license; do not
+acquire those sources until each pin is cleared. RealVuln targets are
+intentionally vulnerable applications, so its results are benchmark
+conformance, not a representative real-production-repository precision
+estimate. SecurityEval and
+RealSec-Bench also have no declared GitHub license in the reviewed metadata;
+RealSec-Bench's documented evaluator executes generated code and is outside
+the current no-execution boundary.
+
+For the real-repository precision study, Semgrep findings and CodeQL findings
+are differential signals only. A blinded model may label samples under the
+owner's interim decision, but results must be called model-labelled
+conformance, include exact model/prompt provenance, and must not be described
+as independent truth or certified 99% accuracy. Semgrep 1.177.0 and its
+locked rules are available in the current environment; CodeQL is not
+installed. The generic manifest `run_record_template` remains the stable
+cross-study format; the existing Python/CWE-89 `evaluation_run` is not
+rewritten for other scopes.

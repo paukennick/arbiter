@@ -272,4 +272,15 @@ the source/license and sampling plan, then freeze the study before any cases
 are shared. Keep the existing sealed AI and gold sources closed; do not tune
 rules on the evaluation data or expand claims beyond measured strata.
 
+The owner has since approved model labels as an interim operational substitute
+for human reviewers, with a strict **model-labelled conformance** label and no
+certified-accuracy claim. ARB-105 records the source review and execution
+design in [accuracy-measurement-expansion.md](accuracy-measurement-expansion.md):
+Semgrep/CodeQL disagreement is a differential signal, not ground truth; the
+first bounded RealVuln expansion will inventory the already cleared 11 Python
+repository pins, then score eligible CWE labels only if label completeness
+and exclusions validate. The broader RealVuln LLM-generated Python and
+TypeScript/JavaScript corpora are promising external AI-code strata, but each
+source repository's pinned license must be cleared before acquisition.
+
 This roadmap is a program, not a result: it does not certify Arbiter at 99%.

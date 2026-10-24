@@ -160,3 +160,9 @@ larger source with defensible labels; conduct blind finding adjudication and
 repository miss audits; then validate the sampling design and uncertainty
 estimator before any rule tuning. Keep the existing sealed AI and gold sources
 closed.
+
+Per the owner's 2026-10-24 decision, interim measurements may use blind model
+labels when human reviewers are unavailable. Report those results only as
+**model-labelled conformance**, with model and prompt provenance; they are not
+independent adjudication, certified precision/recall, or evidence for a 99%
+claim. This interim option changes no baseline result or label provenance.

@@ -2663,6 +2663,40 @@
         "source approval",
         "and data collection remain future work."
       ]
+    },
+    {
+      "id": "ARB-105",
+      "category": "accuracy",
+      "title": "Research external AI-code sources and define differential conformance study",
+      "description": "Research external AI-generated-code benchmark sources and design an aggregate-only Semgrep/CodeQL differential plus RealVuln expansion beyond CWE-89. Differential agreement is a triage signal, never ground truth; interim model labels must be blinded, provenance-recorded, and reported only as model-labelled conformance. Preserve the existing run-record template and RealVuln matching contract; do not ingest unlicensed sources or execute target code.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "tools/ground_truth/realvuln_conformance.py"
+      ],
+      "acceptance_criteria": [
+        "Separate differential agreement from ground truth; record model label provenance and all run environment/tool versions; keep existing RealVuln matcher and run-record compatibility; assess benchmark source licensing and holdout safety; document unsupported data and no universal 99 percent claims"
+      ],
+      "validation_required": [
+        "Schema validation; evaluator tests; review findings and sampling methodology; python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "CodeQL is unavailable in the current environment; benchmark license metadata is incomplete; model-labelled results are conformance only and do not establish independent truth.",
+        "Research gate only: CodeQL is unavailable in the current environment; source-level license eligibility for AI-generated repositories is not established. No benchmark corpus or target source has been acquired in this task.",
+        "This requirement completes source review and study design only; the all-CWE run, model-label measurements, CodeQL scan, and broader RealVuln acquisition remain future work pending source rights and tool provisioning."
+      ]
     }
   ]
 }

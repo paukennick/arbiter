@@ -5,6 +5,7 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 `REQ-###` they serve. Rationale belongs in `.ai/project-context.md`.
 
 ## [Unreleased]
+- ARB-105 | Researched external AI-code sources and specified a real-repository Semgrep/CodeQL differential with blinded model labels reported only as model-labelled conformance. Identified RealVuln's 90 LLM-generated Python/TypeScript/JavaScript repositories as a candidate expansion, while blocking acquisition until per-repository rights are checked; preserved the existing run-record template and CWE-89 matcher. No new source was acquired or scanned.
 ### 2026-10-24 (round 5, show everything)
 
 - ARB-103 | Arbiter shows every finding by default again and blocks only on verified ones. `report.show` defaults to `all`: the console, markdown, pull-request comment, HTML, SARIF and GitHub annotations list verified findings first, then advisory, then inferred, each section labelled with what the tier means and whether it can block the gate (`FINDINGS (advisory) — not confirmed; shown, cannot block the gate`), under one summary line (`2 verified (can block the gate) · 71 advisory (shown, not gating) · 0 inferred`). `gate.tier_mode` stays `tiered`, so only verified findings can fail the gate. Reverses ARB-100's verified-only default, which with one verified rule hid every finding on the planted and AI-written corpora (FAIL-071)

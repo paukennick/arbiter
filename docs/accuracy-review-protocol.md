@@ -6,6 +6,11 @@ or an accuracy result. The current RealVuln CWE-89 pilot remains benchmark
 conformance against maintainer-authored labels; this protocol does not upgrade
 those labels or certify the 99% target.
 
+Owner-approved interim studies may use model-generated labels, but those runs
+must be called **model-labelled conformance** and are not independent
+adjudication or a certified accuracy measurement. The human-review tracks
+below remain the standard for human-grounded precision and recall claims.
+
 ## Non-negotiable safeguards
 
 1. **Freeze the claim and population first.** Name the weakness, languages,
