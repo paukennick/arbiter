@@ -1476,3 +1476,64 @@ own label record (`<seat>-<model>:panel/v1`).
   seated. A three-vendor calibration of 60 or more items is still owed
   before panel labels feed any claim. Panel labels are reported as
   model-labelled conformance, never as certified.
+
+## 2026-10-24 — A target may not grade itself; unassessed source says so (ARB-143..147)
+
+A core audit of main 8a12926 reproduced five false-clean / false-verified
+gaps. All five share one shape: an input the scan did not control (the
+target's config, a language with no pack, a mistyped path, a tool's
+unreadable output, a glob) was read as "nothing to report".
+
+**Config trust (ARB-143).** `load_config` now distinguishes the file it
+found in the target root from one the operator named with `--config`. The
+target's file may *tighten* the gate and may use every feature meant for it
+(suppressions, house rules, scoring, quality thresholds); it may not set
+`precision` or `verify`, and may not *loosen* the gate. Tighten versus
+loosen is decided key by key against `DEFAULTS["gate"]`: a known severity
+for `fail_on.severity`/`new` (none ranks above the default `critical`), a
+numeric `coverage_below`, `true` for `gate_on_inferred`/`fail_on_probe_error`,
+`tier_mode: legacy`, and a `tiers` list that keeps every default tier.
+Anything else under `gate` is dropped. A malformed value (`teired`) still
+raises, as before. Dropped keys land in `scan_scope.config.ignored` and are
+printed, so the drop is never silent. A ledger named by any config is
+resolved relative to that file and refused if it escapes the file's
+directory; `effective_bar` floors every bar threshold at `DEFAULT_BAR`.
+*Open to review:* whether `suppress` should also be restricted for a target
+root config (it was left alone: suppressions stay visible in the report and
+`assurance.blanket-suppression` already counts them), and whether
+`fail_on.severity` below `critical` should be treated as tightening when
+the operator's `--config` would have set something else (today a target
+root config is only ever compared with the defaults, never with an
+operator's file, since `--config` replaces it).
+
+**Unassessed languages (ARB-144).** The existing withholding mechanism is
+coverage; the fix adds to the denominator rather than inventing a second
+rule. `lang_rules.not_assessed_outcome` emits one `skipped`, `applicable`
+outcome named `lang_unsupported`, sized as the mean pack size times the
+number of missing languages, so three unsupported languages weigh like
+three packs. A second check withholds the grade outright when more than
+half the source lines are in such languages even if coverage clears the
+threshold, with the same wording a partial scan uses. The inventory now
+recognises the common languages it cannot assess, so they are reported as
+unassessed source rather than as `unknown` data.
+
+**`--only-files` (ARB-145).** `lstrip("./")` strips characters. The path is
+now normalised with a prefix loop, an absolute path under a target is made
+relative, and a path the inventory does not hold is an error that names it.
+
+**Adapters failing inside `ok_exit` (ARB-146).** `Adapter.decode` and
+`rows_of` raise `AdapterOutputError` for output that is not what the
+manifest describes; `map.errors` declares where a tool reports its own
+failures, and any non-warning entry raises `AnalyzerErrors`. Decision: an
+analyzer that reports errors is recorded `error` with its findings set
+aside (counted in the reason) rather than kept, because invariant CI-7
+says an errored probe reports no findings and a half-read tree is not the
+tool's answer. The alternative, a new `partial` status, would have touched
+every consumer of `status` for one adapter case.
+
+**Globs (ARB-147).** `arbiter/globs.py` is a small globstar matcher (`*`
+within a segment, `**` across segments, `[...]`, case-sensitive). House
+rules use it; the gitignore reader, suppression `path:` globs and language
+pack `files:` keep `fnmatch`, since their documented semantics are
+fnmatch's and changing them was out of scope.
+

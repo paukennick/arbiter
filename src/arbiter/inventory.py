@@ -32,13 +32,21 @@ LANG_BY_EXT = {
     ".ts": "typescript", ".tsx": "typescript",
     ".go": "go",
     ".rb": "ruby",
-    ".java": "java", ".kt": "kotlin",
+    ".java": "java", ".kt": "kotlin", ".kts": "kotlin",
     ".c": "c", ".h": "c",
     ".cc": "cpp", ".cpp": "cpp", ".cxx": "cpp", ".hpp": "cpp", ".hh": "cpp",
     ".cs": "csharp",
     ".rs": "rust",
     ".php": "php",
     ".r": "r", ".R": "r",
+    # Recognised so that a repository written in one of these is reported as
+    # source no rule pack reads, not as a tree with nothing to assess
+    # (ARB-144). No probe reads them beyond the language-neutral ones.
+    ".swift": "swift", ".scala": "scala", ".sc": "scala", ".dart": "dart",
+    ".ex": "elixir", ".exs": "elixir", ".erl": "erlang", ".hs": "haskell",
+    ".lua": "lua", ".pl": "perl", ".pm": "perl", ".clj": "clojure", ".cljs": "clojure",
+    ".groovy": "groovy", ".fs": "fsharp", ".vb": "vb", ".jl": "julia", ".zig": "zig",
+    ".nim": "nim", ".elm": "elm", ".ml": "ocaml", ".mli": "ocaml",
     ".sh": "shell", ".bash": "shell", ".zsh": "shell",
     ".ps1": "powershell",
     ".tf": "terraform", ".tfvars": "terraform", ".hcl": "hcl",

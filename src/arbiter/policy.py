@@ -13,6 +13,7 @@ from typing import Any
 
 from .core import (
     DIMENSIONS,
+    SEV_RANK,
     DimensionScore,
     Finding,
     ProbeOutcome,
@@ -118,8 +119,19 @@ def _merge(base: dict, over: dict) -> dict:
 
 
 def load_config(path: str | None, repo_root: str | None = None) -> dict:
-    """Load arbiter.yaml. An explicit path wins; otherwise look in the repo root."""
+    """Load arbiter.yaml. An explicit path wins; otherwise look in the repo root.
+
+    A file found in the target root is the target's own, and the target is
+    what the scan judges: it may make the gate stricter and may suppress,
+    but it may not decide which of its findings count as `verified` or let
+    more of them through the gate (`restrict_target_config`, ARB-143). Keys
+    it is not allowed to set are dropped and listed under
+    `config_source.ignored`, which the renderings print, so the drop is
+    never silent. A config the operator names with `--config` is trusted in
+    full.
+    """
     candidate: Path | None = None
+    explicit = bool(path)
     if path:
         candidate = Path(path)
     elif repo_root:
@@ -137,10 +149,127 @@ def load_config(path: str | None, repo_root: str | None = None) -> dict:
         raise RuntimeError(f"could not read config {candidate}: {exc}") from exc
     if not isinstance(data, dict):
         raise RuntimeError(f"config {candidate} must be a mapping")
+    ignored: list[str] = []
+    if not explicit:
+        data, ignored = restrict_target_config(data)
     merged = _merge(DEFAULTS, data)
     check_gate_config(merged, str(candidate))
     check_report_config(merged, str(candidate))
+    resolve_ledger_path(merged, candidate)
+    merged["config_source"] = {"path": str(candidate), "explicit": explicit, "ignored": ignored}
     return merged
+
+
+# What a target's own arbiter.yaml may not set (ARB-143). `precision` decides
+# which findings are called verified and `verify` is the pass that confirms
+# them; a repository that could set either would be grading its own work.
+TARGET_FORBIDDEN_KEYS = ("precision", "verify")
+
+
+def _valid_severity(value: Any) -> bool:
+    return isinstance(value, str) and value in SEV_RANK
+
+
+def restrict_target_config(data: dict) -> tuple[dict, list[str]]:
+    """The subset of a target-root config a scan may honour, and one note
+    per key it dropped.
+
+    Tighten versus loosen, key by key against `DEFAULTS["gate"]`:
+
+    * `fail_on.severity` / `fail_on.new`: a known severity is allowed, since
+      none ranks above the default `critical` and `new` has no default; a
+      null (gate off) or a misspelt name (`sev_at_least` never matches an
+      unknown threshold, so the gate could never fail) is dropped.
+    * `fail_on.coverage_below`: a fraction adds a check; anything else drops.
+    * `gate_on_inferred`, `fail_on_probe_error`: `true` adds findings or
+      probes to the gate; `false` is the default.
+    * `tier_mode`: `legacy` gates on more tiers than `tiered`; both allowed.
+    * `tiers`: allowed when it keeps every default tier (a superset).
+    * A malformed value (`tier_mode: teired`, an unknown tier name) is kept
+      so that `check_gate_config` raises on it, as it always has: a typo is
+      an error to fix, not a loosening to note.
+
+    `precision` and `verify` are dropped whole. Everything else in the file
+    (`suppress`, `probes`, `rules`, `score`, `quality`, ...) is left as it
+    was: those are features the target is meant to use, and each is already
+    visible in the report.
+    """
+    out = dict(data)
+    notes: list[str] = []
+    for key in TARGET_FORBIDDEN_KEYS:
+        if key in out:
+            out.pop(key)
+            notes.append(f"{key}: a target's own config may not set it")
+    gate = out.get("gate")
+    if isinstance(gate, dict):
+        kept: dict = {}
+        defaults = DEFAULTS["gate"]
+        for k, v in gate.items():
+            if k == "fail_on" and isinstance(v, dict):
+                fo: dict = {}
+                for fk, fv in v.items():
+                    if fk in ("severity", "new"):
+                        if _valid_severity(fv):
+                            fo[fk] = fv
+                        else:
+                            notes.append(f"gate.fail_on.{fk}: {fv!r} would loosen the gate")
+                    elif fk == "coverage_below":
+                        if isinstance(fv, (int, float)) and not isinstance(fv, bool) and 0 <= fv <= 1:
+                            fo[fk] = fv
+                        else:
+                            notes.append(f"gate.fail_on.{fk}: {fv!r} would loosen the gate")
+                    else:
+                        notes.append(f"gate.fail_on.{fk}: unknown key")
+                if fo:
+                    kept["fail_on"] = fo
+            elif k in ("gate_on_inferred", "fail_on_probe_error"):
+                if v is True or v == defaults.get(k, False):
+                    kept[k] = v
+                else:
+                    notes.append(f"gate.{k}: {v!r} would loosen the gate")
+            elif k == "tier_mode":
+                # Both modes are allowed (legacy gates on more); a misspelling
+                # is kept so check_gate_config raises on it as it always has.
+                kept[k] = v
+            elif k == "tiers":
+                if not isinstance(v, list) or any(t not in GATE_TIERS for t in v):
+                    kept[k] = v  # malformed: check_gate_config raises
+                elif set(defaults["tiers"]) <= set(v):
+                    kept[k] = v
+                else:
+                    notes.append(f"gate.{k}: {v!r} would drop a default gating tier")
+            else:
+                notes.append(f"gate.{k}: unknown key")
+        out["gate"] = kept
+    elif gate is not None:
+        out.pop("gate")
+        notes.append("gate: must be a mapping")
+    return out, notes
+
+
+def resolve_ledger_path(config: dict, config_file: Path) -> None:
+    """`precision.ledger` is read relative to the config file that names
+    it, and must stay inside that file's directory: a config that pointed
+    at a ledger elsewhere would be vouching for evidence it does not hold."""
+    settings = config.get("precision") or {}
+    raw = settings.get("ledger")
+    if not raw:
+        return
+    base = config_file.resolve().parent
+    target = Path(str(raw))
+    resolved = (target if target.is_absolute() else base / target).resolve()
+    try:
+        resolved.relative_to(base)
+    except ValueError:
+        raise RuntimeError(
+            f"{config_file}: precision.ledger {raw!r} resolves outside the config's "
+            f"directory ({base}); keep the ledger beside the config") from None
+    config["precision"] = {**settings, "ledger": str(resolved)}
+
+
+def config_notes(config: dict | None) -> list[str]:
+    """The keys a target-root config set and the scan ignored (ARB-143)."""
+    return list(((config or {}).get("config_source") or {}).get("ignored") or [])
 
 
 TIER_MODES = ("legacy", "tiered")

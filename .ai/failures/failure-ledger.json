@@ -1742,6 +1742,132 @@
       ],
       "prevention_notes": "Structured files are parsed, not regex-matched (supply.py module docstring). Two mutations in tools/mutate_tests.py (quoted-uses-ref, docker-uses-read-as-action) put each defect back and require its test to fail. docs/precision.md records that the verified rule's population changed and that the new shapes are unlabelled until the next labelling round.",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-120",
+      "date": "2026-10-24",
+      "title": "A scanned repository's own arbiter.yaml could label its findings verified and switch off its gate",
+      "status": "fixed",
+      "severity": "critical",
+      "symptom": "A target shipping precision: {ledger: ledger.json, verified_rules: ['*']} with a ledger whose bar was 0.0 had every finding tiered 'verified ... measured at least 99% precise'; a target setting gate.fail_on.severity: null (or 'Critical') had a gate that could never fail. Both from the default scan of the target with no --config.",
+      "how_detected": "core audit of main 8a12926 (SUMMARY-docs-platform.md item 1)",
+      "root_cause": "load_config treated the file found in the target root exactly like one the operator passed with --config, and merged every key including precision and gate over DEFAULTS. load_ledger merged the ledger's own bar over DEFAULT_BAR, so a ledger could lower the bar it is judged by. Ledger paths were read as given, so a config could point at any file.",
+      "requirement": "ARB-143",
+      "affected": [
+        "src/arbiter/policy.py",
+        "src/arbiter/precision.py",
+        "src/arbiter/engine.py",
+        "src/arbiter/report.py"
+      ],
+      "fix_summary": "restrict_target_config drops precision/verify and any gate key that would loosen the gate from a target-root config, recording each drop in scan_scope.config.ignored, which console/markdown/PR render; effective_bar floors the ledger bar at DEFAULT_BAR; resolve_ledger_path resolves relative to the config file and refuses escapes.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_target_config_trust.py"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Any new config key that decides what is called verified or what can fail the gate must be added to TARGET_FORBIDDEN_KEYS or the tighten-only gate rules in restrict_target_config; test_target_config_trust covers the current keys.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-121",
+      "date": "2026-10-24",
+      "title": "A repository in languages without a rule pack scored 99/100 with nothing marked not assessed",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "semgrep's own Kotlin/Scala/Swift test files (134 ruleid: lines) scored overall 99.4 at 94% coverage, gate PASS, security claim scope 'complete'; no probe, note or abstention named the 2,000 unread source lines.",
+      "how_detected": "core audit of main 8a12926 (item 2)",
+      "root_cause": "Coverage is the share of applicable probe checks that ran. A lang_* probe for a language absent from the tree is inapplicable and leaves the denominator, and no outcome stood in for the languages present that have no pack, so a tree nobody could assess looked like a tree with nothing to assess. Swift and Scala were not even recognised as languages.",
+      "requirement": "ARB-144",
+      "affected": [
+        "src/arbiter/inventory.py",
+        "src/arbiter/lang_rules.py",
+        "src/arbiter/engine.py"
+      ],
+      "fix_summary": "Inventory recognises the common unsupported languages; lang_rules.not_assessed_outcome adds one skipped applicable lang_unsupported outcome sized like the missing packs; scan_scope.languages_not_assessed lists them; the grade is withheld above 50% unassessed source lines.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_unassessed_languages.py"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "When adding a language to LANG_BY_EXT without a pack, NON_PROGRAMMING_LANGUAGES decides whether it is source; test_every_recognised_programming_language_without_a_pack_is_unassessed covers the common ones.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-122",
+      "date": "2026-10-24",
+      "title": "--only-files with a dotfile or unknown path read zero files and the gate passed",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "--only-files .husky/pre-commit read 0 files (files_changed 0) and the gate passed; --only-files nope.py did the same; docs/ci.md said an empty selection refuses.",
+      "how_detected": "core audit of main 8a12926 (item 4)",
+      "root_cause": "engine.run_scan normalised each path with str.lstrip('./'), which strips a set of characters, not a prefix, turning .husky into husky; and nothing checked that a requested path existed in the inventory or that files_changed was non-zero.",
+      "requirement": "ARB-145",
+      "affected": [
+        "src/arbiter/engine.py"
+      ],
+      "fix_summary": "_requested_path strips only a literal leading ./ and relativises absolute paths under a target; a requested path not in the inventory, or a selection that reads zero files, raises RuntimeError naming it.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_only_files_paths.py"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        "src/arbiter/adapters.py already notes: removeprefix",
+        "not lstrip"
+      ],
+      "prevention_notes": "Never use lstrip to remove a path prefix; the comment in adapters.to_findings and this entry both say why.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-123",
+      "date": "2026-10-24",
+      "title": "An analyzer failing inside its ok_exit codes was recorded as ran with 0 findings",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "gitleaks with a malformed .gitleaks.toml (FTL, exit 1, no report file) went from 1 finding to 0 and stayed status ran; semgrep exit 0 with empty or non-JSON stdout, a renamed results key, ruff exit 1 with no stdout, and bandit errors[] for an unparsable file were all 'ran', 0 findings, counted toward coverage.",
+      "how_detected": "core audit of main 8a12926 (item 5), fake binaries",
+      "root_cause": "Adapter.parse_output returned [] for empty, non-JSON and wrong-shaped output alike, and Adapter.run only raised when the exit code was outside ok_exit AND there were no rows; gitleaks and ruff reuse exit 1 for failure, so the code could not tell failure from findings, and nothing read a tool's own errors list.",
+      "requirement": "ARB-146",
+      "affected": [
+        "src/arbiter/adapters.py",
+        "src/arbiter/packs/adapters/bandit.adapter.toml",
+        "src/arbiter/packs/adapters/semgrep.adapter.toml"
+      ],
+      "fix_summary": "Adapter.decode/rows_of raise AdapterOutputError for output not matching the manifest; map.errors declares a tool's own error list and any non-warning entry raises AnalyzerErrors (findings set aside per CI-7, counted in the reason); stderr's last line is quoted in the reason.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_adapter_failed_inside_ok_exit.py"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "A new adapter manifest should declare map.errors where the tool reports its own failures; an adapter's empty answer must be a readable empty document, never missing output.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-124",
+      "date": "2026-10-24",
+      "title": "House-rule globs via fnmatch missed root files and src/a.py, so forbid policies were false-clean",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "content_match with the default files '**/*' never matched root.py; files: 'src/**/*.py' never matched src/a.py; on Windows fnmatch folded case so a rule matched different files than in Linux CI.",
+      "how_detected": "core audit of main 8a12926 (item 6)",
+      "root_cause": "fnmatch is not a path matcher: '*' crosses '/', and '**/' requires a literal slash, so '**/*' needs at least one directory and 'src/**/*.py' needs at least one directory under src.",
+      "requirement": "ARB-147",
+      "affected": [
+        "src/arbiter/probes.py",
+        "src/arbiter/globs.py"
+      ],
+      "fix_summary": "src/arbiter/globs.py: a globstar matcher (* within a segment, ** across segments, [...] classes, case-sensitive); probe_house_rules and probe_house_rules_ast use it for files: and paths:.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_globs.py"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Path globs in house rules go through arbiter.globs.match; fnmatch stays only where its semantics are documented (gitignore reader, suppression path globs, pack files:).",
+      "recurrence_of": ""
     }
   ]
 }

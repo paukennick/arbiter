@@ -11,6 +11,34 @@ passes, `ARBITER_CACHE_DIR`, `ARBITER_NO_VERSION_MEMO`), never policy.
 
 This repository's own [`arbiter.yaml`](../arbiter.yaml) is a working example.
 
+## Which config is trusted
+
+A file found in the target root is the target's own, and the target is what
+the scan judges (ARB-143). It may use every feature meant for it: `suppress`,
+`probes`, `rules`, `score`, `quality`, `ignore`, `report`, `cache`, and it may
+make the gate **stricter**. It may not:
+
+- set `precision` (`ledger`, `verified_rules`, `deterministic_profiles`) or
+  `verify`, which decide which of its findings are called `verified`;
+- **loosen** the gate: `fail_on.severity: null` or a misspelt severity (the
+  gate could never fail), `fail_on.coverage_below: null`,
+  `gate_on_inferred: false` or `fail_on_probe_error: false` where the file
+  would otherwise have set them true, or a `tiers` list that drops a default
+  gating tier. Tightening is honoured: a lower `fail_on.severity`, a
+  `fail_on.new`, a `coverage_below`, `tier_mode: legacy` (gates on more
+  tiers), `tiers` that add to the default.
+
+Dropped keys are not silent: `report.json` records them under
+`scan_scope.config.ignored`, and the console, markdown and pull-request
+renderings print one line naming them. A misspelt gate value (`tier_mode:
+teired`) is still an error, as it always was.
+
+`--config FILE` is the operator's choice and is trusted in full. A
+`precision.ledger` path is resolved relative to the config file that names it
+and must stay inside that file's directory; a path that escapes is an error.
+Whatever the ledger declares, its `bar` is never read below Arbiter's
+`DEFAULT_BAR`.
+
 ## Contents
 
 - [The file](#the-file)
@@ -138,6 +166,14 @@ gate outcome. (Older docs mention a `use_calibration` key; nothing reads it.)
 barely ran. Without it, uninstalling an analyzer looks identical to fixing every
 finding it produced.
 
+Source in a language no rule pack reads (Kotlin, Swift, Scala, C#, Rust, PHP,
+...) counts against coverage too: one `lang_unsupported` outcome, skipped and
+sized like the packs that are missing, names the languages and their share of
+the source lines (`scan_scope.languages_not_assessed`), and when more than
+half the source lines are in such languages the grade is withheld
+(ARB-144). The language-neutral probes (secrets, IaC, supply chain, drift)
+still run over the whole tree.
+
 ## Precision tiers
 
 Every finding in every report carries a precision tier, `verified`,
@@ -152,6 +188,10 @@ precision:
   verified_rules: []      # rule ids or globs declared verified; the ledger must still admit them
   deterministic_profiles: [offline, ci]   # profiles that cannot ask a model
 ```
+
+Only a config passed with `--config` can set this block; a target's own
+`arbiter.yaml` cannot ([above](#which-config-is-trusted)). `ledger` is
+relative to the config file and must stay beside it.
 
 Today one rule is declared verified, `supply.unpinned-action` (ARB-101), so
 every other deterministic finding is `advisory`: the default `tiered` gate
@@ -267,6 +307,14 @@ rules:
 
 `ast_query` requires the `ast` extra (tree-sitter). Without it the rule reports
 as not assessed, naming the missing dependency.
+
+`files:` and `paths:` are globstar patterns matched against the whole
+repo-relative path, case-sensitively on every OS (ARB-147): `*` stays inside
+one path segment, `**` spans any number of segments, so `**/*.py` is every
+Python file at any depth (the root included), `src/**/*.py` includes
+`src/a.py`, and `*.py` is the root's Python files only. Before ARB-147 these
+went through `fnmatch`, where `**/*` missed every root file and `src/**/*.py`
+missed `src/a.py`.
 
 ## Adaptive thresholds
 

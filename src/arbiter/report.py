@@ -357,6 +357,19 @@ def requirement_block(findings: list[Finding], heading: str = "## By requirement
     return L
 
 
+def config_ignored_line(report: Report) -> str:
+    """What the target's own arbiter.yaml tried to set and the scan refused
+    (ARB-143): printed wherever the report is read, so a dropped
+    `precision:` block is never a silent drop."""
+    cfg = (report.scan_scope or {}).get("config") or {}
+    ignored = cfg.get("ignored") or []
+    if not ignored:
+        return ""
+    where = cfg.get("path") or "the target's arbiter.yaml"
+    return (f"{len(ignored)} key(s) in {where} were ignored because a target's own config "
+            f"may not set them ({'; '.join(ignored)}). Pass the file with --config to apply them.")
+
+
 def _bluf_lines(report: Report) -> list[str]:
     """What this report can and cannot claim, worst news first.
 
@@ -376,6 +389,9 @@ def _bluf_lines(report: Report) -> list[str]:
         )
     if sc.withheld:
         lines.append(f"Grade withheld -- {sc.withheld_reason}")
+    note = config_ignored_line(report)
+    if note:
+        lines.append(note)
     skipped = [p for p in report.probes if p.status != "ran"]
     if skipped:
         lines.append(f"{len(skipped)} probe(s) not assessed: {', '.join(p.name for p in skipped)}.")
@@ -561,6 +577,10 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
     if report.stacks:
         L.append(_color(color, "dim", f"  stacks: {', '.join(report.stacks)}"))
     ss = report.scan_scope or {}
+    note = config_ignored_line(report)
+    if note:
+        L.append("")
+        L.append(_color(color, "medium", f"  CONFIG — {note}"))
     if ss.get("mode") == "partial":
         # Loud, and above the findings. Somebody scrolling to the counts must
         # not be able to reach them without passing this line.
