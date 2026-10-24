@@ -2598,7 +2598,7 @@
       "title": "External real-CVE fix-pair benchmark from GHSA, five languages, frozen dev/sealed split",
       "description": "Expand real-CVE fix pairs from the GitHub Advisory Database (reviewed, CC-BY-4.0) toward ~100 per language (python, typescript, go, java, ruby), restricted to CWEs a native security rule of that language pack is tagged with; deterministic seeded selection with predeclared criteria; split by repository into development and sealed (held_out_ghsa_r1), frozen and committed before any scan; scan both sides with the pinned Arbiter and report hunk-region recall, looser function/file recall and fixed-side persistence per language and CWE with Wilson and repository-cluster bootstrap intervals; development in detail, sealed aggregate only. Measurement only: no rule is changed.",
       "priority": "high",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "tools/ground_truth",
         "tools/gold/heldout.json",
