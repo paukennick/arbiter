@@ -192,7 +192,10 @@ def render_pr_comment(after: Report, d: ReportDiff | None = None) -> str:
         for f in listed:
             counts[f.severity] = counts.get(f.severity, 0) + 1
         if counts:
-            L.append(" · ".join(f"`{n}` {s}" for s, n in counts.items()))
+            # Severity order, not the order of `listed` (which is by tier).
+            order = ["critical", "high", "medium", "low", "info"]
+            ranked = sorted(counts.items(), key=lambda kv: order.index(kv[0]) if kv[0] in order else len(order))
+            L.append(" · ".join(f"`{n}` {s}" for s, n in ranked))
             L.append("")
         elif not after.active():
             L.append("No findings.")

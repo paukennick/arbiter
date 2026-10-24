@@ -270,6 +270,8 @@ def test_a_console_cut_at_its_limit_keeps_the_verified_findings():
     set_view(rep, "all")
     console = render_console(rep, color=False, limit=2)
     assert v.title in console and "… 4 more" in console
+    # The comment's severity counts stay in severity order, not tier order.
+    assert "`5` high · `1` low" in render_pr_comment(rep)
 
 
 def test_a_legacy_gate_says_advisory_findings_can_block():
