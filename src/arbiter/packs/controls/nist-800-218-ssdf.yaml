@@ -52,6 +52,9 @@ controls:
     satisfied_by:
       - arbiter/supply.pull-request-target
       - arbiter/supply.unpinned-action
+      - arbiter/supply.unpinned-precommit
+      - arbiter/supply.unpinned-ci-include
+      - arbiter/supply.remote-script-piped
 
   # ---- PS — Protect the Software -----------------------------------------
   - id: PS.1
@@ -97,7 +100,14 @@ controls:
     satisfied_by:
       - arbiter/supply.unpinned-python-dep
       - arbiter/supply.unpinned-npm-dep
+      - arbiter/supply.unpinned-java-dep
+      - arbiter/supply.unpinned-ruby-dep
+      - arbiter/supply.unpinned-terraform
+      - arbiter/supply.unpinned-container-image
+      - arbiter/supply.unpinned-install-in-build
       - arbiter/supply.unpinned-action
+      - arbiter/supply.unpinned-precommit
+      - arbiter/supply.unpinned-ci-include
       - arbiter/resource.k8s-mutable-image-tag
 
   - id: PW.5

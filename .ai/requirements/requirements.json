@@ -2591,6 +2591,101 @@
         "the PR comment and annotations are longer on repositories with many advisory findings; --sarif-min-severity and report.show: verified are the narrowing tools",
         "Completed 2026-10-24: default view shows every tier (planted 404/404, ai-corpus 127/127 via the regression_guard default-view check); gate unchanged (tiered); SARIF advisory capped at warning. FAIL-071 records why ARB-100's default was reverted."
       ]
+    },
+    {
+      "id": "ARB-130",
+      "category": "capability",
+      "title": "Supply-chain pinning covers the main pinning methods",
+      "description": "Arbiter's pinning checks cover how software is actually pinned, not only requirements.txt, package.json carets and workflow uses:. Fixes supply.unpinned-action (quoted SHA pins and docker:// digests reported unpinned; docker:// tags never checked; composite action.yml unchecked) and adds supply.unpinned-container-image (Dockerfile FROM / COPY --from, compose, Kubernetes, GitLab CI image/services, workflow container/services, docker:// uses; digest = pinned), supply.unpinned-precommit (rev not a 40-hex SHA), supply.unpinned-ci-include (GitLab include remote/project/component without a SHA), supply.remote-script-piped (curl|wget piped or substituted into an interpreter, PowerShell iex of a download) and supply.unpinned-install-in-build (pip/npm -g/gem/go install without a version in Dockerfile RUN and CI steps). Structured files are read with parsers (PyYAML nodes, json, tomllib, expat, graph.py HCL reader), not regex. Every new rule starts advisory; severity is set from measured fire rates on the dev tuning corpora.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "src/arbiter/supply.py",
+        "src/arbiter/probes.py",
+        "src/arbiter/cwe.py",
+        "src/arbiter/packs/rules/native.yaml",
+        "tests/test_supply_pinning.py",
+        "fixtures/planted"
+      ],
+      "acceptance_criteria": [
+        "quoted SHA pins and docker:// digests are not reported by supply.unpinned-action",
+        "docker:// tags and untagged images are reported by supply.unpinned-container-image",
+        "composite action.yml uses are checked",
+        "unpinned-action delta on planted and ai-corpus is 0",
+        "each new rule has planted bad/good fixtures unit tests CWE NIST control and native.yaml requirements",
+        "fire rates per KLOC measured on maintained vs vulnerable dev corpora and severities chosen from them",
+        "no new rule declared verified"
+      ],
+      "validation_required": [
+        "python -m pytest -q",
+        "python tools/planted_score.py",
+        "python tools/regression_guard.py check --targets planted",
+        "ai-corpus --no-perf",
+        "python tools/precision_guard.py check",
+        "python tools/integrity.py",
+        "./omni gate"
+      ],
+      "documentation_required": [
+        "docs/supply-chain.md",
+        "docs/precision.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-131",
+      "category": "capability",
+      "title": "Python and npm pinning breadth",
+      "description": "supply.unpinned-python-dep reads any requirements*.txt, requirements/*.txt and constraints*.txt that holds pip requirements (a prose file of that name is skipped), credits ==/=== exact pins, --hash lines and VCS references at a 40-hex commit, handles -e/--editable (local paths skipped, VCS refs judged) and is silent when poetry.lock, uv.lock, Pipfile.lock or pdm.lock sits beside it. pyproject/Pipfile/setup.cfg ranges stay unflagged (libraries declare ranges). supply.unpinned-npm-dep adds >=, >, x/X/* wildcards, bare majors/minors, || and hyphen ranges, dist-tags and git/github refs without a commit SHA (dependencies, devDependencies, optionalDependencies), and is silent when package-lock.json, npm-shrinkwrap.json, yarn.lock, pnpm-lock.yaml or bun.lock(b) sits beside or above the manifest -- the shape of all six FP labels this rule had.",
+      "priority": "medium",
+      "status": "pending",
+      "minimum_access_scope": [
+        "src/arbiter/supply.py",
+        "tests/test_supply_pinning.py"
+      ],
+      "acceptance_criteria": [
+        "every requirements-file shape listed is read and prose .txt files are not",
+        "exact/hash/VCS-commit pins are credited",
+        "-e local paths skipped and -e VCS refs judged",
+        "a sibling Python lockfile silences ranges",
+        "a sibling or ancestor npm lockfile silences ranges",
+        "ai-corpus snapshot counts for both rules unchanged"
+      ],
+      "validation_required": [
+        "python -m pytest -q tests/test_supply_pinning.py",
+        "python tools/precision_guard.py check"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-132",
+      "category": "capability",
+      "title": "Java, Ruby and Terraform pinning rules",
+      "description": "supply.unpinned-java-dep: Maven LATEST/RELEASE/version ranges, SNAPSHOT dependencies in a non-SNAPSHOT build (not the project's own group: sibling modules build from the same tree), properties resolved within the POM; Gradle +, latest.release, latest.integration and ranges in build.gradle(.kts) and *.versions.toml, credited by dependencyLocking or a gradle.lockfile. supply.unpinned-ruby-dep: with no Gemfile.lock beside the Gemfile, gems with no requirement or only open ones (>=, >), and git gems with no ref:; a gem's own Gemfile (gemspec) is a library and is skipped. supply.unpinned-terraform: module sources from a registry without an exact version or from git without ?ref=<sha or x.y.z>; required_providers entries with no version unless .terraform.lock.hcl sits beside them. Go needs no rule: go.sum hashes every module.",
+      "priority": "medium",
+      "status": "pending",
+      "minimum_access_scope": [
+        "src/arbiter/supply.py",
+        "tests/test_supply_pinning.py",
+        "fixtures/planted"
+      ],
+      "acceptance_criteria": [
+        "each dynamic-version form is reported and exact versions are not",
+        "locking/lockfiles credit as described",
+        "unresolvable versions are not judged",
+        "Go's go.sum coverage documented"
+      ],
+      "validation_required": [
+        "python -m pytest -q tests/test_supply_pinning.py",
+        "python tools/planted_score.py"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
     }
   ]
 }

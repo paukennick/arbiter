@@ -1361,94 +1361,21 @@ register(Probe(
 # supply chain
 # ===========================================================================
 
-_UNPINNED_PY = re.compile(r"^\s*([A-Za-z0-9._-]+)\s*(?:[><~!]=|>|<)?\s*([0-9][^\s;#]*)?\s*$")
-# `[ \t]`, not `\s`: with re.M, `^\s*` also matched from a blank line above
-# and swallowed its newline, so the finding was reported on the blank line
-# (round 4: all 3 `v3` FP labels of supply.unpinned-action).
-_ACTION_USES = re.compile(r"^[ \t]*-?[ \t]*uses:[ \t]*([^\s@]+)@([^\s#]+)", re.M)
-_SHA40 = re.compile(r"^[0-9a-f]{40}$")
-
-
 def probe_supply_chain(ctx: ProbeContext) -> list[Finding]:
+    """Pinning checks (src/arbiter/supply.py) and `pull_request_target`.
+
+    Each file's answer depends on that file and on which lockfiles exist
+    beside it, which `supply.cache_context` folds into the cache key."""
+    from . import supply
     out: list[Finding] = []
+    locks = supply.lock_paths(ctx)
     for f in ctx.inventory.text_files():
-        base = f.path.rsplit("/", 1)[-1]
         text = _read(f)
         if not text:
             continue
-
-        if base in ("requirements.txt", "requirements-dev.txt"):
-            for i, line in enumerate(text.split("\n"), 1):
-                s = line.strip()
-                if not s or s.startswith(("#", "-r", "--")):
-                    continue
-                if "==" not in s and not s.startswith("git+"):
-                    pkg = re.split(r"[<>=!~\[; ]", s, 1)[0].strip()
-                    out.append(Finding(
-                        rule_id="arbiter/supply.unpinned-python-dep",
-                        title=f"Unpinned dependency `{pkg}`",
-                        # Severity "info": measured on the corpus, this fires at
-                        # 0.0x on deliberately vulnerable Python relative to
-                        # well-maintained Python. It does not discriminate, so it
-                        # is reported for completeness and scores zero.
-                        dimension="supply_chain", severity="info", confidence="high",
-                        repo_id=f.repo_id, probe="supply_chain",
-                        location=Location(path=f.path, start_line=i, repo_id=f.repo_id),
-                        description="An unpinned requirement makes builds non-reproducible. Note that "
-                                    "libraries are expected to declare ranges; this matters for "
-                                    "applications and deployment manifests.",
-                        remediation="Pin with == and manage upgrades deliberately.",
-                        evidence=s[:80],
-                        controls=["NIST-800-218:PW.4", "NIST-800-53r5:CM-2"],
-                        tags=["dependencies"],
-                    ))
-
-        if base == "package.json":
-            import json as _json
-            try:
-                doc = _json.loads(text)
-            except ValueError:
-                continue
-            for section in ("dependencies", "devDependencies"):
-                for name, spec in (doc.get(section) or {}).items():
-                    if isinstance(spec, str) and spec[:1] in ("^", "~", "*") or spec in ("latest", "*"):
-                        out.append(Finding(
-                            rule_id="arbiter/supply.unpinned-npm-dep",
-                            title=f"Floating version range on `{name}` ({spec})",
-                            # Severity "info": 0.68/kloc on well-maintained Node
-                            # vs 0.73/kloc on deliberately vulnerable Node — a
-                            # ratio of 1.1x, which is no signal at all.
-                            dimension="supply_chain", severity="info", confidence="high",
-                            repo_id=f.repo_id, probe="supply_chain",
-                            location=Location(path=f.path, repo_id=f.repo_id,
-                                              logical=f"{section}.{name}"),
-                            description="A caret or tilde range resolves differently over time.",
-                            remediation="Pin exact versions and rely on a lockfile plus a bot for upgrades.",
-                            evidence=f"{name}@{spec}",
-                            controls=["NIST-800-218:PW.4"],
-                            tags=["dependencies"],
-                        ))
+        out += supply.check_file(f, text, locks.get(f.repo_id, set()))
 
         if f.role == "ci":
-            for m in _ACTION_USES.finditer(text):
-                action, ref = m.group(1), m.group(2)
-                if action.startswith("./") or _SHA40.match(ref):
-                    continue
-                out.append(Finding(
-                    rule_id="arbiter/supply.unpinned-action",
-                    title=f"Action `{action}` pinned to a mutable ref (`{ref}`)",
-                    # Stays at "low": unlike the package-manager rules, this one
-                    # discriminates — 4.3x on Node, 219x on CloudFormation.
-                    dimension="supply_chain", severity="low", confidence="high",
-                    repo_id=f.repo_id, probe="supply_chain",
-                    location=Location(path=f.path, repo_id=f.repo_id,
-                                      start_line=_line_of(text, m.start())),
-                    description="Tags and branches can be repointed, so the workflow can execute different code tomorrow.",
-                    remediation="Pin the action to a full commit SHA.",
-                    evidence=f"{action}@{ref}",
-                    controls=["NIST-800-218:PW.4", "NIST-800-53r5:CM-7"],
-                    tags=["ci", "supply-chain"],
-                ))
             if "pull_request_target" in text:
                 idx = text.index("pull_request_target")
                 # The trigger alone is not the vulnerability. It becomes one
@@ -1497,8 +1424,14 @@ def probe_supply_chain(ctx: ProbeContext) -> list[Finding]:
     return out
 
 
+def _supply_cache_context(ctx: ProbeContext) -> str:
+    from .supply import cache_context
+    return cache_context(ctx)
+
+
 register(Probe(name="supply_chain", scope="file", cacheable=True,
-               dimensions=["supply_chain", "security"], checks=5, run=probe_supply_chain))
+               cache_context=_supply_cache_context,
+               dimensions=["supply_chain", "security"], checks=12, run=probe_supply_chain))
 
 
 # ===========================================================================

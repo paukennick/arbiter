@@ -1,0 +1,6 @@
+[versions]
+commons-io = "2.+" # expect: arbiter/supply.unpinned-java-dep
+
+[libraries]
+commons-io = { module = "commons-io:commons-io", version.ref = "commons-io" }
+picocli = "info.picocli:picocli:latest.integration" # expect: arbiter/supply.unpinned-java-dep

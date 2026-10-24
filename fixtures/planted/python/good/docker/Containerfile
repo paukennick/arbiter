@@ -1,0 +1,6 @@
+FROM python:3.12-slim@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+RUN pip install --no-cache-dir gunicorn==23.0.0
+RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN python -m pip install --upgrade pip
+COPY . /app
+CMD ["gunicorn", "app:app"]
