@@ -1150,3 +1150,16 @@ the lock without installing or updating tools. The existing installer reads
 the same catalog. Analyzer binaries remain separately installed and are not
 bundled or redistributed. Scans continue to report missing capabilities as
 not assessed.
+
+## 2026-10-23 — Enforce the tooling lock in CI (ARB-092)
+
+The repository commits `.arbiter/tooling.lock.json` for the five external
+analyzers and the pinned Semgrep rules revision. The Linux pull-request and
+nightly training workflows verify this lock immediately after the explicit
+installer runs. Verification never installs or updates tools; while the
+installer may report a missing tool for local use, CI turns that missing
+required capability into a failure before the self-gate or training cycle.
+During validation, lock verification found that `install_tools.sh` accepted
+preinstalled `ruff` regardless of version. The installer now accepts only an
+exact pin match, attempts the pinned install on drift, and leaves any remaining
+mismatch visible to the lock-verification step (FAIL-058).

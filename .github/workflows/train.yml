@@ -78,6 +78,9 @@ jobs:
       - name: External analyzers
         run: ./tools/install_tools.sh
 
+      - name: Verify locked tooling
+        run: arbiter tools verify .arbiter/tooling.lock.json
+
       # Before the expensive part, not after it. Run 1 measured everything and
       # committed nothing: `training/` matched a gitignore entry, `git add -A`
       # exited 1, and the job failed two seconds after fifty-five minutes of

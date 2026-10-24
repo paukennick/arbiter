@@ -3,8 +3,8 @@ disagreement mining, holdout, the installers and the CI workflow.
 """
 from __future__ import annotations
 
+import hashlib
 import json
-import re
 from pathlib import Path
 
 import pytest
@@ -439,6 +439,40 @@ def test_install_script_reads_pins_from_tooling_catalog():
     assert all(version not in script for version in versions.values())
 
 
+def test_install_script_does_not_accept_an_unpinned_existing_binary(tmp_path):
+    import os
+    import subprocess
+
+    if not _bash():
+        pytest.skip("bash not available")
+    bindir = tmp_path / "bin"
+    bindir.mkdir()
+    ruff = bindir / "ruff"
+    ruff.write_text("#!/bin/sh\necho 'ruff 0.17.1'\n", encoding="utf-8")
+    ruff.chmod(0o755)
+    pip = bindir / "pip"
+    pip.write_text(
+        "#!/bin/sh\n"
+        "if [ \"$1\" = install ] && [ \"$2\" = --help ]; then echo pip-help; fi\n"
+        "exit 0\n",
+        encoding="utf-8",
+    )
+    pip.chmod(0o755)
+    env = os.environ.copy()
+    env["PATH"] = f"{bindir}{os.pathsep}{env['PATH']}"
+    result = subprocess.run(
+        [_bash(), str(ROOT / "tools" / "install_tools.sh"), "ruff"],
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+        env=env,
+        timeout=60,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "pinned version unavailable on PATH" in result.stdout
+
+
 def test_bootstrap_refuses_when_it_is_not_a_repository(tmp_path):
     import shutil
     import subprocess
@@ -483,6 +517,49 @@ def test_the_workflow_installs_the_analyzers_from_the_script():
     wf = (ROOT / ".github" / "workflows" / "train.yml").read_text()
     assert "tools/install_tools.sh" in wf
     assert "pip install checkov" not in wf, "CI must not install analyzers inline"
+
+
+def test_ci_verifies_locked_tools_after_provisioning_without_installing_them():
+    import yaml
+
+    pr_check = yaml.safe_load((ROOT / ".github" / "workflows" / "pr-check.yml").read_text())
+    pr_steps = pr_check["jobs"]["check"]["steps"]
+    install = next(i for i, step in enumerate(pr_steps)
+                  if step.get("name") == "Install analyzers and the api extra")
+    verify = next(i for i, step in enumerate(pr_steps)
+                  if step.get("name") == "Verify locked tooling")
+    assert install < verify
+    assert pr_steps[verify]["if"] == "runner.os == 'Linux'"
+    assert pr_steps[verify]["run"] == "arbiter tools verify .arbiter/tooling.lock.json"
+
+    training = yaml.safe_load((ROOT / ".github" / "workflows" / "train.yml").read_text())
+    train_steps = training["jobs"]["cycle"]["steps"]
+    install = next(i for i, step in enumerate(train_steps)
+                   if step.get("name") == "External analyzers")
+    verify = next(i for i, step in enumerate(train_steps)
+                  if step.get("name") == "Verify locked tooling")
+    assert install < verify
+    assert train_steps[verify]["run"] == "arbiter tools verify .arbiter/tooling.lock.json"
+
+
+def test_repository_tooling_lock_matches_catalog_pins():
+    from arbiter.tooling import load_catalog, load_lock
+
+    lock = load_lock(ROOT / ".arbiter" / "tooling.lock.json")
+    catalog = load_catalog()
+    assert lock["catalog_sha256"] == hashlib.sha256(
+        (ROOT / "src" / "arbiter" / "tooling.json").read_bytes()
+    ).hexdigest()
+    assert {
+        entry["name"]: entry["version"] for entry in lock["tools"]
+    } == {
+        tool["name"]: tool["version"] for tool in catalog["analyzers"]
+    }
+    assert all(entry["required"] for entry in lock["tools"])
+    assert lock["semgrep_rules"] == {
+        "ref": catalog["semgrep_rules_ref"],
+        "required": True,
+    }
 
 
 # The five files the nightly job accumulates across runs. Per-run logs are

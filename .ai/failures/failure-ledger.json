@@ -1501,6 +1501,31 @@
       "prevention_rules": [],
       "prevention_notes": "Tests for tool pinning now assert the shared catalog is authoritative rather than depending on where its literals are stored.",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-058",
+      "date": "2026-10-23",
+      "title": "Installer accepted analyzer version drift",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "Tool lock verification found Ruff 0.17.1 where the committed lock requires 0.15.11; tools/install_tools.sh reported any existing binary as installed without checking its version.",
+      "how_detected": "arbiter tools verify .arbiter/tooling.lock.json",
+      "root_cause": "The install helper equated command presence with the pinned capability, so it bypassed installation for a mismatched executable and made the pinned installer nondeterministic.",
+      "requirement": "ARB-092",
+      "affected": [
+        "tools/install_tools.sh",
+        ".arbiter/tooling.lock.json",
+        ".github/workflows/pr-check.yml"
+      ],
+      "fix_summary": "The installer now checks exact analyzer versions before accepting existing binaries and reports when the pinned binary is still unavailable on PATH; CI verification enforces the committed lock.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_tools_training.py::test_install_script_does_not_accept_an_unpinned_existing_binary"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "The installer pin test uses a fake old Ruff binary and requires the mismatch to remain visible; the CI lock check then fails on any remaining version drift.",
+      "recurrence_of": ""
     }
   ]
 }

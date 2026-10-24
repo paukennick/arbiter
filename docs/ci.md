@@ -274,6 +274,14 @@ lower coverage would answer a different question. The same job installs the
 `api` extra, so the sixteen hosted-API tests run on every pull request instead
 of skipping (ARB-034).
 
+**The tool lock is enforced after provisioning.** The Linux pull-request job
+and nightly training job run `arbiter tools verify .arbiter/tooling.lock.json`
+immediately after `tools/install_tools.sh`. The lock requires the five pinned
+analyzers and Semgrep rules revision; a missing or mismatched version, rules
+checkout, or catalog digest fails CI. This verification step does not install
+or update tools. The Windows matrix cell does not verify the analyzer lock
+because it does not provision those tools.
+
 **Two tiers (ARB-046).** The suite's wall clock was almost entirely the tests
 that run a real analyzer through the adapters or scan something larger than
 the fixtures, and none of those says anything about the platform. They carry

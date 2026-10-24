@@ -93,6 +93,13 @@ jobs:
           pip install -e .[api]
           ./tools/install_tools.sh
 
+      # The installer may report a missing tool without failing so local
+      # installs can continue with honest partial coverage. CI treats this
+      # repository's committed tooling lock as the required capability set.
+      - name: Verify locked tooling
+        if: runner.os == 'Linux'
+        run: arbiter tools verify .arbiter/tooling.lock.json
+
       # -rs prints the reason for every skip. Windows runners legitimately skip
       # things Linux does not, and a skip that is silently absent from the log
       # is indistinguishable from a test that was never collected.

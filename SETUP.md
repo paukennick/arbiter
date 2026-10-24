@@ -101,6 +101,11 @@ remove or mark a capability `"required": false` when it is intentionally not
 part of the repo's tool set. Scans never install tools and continue to report
 unavailable checks as not assessed.
 
+Arbiter's Linux pull-request and nightly CI jobs verify the committed tooling
+lock immediately after installing the analyzers. Their install script remains
+separate from the verification command, so a scan or lock check never installs
+or updates tools implicitly.
+
 Arbiter does not vendor or redistribute these tools. Their licenses are listed
 in [NOTICE.md](NOTICE.md).
 

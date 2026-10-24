@@ -2195,6 +2195,38 @@
       "risk_notes": [
         "MVP implemented and validated; repo-local automatic installation, CI lock enforcement, and additional scanner adapters remain future scope."
       ]
+    },
+    {
+      "id": "ARB-092",
+      "category": "ci",
+      "title": "Enforce tooling lock in CI",
+      "description": "Make CI verify a committed Arbiter tooling lock after provisioned analyzers and grammars are installed, so required tool/catalog drift fails explicitly without CI installing tools itself.",
+      "priority": "medium",
+      "status": "completed",
+      "minimum_access_scope": [
+        ".github/workflows/pr-check.yml",
+        ".arbiter/tooling.lock.json",
+        "CI workflow tests",
+        "docs/ci.md",
+        "SETUP.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "A committed tooling lock exists for this repository;CI verifies the lock after installing its declared analyzers and grammars;required tool/catalog drift fails the CI job;CI verification does not install tools;workflow behavior is documented and covered by focused tests or a deterministic workflow contract test"
+      ],
+      "validation_required": [
+        "focused pytest;python -m pytest -q -rs -m not slow;python omni gate;arbiter gate ."
+      ],
+      "documentation_required": [
+        "docs/ci.md",
+        "SETUP.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": [
+        "Starting CI enforcement as the first follow-up; automatic installs and additional adapters remain sequenced later.",
+        "Committed repository lock and enabled Linux PR/nightly verification after provisioning; installer now rejects version drift. Repo-local isolated installation and additional adapters remain sequenced follow-ups."
+      ]
     }
   ]
 }

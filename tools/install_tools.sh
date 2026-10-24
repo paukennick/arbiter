@@ -131,16 +131,35 @@ python3 -c "import sys; sys.exit(0)" 2>/dev/null && \
   pip install --help 2>/dev/null | grep -q break-system-packages && \
   PIP_FLAGS="--break-system-packages"
 
+tool_version_matches() {
+  local name="$1" expected="$2" output
+  if ! command -v "$name" >/dev/null 2>&1; then
+    return 1
+  fi
+  if [ "$name" = gitleaks ]; then
+    output="$("$name" version 2>&1 | head -1)" || return 1
+  else
+    output="$("$name" --version 2>&1 | head -1)" || return 1
+  fi
+  if [[ "$output" =~ v?([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+    [ "${BASH_REMATCH[1]}" = "$expected" ]
+  else
+    return 1
+  fi
+}
+
 pip_install() {
-  local name="$1" spec="$2"
-  if command -v "$name" >/dev/null 2>&1; then
-    printf '  have   %-10s %s\n' "$name" "$($name --version 2>&1 | head -1)"
+  local name="$1" spec="$2" expected="${2##*==}"
+  if tool_version_matches "$name" "$expected"; then
+    printf '  have   %-10s %s\n' "$name" "$expected"
     return 0
   fi
-  if pip install --quiet $PIP_FLAGS "$spec" >/dev/null 2>&1; then
+  if pip install --quiet $PIP_FLAGS "$spec" >/dev/null 2>&1 \
+     && tool_version_matches "$name" "$expected"; then
     printf '  got    %-10s %s\n' "$name" "$spec"
   else
-    printf '  MISSED %-10s %s — Arbiter will report it as not assessed\n' "$name" "$spec"
+    printf '  MISSED %-10s %s — pinned version unavailable on PATH; Arbiter will report it as not assessed\n' \
+      "$name" "$spec"
   fi
 }
 
@@ -275,8 +294,8 @@ wants ruff    && pip_install ruff    "ruff==${RUFF_VERSION}"
 # (MINGW*/MSYS*) gets its own branch: the release asset there is a .zip
 # containing gitleaks.exe, not a .tar.gz containing gitleaks.
 if wants gitleaks; then
-  if command -v gitleaks >/dev/null 2>&1; then
-    printf '  have   %-10s %s\n' gitleaks "$(gitleaks version 2>&1 | head -1)"
+  if tool_version_matches gitleaks "$GITLEAKS_VERSION"; then
+    printf '  have   %-10s %s\n' gitleaks "$GITLEAKS_VERSION"
   else
     case "$(uname -s)" in
       Linux)                 OS=linux ;;
