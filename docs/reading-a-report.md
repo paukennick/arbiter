@@ -137,8 +137,8 @@ Every finding has a tier:
 - `verified`: the rule is declared verified, the precision ledger admits it,
   and either a model confirmed this finding or the profile cannot ask a model
   and the rule's measured lower bound is at least 0.99.
-- `advisory`: everything else. Today that is every deterministic finding,
-  because no rule is declared verified yet.
+- `advisory`: everything else. Today that is every deterministic finding
+  except `supply.unpinned-action`, the one rule declared verified (ARB-101).
 - `inferred`: found by a model.
 
 The tier never re-grades a finding: an advisory critical is still critical

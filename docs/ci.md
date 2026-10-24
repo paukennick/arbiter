@@ -208,9 +208,9 @@ analyzer that found nothing.
 default) reads only findings whose precision tier is in `gate.tiers`
 (default `[verified]`), records what it set aside as `excluded_by_tier`, and
 the SARIF marks the others as `note`. `legacy` reads every active finding.
-Today no rule is declared verified, so a tiered gate blocks nothing and the
-pull-request comment says `no verified findings; N advisory findings not
-shown`; set `legacy` if you want the severity gate over every finding until
+Today one rule is declared verified, `supply.unpinned-action` (ARB-101), so a
+tiered gate reads only those findings; with none of them the pull-request
+comment says `no verified findings; N advisory findings not shown`; set `legacy` if you want the severity gate over every finding until
 the rules you care about are admitted
 ([configuration.md](configuration.md#precision-tiers),
 [precision.md](precision.md#tiers)).

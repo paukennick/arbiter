@@ -318,6 +318,17 @@ labellers' copies of one sheet pair up), `--sheet-source`, and
 
 ## Current numbers
 
+**2026-10-24 (held-out r5, ARB-101).** 1,010 model labels from the 50
+held-out r5 repositories (993 tp, 12 fp, 5 unsure) rebuilt the ledger.
+**3 are admitted**: `supply.unpinned-action` (690/0, lower 0.9945),
+`assurance.blanket-suppression` (445/3, lower 0.981) and
+`java.weak-random-for-secret` (218/1, lower 0.975). One rule is **declared
+verified**: `supply.unpinned-action`, the only one whose own lower bound
+reaches the 0.99 a rule needs without a model check, so its findings are
+`verified` under `offline` and `ci`. Every other finding is advisory. These
+are model labels, not human ones; the verified-tier held-out claim below
+still awaits human labels. The paragraphs that follow are the earlier state.
+
 As of 2026-10-23 (relabel at labeller `v3`): the ledger holds ground-truth
 and `v3` model labels for 120 rules. **2 are admitted**:
 `java.weak-random-for-secret` (218/218 ground truth, lower 0.983) and

@@ -76,7 +76,7 @@ def test_a_scan_records_the_verified_view_and_shows_no_unverified_finding(tmp_pa
     rep = _scan(_secrets_repo(tmp_path))
     n = len(rep.active())
     assert n >= 1, "fixture produced nothing, so this proves nothing"
-    assert all(f.tier == "advisory" for f in rep.active()), "no rule is declared verified yet"
+    assert all(f.tier == "advisory" for f in rep.active()), "this fixture has no finding of a rule declared verified"
     assert rep.tiers == {"shown": "verified",
                          "counts": {"verified": 0, "advisory": n, "inferred": 0},
                          "shown_count": 0, "not_shown": {"advisory": n}}

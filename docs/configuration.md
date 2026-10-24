@@ -153,9 +153,10 @@ precision:
   deterministic_profiles: [offline, ci]   # profiles that cannot ask a model
 ```
 
-Today no rule is declared verified, so every deterministic finding is
-`advisory`, the default `tiered` gate blocks nothing and the default view
-below lists nothing -- and says so. A repository that wants the severity
+Today one rule is declared verified, `supply.unpinned-action` (ARB-101), so
+every other deterministic finding is `advisory`: the default `tiered` gate
+reads only unpinned-Action findings, and when there are none the default view
+lists nothing -- and says so. A repository that wants the severity
 gate over every finding meanwhile sets `gate.tier_mode: legacy`
 ([precision.md](precision.md#current-numbers) has the current state).
 

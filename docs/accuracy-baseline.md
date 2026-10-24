@@ -23,9 +23,10 @@ recorded there, that reproducibility gap is stated rather than guessed.
 | OWASP Benchmark Java/Python | Sealed ground-truth sources | Java: 2,740 cases/11 CWEs; Python: 1,230 cases/14 CWEs | Benchmark expected results; human audit status not recorded | Java source is GPL-2.0; Python is GPL-3.0. Both are fetched at pins and have restrictions recorded in `tools/gold/benchmarks.json`. Synthetic benchmark scope is not production-repository scope. |
 | CVE fix pairs and Juliet Java | Sealed ground-truth sources | CVE language mix and Juliet license status not inventoried here; Juliet is Java | Patch-derived or benchmark-provided labels; independent human audit not recorded | License/provenance and label audit are gaps. These sources are held out; do not inspect them while tuning. |
 
-The existing precision ledger reports labels for 120 rules and two admitted
-rules, but no rule is declared verified; therefore there is no verified-tier
-precision claim. Existing ledger confidence calculations do not account for
+The existing precision ledger reports labels for 120 rules and three admitted
+rules. One rule, `supply.unpinned-action`, is declared verified (ARB-101: 690
+tp, 0 fp, Wilson 95% lower 0.9945, model labels including the held-out r5
+set); there is still no verified-tier held-out claim from human labels. Existing ledger confidence calculations do not account for
 repository-level clustering. Model-label calibration is not equivalent to
 human ground truth.
 
