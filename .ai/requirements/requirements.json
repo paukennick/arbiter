@@ -2591,6 +2591,46 @@
         "the PR comment and annotations are longer on repositories with many advisory findings; --sarif-min-severity and report.show: verified are the narrowing tools",
         "Completed 2026-10-24: default view shows every tier (planted 404/404, ai-corpus 127/127 via the regression_guard default-view check); gate unchanged (tiered); SARIF advisory capped at warning. FAIL-071 records why ARB-100's default was reverted."
       ]
+    },
+    {
+      "id": "ARB-121",
+      "category": "accuracy",
+      "title": "External real-CVE fix-pair benchmark from GHSA, five languages, frozen dev/sealed split",
+      "description": "Expand real-CVE fix pairs from the GitHub Advisory Database (reviewed, CC-BY-4.0) toward ~100 per language (python, typescript, go, java, ruby), restricted to CWEs a native security rule of that language pack is tagged with; deterministic seeded selection with predeclared criteria; split by repository into development and sealed (held_out_ghsa_r1), frozen and committed before any scan; scan both sides with the pinned Arbiter and report hunk-region recall, looser function/file recall and fixed-side persistence per language and CWE with Wilson and repository-cluster bootstrap intervals; development in detail, sealed aggregate only. Measurement only: no rule is changed.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "tools/ground_truth",
+        "tools/gold/heldout.json",
+        "tools/gold/results",
+        "tests/test_ghsa_benchmark.py",
+        "docs/external-cve-benchmark.md",
+        "docs/accuracy-baseline.md",
+        "docs/accuracy-benchmark-manifest.json"
+      ],
+      "acceptance_criteria": [
+        "selection and split committed before any scan (freeze sha recorded)",
+        "no repo in both splits and no already-sealed repo included",
+        "pointers only (no third-party code committed)",
+        "per language/CWE recall with Wilson and cluster bootstrap; sealed aggregate only",
+        "real counts reported where a language falls short of 100"
+      ],
+      "validation_required": [
+        "tests/test_ghsa_benchmark.py",
+        "python -m pytest -q",
+        "omni gate"
+      ],
+      "documentation_required": [
+        "docs/external-cve-benchmark.md",
+        "docs/accuracy-baseline.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": [
+        "Patch-derived labels are noisy and not human-adjudicated: benchmark conformance only",
+        "Fixed-side persistence is an FP signal not proof",
+        "The sealed split is used once here as a baseline; later tuning uses development only"
+      ]
     }
   ]
 }

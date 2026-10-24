@@ -256,6 +256,60 @@
         "Synthetic benchmark cases do not represent arbitrary Java repositories.",
         "Do not inspect held-out source examples while tuning rules."
       ]
+    },
+    {
+      "id": "ghsa-cve-fix-pairs-development",
+      "path": "tools/ground_truth/ghsa_pairs.json",
+      "role": "development_and_validation",
+      "source_type": "GitHub Advisory Database reviewed advisories with a GitHub fix commit (before/after fix pairs)",
+      "languages": [
+        "python",
+        "typescript",
+        "go",
+        "java",
+        "ruby"
+      ],
+      "selection": "tools/ground_truth/ghsa_select.py (ARB-121): predeclared, seeded, in-scope CWEs per language pack; criteria in ghsa_pairs.json; frozen before any scan",
+      "split": "repositories with split == development",
+      "license_status": "Advisory data CC-BY-4.0 (GitHub Advisory Database); source files are fetched at pinned commits outside the repository and never redistributed; each repository's SPDX licence is recorded per pair.",
+      "label_provenance": "Patch-derived: the advisory's CWE and the lines its fix commit changed.",
+      "sealed": false,
+      "human_adjudication": "not_performed",
+      "accuracy_claim_eligible": false,
+      "documentation": "docs/external-cve-benchmark.md",
+      "limits": [
+        "Labels are patch-derived from the advisory's fix commit, not human-adjudicated; report GHSA fix-pair benchmark conformance only.",
+        "A fix can contain unrelated edits and does not mark every vulnerable variant.",
+        "Only the files the fix changed are scanned, with native probes only; cross-file flow in the full project is not seen.",
+        "Fixed-side persistence is a false-positive or partial-fix signal, not proof."
+      ]
+    },
+    {
+      "id": "ghsa-cve-fix-pairs-sealed",
+      "path": "tools/gold/heldout.json",
+      "role": "sealed_aggregate_evaluation",
+      "source_type": "GitHub Advisory Database reviewed advisories with a GitHub fix commit (before/after fix pairs)",
+      "languages": [
+        "python",
+        "typescript",
+        "go",
+        "java",
+        "ruby"
+      ],
+      "selection": "Same selection as ghsa-cve-fix-pairs-development; repositories with split == sealed, listed under held_out_ghsa_r1",
+      "license_status": "As ghsa-cve-fix-pairs-development.",
+      "label_provenance": "Patch-derived: the advisory's CWE and the lines its fix commit changed.",
+      "sealed": true,
+      "human_adjudication": "not_performed",
+      "accuracy_claim_eligible": false,
+      "documentation": "docs/external-cve-benchmark.md",
+      "limits": [
+        "Labels are patch-derived from the advisory's fix commit, not human-adjudicated; report GHSA fix-pair benchmark conformance only.",
+        "A fix can contain unrelated edits and does not mark every vulnerable variant.",
+        "Only the files the fix changed are scanned, with native probes only; cross-file flow in the full project is not seen.",
+        "Fixed-side persistence is a false-positive or partial-fix signal, not proof.",
+        "Aggregate-only: rule authors must not open per-pair outcomes, findings or code of the sealed repositories."
+      ]
     }
   ],
   "candidate_sources": [
