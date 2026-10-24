@@ -345,13 +345,18 @@ class Cache:
                 fh.write(json.dumps(rec, sort_keys=True) + "\n")
 
 
-def call_cli(system: str, prompt: str, model: str, timeout: int = 240) -> tuple[str, float, str]:
-    """(reply text, cost in USD, resolved model) from one headless CLI run."""
+def call_cli(system: str, prompt: str, model: str, timeout: int = 240,
+             env: dict | None = None) -> tuple[str, float, str]:
+    """(reply text, cost in USD, resolved model) from one headless CLI run.
+    `env` replaces the inherited environment (the panel passes an allowlist,
+    tools/panel/providers.py `clean_env`); by default it is this process's
+    environment without ANTHROPIC_API_KEY."""
     cmd = ["claude", "-p", prompt, "--model", model, "--tools", "", "--setting-sources", "",
            "--strict-mcp-config", "--system-prompt", system, "--output-format", "json",
            "--no-session-persistence"]
     with tempfile.TemporaryDirectory(prefix="label-") as cwd:
-        env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
+        if env is None:
+            env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
         proc = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout,
                               stdin=subprocess.DEVNULL, env=env)
     try:

@@ -2591,6 +2591,49 @@
         "the PR comment and annotations are longer on repositories with many advisory findings; --sarif-min-severity and report.show: verified are the narrowing tools",
         "Completed 2026-10-24: default view shows every tier (planted 404/404, ai-corpus 127/127 via the regression_guard default-view check); gate unchanged (tiered); SARIF advisory capped at warning. FAIL-071 records why ARB-100's default was reverted."
       ]
+    },
+    {
+      "id": "ARB-122",
+      "category": "capability",
+      "title": "Independent multi-vendor model panel for precision labels",
+      "description": "tools/panel: Claude, Codex and Copilot CLIs label blind packets (label_models make_item/item_prompt/SYSTEM) one record per model with a distinct labeller name (<seat>-<model>:panel/v1); calibrate measures each model and the panel against ground truth with Wilson intervals and cost; prioritise ranks rules by labels still needed to reach Wilson 0.99. The ledger keeps panel/v1 as current, adds a mechanical role between ground_truth and adjudicator for ARB-123 checkers, and pairs kappa across vendors. No two seats may resolve to the same vendor. Reported as model-labelled conformance, not certified.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "tools/panel/providers.py",
+        "tools/panel/panel.py",
+        "tools/precision_ledger.py",
+        "tests/test_panel.py",
+        "tests/test_precision_ledger.py",
+        "docs/precision.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "providers behind one interface with strict JSON parsing and usage-limit handling",
+        "label writes one record per model via gt_common.label",
+        "calibrate reports per-model and panel agreement with Wilson intervals and cost",
+        "prioritise ranks rules by labels needed for Wilson 0.99",
+        "ledger keeps panel/v1 and supports a mechanical role",
+        "two seats resolving to one vendor are refused",
+        "tests use fake providers only",
+        "committed ledger numbers unchanged"
+      ],
+      "validation_required": [
+        "python -m pytest -q",
+        "./omni gate",
+        "smoke calibration on about 20 ground-truth items"
+      ],
+      "documentation_required": [
+        "docs/precision.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": [
+        "model labels are not certification",
+        "Copilot auto routing may change model",
+        "subscription usage limits",
+        "Smoke calibration ran with two vendors (Claude, Codex) only: Google refused the Gemini OAuth personal login, the Gemini API key file was still empty, and Copilot auto-routing offered only OpenAI. A three-vendor calibration of 60+ items is owed before panel labels feed a claim."
+      ]
     }
   ]
 }

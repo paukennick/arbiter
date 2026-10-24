@@ -93,8 +93,8 @@ def read_jsonl(path: Path) -> list[dict]:
         except ValueError as exc:
             raise SystemExit(f"{path}:{i}: {exc}") from exc
         rec.setdefault("role", "labeller")
-        if rec["role"] not in ("labeller", "adjudicator", "ground_truth"):
-            raise SystemExit(f"{path}:{i}: role is labeller, adjudicator or ground_truth")
+        if rec["role"] not in ROLES:
+            raise SystemExit(f"{path}:{i}: role is labeller, adjudicator, mechanical or ground_truth")
         out.append(rec)
     return out
 
@@ -109,6 +109,9 @@ def drop_calibration(records: list[dict]) -> tuple[list[dict], int]:
 
 
 _MODEL_LABELLER = re.compile(r":prosecutor\+defender(?:\+adjudicator)?/(v\d+)$")
+# The panel (tools/panel/panel.py, ARB-122): one record per model,
+# `<seat>-<model>:panel/<version>`.
+_PANEL_LABELLER = re.compile(r":(panel/v\d+)$")
 
 
 def current_model_prompt() -> str:
@@ -116,6 +119,24 @@ def current_model_prompt() -> str:
     m = re.search(r'^PROMPT_VERSION = "([^"]+)"', (ROOT / "tools" / "label_models.py").read_text(encoding="utf-8"),
                   re.M)
     return m.group(1) if m else ""
+
+
+def current_panel_prompt() -> str:
+    """The panel's prompt version (`tools/panel/panel.py` PANEL_VERSION)."""
+    p = ROOT / "tools" / "panel" / "panel.py"
+    m = re.search(r'^PANEL_VERSION = "([^"]+)"', p.read_text(encoding="utf-8"), re.M) if p.is_file() else None
+    return m.group(1) if m else ""
+
+
+def drop_superseded_panel_labels(records: list[dict], current: str) -> tuple[list[dict], int]:
+    """Panel labels made with a panel prompt other than `current` (the
+    same rule as `drop_superseded_model_labels`, for the panel's own
+    version line). Empty `current` keeps every version."""
+    if not current:
+        return records, 0
+    keep = [r for r in records
+            if not (m := _PANEL_LABELLER.search(str(r.get("labeller", "")))) or m.group(1) == current]
+    return keep, len(records) - len(keep)
 
 
 def drop_superseded_model_labels(records: list[dict], current: str) -> tuple[list[dict], int]:
@@ -167,7 +188,55 @@ def read_sheet(path: Path, batch: str, source: str, held_out: bool) -> list[dict
 # Arithmetic -- pure
 # ---------------------------------------------------------------------------
 
-_ROLE_ORDER = {"ground_truth": 0, "adjudicator": 1, "labeller": 2}
+# Who decides a finding, strongest first: published ground truth; a
+# mechanical checker's observed result (the planned sandbox checkers: a fact re-derived by a
+# second implementation, an exploit that ran, a mutant a test never
+# caught); an adjudicator; agreeing labellers.
+ROLES = ("ground_truth", "mechanical", "adjudicator", "labeller")
+_ROLE_ORDER = {r: i for i, r in enumerate(ROLES)}
+
+# The company that made a model, by model-name prefix. Independence between
+# labellers is independence between vendors: two models of one company share
+# training data and blind spots.
+_VENDORS = (("claude", "anthropic"), ("anthropic", "anthropic"), ("gpt", "openai"), ("o1", "openai"),
+            ("o3", "openai"), ("o4", "openai"), ("codex", "openai"), ("chatgpt", "openai"),
+            ("gemini", "google"), ("gemma", "google"), ("mai", "microsoft"), ("phi", "microsoft"),
+            ("kimi", "moonshot"), ("grok", "xai"), ("llama", "meta"), ("mistral", "mistral"),
+            ("codestral", "mistral"), ("deepseek", "deepseek"), ("qwen", "alibaba"))
+_SEATS = ("claude-", "codex-", "copilot-")
+
+
+def model_vendor(model: str) -> str:
+    """'anthropic', 'openai', 'google', ... for a model name; '' when unknown."""
+    m = str(model or "").strip().lower().rsplit("/", 1)[-1]
+    for prefix, vendor in _VENDORS:
+        if m == prefix or m.startswith((prefix + "-", prefix + ".", prefix + "_")):
+            return vendor
+    return ""
+
+
+def labeller_vendor(labeller: str) -> str:
+    """The vendor behind a labeller name (`claude-opus-5-5:panel/v1`,
+    `copilot-mai-code-1.1-flash:panel/v1`, `claude-opus-5-5:prosecutor+
+    defender/v3`), or the name itself when no model vendor is recognised
+    (a person, a sheet), so distinct people stay distinct."""
+    stem = str(labeller).split(":", 1)[0]
+    for seat in _SEATS:
+        if stem.startswith(seat) and model_vendor(stem[len(seat):]):
+            return model_vendor(stem[len(seat):])
+    return model_vendor(stem) or f"labeller:{labeller}"
+
+
+def kappa_pair(seen: dict[str, str]) -> tuple[str, str] | None:
+    """The two labels kappa compares: the first labeller (by name) and the
+    first after it from a different vendor. Two models of one vendor are
+    not an independent pair, so they give none."""
+    names = list(seen)
+    if not names:
+        return None
+    first = labeller_vendor(names[0])
+    other = next((n for n in names[1:] if labeller_vendor(n) != first), None)
+    return (seen[names[0]], seen[other]) if other else None
 
 
 def _size(v) -> int | None:
@@ -193,10 +262,14 @@ def finding_stratum(recs: list[dict]) -> dict:
 def final_verdicts(records: list[dict]) -> dict[str, dict]:
     """finding_id -> {rule_id, label, held_out, source, labellers, pair}.
 
-    Ground truth wins; then an adjudicator's label; then the labellers'
-    labels when every tp/fp among them agrees. A disagreement nobody has
-    adjudicated is `unsure`: it counts toward neither TP nor FP. `pair` is
-    the first two labellers' tp/fp labels (by name), for kappa."""
+    Ground truth wins; then a mechanical checker's result (when its decided
+    results agree; checkers that contradict each other make the finding
+    `unsure`, and one that could not decide passes to the next role); then an
+    adjudicator's label; then the labellers' labels when every tp/fp among
+    them agrees -- the panel's one record per model included. A disagreement
+    nobody has adjudicated is `unsure`: it counts toward neither TP nor FP.
+    `pair` is two labellers' tp/fp labels for kappa: the first by name and
+    the first after it from another vendor (`kappa_pair`)."""
     by: dict[str, list[dict]] = defaultdict(list)
     for r in records:
         by[r["finding_id"]].append(r)
@@ -206,11 +279,14 @@ def final_verdicts(records: list[dict]) -> dict[str, dict]:
         if len(rules) > 1:
             raise SystemExit(f"finding {fid} is labelled under more than one rule: {sorted(rules)}")
         truth = [r for r in recs if r["role"] == "ground_truth"]
+        mech = {r["label"] for r in recs if r["role"] == "mechanical" and r["label"] != "unsure"}
         adj = [r for r in recs if r["role"] == "adjudicator"]
         lab = sorted((r for r in recs if r["role"] == "labeller"), key=lambda r: r["labeller"])
         decided = [r["label"] for r in lab if r["label"] != "unsure"]
         if truth:
             label = truth[-1]["label"]
+        elif mech:
+            label = mech.pop() if len(mech) == 1 else "unsure"
         elif adj:
             label = adj[-1]["label"]
         elif decided and len(set(decided)) == 1:
@@ -221,7 +297,7 @@ def final_verdicts(records: list[dict]) -> dict[str, dict]:
         for r in lab:
             if r["label"] != "unsure" and r["labeller"] not in seen:
                 seen[r["labeller"]] = r["label"]
-        pair = tuple(list(seen.values())[:2]) if len(seen) >= 2 else None
+        pair = kappa_pair(seen)
         out[fid] = {"rule_id": rules.pop(), "label": label,
                     # A finding is held out only if every record says so.
                     "held_out": all(r["held_out"] for r in recs),
@@ -527,6 +603,12 @@ def main(argv: list[str] | None = None) -> int:
     records, stale = drop_superseded_model_labels(records, version)
     if stale:
         print(f"left out {stale} model labels made with a labeller prompt other than {version}",
+              file=sys.stderr)
+    panel = current_panel_prompt() if args.model_prompt is None else \
+        ("" if args.model_prompt == "any" else current_panel_prompt())
+    records, stale = drop_superseded_panel_labels(records, panel)
+    if stale:
+        print(f"left out {stale} panel labels made with a panel prompt other than {panel}",
               file=sys.stderr)
     previous = P.load_ledger(LEDGER) if LEDGER.is_file() else None
     ledger = build(records, previous, args.date, declared_verified(), snapshot_counts())
