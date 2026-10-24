@@ -2535,7 +2535,7 @@
       "title": "Show every tier by default; block only on verified",
       "description": "Reverses ARB-100's default view. Arbiter's purpose is to catch mistakes, especially in AI-written code; with one verified rule (supply.unpinned-action) the verified-only default hid nearly every finding. report.show defaults to all: console, markdown, PR comment, HTML, SARIF and GitHub annotations list every active finding, verified first, then advisory, then inferred, each section labelled with what the tier means and whether it can block the gate, under one summary line ('2 verified (can block the gate) · 71 advisory (shown, not gating) · 0 inferred'). gate.tier_mode stays tiered by default, so only verified findings can fail the gate: blocking and showing are separate decisions. report.show: verified and --verified-only are the opt-in verified view, which keeps the 'no verified findings; N advisory findings not shown' line. --advisory stays accepted (a no-op under the default). MCP arbiter_scan show defaults to all. SARIF: a result that cannot block a tiered gate is at most a warning (was note since ARB-065). A regression-guard metric and test fail when the default view of planted or ai-corpus lists fewer findings than the raw scan has active.",
       "priority": "high",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "src/arbiter/policy.py",
         "src/arbiter/precision.py",
@@ -2588,7 +2588,8 @@
       "risk_notes": [
         "a consumer that relied on the verified-only default (MCP agents",
         "PR comments) now receives every finding and must read the tier labels",
-        "the PR comment and annotations are longer on repositories with many advisory findings; --sarif-min-severity and report.show: verified are the narrowing tools"
+        "the PR comment and annotations are longer on repositories with many advisory findings; --sarif-min-severity and report.show: verified are the narrowing tools",
+        "Completed 2026-10-24: default view shows every tier (planted 404/404, ai-corpus 127/127 via the regression_guard default-view check); gate unchanged (tiered); SARIF advisory capped at warning. FAIL-071 records why ARB-100's default was reverted."
       ]
     }
   ]
