@@ -2162,6 +2162,61 @@
       "risk_notes": [
         "the census is informational; counts are not defects"
       ]
+    },
+    {
+      "id": "ARB-091",
+      "category": "capability",
+      "title": "Verified-only output by default",
+      "description": "Findings Arbiter shows by default are the verified tier only (ledger-admitted rules at a Wilson lower bound of at least 0.99 offline, or model-confirmed under assisted), so what a reader sees is at least 99% correct. Console, markdown, pr-comment, SARIF, HTML, GitHub annotations and the MCP tools' default responses show verified findings and one summary line saying how many advisory and inferred findings were left out; when nothing is verified they say so instead of reading as clean. --advisory (CLI), report.show: all (arbiter.yaml) and show: all (MCP) bring the other tiers back, sectioned and labelled by tier. The gate's default tier_mode becomes tiered, so only verified findings can fail it; legacy stays an explicit opt-in. report.json stays complete and backward compatible: every finding with its tier and tier_reason, every existing key with its meaning, plus a top-level tiers block {shown, counts, not_shown}. Baseline and new-vs-existing logic run on the full finding set.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/policy.py",
+        "src/arbiter/precision.py",
+        "src/arbiter/report.py",
+        "src/arbiter/diff.py",
+        "src/arbiter/cli.py",
+        "src/arbiter/engine.py",
+        "src/arbiter/core.py",
+        "src/arbiter/service.py",
+        "src/arbiter/mcp.py",
+        "tests/test_precision_tiers.py",
+        "tests/test_report_output.py",
+        "tests/test_policy_gate.py",
+        "tests/test_annotations.py",
+        "docs/precision.md",
+        "docs/configuration.md",
+        "README.md"
+      ],
+      "acceptance_criteria": [
+        "default console/markdown/pr-comment/SARIF/HTML/annotations list verified findings only and print the not-shown summary",
+        "a report with no verified findings says 'no verified findings; N advisory ... not shown' and never reads as clean",
+        "--advisory and report.show: all list every tier sectioned and labelled",
+        "gate.tier_mode defaults to tiered and legacy still works when set",
+        "report.json keeps every finding with tier and tier_reason and every existing key and adds a top-level tiers block",
+        "baseline new/existing status is computed over the full finding set",
+        "MCP arbiter_scan returns verified findings by default and everything with show: all"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_precision_tiers.py tests/test_report_output.py tests/test_policy_gate.py tests/test_annotations.py tests/test_service_api.py",
+        "PYTHONPATH=src python tools/regression_guard.py check --targets planted ai-corpus --no-perf"
+      ],
+      "documentation_required": [
+        "README.md",
+        "docs/precision.md",
+        "docs/configuration.md",
+        "docs/ci.md",
+        "docs/cli.md",
+        "docs/mcp.md",
+        "docs/reading-a-report.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "a repository whose rules are all on probation now has a gate that passes and a console that lists nothing; the summary line is the only thing standing between that and a false clean bill of health",
+        "consumers that counted report.json findings as what a person saw must read the tiers block",
+        "Hosted API returns report.json as written (recorded tiers block) so arbiter remote scan renders the verified view by default; MCP show=all is the only surface that rewrites tiers.shown"
+      ]
     }
   ]
 }

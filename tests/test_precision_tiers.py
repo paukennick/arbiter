@@ -3,8 +3,10 @@
 A finding is `verified` only when its rule is declared verified, the ledger
 admits the rule, and either the model confirmed the finding or the profile
 cannot call a model and the rule's bound alone reaches 0.99. Everything else
-is `advisory` (shown, never blocks a tiered gate) or `inferred`. The legacy
-gate, the default, is unchanged.
+is `advisory` (shown, never blocks a tiered gate) or `inferred`. The tiered
+gate is the default (ARB-091); `legacy` is an explicit opt-in and behaves as
+it always did. What the renderings show is the verified view by default:
+tests/test_verified_view.py.
 """
 from __future__ import annotations
 
@@ -154,8 +156,18 @@ def _report(*findings: Finding) -> Report:
 def test_legacy_gate_is_unchanged_by_tiers():
     f = _f()
     f.tier = "advisory"
-    g = evaluate_gate(_report(f), _cfg())
+    g = evaluate_gate(_report(f), _cfg(tier_mode="legacy"))
     assert not g["passed"] and g["tier_mode"] == "legacy" and g["failing_ids"] == [f.id]
+    assert "excluded_by_tier" not in g
+
+
+def test_the_default_gate_is_tiered_and_names_what_it_left_out():
+    assert DEFAULTS["gate"]["tier_mode"] == "tiered"
+    f = _f()
+    f.tier = "advisory"
+    g = evaluate_gate(_report(f), copy.deepcopy(DEFAULTS))
+    assert g["passed"] and g["tier_mode"] == "tiered" and g["considered"] == 0
+    assert g["excluded_by_tier"] == {"advisory": 1}
 
 
 def test_an_advisory_critical_finding_does_not_fail_a_tiered_gate():
@@ -265,7 +277,7 @@ def test_sarif_levels_stay_by_severity_under_the_legacy_gate(tmp_path):
     a = _f(severity="high")
     a.tier = "advisory"
     rep = _report(a)
-    rep.gate = evaluate_gate(rep, _cfg())
+    rep.gate = evaluate_gate(rep, _cfg(tier_mode="legacy"))
     write_sarif(rep, str(tmp_path / "r.sarif"))
     assert json.loads((tmp_path / "r.sarif").read_text())["runs"][0]["results"][0]["level"] == "error"
 

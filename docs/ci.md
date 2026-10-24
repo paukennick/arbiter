@@ -204,13 +204,20 @@ baseline.
 barely ran. Without it, an analyzer that failed to install looks identical to an
 analyzer that found nothing.
 
-`gate.tier_mode` decides which findings `fail_on` reads. `legacy` (the
-default) reads every active finding. `tiered` reads only findings whose
-precision tier is in `gate.tiers` (default `[verified]`), and the SARIF marks
-the others as `note`. Today no rule is declared verified, so a tiered gate
-blocks nothing; keep `legacy` until the rules you care about are admitted
+`gate.tier_mode` decides which findings `fail_on` reads. `tiered` (the
+default) reads only findings whose precision tier is in `gate.tiers`
+(default `[verified]`), records what it set aside as `excluded_by_tier`, and
+the SARIF marks the others as `note`. `legacy` reads every active finding.
+Today no rule is declared verified, so a tiered gate blocks nothing and the
+pull-request comment says `no verified findings; N advisory findings not
+shown`; set `legacy` if you want the severity gate over every finding until
+the rules you care about are admitted
 ([configuration.md](configuration.md#precision-tiers),
 [precision.md](precision.md#tiers)).
+
+The comment, the annotations and the SARIF upload list verified findings
+only by default; `--advisory` or `report.show: all` lists every tier,
+sectioned ([configuration.md](configuration.md#what-the-report-shows)).
 
 The `assisted` profile is `ci` plus a model check of each finding at or above
 `verify.min_severity` (default `medium`). It needs `ANTHROPIC_API_KEY` as a

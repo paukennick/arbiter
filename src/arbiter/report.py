@@ -44,15 +44,111 @@ def tier_summary(report: Report) -> str:
     """'tiers: 3 verified · 40 advisory · 0 inferred (gate: legacy)'. The
     mode is part of the line: under legacy every tier can fail the gate."""
     counts = tier_counts(report.active())
-    mode = (report.gate or {}).get("tier_mode", "legacy")
+    line = "tiers: " + " · ".join(f"{counts[t]} {t}" for t in TIER_ORDER)
+    mode = (report.gate or {}).get("tier_mode")
+    if not mode:
+        return line   # no gate was evaluated for this report; say nothing about one
     gate = ("gate reads every tier" if mode == "legacy"
             else "gate reads " + ", ".join((report.gate or {}).get("tiers") or ["verified"]))
-    return ("tiers: " + " · ".join(f"{counts[t]} {t}" for t in TIER_ORDER)
-            + f" (tier_mode {mode}: {gate})")
+    return line + f" (tier_mode {mode}: {gate})"
 
 
 def _tiered(report: Report) -> bool:
     return (report.gate or {}).get("tier_mode") == "tiered"
+
+
+# ---------------------------------------------------------------------------
+# The view: which tiers a rendering lists (ARB-091)
+# ---------------------------------------------------------------------------
+
+HINT_CLI = "run with --advisory to include them"
+HINT_CONFIG = "run with --advisory, or set report.show: all, to include them"
+
+
+def view_of(report: Report) -> str:
+    """`verified` or `all`: the view the scan recorded in `report.tiers`.
+
+    Every scan records one (the default is `verified`). A report with none
+    -- written before views existed, or a `Report` built in memory -- renders
+    every finding: no view was decided for it, and a renderer must not
+    invent one and quietly drop findings from a file that never said to.
+    """
+    return str((report.tiers or {}).get("shown") or "all")
+
+
+def _failing_ids(report: Report) -> set[str]:
+    return set((report.gate or {}).get("failing_ids") or [])
+
+
+def _is_shown(report: Report, f: Finding, listed: tuple[str, ...], failing: set[str]) -> bool:
+    # A finding that failed the gate is shown whatever its tier: the gate's
+    # reasons name it, and a FAIL whose cause the reader cannot see is worse
+    # than an advisory line. Under the default tiered gate this adds nothing
+    # (only verified findings can fail it); it matters for `legacy`.
+    return (f.tier or "advisory") in listed or f.id in failing
+
+
+def shown_findings(report: Report) -> list[Finding]:
+    """The active findings this report's view lists, in report order."""
+    from .precision import shown_tiers
+    listed = shown_tiers(view_of(report))
+    failing = _failing_ids(report)
+    return [f for f in report.active() if _is_shown(report, f, listed, failing)]
+
+
+def not_shown(report: Report) -> dict[str, int]:
+    """Active findings the view leaves out, by tier, zeros dropped."""
+    from .precision import shown_tiers
+    listed = shown_tiers(view_of(report))
+    failing = _failing_ids(report)
+    out: dict[str, int] = {}
+    for f in report.active():
+        if not _is_shown(report, f, listed, failing):
+            t = f.tier or "advisory"
+            out[t] = out.get(t, 0) + 1
+    return {t: out[t] for t in TIER_ORDER if out.get(t)}
+
+
+def view_summary(report: Report, hint: str = HINT_CLI) -> str:
+    """One line on what the rendering shows and what it leaves out.
+
+    `12 verified findings shown; 340 advisory and 3 inferred findings not
+    shown (run with --advisory to include them)`. When nothing is verified
+    it says `no verified findings; ...` rather than nothing: a report that
+    lists no findings because none passed the bar must not read like a
+    report that found none. Under `all`: `all tiers shown: ...`.
+    """
+    counts = tier_counts(report.active())
+    if view_of(report) == "all":
+        return "all tiers shown: " + " · ".join(f"{counts[t]} {t}" for t in TIER_ORDER)
+    n = counts["verified"]
+    head = (f"{n} verified finding{'s' if n != 1 else ''} shown" if n
+            else "no verified findings")
+    failing = sum(1 for f in shown_findings(report) if (f.tier or "advisory") != "verified")
+    if failing:
+        head += f", plus {failing} that failed the gate"
+    hidden = [f"{k} {t}" for t, k in not_shown(report).items()]
+    if not hidden:
+        return head
+    return f"{head}; {' and '.join(hidden)} findings not shown ({hint})"
+
+
+def _sections(report: Report, findings: list[Finding]) -> list[tuple[str, list[Finding]]]:
+    """Findings split by tier, in tier order, for a rendering that shows
+    every tier: labelled sections, so a reader never mistakes an advisory
+    finding for a verified one. Under the verified view: one section."""
+    if view_of(report) != "all":
+        if not findings:
+            return []
+        if all((f.tier or "advisory") == "verified" for f in findings):
+            return [("verified", findings)]
+        return [("verified, and gate failures", findings)]
+    out = []
+    for t in TIER_ORDER:
+        group = [f for f in findings if (f.tier or "advisory") == t]
+        if group:
+            out.append((t, group))
+    return out
 
 
 def _sarif_level(report: Report, f: Finding) -> str:
@@ -270,6 +366,8 @@ def _bluf_lines(report: Report) -> list[str]:
             + (f" ({vs['reason']})" if vs.get("reason") else "")
             + " -- no verdict, which is not a confirmation."
         )
+    if not_shown(report):
+        lines.append(view_summary(report, HINT_CONFIG).capitalize() + ".")
     no_fix = sum(1 for f in report.active() if f.remediation_source == "default")
     if no_fix:
         lines.append(
@@ -291,7 +389,7 @@ def write_sarif(report: Report, path: str, min_severity: str | None = None) -> N
     upload of every low and info finding buries the ones a reviewer should see."""
     rules: dict[str, dict] = {}
     results = []
-    for f in report.active():
+    for f in shown_findings(report):
         if min_severity and not sev_at_least(f.severity, min_severity):
             continue
         if f.rule_id not in rules:
@@ -353,8 +451,11 @@ def write_sarif(report: Report, path: str, min_severity: str | None = None) -> N
                 "properties": {
                     "profile": report.profile,
                     "coverage": report.scorecard.coverage,
-                    "tier_mode": (report.gate or {}).get("tier_mode", "legacy"),
+                    "tier_mode": (report.gate or {}).get("tier_mode", ""),
                     "tiers": tier_counts(report.active()),
+                    "shown": view_of(report),
+                    "not_shown": not_shown(report),
+                    "summary": view_summary(report, HINT_CONFIG),
                     "bluf": _bluf_lines(report),
                     "skipped_probes": [
                         {"name": p.name, "reason": p.reason}
@@ -383,7 +484,7 @@ def _wc_property(text: str) -> str:
 
 
 def render_annotations(report: Report) -> str:
-    """One GitHub workflow command per active finding.
+    """One GitHub workflow command per finding the report's view shows.
 
     `::error` for the findings that failed the gate (`gate.failing_ids`),
     `::notice` for findings in files the change did not touch (tagged
@@ -393,7 +494,7 @@ def render_annotations(report: Report) -> str:
     """
     failing = set((report.gate or {}).get("failing_ids") or [])
     lines: list[str] = []
-    for f in report.active():
+    for f in shown_findings(report):
         if f.id in failing:
             level = "error"
         elif "outside-this-change" in f.tags:
@@ -418,7 +519,8 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
     L: list[str] = []
     sc = report.scorecard
     active = report.active()
-    counts = counts_by_severity(active)
+    listed = shown_findings(report)
+    counts = counts_by_severity(listed)
 
     L.append("")
     L.append(_color(color, "bold", f"  arbiter {report.arbiter_version}  ·  {report.system}  ·  profile={report.profile}"))
@@ -447,9 +549,14 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
     head = "  " + "  ".join(
         _color(color, s, f"{counts[s]} {s}") for s in SEV_ORDER if counts[s]
     )
-    L.append(head.rstrip() or _color(color, "green", "  no findings"))
-
+    if listed:
+        L.append(head.rstrip())
+    elif not active:
+        L.append(_color(color, "green", "  no findings"))
     if active:
+        # What this view leaves out comes before anything that could read as
+        # a clean result; never green, because it is not one.
+        L.append(_color(color, "dim" if listed else "medium", "  " + view_summary(report)))
         L.append(_color(color, "dim", "  " + tier_summary(report)))
     if sc.withheld:
         L.append("  " + _color(color, "medium", f"grade withheld — {sc.withheld_reason}"))
@@ -476,10 +583,10 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
                 L.append(_color(color, "dim", f"    {name}: {desc}"))
         L.append("")
 
-    shown = [f for f in active][:limit]
-    if shown:
-        L.append(_color(color, "bold", "  FINDINGS"))
-        for f in shown:
+    shown = listed[:limit]
+    for section, members in _sections(report, shown):
+        L.append(_color(color, "bold", f"  FINDINGS ({section})"))
+        for f in members:
             tag = _color(color, f.severity, f"{f.severity:<8}")
             conf = "" if f.confidence == "high" else _color(color, "dim", f" [{f.confidence} confidence]")
             # short() already carries the repo on cross-repo findings
@@ -491,8 +598,9 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
             vt = _verification_text(f)
             if vt:
                 L.append(_color(color, "dim", f"           {vt}"))
-        if len(active) > limit:
-            L.append(_color(color, "dim", f"  … {len(active) - limit} more (see the JSON report)"))
+        L.append("")
+    if len(listed) > limit:
+        L.append(_color(color, "dim", f"  … {len(listed) - limit} more (see the JSON report)"))
         L.append("")
 
     vsum = _verification_summary(report)
@@ -528,7 +636,8 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
 def render_markdown(report: Report) -> str:
     sc = report.scorecard
     active = report.active()
-    counts = counts_by_severity(active)
+    listed = shown_findings(report)
+    counts = counts_by_severity(listed)
     L: list[str] = []
     L.append(f"# Arbiter report — {report.system}")
     L.append("")
@@ -552,9 +661,10 @@ def render_markdown(report: Report) -> str:
     L.append("| " + " | ".join(str(counts[s]) for s in SEV_ORDER) + " |")
     L.append("")
     if active:
+        L.append(f"**Shown:** {view_summary(report, HINT_CONFIG)}  ")
         L.append(tier_summary(report).replace("tiers: ", "**Tiers:** ", 1))
         L.append("")
-    L.extend(requirement_block(active, base=(report.scan_scope or {}).get("changed_since")))
+    L.extend(requirement_block(listed, base=(report.scan_scope or {}).get("changed_since")))
     vsum = _verification_summary(report)
     if vsum:
         L.append(vsum[0].upper() + vsum[1:] + ".")
@@ -585,11 +695,11 @@ def render_markdown(report: Report) -> str:
             L.append(" · ".join(legend))
             L.append("")
 
-    if active:
-        L.append("## Findings")
+    for section, members in _sections(report, listed):
+        L.append(f"## Findings ({section}, {len(members)})")
         L.append("")
         for sev in SEV_ORDER:
-            group = [f for f in active if f.severity == sev]
+            group = [f for f in members if f.severity == sev]
             if not group:
                 continue
             L.append(f"### {sev.capitalize()} ({len(group)})")
@@ -793,7 +903,8 @@ def _html_rows_probes(report: Report) -> str:
 def render_html(report: Report) -> str:
     sc = report.scorecard
     active = report.active()
-    counts = counts_by_severity(active)
+    listed = shown_findings(report)
+    counts = counts_by_severity(listed)
     e = html.escape
 
     repo_roots = {r.id: r.path for r in report.repos}
@@ -843,6 +954,14 @@ def render_html(report: Report) -> str:
         for s in SEV_ORDER
     )
     repos = ", ".join(f"{e(r.id)} ({r.loc:,} loc{', ' + e(r.commit) if r.commit else ''})" for r in report.repos)
+    view_html = (f"<p class='sub' style='margin:8px 0 0'>{e(view_summary(report, HINT_CONFIG))}"
+                 f" · {e(tier_summary(report))}</p>") if active else ""
+    findings_html = "".join(
+        f"<h2>Findings ({e(section)}, {len(members)})</h2><div class=\"tw\"><table>"
+        "<thead><tr><th>Severity</th><th>Finding</th><th>Repo</th><th>Location</th><th>Dimension</th></tr></thead>"
+        f"<tbody>{_html_rows_findings(members, loc_cell)}</tbody></table></div>"
+        for section, members in _sections(report, listed)
+    ) or f"<h2>Findings (0)</h2><p class='sub'>{e(view_summary(report, HINT_CONFIG)) if active else 'No findings.'}</p>"
 
     return f"""<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -854,13 +973,12 @@ def render_html(report: Report) -> str:
 {grade}
 {bluf_html}
 <div class="cards">{cards}</div>
+{view_html}
 <h2>Dimensions</h2><div class="tw"><table>
 <thead><tr><th>Dimension</th><th>Score</th><th>Coverage</th><th>Checks</th><th>Findings</th></tr></thead>
 <tbody>{_html_rows_dims(report)}</tbody></table></div>
 <p class="sub" style="margin-top:6px">{dims_legend()}</p>
-<h2>Findings ({len(active)})</h2><div class="tw"><table>
-<thead><tr><th>Severity</th><th>Finding</th><th>Repo</th><th>Location</th><th>Dimension</th></tr></thead>
-<tbody>{_html_rows_findings(active, loc_cell)}</tbody></table></div>
+{findings_html}
 <h2>Probe outcomes</h2><div class="tw"><table>
 <thead><tr><th>Status</th><th>Probe</th><th>Findings</th><th>Time</th><th>Reason</th></tr></thead>
 <tbody>{_html_rows_probes(report)}</tbody></table></div>

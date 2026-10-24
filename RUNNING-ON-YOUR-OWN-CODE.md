@@ -108,9 +108,13 @@ Open `.arbiter/first-run/report.html`. Read four things, in this order:
    paths, tests that assert nothing. It is the answer to "how much does a
    clean report from any tool actually mean here".
 
-Each finding also shows a precision tier, `[advisory]` on every finding today:
-no rule is yet declared precise enough to block a tiered gate. The default
-gate ignores tiers, so this changes nothing until you opt in
+Every finding carries a precision tier, and today that is `[advisory]` on
+all of them: no rule is yet declared precise enough to be *verified*. By
+default Arbiter shows and gates on verified findings only, so the first run
+reads `no verified findings; N advisory findings not shown` and the gate
+passes. To see the advisory findings, scan with `--advisory` (or set
+`report.show: all` in `arbiter.yaml`); to make them fail the gate, set
+`gate.tier_mode: legacy`
 ([docs/reading-a-report.md](docs/reading-a-report.md#precision-tiers)).
 
 ---

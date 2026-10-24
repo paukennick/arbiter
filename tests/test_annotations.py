@@ -46,7 +46,11 @@ def test_annotations_mark_gating_findings_as_errors_and_the_rest_as_warnings(tmp
     """Exactly the findings that failed the gate are errors; the rest warn."""
     (tmp_path / "leak.py").write_text(HIGH_PY, encoding="utf-8")
     cfg = load_config(None)
-    cfg["gate"] = {"fail_on": {"severity": "high"}}
+    # The severity gate over every finding, and every finding annotated: the
+    # legacy gate and the `all` view. The default (tiered gate, verified
+    # view) is covered in tests/test_verified_view.py.
+    cfg["gate"] = {"fail_on": {"severity": "high"}, "tier_mode": "legacy"}
+    cfg["report"] = {"show": "all"}
     cfg["rules"] = [{
         "id": "readme-present", "type": "file_exists", "paths": ["README.md"],
         "title": "README.md is required", "severity": "low",
@@ -128,7 +132,8 @@ def test_annotations_never_print_evidence(tmp_path):
     """A finding names where a credential is and what kind; never its value."""
     value = "sk_live_51H8xQ2LkdIwHu7ix" + "Z" * 20
     (tmp_path / "billing.py").write_text(f'STRIPE_KEY = "{value}"\n', encoding="utf-8")
-    rep = run_scan([str(tmp_path)], load_config(None), only=["secrets"], use_adapters=False)
+    cfg = {**load_config(None), "report": {"show": "all"}}
+    rep = run_scan([str(tmp_path)], cfg, only=["secrets"], use_adapters=False)
     assert rep.findings, "fixture produced nothing, so this proves nothing"
     text = render_annotations(rep)
     assert text, "nothing rendered, so this proves nothing"
@@ -163,7 +168,8 @@ def test_the_gate_names_the_findings_that_failed_it():
     inferred = Finding(rule_id="r/i", title="i", severity="critical", provenance="inferred")
     rep = _report([crit, new_high, old_high, low, inferred])
 
-    gate = evaluate_gate(rep, {"gate": {"fail_on": {"severity": "critical", "new": "high"}}})
+    legacy = {"tier_mode": "legacy"}
+    gate = evaluate_gate(rep, {"gate": {"fail_on": {"severity": "critical", "new": "high"}, **legacy}})
     assert gate["passed"] is False
     assert gate["reasons"] == ["1 finding(s) at or above critical",
                                "2 new finding(s) at or above high"]
@@ -174,16 +180,16 @@ def test_the_gate_names_the_findings_that_failed_it():
 
     # A passing gate names nothing.
     gate = evaluate_gate(rep, {"gate": {"fail_on": {"severity": "critical"},
-                                        "gate_on_inferred": False}})
+                                        "gate_on_inferred": False, **legacy}})
     assert gate["failing_ids"] == [crit.id]
-    gate = evaluate_gate(_report([low]), {"gate": {"fail_on": {"severity": "critical"}}})
+    gate = evaluate_gate(_report([low]), {"gate": {"fail_on": {"severity": "critical"}, **legacy}})
     assert gate["passed"] is True
     assert gate["failing_ids"] == []
 
     # A coverage reason has no finding to name.
     thin = _report([low])
     thin.scorecard.coverage = 0.1
-    gate = evaluate_gate(thin, {"gate": {"fail_on": {"coverage_below": 0.5}}})
+    gate = evaluate_gate(thin, {"gate": {"fail_on": {"coverage_below": 0.5}, **legacy}})
     assert gate["passed"] is False and gate["failing_ids"] == []
 
 
@@ -191,7 +197,7 @@ def test_failing_ids_round_trip_through_the_json_report(tmp_path):
     from arbiter.report import write_all
     f = Finding(rule_id="r/c", title="c", severity="critical")
     rep = _report([f])
-    rep.gate = evaluate_gate(rep, {"gate": {"fail_on": {"severity": "critical"}}})
+    rep.gate = evaluate_gate(rep, {"gate": {"fail_on": {"severity": "critical"}, "tier_mode": "legacy"}})
     written = write_all(rep, str(tmp_path), ["json"])
     import json
     back = Report.from_dict(json.loads(Path(written["json"]).read_text(encoding="utf-8")))
@@ -214,8 +220,10 @@ def leaky(tmp_path):
     target = tmp_path / "repo"
     target.mkdir()
     (target / "leak.py").write_text(HIGH_PY, encoding="utf-8")
+    # The legacy gate: the planted token is advisory (no rule is declared
+    # verified yet) and the tiered default would wave it through.
     (target / "arbiter.yaml").write_text(
-        "gate:\n  fail_on:\n    severity: high\n", encoding="utf-8")
+        "gate:\n  fail_on:\n    severity: high\n  tier_mode: legacy\n", encoding="utf-8")
     return target
 
 

@@ -116,12 +116,10 @@ gate:
     coverage_below: 0.60
   gate_on_inferred: false
   fail_on_probe_error: false
-  tier_mode: legacy
+  tier_mode: tiered
   tiers: [verified]
 ```
 
-| Key | Effect |
-|---|---|
 | Key | Default | Effect |
 |---|---|---|
 | `fail_on.severity` | `critical` | any finding at or above this severity fails |
@@ -129,7 +127,7 @@ gate:
 | `fail_on.coverage_below` | none | the run fails if rubric coverage falls below this fraction |
 | `gate_on_inferred` | `false` | when false, findings with `provenance: inferred` (from a model) never fail a build |
 | `fail_on_probe_error` | `false` | when true, a probe that errored fails the build |
-| `tier_mode` | `legacy` | `legacy`: `fail_on` reads every active finding. `tiered`: only findings whose precision tier is in `tiers` ([below](#precision-tiers)). Any other value is an error |
+| `tier_mode` | `tiered` | `tiered`: `fail_on` reads only findings whose precision tier is in `tiers` ([below](#precision-tiers)), and the gate block records what it set aside as `excluded_by_tier`. `legacy`: `fail_on` reads every active finding, as before tiers. Any other value is an error |
 | `tiers` | `[verified]` | under `tier_mode: tiered`, the tiers that can fail the gate: any of `verified`, `advisory`, `inferred` |
 
 Suppressed findings never fail the gate. The gate reads severity, never
@@ -156,10 +154,27 @@ precision:
 ```
 
 Today no rule is declared verified, so every deterministic finding is
-`advisory` and a `tier_mode: tiered` gate blocks nothing. That is why
-`legacy` is the default. Switch a repository to `tiered` only once rules it
-cares about are declared verified and admitted by the ledger
+`advisory`, the default `tiered` gate blocks nothing and the default view
+below lists nothing -- and says so. A repository that wants the severity
+gate over every finding meanwhile sets `gate.tier_mode: legacy`
 ([precision.md](precision.md#current-numbers) has the current state).
+
+## What the report shows
+
+```yaml
+report:
+  show: verified          # verified (default) | all
+```
+
+| Key | Default | Effect |
+|---|---|---|
+| `show` | `verified` | `verified`: the console, markdown, pull-request comment, SARIF, HTML and GitHub annotations list verified findings only (plus any finding that failed the gate), with one line saying how many advisory and inferred findings were left out. `all`: every tier, sectioned and labelled by tier. `--advisory` on the command line is `all` for one run. Any other value is an error |
+
+`report.json` always holds every finding with its `tier` and `tier_reason`,
+plus a top-level `tiers` block (`shown`, `counts`, `shown_count`,
+`not_shown`) recording which view was in force. Baselines and `new` /
+`existing` status are computed over the full set
+([precision.md](precision.md#tiers)).
 
 ## Scoring
 

@@ -336,12 +336,64 @@ def _read_report(out_dir: Path) -> dict:
 # Operations
 # --------------------------------------------------------------------------
 
+SHOW_MODES = ("verified", "all")
+
+
+def _view(report: dict, show: str) -> dict:
+    """The report as a caller sees it under `show` (ARB-091): under
+    `verified`, a copy whose `findings` are the verified tier only; under
+    `all`, the report as written. Every other key is left as it is, and the
+    file at `report_path` always holds every finding."""
+    if show not in SHOW_MODES:
+        raise ServiceError(f"show is one of {SHOW_MODES}, got {show!r}")
+    from .precision import shown_tiers, view_block
+    findings = [f for f in (report.get("findings") or []) if isinstance(f, dict)]
+    listed = shown_tiers(show)
+    failing = set((report.get("gate") or {}).get("failing_ids") or [])
+    kept = [f for f in findings
+            if not f.get("suppressed")
+            and ((f.get("tier") or "advisory") in listed or f.get("id") in failing)]
+    block = view_block([_Row(f) for f in findings], show, failing)
+    out = dict(report)
+    out["tiers"] = block
+    if show != "all":
+        out["findings"] = kept
+    return out
+
+
+class _Row:
+    """Just enough of a Finding for `view_block` to count a JSON row."""
+    def __init__(self, d: dict) -> None:
+        self.suppressed = bool(d.get("suppressed"))
+        self.tier = d.get("tier") or ""
+        self.id = d.get("id") or ""
+
+
+def _summary(block: dict, hint: str = "pass show: all to include them") -> str:
+    counts = block.get("counts") or {}
+    if block.get("shown") == "all":
+        return "all tiers shown: " + " · ".join(f"{counts.get(t, 0)} {t}" for t in ("verified", "advisory", "inferred"))
+    n = counts.get("verified", 0)
+    head = f"{n} verified finding{'s' if n != 1 else ''} shown" if n else "no verified findings"
+    hidden = [f"{k} {t}" for t, k in (block.get("not_shown") or {}).items()]
+    if not hidden:
+        return head
+    return f"{head}; {' and '.join(hidden)} findings not shown ({hint})"
+
+
 def scan(target: str, output_dir: str, profile: str = "offline", only: str = "",
          skip: str = "", allow_network: bool = False,
-         timeout: int = DEFAULT_TIMEOUT) -> dict:
+         timeout: int = DEFAULT_TIMEOUT, show: str | None = "verified") -> dict:
     """Analyse a repository and return the report.
 
     `output_dir` is required and is the sandbox: nothing is written outside it.
+    `show` is what the answer lists (ARB-091): `verified` (the default) returns
+    the report with `findings` cut to the verified tier and `summary` saying
+    what was left out; `all` returns every finding and a `tiers` block that
+    says so. `None` returns report.json exactly as written -- every finding,
+    and the `tiers` block the scan itself recorded -- for a machine surface
+    (the hosted API) whose client applies the view with its own renderers.
+    `report_path` names the complete report in every case.
     """
     profile = check_profile(profile, allow_network)
     out = resolve_within("report", output_dir, "output_dir")
@@ -349,11 +401,23 @@ def scan(target: str, output_dir: str, profile: str = "offline", only: str = "",
     proc = _run(["scan"] + _scan_argv(target, out, profile, only, skip), timeout)
     if proc.returncode == EXIT_ERROR:
         raise ServiceError(f"scan failed: {(proc.stderr or proc.stdout).strip()[:800]}")
-    report = _read_report(out)
+    full = _read_report(out)
+    if show is None:
+        report = full
+        # Every scan records a view; a report without one (pre-view Arbiter)
+        # renders every finding, which is what `all` describes.
+        block = report.get("tiers") or _view(full, "all")["tiers"]
+    else:
+        report = _view(full, show)
+        block = report["tiers"]
     return {
         "report": report,
         "report_path": str(out / "report.json"),
         "finding_count": len(report.get("findings") or []),
+        "findings_total": len(full.get("findings") or []),
+        "shown": block.get("shown") or "all",
+        "tiers": block,
+        "summary": _summary(block),
     }
 
 
@@ -372,12 +436,15 @@ def gate(target: str, output_dir: str, profile: str = "ci", only: str = "",
     if proc.returncode == EXIT_ERROR:
         raise ServiceError(f"gate failed: {(proc.stderr or proc.stdout).strip()[:800]}")
     report = _read_report(out)
+    block = _view(report, "verified")["tiers"]
     return {
         "passed": bool((report.get("gate") or {}).get("passed")),
         "exit_code": proc.returncode,
         "gate": report.get("gate") or {},
         "claims": report.get("claims") or [],
         "report_path": str(out / "report.json"),
+        "tiers": block,
+        "summary": _summary(block, hint="arbiter_scan with show: all lists them"),
     }
 
 

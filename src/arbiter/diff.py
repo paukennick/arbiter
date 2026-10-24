@@ -149,26 +149,51 @@ def render_pr_comment(after: Report, d: ReportDiff | None = None) -> str:
         L.append(f"**{sc.overall}/100** at {sc.coverage:.0%} coverage")
     L.append("")
 
-    if d is not None:
-        L.append(f"`{len(d.new)}` new · `{len(d.fixed)}` fixed · `{len(d.persisting)}` unchanged")
+    # The comparison ran over every finding (a baseline is about the whole
+    # set); what the comment lists follows the report's view (ARB-091), so a
+    # reviewer sees the verified tier by default and one line on the rest.
+    from .report import (
+        HINT_CONFIG,
+        requirement_block,
+        shown_findings,
+        view_of,
+        view_summary,
+    )
+    listed = shown_findings(after)
+    listed_ids = {f.id for f in listed}
+    if after.active():
+        L.append(f"_{view_summary(after, HINT_CONFIG)}._")
         L.append("")
-        if d.new:
-            L.append("| Severity | Finding | Location |")
-            L.append("|---|---|---|")
-            for f in d.new[:10]:
-                L.append(f"| {f.severity} | {f.title} | `{f.location.short()}` |")
-            if len(d.new) > 10:
-                L.append(f"| | _… {len(d.new) - 10} more_ | |")
+
+    if d is not None:
+        new_shown = [f for f in d.new if f.id in listed_ids]
+        L.append(f"`{len(d.new)}` new · `{len(d.fixed)}` fixed · `{len(d.persisting)}` unchanged")
+        hidden_new = len(d.new) - len(new_shown)
+        if hidden_new:
+            L[-1] += f" · `{hidden_new}` of the new findings are advisory or inferred and not listed"
+        L.append("")
+        if new_shown:
+            tier_col = view_of(after) == "all"
+            L.append("| Severity | Finding | Location |" + (" Tier |" if tier_col else ""))
+            L.append("|---|---|---|" + ("---|" if tier_col else ""))
+            for f in new_shown[:10]:
+                L.append(f"| {f.severity} | {f.title} | `{f.location.short()}` |"
+                         + (f" {f.tier or 'advisory'} |" if tier_col else ""))
+            if len(new_shown) > 10:
+                L.append(f"| | _… {len(new_shown) - 10} more_ | |" + (" |" if tier_col else ""))
             L.append("")
     else:
         counts: dict[str, int] = {}
-        for f in after.active():
+        for f in listed:
             counts[f.severity] = counts.get(f.severity, 0) + 1
-        L.append(" · ".join(f"`{n}` {s}" for s, n in counts.items()) or "No findings.")
-        L.append("")
+        if counts:
+            L.append(" · ".join(f"`{n}` {s}" for s, n in counts.items()))
+            L.append("")
+        elif not after.active():
+            L.append("No findings.")
+            L.append("")
 
-    from .report import requirement_block
-    L.extend(requirement_block(after.active(), heading="**By requirement**",
+    L.extend(requirement_block(listed, heading="**By requirement**",
                                base=(after.scan_scope or {}).get("changed_since")))
 
     skipped = [p for p in after.probes if p.status != "ran"]

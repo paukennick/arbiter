@@ -80,6 +80,7 @@ Flags shared by `scan` and `gate`:
 | `--no-cache`, `--cache-path FILE` | bypass or relocate the result cache ([below](#the-result-cache)) |
 | `--github`, `--no-github` | GitHub Actions mode ([below](#output-formats)); on by default when `GITHUB_ACTIONS=true` |
 | `--sarif-min-severity SEV` | drop findings below `SEV` from `report.sarif` only |
+| `--advisory` | list advisory and inferred findings too, sectioned by tier; by default every rendering lists verified findings only, with one line on what was left out (`report.show` in [configuration.md](configuration.md#what-the-report-shows)). `report.json` holds every finding either way |
 | `--no-history` | do not append to `<out>/history.jsonl` |
 | `--out DIR`, `--format LIST` | output directory (default `arbiter-out`) and formats (default `json,console`) |
 
@@ -137,7 +138,9 @@ arbiter ab --spec examples/ab-native-vs-checkov.yaml --out ab-out
 ```
 
 `diff` accepts `--format console,json,markdown,pr-comment` (default
-`console`); `--out DIR` writes the chosen formats to files.
+`console`); `--out DIR` writes the chosen formats to files; `--advisory`
+lists every tier in the pull-request comment instead of the verified tier
+the report recorded.
 
 A baseline is what makes "fail on new findings only" usable: findings are
 matched by fingerprint, which deliberately excludes the line number, so

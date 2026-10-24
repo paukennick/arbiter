@@ -329,7 +329,12 @@ def test_assisted_profile_verifies_and_reports(tree, monkeypatch):
     assert s["candidates"] >= 1 and s["rejected"] == s["candidates"] == len(fake.calls)
     f = next(f for f in rep.active() if f.rule_id == "arbiter/python.command-injection")
     assert f.verification["verdict"] == "rejected"
-    assert f in rep.active()  # never hidden
+    assert f in rep.active()  # never dropped from the report
+    # The default view lists the verified tier only (ARB-091), and a rejected
+    # finding is advisory; the `all` view is where the verdict is read.
+    assert "advisory findings not shown" in render_markdown(rep)
+    from arbiter.precision import set_view
+    set_view(rep, "all")
     md = render_markdown(rep)
     assert "model: rejected -- cmd is a constant here" in md
     assert "rejected" in md.split("## Findings")[0]
@@ -338,8 +343,10 @@ def test_assisted_profile_verifies_and_reports(tree, monkeypatch):
     # round trip through JSON keeps the verdict
     back = Report.from_dict(json.loads(json.dumps(rep.to_dict())))
     assert any(x.verification.get("verdict") == "rejected" for x in back.findings)
-    # the gate still sees the finding: tiers are Phase 1's decision
-    assert rep.gate["considered"] == len(rep.active())
+    # the finding reaches the gate as advisory (model-rejected), so the
+    # default tiered gate counts it as excluded by tier rather than losing it
+    assert rep.gate["considered"] + sum(rep.gate["excluded_by_tier"].values()) == len(rep.active())
+    assert f.tier == "advisory"
 
 
 def test_assisted_without_key_says_not_model_verified(tree, monkeypatch):

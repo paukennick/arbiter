@@ -55,14 +55,22 @@ DEFAULTS: dict[str, Any] = {
     "gate": {
         "fail_on": {"severity": "critical", "new": None, "coverage_below": None},
         "gate_on_inferred": False,
-        # legacy: fail_on reads every active finding, as it always has.
-        # tiered: fail_on reads only findings whose precision tier is in
-        # `tiers` (precision.py). Switching to tiered is a decision to make
-        # once the ledger admits rules: with an empty ledger every finding is
-        # advisory and a tiered gate blocks nothing.
-        "tier_mode": "legacy",
+        # tiered (the default since ARB-091): fail_on reads only findings
+        # whose precision tier is in `tiers` (precision.py), so a build fails
+        # on what Arbiter has measured to be right at least 99% of the time
+        # and on nothing else. legacy: fail_on reads every active finding, as
+        # it did before tiers; an explicit opt-in for a repository that wants
+        # the louder gate.
+        "tier_mode": "tiered",
         "tiers": ["verified"],
     },
+    # What the human-facing renderings (console, markdown, pr-comment, SARIF,
+    # HTML, annotations) and the MCP tools show by default (ARB-091).
+    # `verified`: the verified tier only, with one line saying how many
+    # advisory and inferred findings were left out. `all`: every tier,
+    # sectioned and labelled. `--advisory` on the command line is `all` for
+    # one run. report.json always holds every finding, whatever this says.
+    "report": {"show": "verified"},
     # Precision tiers (precision.py, docs/precision.md). `ledger: null` reads
     # the ledger shipped with Arbiter; `verified_rules` declares more rules
     # verified (globs), which still need the ledger to admit them.
@@ -128,22 +136,38 @@ def load_config(path: str | None, repo_root: str | None = None) -> dict:
         raise RuntimeError(f"config {candidate} must be a mapping")
     merged = _merge(DEFAULTS, data)
     check_gate_config(merged, str(candidate))
+    check_report_config(merged, str(candidate))
     return merged
 
 
 TIER_MODES = ("legacy", "tiered")
 GATE_TIERS = ("verified", "advisory", "inferred")
+SHOW_MODES = ("verified", "all")
+DEFAULT_TIER_MODE = "tiered"
 
 
 def check_gate_config(config: dict, where: str = "config") -> None:
     """A misspelt tier mode must not fall back to some other gate quietly."""
     gate = config.get("gate") or {}
-    mode = gate.get("tier_mode", "legacy")
+    mode = gate.get("tier_mode", DEFAULT_TIER_MODE)
     if mode not in TIER_MODES:
         raise RuntimeError(f"{where}: gate.tier_mode is one of {TIER_MODES}, got {mode!r}")
     tiers = gate.get("tiers", ["verified"])
     if not isinstance(tiers, list) or any(t not in GATE_TIERS for t in tiers):
         raise RuntimeError(f"{where}: gate.tiers is a list drawn from {GATE_TIERS}, got {tiers!r}")
+
+
+def check_report_config(config: dict, where: str = "config") -> None:
+    """`report.show` is `verified` or `all`; a misspelling must not quietly
+    show one or the other."""
+    show = show_mode(config)
+    if show not in SHOW_MODES:
+        raise RuntimeError(f"{where}: report.show is one of {SHOW_MODES}, got {show!r}")
+
+
+def show_mode(config: dict | None) -> str:
+    """Which tiers the renderings show under this configuration."""
+    return str(((config or {}).get("report") or {}).get("show") or "verified")
 
 
 def load_system(path: str) -> dict:
@@ -286,18 +310,29 @@ def evaluate_gate(report: Report, config: dict) -> dict:
     fail_on = gate_cfg.get("fail_on") or {}
     gate_inferred = bool(gate_cfg.get("gate_on_inferred", False))
     check_gate_config(config)
-    tier_mode = gate_cfg.get("tier_mode", "legacy")
+    tier_mode = gate_cfg.get("tier_mode", DEFAULT_TIER_MODE)
     gate_tiers = list(gate_cfg.get("tiers") or ["verified"])
 
     considered = [
         f for f in report.findings
         if not f.suppressed and (gate_inferred or f.provenance != "inferred")
     ]
+    # Active findings the tier mode kept away from the thresholds, by tier,
+    # so a passing tiered gate over a report full of advisory criticals says
+    # so in its own block rather than reading as a clean repository.
+    excluded: dict[str, int] = {}
     if tier_mode == "tiered":
         # Only the tiers the configuration names can block. An inferred
         # finding is in the inferred tier, so `gate_on_inferred` and
         # `tiers: [..., inferred]` both have to ask for it.
-        considered = [f for f in considered if (f.tier or "advisory") in gate_tiers]
+        kept = []
+        for f in considered:
+            tier = f.tier or "advisory"
+            if tier in gate_tiers:
+                kept.append(f)
+            else:
+                excluded[tier] = excluded.get(tier, 0) + 1
+        considered = kept
 
     reasons: list[str] = []
     # The findings behind the severity and new-finding reasons, by id, so a
@@ -336,6 +371,6 @@ def evaluate_gate(report: Report, config: dict) -> dict:
         "considered": len(considered),
         "gate_on_inferred": gate_inferred,
         "tier_mode": tier_mode,
-        **({"tiers": gate_tiers} if tier_mode == "tiered" else {}),
+        **({"tiers": gate_tiers, "excluded_by_tier": excluded} if tier_mode == "tiered" else {}),
         "failing_ids": sorted(failing),
     }

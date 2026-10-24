@@ -45,8 +45,8 @@ them without the SDK installed.
 
 | Tool | Takes | Returns |
 |---|---|---|
-| `arbiter_scan` | `target`, `output_dir`, `profile`, `only`, `skip` | the full report JSON |
-| `arbiter_gate` | `target`, `output_dir`, `profile`, `only`, `skip` | pass or fail, with the claim ledger |
+| `arbiter_scan` | `target`, `output_dir`, `profile`, `only`, `skip`, `show` | the report JSON with `findings` cut to the view (`show: verified`, the default, or `all`), plus `finding_count` (what was returned), `findings_total`, `tiers` and a one-line `summary`; `report_path` names the complete report on disk |
+| `arbiter_gate` | `target`, `output_dir`, `profile`, `only`, `skip` | pass or fail, with the claim ledger, the `tiers` block and the same `summary` |
 | `arbiter_review_queue` | `report_path`, `output_dir`, `limit`, `rule` | a queue with every mark blank |
 | `arbiter_review_draft` | `report_path`, `output_dir`, `verdicts`, `limit`, `rule` | `review-draft.md`: the same queue with the proposed marks and a reason under each; counts, the unknown ids, and the ledger entries the `y` marks would draft, as text. Records nothing |
 
@@ -56,6 +56,13 @@ An id that is not in the queue is reported back, not raised, and gets no mark.
 The draft takes no path argument the queue does not already take, so it is
 confined over HTTPS exactly as the others are and writes only under
 `output_dir`.
+
+`show` (ARB-091) is what an agent is shown, not what was found: under the
+default `verified` the answer's `findings` are the tier measured at least 99%
+precise (plus any finding that failed the gate) and `summary` reads, for
+example, `no verified findings; 23 advisory findings not shown (pass show:
+all to include them)`. The complete report, every finding with its tier, is
+at `report_path`, which is also what `arbiter_review_queue` reads.
 
 `profile` is restricted to `offline` and `ci` on both scanning tools. Both run
 with the network off. An agent cannot ask for the network by naming a profile,
