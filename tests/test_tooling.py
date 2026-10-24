@@ -40,7 +40,7 @@ def test_build_plan_includes_only_applicable_tools_and_grammars(tmp_path: Path, 
 
     assert plan["languages"] == ["python", "terraform"]
     assert {tool["name"] for tool in plan["analyzers"]} == {
-        "checkov", "semgrep", "bandit", "ruff", "gitleaks",
+        "checkov", "semgrep", "bandit", "ruff", "trivy", "gitleaks",
     }
     assert [grammar["name"] for grammar in plan["grammars"]] == ["hcl", "python"]
     assert plan["semgrep_rules"]["status"] == "missing"
@@ -59,7 +59,7 @@ def test_build_plan_includes_only_applicable_tools_and_grammars(tmp_path: Path, 
 def test_inspect_binary_reports_installed_state(
     monkeypatch, which, returncode, output, expected_status, actual,
 ):
-    tool = tooling.load_catalog()["analyzers"][-2]
+    tool = next(tool for tool in tooling.load_catalog()["analyzers"] if tool["name"] == "ruff")
     monkeypatch.setattr(tooling.shutil, "which", lambda _binary: which)
     monkeypatch.setattr(
         tooling.subprocess,
@@ -78,7 +78,7 @@ def test_inspect_binary_reports_installed_state(
 
 
 def test_inspect_binary_reports_timeout(monkeypatch):
-    tool = tooling.load_catalog()["analyzers"][-2]
+    tool = next(tool for tool in tooling.load_catalog()["analyzers"] if tool["name"] == "ruff")
     monkeypatch.setattr(tooling.shutil, "which", lambda _binary: "/usr/bin/ruff")
 
     def timeout(*_args, **_kwargs):
@@ -253,7 +253,7 @@ def test_install_lock_uses_lock_keyed_user_cache_without_checkout_binaries(tmp_p
     assert (cache_root / "python" / "ruff").is_dir()
     assert list((target / ".arbiter").iterdir()) == [lock_path]
     locked, executable = tooling.resolve_locked_binary(target, "ruff")
-    assert locked and executable == str(tooling._tool_executable_path(cache_root, tooling.load_catalog()["analyzers"][-2]))
+    assert locked and executable == str(tooling._tool_executable_path(cache_root, next(tool for tool in tooling.load_catalog()["analyzers"] if tool["name"] == "ruff")))
 
 
 def test_locked_missing_cache_does_not_fall_back_to_path(tmp_path: Path, monkeypatch):
@@ -276,7 +276,7 @@ def test_adapter_invokes_locked_cache_executable(tmp_path: Path, monkeypatch):
     target.mkdir()
     lock_path = _ruff_lock(target)
     cache_root = tooling.tool_cache_root(target, lock_path, tmp_path / "cache")
-    executable = tooling._tool_executable_path(cache_root, tooling.load_catalog()["analyzers"][-2])
+    executable = tooling._tool_executable_path(cache_root, next(tool for tool in tooling.load_catalog()["analyzers"] if tool["name"] == "ruff"))
     executable.parent.mkdir(parents=True)
     executable.write_text("cached analyzer", encoding="utf-8")
     monkeypatch.setenv("ARBITER_TOOL_CACHE", str(tmp_path / "cache"))
@@ -334,10 +334,172 @@ def test_install_lock_reports_package_failure_and_keeps_cache_unpublished(tmp_pa
     assert ruff["status"] == "error"
     assert "package unavailable" in ruff["detail"]
     executable = tooling._tool_executable_path(
-        tooling.tool_cache_root(target), tooling.load_catalog()["analyzers"][-2],
+        tooling.tool_cache_root(target), next(tool for tool in tooling.load_catalog()["analyzers"] if tool["name"] == "ruff"),
     )
     assert not executable.exists()
 
+
+
+def test_trivy_release_asset_selection_is_platform_aware(monkeypatch):
+    tool = next(tool for tool in tooling.load_catalog()["analyzers"] if tool["name"] == "trivy")
+    monkeypatch.setattr(tooling.platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(tooling.platform, "machine", lambda: "arm64")
+    assert tooling._release_asset(tool, "0.76.1") == (
+        "trivy_0.76.1_macOS-ARM64.tar.gz",
+        "trivy_0.76.1_checksums.txt",
+        "trivy",
+    )
+
+    monkeypatch.setattr(tooling.platform, "system", lambda: "Windows")
+    monkeypatch.setattr(tooling.platform, "machine", lambda: "AMD64")
+    assert tooling._release_asset(tool, "0.76.1")[0] == "trivy_0.76.1_windows-64bit.zip"
+
+    monkeypatch.setattr(tooling.platform, "system", lambda: "FreeBSD")
+    with pytest.raises(ValueError, match="no trivy release"):
+        tooling._release_asset(tool, "0.76.1")
+
+
+def test_trivy_release_install_checks_checksum_and_extracts_binary(tmp_path: Path, monkeypatch):
+    import hashlib
+    import io
+    import tarfile
+
+    tool = next(tool for tool in tooling.load_catalog()["analyzers"] if tool["name"] == "trivy")
+    archive_stream = io.BytesIO()
+    binary = b"trivy-test-binary"
+    with tarfile.open(fileobj=archive_stream, mode="w:gz") as archive:
+        member = tarfile.TarInfo("trivy")
+        member.size = len(binary)
+        archive.addfile(member, io.BytesIO(binary))
+    archive_bytes = archive_stream.getvalue()
+    digest = hashlib.sha256(archive_bytes).hexdigest()
+    checksums = f"{digest}  trivy_0.76.1_Linux-64bit.tar.gz\n".encode()
+    responses = iter((io.BytesIO(checksums), io.BytesIO(archive_bytes)))
+    monkeypatch.setattr(tooling.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(tooling.platform, "machine", lambda: "x86_64")
+    monkeypatch.setattr(tooling.urllib.request, "urlopen", lambda *_args, **_kwargs: next(responses))
+
+    root = tmp_path / "cache"
+    tooling._install_release_tool(tool, "0.76.1", root)
+
+    executable = tooling._tool_executable_path(root, tool)
+    assert executable.read_bytes() == binary
+    assert executable.stat().st_mode & 0o111
+
+
+def test_trivy_release_install_rejects_checksum_mismatch(tmp_path: Path, monkeypatch):
+    import io
+    import tarfile
+
+    tool = next(tool for tool in tooling.load_catalog()["analyzers"] if tool["name"] == "trivy")
+    archive_stream = io.BytesIO()
+    with tarfile.open(fileobj=archive_stream, mode="w:gz") as archive:
+        member = tarfile.TarInfo("trivy")
+        member.size = 6
+        archive.addfile(member, io.BytesIO(b"binary"))
+    archive_bytes = archive_stream.getvalue()
+    checksum = ("0" * 64 + "  trivy_0.76.1_Linux-64bit.tar.gz\n").encode()
+    responses = iter((io.BytesIO(checksum), io.BytesIO(archive_bytes)))
+    monkeypatch.setattr(tooling.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(tooling.platform, "machine", lambda: "x86_64")
+    monkeypatch.setattr(tooling.urllib.request, "urlopen", lambda *_args, **_kwargs: next(responses))
+
+    root = tmp_path / "cache"
+    with pytest.raises(ValueError, match="checksum mismatch"):
+        tooling._install_release_tool(tool, "0.76.1", root)
+    assert not tooling._tool_executable_path(root, tool).exists()
+
+
+def test_trivy_database_download_uses_isolated_cache(tmp_path: Path, monkeypatch):
+    tool = next(tool for tool in tooling.load_catalog()["analyzers"] if tool["name"] == "trivy")
+    root = tmp_path / "tool-cache"
+    executable = tooling._tool_executable_path(root, tool)
+    executable.parent.mkdir(parents=True)
+    executable.write_text("trivy", encoding="utf-8")
+    database = root / "trivy-cache" / "db" / "trivy.db"
+
+    def download(args, **kwargs):
+        assert args[:2] == [str(executable), "--cache-dir"]
+        assert args[2] == str(root / "trivy-cache")
+        assert args[-2:] == ["image", "--download-db-only"]
+        assert kwargs["check"] is True
+        database.parent.mkdir(parents=True)
+        database.write_bytes(b"database")
+
+    monkeypatch.setattr(tooling.subprocess, "run", download)
+    tooling._install_trivy_database(tool, root)
+    assert database.is_file()
+
+
+def test_locked_trivy_missing_database_is_not_assessed(tmp_path: Path, monkeypatch):
+    from types import SimpleNamespace
+
+    from arbiter.adapters import load_adapter
+
+    target = tmp_path / "repo"
+    target.mkdir()
+    lock_path = target / ".arbiter" / "tooling.lock.json"
+    lock = {
+        "schema_version": 1,
+        "catalog_sha256": tooling._catalog_digest(),
+        "tools": [{"name": "trivy", "version": "0.76.1", "required": True}],
+        "grammars": [],
+    }
+    tooling.write_lock(lock, lock_path)
+    monkeypatch.setenv("ARBITER_TOOL_CACHE", str(tmp_path / "tool-cache"))
+    adapter = load_adapter(
+        Path(__file__).parents[1] / "src" / "arbiter" / "packs" / "adapters" / "trivy.adapter.toml"
+    )
+    context = SimpleNamespace(repos=[SimpleNamespace(path=str(target))])
+
+    blocked, reason = adapter.missing_files(context)
+
+    assert blocked
+    assert "arbiter tools install" in reason
+    result = next(item for item in tooling.verify_lock(lock, tool_root=tooling.tool_cache_root(target))
+                  if item["name"] == "trivy-database")
+    assert result["status"] == "missing"
+    assert result["required"] is True
+
+    database = tooling.tool_cache_root(target) / "trivy-cache" / "db" / "trivy.db"
+    database.parent.mkdir(parents=True)
+    database.write_bytes(b"database")
+    assert adapter.missing_files(context) == (False, "")
+
+
+def test_trivy_database_download_failure_is_reported(tmp_path: Path, monkeypatch):
+    target = tmp_path / "repo"
+    target.mkdir()
+    lock = {
+        "schema_version": 1,
+        "catalog_sha256": tooling._catalog_digest(),
+        "tools": [{"name": "trivy", "version": "0.76.1", "required": True}],
+        "grammars": [],
+    }
+    tooling.write_lock(lock, target / ".arbiter" / "tooling.lock.json")
+    monkeypatch.setenv("ARBITER_TOOL_CACHE", str(tmp_path / "user-cache"))
+    tool = next(tool for tool in tooling.load_catalog()["analyzers"] if tool["name"] == "trivy")
+
+    def fake_install(_tool, _version, root):
+        executable = tooling._tool_executable_path(root, tool)
+        executable.parent.mkdir(parents=True, exist_ok=True)
+        executable.write_text("trivy", encoding="utf-8")
+
+    def fail_database(*_args):
+        raise subprocess.CalledProcessError(1, ["trivy", "image"], stderr="database unavailable")
+
+    monkeypatch.setattr(tooling, "_install_release_tool", fake_install)
+    monkeypatch.setattr(tooling, "_install_trivy_database", fail_database)
+    monkeypatch.setattr(tooling.subprocess, "run", lambda *_args, **_kwargs: SimpleNamespace(
+        returncode=0, stdout="Version: 0.76.1", stderr="",
+    ))
+
+    results = tooling.install_lock(target)
+    database_result = next(result for result in results if result["name"] == "trivy-database")
+
+    assert tooling.has_required_failures(results)
+    assert database_result["status"] == "error"
+    assert "database unavailable" in database_result["detail"]
 
 
 def test_install_committed_lock_resolves_each_cached_analyzer(tmp_path: Path, monkeypatch):
@@ -357,6 +519,11 @@ def test_install_committed_lock_resolves_each_cached_analyzer(tmp_path: Path, mo
         executable.write_text("cached analyzer", encoding="utf-8")
         versions[tool["binary"]] = expected
 
+    def fake_database(_tool, root):
+        database = root / "trivy-cache" / "db" / "trivy.db"
+        database.parent.mkdir(parents=True, exist_ok=True)
+        database.write_bytes(b"database")
+
     def fake_rules(ref, root):
         rules = root / "semgrep-rules"
         rules.mkdir()
@@ -364,18 +531,20 @@ def test_install_committed_lock_resolves_each_cached_analyzer(tmp_path: Path, mo
 
     monkeypatch.setattr(tooling, "_install_python_tool", fake_install)
     monkeypatch.setattr(tooling, "_install_release_tool", fake_install)
+    monkeypatch.setattr(tooling, "_install_trivy_database", fake_database)
     monkeypatch.setattr(tooling, "_fetch_semgrep_rules", fake_rules)
+
     def fake_version(args, **_kwargs):
         binary = Path(args[0]).name.removesuffix(".exe")
         return SimpleNamespace(returncode=0, stdout=f"{binary} {versions[binary]}", stderr="")
 
     monkeypatch.setattr(tooling.subprocess, "run", fake_version)
-
     results = tooling.install_lock(target, cache_dir=cache_base)
 
     assert not tooling.has_required_failures(results)
     assert {result["name"] for result in results if result["status"] == "ready"} == {
-        "tooling-catalog", "checkov", "semgrep", "bandit", "ruff", "gitleaks", "semgrep-rules",
+        "tooling-catalog", "checkov", "semgrep", "bandit", "ruff", "trivy", "trivy-database",
+        "gitleaks", "semgrep-rules",
     }
     for tool in tooling.load_catalog()["analyzers"]:
         locked, executable = tooling.resolve_locked_binary(target, tool["binary"])

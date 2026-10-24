@@ -1,5 +1,5 @@
 {
-  "catalog_sha256": "4e0c7a8d87e1224aef72aa98808cfb74cbf012a447104cbe9a4ebff4d7d565e9",
+  "catalog_sha256": "d250069ce619daea78abe3b725f8cbbeac206f57b57340686e1b6ff0ead6d6e5",
   "grammars": [],
   "schema_version": 1,
   "semgrep_rules": {
@@ -26,6 +26,11 @@
       "name": "ruff",
       "required": true,
       "version": "0.15.11"
+    },
+    {
+      "name": "trivy",
+      "required": true,
+      "version": "0.76.1"
     },
     {
       "name": "gitleaks",

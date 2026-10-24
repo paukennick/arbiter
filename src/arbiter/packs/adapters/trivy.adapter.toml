@@ -1,0 +1,33 @@
+name = "trivy"
+dimensions = ["security"]
+checks = 40
+scope = "repo"
+selects = { stacks = ["docker", "go", "java", "javascript", "kubernetes", "node", "python", "ruby", "terraform", "typescript"] }
+
+[requires]
+binaries = ["trivy"]
+files = ["{cache}/trivy-cache/db/trivy.db"]
+network = false
+timeout = 1200
+
+[invoke]
+argv = ["trivy", "--cache-dir", "{cache}/trivy-cache", "fs", "--scanners", "vuln,misconfig",
+        "--skip-db-update", "--skip-java-db-update", "--skip-check-update",
+        "--format", "json", "--quiet", "{workdir}"]
+version_argv = ["trivy", "--version"]
+parse = "trivy"
+ok_exit = [0]
+
+[map]
+rule_id = "rule_id"
+title = "title"
+path = "path"
+line = "line"
+logical = "logical"
+severity = "severity"
+severity_default = "medium"
+severity_table = { critical = "critical", high = "high", medium = "medium", low = "low", unknown = "low" }
+description = "description"
+remediation = "remediation"
+dimension = "security"
+remediation_default = "Review the Trivy finding and consult the package or IaC owner for a remediation."

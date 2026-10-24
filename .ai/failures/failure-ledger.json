@@ -1579,6 +1579,56 @@
       ],
       "prevention_notes": "Adapter dependency guidance must match whether its files resolve through a lock-managed cache or the existing global cache.",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-061",
+      "date": "2026-10-23",
+      "title": "Trivy-only locks used the global data cache",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "A Trivy lock without semgrep_rules resolved the data cache to the global Arbiter cache, so missing database preflight checked a global path instead of the lock-keyed cache.",
+      "how_detected": "Focused Trivy tooling and adapter tests",
+      "root_cause": "locked_cache_dir returned a lock-keyed path only when semgrep_rules was present; it did not recognize Trivy as another lock-scoped data consumer.",
+      "requirement": "ARB-094",
+      "affected": [
+        "src/arbiter/tooling.py",
+        "src/arbiter/adapters.py"
+      ],
+      "fix_summary": "Resolve the lock-keyed cache when the lock includes Trivy and add a missing-database preflight regression test.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_tooling.py::test_locked_trivy_missing_database_is_not_assessed"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "When a new adapter owns lock-scoped data, add its lock entry to cache resolution and test the isolated preflight path.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-062",
+      "date": "2026-10-23",
+      "title": "Tooling tests assumed analyzer list order",
+      "status": "fixed",
+      "severity": "low",
+      "symptom": "Focused tests failed after Trivy was added because tests selected Ruff with analyzers[-2] and the plan test omitted the new analyzer.",
+      "how_detected": "Focused Trivy tooling and adapter tests",
+      "root_cause": "Tests coupled tool identity to catalog position instead of the stable analyzer name, so adding a catalog entry changed which tool they exercised.",
+      "requirement": "ARB-094",
+      "affected": [
+        "tests/test_tooling.py"
+      ],
+      "fix_summary": "Select Ruff by name and include Trivy in the expected applicable tool set.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_tooling.py::test_build_plan_includes_only_applicable_tools_and_grammars",
+        "tests/test_tooling.py::test_inspect_binary_reports_installed_state",
+        "tests/test_tooling.py::test_install_lock_uses_lock_keyed_user_cache_without_checkout_binaries",
+        "tests/test_tooling.py::test_adapter_invokes_locked_cache_executable"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Tooling tests must identify catalog items by stable names rather than array positions.",
+      "recurrence_of": ""
     }
   ]
 }

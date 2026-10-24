@@ -38,6 +38,30 @@
       "languages": ["python"]
     },
     {
+      "name": "trivy",
+      "binary": "trivy",
+      "version_args": ["--version"],
+      "version": "0.76.1",
+      "install_method": "release",
+      "languages": ["*"],
+      "release": {
+        "repository": "aquasecurity/trivy",
+        "checksums": "trivy_{version}_checksums.txt",
+        "binary": "trivy",
+        "assets": {
+          "linux-x86_64": "trivy_{version}_Linux-64bit.tar.gz",
+          "linux-i386": "trivy_{version}_Linux-32bit.tar.gz",
+          "linux-armv7l": "trivy_{version}_Linux-ARM.tar.gz",
+          "linux-aarch64": "trivy_{version}_Linux-ARM64.tar.gz",
+          "linux-ppc64le": "trivy_{version}_Linux-PPC64LE.tar.gz",
+          "linux-s390x": "trivy_{version}_Linux-s390x.tar.gz",
+          "darwin-x86_64": "trivy_{version}_macOS-64bit.tar.gz",
+          "darwin-arm64": "trivy_{version}_macOS-ARM64.tar.gz",
+          "windows-x86_64": "trivy_{version}_windows-64bit.zip"
+        }
+      }
+    },
+    {
       "name": "gitleaks",
       "binary": "gitleaks",
       "version_args": ["version"],

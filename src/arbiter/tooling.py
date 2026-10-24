@@ -267,6 +267,11 @@ def verify_lock(
         "required": True,
     })
 
+    trivy_entry = next(
+        (entry for entry in lock["tools"]
+         if isinstance(entry, dict) and entry.get("name") == "trivy"),
+        None,
+    )
     for entry in lock["tools"]:
         if not isinstance(entry, dict) or not isinstance(entry.get("name"), str):
             raise TypeError("each tooling lock tool entry must name a tool")
@@ -284,6 +289,26 @@ def verify_lock(
             result = _inspect_binary(tool, expected, executable=executable)
         result["required"] = required
         results.append(result)
+
+    if trivy_entry is not None:
+        if tool_root is not None:
+            trivy_cache_root = Path(tool_root).expanduser()
+        else:
+            base_cache = Path(cache_dir).expanduser() if cache_dir is not None else Path(
+                os.environ.get("ARBITER_CACHE_DIR") or Path.home() / ".cache" / "arbiter"
+            ).expanduser()
+            trivy_cache_root = base_cache
+        database = trivy_cache_root / "trivy-cache" / "db" / "trivy.db"
+        database_ready = database.is_file()
+        results.append({
+            "name": "trivy-database",
+            "expected": "present",
+            "actual": "present" if database_ready else None,
+            "status": "ready" if database_ready else "missing",
+            "detail": "Trivy vulnerability database is cached" if database_ready
+            else "Trivy vulnerability database is not cached; run arbiter tools install",
+            "required": trivy_entry.get("required", True),
+        })
 
     cached = ast.cached_grammars()
     for entry in lock["grammars"]:
@@ -385,7 +410,11 @@ def locked_cache_dir(target: str | Path) -> Path | None:
     if not lock_path.is_file():
         return None
     lock = load_lock(lock_path)
-    return tool_cache_root(repo, lock_path) if "semgrep_rules" in lock else None
+    needs_cached_data = "semgrep_rules" in lock or any(
+        isinstance(entry, dict) and entry.get("name") == "trivy"
+        for entry in lock.get("tools", [])
+    )
+    return tool_cache_root(repo, lock_path) if needs_cached_data else None
 
 
 def _install_python_tool(tool: dict[str, Any], expected: str, root: Path) -> None:
@@ -423,9 +452,49 @@ def _gitleaks_asset(version: str) -> tuple[str, str, str]:
     return filename, f"gitleaks_{version}_checksums.txt", "gitleaks.exe" if os_name == "windows" else "gitleaks"
 
 
+def _release_asset(tool: dict[str, Any], version: str) -> tuple[str, str, str]:
+    release = tool.get("release")
+    if not isinstance(release, dict):
+        if tool.get("name") == "gitleaks":
+            filename, checksum, binary = _gitleaks_asset(version)
+            return filename, checksum, binary
+        raise ValueError(f"tool catalog has no release metadata for {tool.get('name')}")
+
+    systems = {"linux": "linux", "darwin": "darwin", "windows": "windows"}
+    system = systems.get(platform.system().lower())
+    machines = {
+        "amd64": "x86_64",
+        "i386": "i386",
+        "i686": "i386",
+        "x86_64": "x86_64",
+        "arm64": "arm64",
+        "aarch64": "aarch64",
+        "armv7l": "armv7l",
+        "ppc64le": "ppc64le",
+        "s390x": "s390x",
+    }
+    machine = machines.get(platform.machine().lower())
+    key = f"{system}-{machine}" if system and machine else ""
+    assets = release.get("assets")
+    template = assets.get(key) if isinstance(assets, dict) else None
+    if not isinstance(template, str):
+        raise ValueError(
+            f"no {tool.get('name')} release for {platform.system()}/{platform.machine()}"
+        )
+    checksum_template = release.get("checksums")
+    binary = release.get("binary")
+    if not isinstance(checksum_template, str) or not isinstance(binary, str):
+        raise ValueError(f"invalid release metadata for {tool.get('name')}")
+    return template.format(version=version), checksum_template.format(version=version), binary
+
+
 def _install_release_tool(tool: dict[str, Any], expected: str, root: Path) -> None:
-    filename, checksums_name, binary = _gitleaks_asset(expected)
-    base = f"https://github.com/gitleaks/gitleaks/releases/download/v{expected}"
+    filename, checksums_name, binary = _release_asset(tool, expected)
+    release = tool.get("release")
+    repository = release.get("repository") if isinstance(release, dict) else "gitleaks/gitleaks"
+    if not isinstance(repository, str) or not repository:
+        raise ValueError(f"invalid release repository for {tool['name']}")
+    base = f"https://github.com/{repository}/releases/download/v{expected}"
     with urllib.request.urlopen(f"{base}/{checksums_name}", timeout=60) as response:
         checksums_text = response.read().decode("utf-8")
     expected_digest = next(
@@ -460,6 +529,23 @@ def _install_release_tool(tool: dict[str, Any], expected: str, root: Path) -> No
     destination.write_bytes(content)
     if os.name != "nt":
         destination.chmod(0o755)
+
+
+def _install_trivy_database(tool: dict[str, Any], root: Path) -> None:
+    executable = _tool_executable_path(root, tool)
+    cache = root / "trivy-cache"
+    database = cache / "db" / "trivy.db"
+    if database.is_file():
+        return
+    subprocess.run(
+        [str(executable), "--cache-dir", str(cache), "image", "--download-db-only"],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=900,
+    )
+    if not database.is_file():
+        raise ValueError("Trivy completed database download but trivy.db is missing")
 
 
 def _fetch_semgrep_rules(ref: str, root: Path) -> None:
@@ -543,18 +629,24 @@ def install_lock(
         existing = _inspect_binary(
             tool, entry["version"], executable=_tool_executable_path(cache_root, tool),
         )
-        if existing["status"] == "ready":
-            continue
-        try:
-            if tool["install_method"] == "pip":
-                _install_python_tool(tool, entry["version"], cache_root)
-            elif tool["install_method"] == "release":
-                _install_release_tool(tool, entry["version"], cache_root)
-            else:
-                raise ValueError(f"unsupported install method for {tool['name']}: {tool['install_method']}")
-        except (OSError, subprocess.SubprocessError, urllib.error.URLError, ValueError,
-                tarfile.TarError, zipfile.BadZipFile) as exc:
-            failures[tool["name"]] = _install_error(exc)
+        if existing["status"] != "ready":
+            try:
+                if tool["install_method"] == "pip":
+                    _install_python_tool(tool, entry["version"], cache_root)
+                elif tool["install_method"] == "release":
+                    _install_release_tool(tool, entry["version"], cache_root)
+                else:
+                    raise ValueError(f"unsupported install method for {tool['name']}: {tool['install_method']}")
+            except (OSError, subprocess.SubprocessError, urllib.error.URLError, ValueError,
+                    tarfile.TarError, zipfile.BadZipFile) as exc:
+                failures[tool["name"]] = _install_error(exc)
+
+        if tool["name"] == "trivy" and tool["name"] not in failures:
+            try:
+                _install_trivy_database(tool, cache_root)
+            except (OSError, subprocess.SubprocessError, urllib.error.URLError, ValueError,
+                    tarfile.TarError, zipfile.BadZipFile) as exc:
+                failures["trivy-database"] = _install_error(exc)
 
     rules = lock.get("semgrep_rules")
     if rules is not None and _cached_semgrep_rules(cache_root) != rules["ref"]:

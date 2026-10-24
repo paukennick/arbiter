@@ -2260,6 +2260,50 @@
         "Implementation scope includes src/arbiter/engine.py because its preflight binary check currently uses PATH directly; lock-aware adapter resolution alone cannot prevent the engine from skipping or running the wrong executable.",
         "Scope includes src/arbiter/engine.py and src/arbiter/ab.py because scan, probe-list, and A/B preflight paths previously checked PATH directly and could bypass lock-aware resolution."
       ]
+    },
+    {
+      "id": "ARB-094",
+      "category": "tooling",
+      "title": "Add a Trivy filesystem adapter",
+      "description": "Integrate Trivy as a pinned external filesystem analyzer for repository dependency vulnerabilities and supported IaC misconfigurations. Explicit installation provisions the analyzer and vulnerability database into the lock-keyed user cache; scans run without database or checks updates and report unavailable capabilities as not assessed. Exclude container image and registry scanning from this milestone.",
+      "priority": "medium",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/packs/adapters",
+        "src/arbiter/tooling.py",
+        "tests",
+        "docs/cli.md",
+        "SETUP.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Trivy is a pinned release analyzer with platform-aware asset selection and checksum verification",
+        "Trivy filesystem findings normalize into Arbiter findings for dependency vulnerabilities and supported IaC misconfigurations",
+        "locked installation uses only the isolated user cache and never falls back to PATH",
+        "unsupported platforms or missing binaries remain explicitly not assessed",
+        "tests cover asset selection checksums normalized output install resolution and missing-tool preflight"
+      ],
+      "validation_required": [
+        "focused Trivy adapter and tooling tests",
+        "python -m pytest -q -rs -m not slow",
+        "python tools/precision_guard.py check",
+        "python tools/mutate_tests.py",
+        "python omni gate --no-memo",
+        "arbiter gate . --no-cache"
+      ],
+      "documentation_required": [
+        "docs/cli.md",
+        "SETUP.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": [
+        "Trivy release assets and checksums vary by OS and architecture; validate each supported platform and fail explicitly on unsupported combinations",
+        "Filesystem scanning is limited to Trivy-supported repository package and configuration files and does not establish universal detection accuracy",
+        "Network access is used only by explicit tools install; scans stay offline",
+        "Scope clarification: Adapter normalization requires src/arbiter/adapters.py; preserving the existing no-lock global install path requires tools/install_tools.sh. The vulnerability DB is separate from the binary and must be provisioned only by explicit installation.",
+        "Trivy binary/database provisioning was validated with mocked downloads, not a live install; database freshness and digest are not pinned."
+      ]
     }
   ]
 }

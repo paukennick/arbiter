@@ -312,7 +312,7 @@ file.
 What makes this worth having is what the caller did not install. `arbiter remote
 scan` sends the directory and renders the answer through the same functions
 `arbiter scan` uses, so `--out`, `--format` and `--limit` mean what they always
-meant and the console output is the same text. None of the five analyzers, the
+meant and the console output is the same text. None of the six analyzers, the
 grammar pack or the rule engine is on that machine. The transport is `urllib`
 from the standard library rather than `requests` or `httpx`, because a thin
 client that drags in a dependency tree is not a thin client.

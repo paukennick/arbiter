@@ -429,7 +429,7 @@ def test_install_script_reads_pins_from_tooling_catalog():
     catalog = json.loads((ROOT / "src" / "arbiter" / "tooling.json").read_text())
     versions = {tool["name"]: tool["version"] for tool in catalog["analyzers"]}
 
-    assert set(versions) == {"checkov", "semgrep", "bandit", "ruff", "gitleaks"}
+    assert set(versions) == {"checkov", "semgrep", "bandit", "ruff", "trivy", "gitleaks"}
     for tool in versions:
         upper = tool.upper()
         assert f'{upper}_VERSION="${{{upper}_VERSION:-$CATALOG_{upper}}}"' in script

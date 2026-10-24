@@ -441,6 +441,63 @@ class Adapter:
         out = out.strip()
         if not out:
             return []
+        if self.parse == "trivy":
+            try:
+                document = json.loads(out)
+            except ValueError:
+                return []
+            results = document.get("Results", []) if isinstance(document, dict) else []
+            if not isinstance(results, list):
+                return []
+            rows: list[dict[str, Any]] = []
+            for result in results:
+                if not isinstance(result, dict):
+                    continue
+                target = str(result.get("Target") or "")
+                if not target:
+                    continue
+                for vulnerability in result.get("Vulnerabilities") or []:
+                    if not isinstance(vulnerability, dict):
+                        continue
+                    identifier = str(vulnerability.get("VulnerabilityID") or "")
+                    if not identifier:
+                        continue
+                    package = str(vulnerability.get("PkgName") or "")
+                    installed = str(vulnerability.get("InstalledVersion") or "")
+                    fixed = str(vulnerability.get("FixedVersion") or "")
+                    logical = "@".join(part for part in (package, installed) if part)
+                    remediation = f"Upgrade {package} to {fixed}." if package and fixed else ""
+                    rows.append({
+                        "rule_id": f"vulnerability:{identifier}",
+                        "title": str(vulnerability.get("Title") or f"{identifier} in {package}"),
+                        "path": target,
+                        "line": 0,
+                        "logical": logical,
+                        "severity": str(vulnerability.get("Severity") or "unknown"),
+                        "description": str(vulnerability.get("Description") or ""),
+                        "remediation": remediation,
+                    })
+                for misconfiguration in result.get("Misconfigurations") or []:
+                    if not isinstance(misconfiguration, dict):
+                        continue
+                    if str(misconfiguration.get("Status") or "").upper() != "FAIL":
+                        continue
+                    identifier = str(misconfiguration.get("ID") or "")
+                    if not identifier:
+                        continue
+                    cause = misconfiguration.get("CauseMetadata")
+                    line = cause.get("StartLine", 0) if isinstance(cause, dict) else 0
+                    rows.append({
+                        "rule_id": f"misconfiguration:{identifier}",
+                        "title": str(misconfiguration.get("Title") or identifier),
+                        "path": target,
+                        "line": line,
+                        "logical": str(misconfiguration.get("Resource") or ""),
+                        "severity": str(misconfiguration.get("Severity") or "unknown"),
+                        "description": str(misconfiguration.get("Message") or ""),
+                        "remediation": str(misconfiguration.get("Resolution") or ""),
+                    })
+            return rows
         if self.parse == "jsonlines":
             rows = []
             for line in out.split("\n"):

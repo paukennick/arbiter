@@ -110,9 +110,11 @@ to check Semgrep rules.
 `arbiter tools install [TARGET] [--lock FILE]` explicitly provisions the
 locked analyzer versions and Semgrep rules into a user cache keyed by the
 repository path and lock contents. Python analyzers each get an isolated
-virtual environment; the gitleaks release archive is checked against its
-published SHA-256 checksum. Nothing is written into the target checkout, and
-scans never download tools. The default cache is
+virtual environment; gitleaks and Trivy release archives are checked against
+their published SHA-256 checksums. Trivy's separate vulnerability database is
+fetched only during explicit installation into the same isolated cache.
+Nothing is written into the target checkout, and scans never download tools
+or database updates. The default cache is
 `~/.cache/arbiter/toolchains`; set `ARBITER_TOOL_CACHE` to use another cache
 root. Network access is needed only for this explicit install step.
 
@@ -125,12 +127,15 @@ The install command does not provision tree-sitter grammars; locked grammar
 entries are checked against Arbiter's existing grammar cache and missing
 required grammars remain an explicit install failure.
 
-`arbiter tools verify [LOCK]` checks required analyzer versions, grammars, and
-the Semgrep rules revision against the lock, using the isolated cache when one
-exists and the current environment otherwise. It does not install, update, or
-download anything. It exits 1 when a required capability is missing or does
-not match, and 2 for an invalid lock or operational error. Edit the lock to
-mark an analyzer or grammar optional (`"required": false`), or remove
+`arbiter tools verify [LOCK]` checks required analyzer versions, grammars, the
+Semgrep rules revision, and the Trivy vulnerability database when Trivy is
+locked, using the isolated cache when one exists and the current environment
+otherwise. It does not install, update, or download anything. The database
+snapshot is separate from the binary version pin; repeated installs preserve
+an existing snapshot. To refresh it, remove the cached Trivy database and run
+`arbiter tools install` again. The command exits 1 when a required capability
+is missing or does not match, and 2 for an invalid lock or operational error.
+Edit the lock to mark an analyzer or grammar optional (`"required": false`), or remove
 `semgrep_rules`, when a capability is not part of the repository's intended
 tool set. Verification also fails if the packaged catalog changed since the
 lock was written. The version pins and default grammar list come from the
@@ -242,7 +247,7 @@ arbiter bundle verify ./arbiter-bundle                       # exit 1 on a missi
 
 `build` writes Arbiter and its runtime dependencies as wheels, the checkout's
 knowledge file when it has one, `install.sh` / `install.ps1` and a
-`MANIFEST.json` with a SHA-256 per file. The five analyzers are not included,
+`MANIFEST.json` with a SHA-256 per file. The six analyzers are not included,
 and the manifest says so: their redistribution review (ARB-005) is pending.
 `verify` recomputes every hash and refuses anything the manifest does not name.
 See [bundle.md](bundle.md).

@@ -1187,3 +1187,22 @@ staging path rather than the published cache path; it now uses the stable
 binary name (FAIL-059). A missing-rules guidance regression for repositories
 without a lock was corrected to preserve the existing machine-wide installer
 instruction (FAIL-060).
+
+## 2026-10-23 — Trivy filesystem adapter (ARB-094)
+
+Trivy 0.76.1 is now a pinned release analyzer for filesystem dependency
+vulnerabilities and failed IaC misconfigurations. Its platform assets are
+selected from the catalog and verified against the upstream SHA-256 file
+before the binary is written to the lock-keyed user cache. The adapter
+normalizes vulnerability and misconfiguration records into Arbiter findings
+and ignores passing misconfiguration checks.
+
+The vulnerability database is separate from the binary pin. Explicit
+installation fetches it only when absent into the same isolated cache;
+verification checks that it exists. Scans use that cache and skip database and
+checks-bundle updates, so scanning does not require network access. A repeated
+install preserves the database snapshot. The machine-wide installer also
+fetches the database for the legacy no-lock path. Container image and registry
+scanning are out of scope; unsupported release platforms and missing data stay
+not assessed. The cache-resolution regression and stale positional test
+assumptions found during implementation are recorded as FAIL-061 and FAIL-062.

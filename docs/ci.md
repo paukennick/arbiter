@@ -115,11 +115,11 @@ are the changed ones plus dependency manifests, lockfiles, CI workflows and
 Terraform, which is where a rule genuinely reasons about a file it is not
 reporting on.
 
-**All five external analyzers are repo-scoped, so a partial scan does not run
-them.** ruff, bandit, checkov, semgrep and gitleaks each declare `scope = "repo"`
-in their manifest, and a `--changed` run records all five as not assessed. The
+**All six external analyzers are repo-scoped, so a partial scan does not run
+them.** ruff, bandit, checkov, semgrep, gitleaks and Trivy each declare
+`scope = "repo"` in their manifest, and a `--changed` run records all six as not assessed. The
 reason is different from the one that holds back a native repo probe: those
-genuinely reason across files, whereas nobody has measured whether these five
+genuinely reason across files, whereas nobody has measured whether these six
 return the same findings from a subset. Until someone does, claiming they do
 would be a guess printed as a fact. The practical consequence is worth stating
 plainly — **a pull-request gate runs Arbiter's own probes and no third-party
@@ -233,7 +233,7 @@ Two workflows, split by how long they take rather than by what they cover.
 | | `pr-check.yml` | `train.yml` |
 |---|---|---|
 | when | every pull request | 08:00 UTC nightly |
-| what | the fast tier of the test suite (`-m "not slow"`), `tools/integrity.py`, `tools/precision_guard.py check`, `tools/mutate_tests.py`, `python omni doctor`, `python omni gate`; on Linux also the five analyzers, the `api` extra, and `arbiter gate . --github --no-cache --sarif-min-severity medium`; and, in a parallel `slow-tier` job, the slow tier (`-m slow`) with the analyzers installed, then the regression guards over pinned gold repositories (`tools/regression_guard.py fetch` / `check`) | the full measurement cycle |
+| what | the fast tier of the test suite (`-m "not slow"`), `tools/integrity.py`, `tools/precision_guard.py check`, `tools/mutate_tests.py`, `python omni doctor`, `python omni gate`; on Linux also the six analyzers, the `api` extra, and `arbiter gate . --github --no-cache --sarif-min-severity medium`; and, in a parallel `slow-tier` job, the slow tier (`-m slow`) with the analyzers installed, then the regression guards over pinned gold repositories (`tools/regression_guard.py fetch` / `check`) | the full measurement cycle |
 | how long | Windows about two minutes; the Linux cell is dominated by the self-gate's semgrep pass (about six minutes over this tree) now that the adapter tests have moved to the slow tier; the slow tier is about five minutes locally, most of it one full scan through every analyzer | about two hours |
 | platforms | ubuntu-latest (Python 3.11 and 3.10) **and** windows-latest (3.11); the slow tier on ubuntu-latest only | ubuntu-latest |
 | writes to the repo | no | yes — `.arbiter/` and `training/` |
@@ -276,7 +276,7 @@ of skipping (ARB-034).
 
 **The tool lock is enforced after provisioning.** The Linux pull-request job
 and nightly training job run `arbiter tools verify .arbiter/tooling.lock.json`
-immediately after `tools/install_tools.sh`. The lock requires the five pinned
+immediately after `tools/install_tools.sh`. The lock requires the six pinned
 analyzers and Semgrep rules revision; a missing or mismatched version, rules
 checkout, or catalog digest fails CI. This verification step does not install
 or update tools. The Windows matrix cell does not verify the analyzer lock
