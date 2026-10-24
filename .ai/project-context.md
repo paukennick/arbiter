@@ -1437,3 +1437,42 @@ docs/accuracy-roadmap.md); the sealed split must stay closed while rules change.
 Labels are patch-derived and not human-adjudicated: these are
 benchmark-conformance figures, not a population claim.
 
+## 2026-10-24 — A panel of models from different companies (ARB-122)
+
+The precision study's model labels came from one vendor's model with two
+prompts, so the ledger's unanimity and κ never saw two independent
+labellers. `tools/panel/` adds a panel: Claude, Codex (OpenAI) and Gemini
+(Google) CLIs on the user's subscriptions, plus Copilot as an optional
+fourth seat. Each labels the same blind packet alone, and each answer is its
+own label record (`<seat>-<model>:panel/v1`).
+
+- **Independence is a vendor property, not a prompt property.** The panel
+  refuses two seats of one vendor. It discards an answer that came from
+  another vendor's model, because Copilot's auto routing moved from
+  Microsoft's `mai-code-1.1-flash` to OpenAI's `gpt-6-luna` within one
+  session. The ledger's κ now pairs the first labeller with the first from
+  another vendor (`kappa_pair`), so two Anthropic labellers no longer count
+  as a pair. Existing ledger numbers did not move: a rebuild is
+  byte-identical.
+- **Tool-off is tested with a canary file, not read off `--help`.**
+  Copilot's empty `--available-tools` left every tool on, and the model read
+  the canary file (FAIL-074). Codex's remaining exec tool fails closed with
+  its code-mode host off, and every answer showing a tool event is refused.
+- **Gemini runs on an API key and sees public code only.** Google ended
+  personal Code Assist logins, so the seat uses an AI Studio key from
+  `~/.config/arbiter/gemini.key`, passed only to the child process. The free
+  tier may train on prompts, so the seat is public-only in code: it gets
+  gold, held-out, CVE and benchmark packets, never planted, AI-corpus or
+  private-repository ones.
+- **A `mechanical` role sits between ground truth and the adjudicator.** It
+  lets the planned sandbox checkers (fact re-derivation, exploit runs, mutation, fault
+  injection) decide findings by observed behaviour.
+- **Records stay one per model** so that Dawid–Skene can later replace
+  strict unanimity with labeller-weighted votes.
+- **Smoke, 2026-10-24.** Two vendors only: Claude and Codex agreed with
+  benchmark truth on every decided item of 24. Gemini was logged in, but
+  Google refused the personal account ("no longer supported for Gemini Code
+  Assist for individuals"). Copilot's only route was OpenAI, already
+  seated. A three-vendor calibration of 60 or more items is still owed
+  before panel labels feed any claim. Panel labels are reported as
+  model-labelled conformance, never as certified.

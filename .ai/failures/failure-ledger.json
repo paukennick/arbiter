@@ -1684,6 +1684,32 @@
       "prevention_rules": [],
       "prevention_notes": "tools/regression_guard.py check now scans targets marked default_view (planted, ai-corpus) under the default configuration and fails if the default view lists fewer findings than the scan has active ones; test_default_view_hides_no_finding runs it in the fast suite. A requirement that changes a default should state what a user sees under it on the in-tree corpora before it is accepted.",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-074",
+      "date": "2026-10-24",
+      "title": "Copilot CLI: an empty --available-tools leaves every tool on; a blind-packet seat read a file",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "Building the panel's Copilot seat, a canary test run with 'copilot -p ... --available-tools' (no value) in an empty temp dir called the 'view' tool and printed the canary file's contents. A labelling seat that can read files can be steered by a packet's text to read or leak anything under its path allowance.",
+      "how_detected": "canary test during ARB-122 provider hardening (before any panel label was made)",
+      "root_cause": "The flag was read as 'restrict tools to this list' with an empty list meaning none. Copilot 1.0.103 treats an empty --available-tools as not given, so the default tool set stays. Nothing checked the hardening empirically: tool-off flags were assumed from --help wording, not tested against a canary.",
+      "requirement": "ARB-122",
+      "affected": [
+        "tools/panel/providers.py (CopilotProvider)"
+      ],
+      "fix_summary": "CopilotProvider passes --available-tools=panel_no_tool (a tool name that does not exist, so no tool is exposed; re-tested: the canary was not read), denies shell/write/url and every URL, disables built-in MCP servers, custom instructions and the temp-dir allowance, and refuses any answer whose events carry a tool request or tool execution. Every seat's provider refuses tool-using answers the same way.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_panel.py::test_copilot_pins_the_first_model_of_a_vendor_not_yet_seated",
+        "tests/test_panel.py::test_copilot_refuses_an_answer_that_asked_for_a_tool",
+        "tests/test_panel.py::test_codex_401_is_unavailable_and_a_tool_use_is_refused",
+        "tests/test_panel.py::test_gemini_refuses_tool_use_a_foreign_model_and_reports_no_login"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "A provider's tool-off configuration is proven with a canary file in its temp dir before the seat is trusted (docs/precision.md, Panel). The command each provider builds is asserted in tests, and a tool event in any answer refuses it at run time, so a CLI release that changes flag meaning fails closed.",
+      "recurrence_of": ""
     }
   ]
 }
