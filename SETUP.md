@@ -82,6 +82,25 @@ as not assessed — including the Rust, PHP, C, C++ and shell grammars
 here is optional: a missing analyzer is recorded as not assessed with the
 binary named. Nothing here fails a build.
 
+The analyzer pins, Semgrep rules revision, and default grammar list are stored
+in `src/arbiter/tooling.json` and shared with the installer. To inspect a
+repository's tool plan and record a lock, run:
+
+```bash
+arbiter tools plan ./my-repo
+arbiter tools plan ./my-repo --write-lock
+arbiter tools verify
+```
+
+The lock at `.arbiter/tooling.lock.json` records applicable tools and grammars
+as required. `verify` checks them without installing or updating anything and
+returns a nonzero status when a required component is missing or mismatched.
+The lock includes the catalog digest, so `verify` also detects when the tool
+catalog changed and the lock needs to be regenerated. The lock is explicit:
+remove or mark a capability `"required": false` when it is intentionally not
+part of the repo's tool set. Scans never install tools and continue to report
+unavailable checks as not assessed.
+
 Arbiter does not vendor or redistribute these tools. Their licenses are listed
 in [NOTICE.md](NOTICE.md).
 

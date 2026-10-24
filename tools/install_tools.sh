@@ -38,17 +38,39 @@
 #
 set -uo pipefail
 
-CHECKOV_VERSION="${CHECKOV_VERSION:-3.3.17}"
-SEMGREP_VERSION="${SEMGREP_VERSION:-1.177.0}"
-BANDIT_VERSION="${BANDIT_VERSION:-1.9.4}"
-RUFF_VERSION="${RUFF_VERSION:-0.15.11}"
-GITLEAKS_VERSION="${GITLEAKS_VERSION:-8.21.2}"
+CATALOG_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/src/arbiter/tooling.json"
+IFS=$'\t' read -r CATALOG_CHECKOV CATALOG_SEMGREP CATALOG_BANDIT CATALOG_RUFF \
+  CATALOG_GITLEAKS CATALOG_SEMGREP_RULES CATALOG_GRAMMARS < <(
+  python3 - "$CATALOG_FILE" <<'PY'
+import json
+import sys
 
-# Pinned the same way the tool versions above are: bump it deliberately, then
-# re-run tools/calibrate_external.py, because a ruleset that changes
-# underneath you changes your findings same as a tool that does.
-# HEAD of https://github.com/semgrep/semgrep-rules as of 2026-09-15.
-SEMGREP_RULES_REF="${SEMGREP_RULES_REF:-40b8c63f75dc7c22c8a77482d73bfb864b146f7e}"
+with open(sys.argv[1], encoding="utf-8") as source:
+    catalog = json.load(source)
+versions = {tool["name"]: tool["version"] for tool in catalog["analyzers"]}
+print("\t".join([
+    versions["checkov"],
+    versions["semgrep"],
+    versions["bandit"],
+    versions["ruff"],
+    versions["gitleaks"],
+    catalog["semgrep_rules_ref"],
+    " ".join(catalog["tree_sitter"]["default_grammars"]),
+]))
+PY
+)
+if [ -z "${CATALOG_CHECKOV:-}" ] || [ -z "${CATALOG_GRAMMARS:-}" ]; then
+  echo "Could not read tool versions from $CATALOG_FILE" >&2
+  exit 2
+fi
+
+CHECKOV_VERSION="${CHECKOV_VERSION:-$CATALOG_CHECKOV}"
+SEMGREP_VERSION="${SEMGREP_VERSION:-$CATALOG_SEMGREP}"
+BANDIT_VERSION="${BANDIT_VERSION:-$CATALOG_BANDIT}"
+RUFF_VERSION="${RUFF_VERSION:-$CATALOG_RUFF}"
+GITLEAKS_VERSION="${GITLEAKS_VERSION:-$CATALOG_GITLEAKS}"
+SEMGREP_RULES_REF="${SEMGREP_RULES_REF:-$CATALOG_SEMGREP_RULES}"
+ARBITER_GRAMMARS="${ARBITER_GRAMMARS:-$CATALOG_GRAMMARS}"
 
 # Must match arbiter.adapters.cache_dir() -- the adapter reads the rules from
 # here at scan time, so a mismatch here is a silent "config not found" there.
@@ -315,7 +337,6 @@ fi
 # tree-sitter grammars for the language packs (packs/rules/ast). The pack
 # downloads a grammar on first use; fetching them here keeps scans offline and
 # makes a missing one a "not assessed" fact at install time, not mid-scan.
-ARBITER_GRAMMARS="${ARBITER_GRAMMARS:-python javascript typescript tsx go java ruby}"
 fetch_grammars() {
   local py
   py="$(command -v python3 || command -v python)"

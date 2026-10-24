@@ -12,6 +12,7 @@ every flag of a command; this page explains them and shows what to type.
 - [Baselines and comparison](#baselines-and-comparison)
 - [Adjudication and calibration](#adjudication-and-calibration)
 - [Integrity and compliance](#integrity-and-compliance)
+- [Tool planning and verification](#tool-planning-and-verification)
 - [The air-gapped bundle](#the-air-gapped-bundle)
 - [Hosted and MCP surfaces](#hosted-and-mcp-surfaces)
 - [Output formats](#output-formats)
@@ -27,6 +28,7 @@ every flag of a command; this page explains them and shows what to type.
 | `scan` | analyze and report |
 | `gate` | analyze, report, and exit 1 on policy failure |
 | `probes` | list probes and whether each can run here |
+| `tools` | plan relevant optional tools and verify them against a lock |
 | `explain` | show one finding in full |
 | `baseline` | write a baseline from a report |
 | `diff` | compare two reports: new, fixed, unchanged |
@@ -56,6 +58,9 @@ arbiter scan . --pin-knowledge k:4cf3d3fa2f02   # freeze calibration for a relea
 arbiter gate ./repo --baseline .arbiter/baseline.json   # exit 1 on policy failure
 arbiter scan . --no-history                     # leave history.jsonl alone this run
 arbiter probes ./repo                           # what can run here, and why not
+arbiter tools plan ./repo                       # applicable analyzers and grammar cache status
+arbiter tools plan ./repo --write-lock          # write .arbiter/tooling.lock.json
+arbiter tools verify                            # verify tools against the lock
 arbiter explain f:8c41d2ae9b07                  # one finding in full, from arbiter-out/report.json
 ```
 
@@ -90,6 +95,27 @@ terminal) and `--verify-cache`.
 `explain` and `feedback` read `arbiter-out/report.json` unless `--report`
 names another. `explain` needs the full id; `feedback` also accepts the end of
 one (`8c41d2ae9b07`).
+
+### Tool planning and verification
+
+`arbiter tools plan [TARGET]` detects languages in the repository and reports
+the applicable external analyzers, installed versions, Semgrep rules revision,
+and relevant tree-sitter grammars. Planning is read-only. Add
+`--write-lock [FILE]` to record applicable tools and grammars in
+`TARGET/.arbiter/tooling.lock.json` (or the named file); each listed
+capability is required by default. `--cache-dir` selects the Arbiter cache used
+to check Semgrep rules.
+
+`arbiter tools verify [LOCK]` checks required analyzer versions, grammars, and
+the Semgrep rules revision against the lock. It does not install, update, or
+download anything. It exits 1 when a required capability is missing or does
+not match, and 2 for an invalid lock or operational error. Edit the lock to
+mark an analyzer or grammar optional (`"required": false`), or remove
+`semgrep_rules`, when a capability is not part of the repository's intended
+tool set. Verification also fails if the packaged catalog changed since the
+lock was written. The version pins and default grammar list come from the
+packaged `tooling.json`; the installer reads the same catalog. Scans continue
+to use the available adapters and report missing capabilities as not assessed.
 
 ### The result cache
 

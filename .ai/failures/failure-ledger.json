@@ -1476,6 +1476,31 @@
       "prevention_rules": [],
       "prevention_notes": "Anything a model returns that may quote corpus code is masked before it is written to a tracked file",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-057",
+      "date": "2026-10-23",
+      "title": "Installer pin test assumed shell literals",
+      "status": "fixed",
+      "severity": "low",
+      "symptom": "The fast suite failed because test_install_script_pins_every_version could not find version literals in tools/install_tools.sh after the pins moved to tooling.json.",
+      "how_detected": "python -m pytest -q -rs -m 'not slow'",
+      "root_cause": "The regression test encoded the old implementation detail (literal constants in the shell script) instead of asserting the behavior that versions come from one shared catalog.",
+      "requirement": "ARB-091",
+      "affected": [
+        "tests/test_tools_training.py",
+        "tools/install_tools.sh",
+        "src/arbiter/tooling.json"
+      ],
+      "fix_summary": "Updated the installer test to load the catalog and assert the installer uses its version, Semgrep rules, and grammar fields.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_tools_training.py::test_install_script_reads_pins_from_tooling_catalog"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Tests for tool pinning now assert the shared catalog is authoritative rather than depending on where its literals are stored.",
+      "recurrence_of": ""
     }
   ]
 }

@@ -1139,3 +1139,14 @@ per-file licence headers, and a trademark policy for the name "Arbiter"
 **The pre-publication check.** A full-history gitleaks scan was run for this
 change; the result and what it covered are in `CHANGELOG.md` under
 2026-10-21.
+
+## 2026-10-23 — Reproducible tool planning (ARB-091)
+
+`src/arbiter/tooling.json` is the shared source for the supported analyzer
+versions, Semgrep rules revision and default tree-sitter grammars. The
+`arbiter tools plan` command detects applicable tools for a repository and can
+write an explicit `.arbiter/tooling.lock.json`; `arbiter tools verify` checks
+the lock without installing or updating tools. The existing installer reads
+the same catalog. Analyzer binaries remain separately installed and are not
+bundled or redistributed. Scans continue to report missing capabilities as
+not assessed.

@@ -424,10 +424,19 @@ def test_install_script_never_fails_a_build(tmp_path):
     assert r.returncode == 0, r.stderr[-400:]
 
 
-def test_install_script_pins_every_version():
-    text = (ROOT / "tools" / "install_tools.sh").read_text()
-    for tool in ("CHECKOV", "SEMGREP", "BANDIT", "RUFF", "GITLEAKS"):
-        assert re.search(rf"{tool}_VERSION:-\d+\.\d+", text), f"{tool} is not pinned"
+def test_install_script_reads_pins_from_tooling_catalog():
+    script = (ROOT / "tools" / "install_tools.sh").read_text()
+    catalog = json.loads((ROOT / "src" / "arbiter" / "tooling.json").read_text())
+    versions = {tool["name"]: tool["version"] for tool in catalog["analyzers"]}
+
+    assert set(versions) == {"checkov", "semgrep", "bandit", "ruff", "gitleaks"}
+    for tool in versions:
+        upper = tool.upper()
+        assert f'{upper}_VERSION="${{{upper}_VERSION:-$CATALOG_{upper}}}"' in script
+    assert 'SEMGREP_RULES_REF="${SEMGREP_RULES_REF:-$CATALOG_SEMGREP_RULES}"' in script
+    assert 'ARBITER_GRAMMARS="${ARBITER_GRAMMARS:-$CATALOG_GRAMMARS}"' in script
+    assert "src/arbiter/tooling.json" in script
+    assert all(version not in script for version in versions.values())
 
 
 def test_bootstrap_refuses_when_it_is_not_a_repository(tmp_path):

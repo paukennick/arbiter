@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "analyzers": [
+    {
+      "name": "checkov",
+      "binary": "checkov",
+      "version_args": ["--version"],
+      "version": "3.3.17",
+      "install_method": "pip",
+      "install_package": "checkov",
+      "languages": ["terraform", "hcl", "yaml", "json"]
+    },
+    {
+      "name": "semgrep",
+      "binary": "semgrep",
+      "version_args": ["--version"],
+      "version": "1.177.0",
+      "install_method": "pip",
+      "install_package": "semgrep",
+      "languages": ["python", "javascript", "typescript", "go", "java", "ruby", "terraform", "hcl", "yaml", "json"]
+    },
+    {
+      "name": "bandit",
+      "binary": "bandit",
+      "version_args": ["--version"],
+      "version": "1.9.4",
+      "install_method": "pip",
+      "install_package": "bandit",
+      "languages": ["python"]
+    },
+    {
+      "name": "ruff",
+      "binary": "ruff",
+      "version_args": ["--version"],
+      "version": "0.15.11",
+      "install_method": "pip",
+      "install_package": "ruff",
+      "languages": ["python"]
+    },
+    {
+      "name": "gitleaks",
+      "binary": "gitleaks",
+      "version_args": ["version"],
+      "version": "8.21.2",
+      "install_method": "release",
+      "languages": ["*"]
+    }
+  ],
+  "semgrep_rules_ref": "40b8c63f75dc7c22c8a77482d73bfb864b146f7e",
+  "tree_sitter": {
+    "package": "tree-sitter-language-pack",
+    "default_grammars": ["python", "javascript", "typescript", "tsx", "go", "java", "ruby"],
+    "grammars": {
+      "python": ["python"],
+      "javascript": ["javascript"],
+      "typescript": ["typescript", "tsx"],
+      "go": ["go"],
+      "java": ["java"],
+      "ruby": ["ruby"],
+      "terraform": ["hcl"],
+      "hcl": ["hcl"],
+      "kotlin": ["kotlin"],
+      "c": ["c"],
+      "cpp": ["cpp"],
+      "csharp": ["csharp"],
+      "rust": ["rust"],
+      "php": ["php"],
+      "r": ["r"],
+      "shell": ["bash"],
+      "yaml": ["yaml"],
+      "json": ["json"],
+      "sql": ["sql"]
+    }
+  }
+}

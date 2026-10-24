@@ -2162,6 +2162,39 @@
       "risk_notes": [
         "the census is informational; counts are not defects"
       ]
+    },
+    {
+      "id": "ARB-091",
+      "category": "tooling",
+      "title": "Reproducible analyzer tool management",
+      "description": "Provide a machine-readable catalog for currently supported external analyzers and tree-sitter grammars, with CLI commands to plan repository-relevant tools and verify installed tool versions without installing or updating tools during scans.",
+      "priority": "medium",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/cli.py",
+        "src/arbiter tool management module",
+        "tools/install_tools.sh",
+        "tests for tool management",
+        "docs/cli.md",
+        "SETUP.md",
+        "CHANGELOG.md"
+      ],
+      "acceptance_criteria": [
+        "Analyzer versions and Semgrep rules revision have one machine-readable source of truth;arbiter tools plan reports applicable supported tools and installation status;arbiter tools verify checks installed versions and exits nonzero for required missing or mismatched tools;planning and verification do not install tools;tests cover detection",
+        "installed/missing/version mismatch",
+        "and CLI exit behavior;docs and changelog updated"
+      ],
+      "validation_required": [
+        "focused pytest;python -m pytest -q -rs -m not slow;python omni gate"
+      ],
+      "documentation_required": [
+        "docs/cli.md",
+        "SETUP.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": [
+        "MVP implemented and validated; repo-local automatic installation, CI lock enforcement, and additional scanner adapters remain future scope."
+      ]
     }
   ]
 }
