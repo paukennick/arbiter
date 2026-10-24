@@ -2166,9 +2166,14 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
     for rec in ctx.inventory.files:
         paths_by_repo.setdefault(rec.repo_id, set()).add(rec.path)
 
+    # Globstar, not fnmatch (ARB-147): `**/*` must take a root file and
+    # `src/**/*.py` must take `src/a.py`, or a forbid rule is false-clean on
+    # the files it names; and the match must not depend on the OS's case
+    # folding.
+    from .globs import match as _glob
+
     def matching(glob_pat: str):
-        import fnmatch
-        return [f for f in files if fnmatch.fnmatch(f.path, glob_pat)]
+        return [f for f in files if _glob(f.path, glob_pat)]
 
     for rule in rules:
         rid = rule.get("id", "unnamed")
@@ -2177,9 +2182,8 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
 
         if rtype == "file_exists":
             for pat in rule.get("paths", []):
-                import fnmatch
                 for repo_id, paths in sorted(paths_by_repo.items()):
-                    if any(fnmatch.fnmatch(p, pat) for p in paths):
+                    if any(_glob(p, pat) for p in paths):
                         continue
                     out.append(Finding(
                         rule_id=f"house/{rid}",
@@ -2194,10 +2198,9 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
 
         elif rtype == "file_absent":
             for pat in rule.get("paths", []):
-                import fnmatch
                 for repo_id, paths in sorted(paths_by_repo.items()):
                     for p in sorted(paths):
-                        if not fnmatch.fnmatch(p, pat):
+                        if not _glob(p, pat):
                             continue
                         out.append(Finding(
                             rule_id=f"house/{rid}",
@@ -2301,9 +2304,8 @@ def probe_house_rules_ast(ctx: ProbeContext) -> list[Finding]:
     Structural rather than textual: `(except_clause) @hit` finds bare excepts
     wherever they are formatted, which a regex cannot promise.
     """
-    import fnmatch
-
     from . import ast as ts
+    from .globs import match as _glob
 
     rules = [r for r in (ctx.config.get("rules") or []) if r.get("type") == "ast_query"]
     if not rules:
@@ -2327,7 +2329,7 @@ def probe_house_rules_ast(ctx: ProbeContext) -> list[Finding]:
                 continue
             if not ts.ts_name(f.language):
                 continue
-            if glob_pat != "**/*" and not fnmatch.fnmatch(f.path, glob_pat):
+            if glob_pat != "**/*" and not _glob(f.path, glob_pat):
                 continue
             parsed = ts.parse_file(f.abspath, f.language)
             if parsed is None:

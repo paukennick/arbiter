@@ -866,6 +866,85 @@ def pack_path(pack: str) -> Path:
 
 
 # ---------------------------------------------------------------------------
+# Source no pack reads (ARB-144)
+# ---------------------------------------------------------------------------
+#
+# Inventory languages that are not programming languages: configuration,
+# markup, data and infrastructure, each read by probes of its own (the
+# resource rules, the secrets probe, the drift probes). A file in any other
+# recognised language is source that a rule pack should have read.
+NON_PROGRAMMING_LANGUAGES = frozenset({
+    "yaml", "json", "toml", "ini", "dotenv", "markdown", "rst", "html", "css",
+    "sql", "terraform", "hcl", "dockerfile", "unknown",
+})
+UNASSESSED_PROBE = "lang_unsupported"
+_FALLBACK_PACK_LANGUAGES = frozenset({"python", "javascript", "typescript", "go", "java", "ruby"})
+_FALLBACK_CHECKS_PER_LANGUAGE = 30
+
+
+def pack_languages() -> set[str]:
+    """Every inventory language some shipped pack reads."""
+    try:
+        return {lang for d in load_packs().values() for lang in d["languages"]}
+    except Exception:  # noqa: BLE001 - a broken pack fails elsewhere; the mapping must still answer
+        return set(_FALLBACK_PACK_LANGUAGES)
+
+
+def _checks_per_language() -> int:
+    """What one missing pack would have contributed to the coverage
+    denominator: the mean size of the packs that exist."""
+    try:
+        sizes = [len(d["rules"]) for d in load_packs().values()]
+    except Exception:  # noqa: BLE001 - see pack_languages
+        sizes = []
+    return max(1, round(sum(sizes) / len(sizes))) if sizes else _FALLBACK_CHECKS_PER_LANGUAGE
+
+
+def unassessed_languages(inv) -> dict[str, dict]:
+    """Programming languages present in the source that no pack reads, each
+    with its file count, line count and share of all source lines, largest
+    first. Source means roles `source` and `test`; generated code, docs,
+    configuration and data are not counted on either side."""
+    supported = pack_languages()
+    total = 0
+    found: dict[str, dict] = {}
+    for f in inv.files:
+        if f.binary or f.role not in ("source", "test") or f.language in NON_PROGRAMMING_LANGUAGES:
+            continue
+        total += f.lines
+        if f.language in supported:
+            continue
+        cell = found.setdefault(f.language, {"files": 0, "lines": 0, "share": 0.0})
+        cell["files"] += 1
+        cell["lines"] += f.lines
+    for cell in found.values():
+        cell["share"] = round(cell["lines"] / total, 4) if total else 0.0
+    return dict(sorted(found.items(), key=lambda kv: (-kv[1]["lines"], kv[0])))
+
+
+def not_assessed_outcome(inv):
+    """A `skipped` outcome naming the languages no pack reads, sized as the
+    packs they lack would have been, so they count against coverage the way
+    an uninstalled analyzer does. None when every source language has a
+    pack."""
+    from .core import ProbeOutcome
+    found = unassessed_languages(inv)
+    if not found:
+        return None
+    files = sum(c["files"] for c in found.values())
+    lines = sum(c["lines"] for c in found.values())
+    share = sum(c["share"] for c in found.values())
+    return ProbeOutcome(
+        name=UNASSESSED_PROBE, status="skipped",
+        reason=(f"no rule pack for {', '.join(found)}: {files} source file(s), "
+                f"{lines:,} line(s), {share:.0%} of source lines not assessed"),
+        dimensions=["security", "quality"],
+        checks=_checks_per_language() * len(found),
+        applicable=True,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Ruby: the same question for an interpolated string argument
 # ---------------------------------------------------------------------------
 #

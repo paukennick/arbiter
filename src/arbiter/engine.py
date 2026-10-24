@@ -39,6 +39,10 @@ from .scope_notes import apply_scope_notes
 
 ARBITER_VERSION = "0.1.0"
 
+# Above this share of source lines in languages without a rule pack, the grade
+# is withheld the way a partial scan's is (ARB-144).
+UNASSESSED_SOURCE_LIMIT = 0.5
+
 
 def _dedupe(findings: list[Finding]) -> list[Finding]:
     """Two tools finding the same defect is one defect.
@@ -218,6 +222,22 @@ def resolve_targets(targets: list[str], system_path: str | None) -> tuple[str, l
     return name, repos, tempdirs, {}
 
 
+def _requested_path(raw: str, repos: list[RepoInfo]) -> str:
+    """One `--only-files` entry as the inventory spells it: forward slashes,
+    a literal leading `./` removed (never the dot of `.husky`), and an
+    absolute path under a target made relative to it."""
+    path = str(raw).strip().replace("\\", "/")
+    while path.startswith("./"):
+        path = path[2:]
+    if os.path.isabs(path):
+        for r in repos:
+            root = str(Path(r.path).resolve()).replace("\\", "/").rstrip("/") + "/"
+            full = str(Path(path).resolve()).replace("\\", "/")
+            if full.startswith(root):
+                return full[len(root):]
+    return path.rstrip("/")
+
+
 def _record_probe_error(oc: ProbeOutcome, exc: Exception) -> None:
     from .judgement import Unavailable
     if isinstance(exc, Unavailable):
@@ -394,12 +414,31 @@ def run_scan(
     # facts about the repository rather than about the diff. What narrows is
     # which files the probes are shown. See incremental.py.
     scan_scope: dict = {"mode": "full"}
+    source = config.get("config_source")
+    if source:
+        # Which config was read and what it was not allowed to set (ARB-143),
+        # so a dropped `precision:` block from a target's own arbiter.yaml is
+        # printed, never silently gone.
+        scan_scope["config"] = dict(source)
     changed_set: dict[str, set[str]] = {}
     if changed_since or only_files:
         from .incremental import git_changed, narrow
         selected: dict[str, set[str]] = {}
         if only_files:
-            want = {str(x).replace("\\", "/").lstrip("./") for x in only_files}
+            want = {_requested_path(x, repos) for x in only_files}
+            # A path nobody can find is a mistake in the request, not an
+            # empty change: a partial scan of nothing read passes every gate
+            # (FAIL-122). `.husky/pre-commit` used to arrive here as
+            # `husky/pre-commit` (lstrip("./") strips characters, not a
+            # prefix), was found nowhere, and the scan read zero files.
+            known = {f.path for r in repos for f in inv.by_repo.get(r.id, [])}
+            unknown = sorted(p for p in want if p not in known)
+            if unknown:
+                raise RuntimeError(
+                    f"--only-files: {len(unknown)} path(s) are not files this scan can read: "
+                    f"{', '.join(unknown[:5])}{', ...' if len(unknown) > 5 else ''}. "
+                    "Paths are relative to the target root; a path that exists but is "
+                    "ignored, generated or binary is not scanned either.")
             for r in repos:
                 selected[r.id] = set(want)
         if changed_since:
@@ -415,6 +454,9 @@ def run_scan(
                     )
                 selected.setdefault(r.id, set()).update(paths)
         inv, stats = narrow(inv, selected)
+        if only_files and not stats["files_changed"]:
+            raise RuntimeError("--only-files: none of the requested files was read; "
+                               "refusing to report a partial scan of nothing")
         # Remembered so findings landing in a context file -- read so the
         # probes could reason, not because anybody asked about it -- can be
         # told apart from findings in the change itself. Blaming a pull
@@ -448,6 +490,10 @@ def run_scan(
 
     profiles = metrics_from_inventory(inv) if (config.get("quality") or {}).get("adaptive") else {}
     run_config = dict(config)
+    # Where the config came from is provenance for the report, not a rule
+    # any probe reads; keeping it out of the probes' config keeps the result
+    # cache key the same whatever path the repository sits at.
+    run_config.pop("config_source", None)
     if profiles:
         run_config["quality"] = resolve_quality_config(config, profiles)
 
@@ -542,6 +588,16 @@ def run_scan(
         except Exception as exc:  # noqa: BLE001 - a probe that raises becomes an error outcome, never a silent pass
             _record_probe_error(oc, exc)
         oc.duration_s = round(time.time() - t0, 3)
+
+    # Source in a language no rule pack reads (Kotlin, Swift, C#, ...) was
+    # never assessed by a language probe, and before ARB-144 nothing said so:
+    # the `lang_*` probes for the languages present were inapplicable, left
+    # the denominator, and a Swift-only repository scored 99/100. One outcome
+    # names those languages and sits in the denominator as not assessed.
+    from .lang_rules import not_assessed_outcome
+    unassessed = not_assessed_outcome(inv)
+    if unassessed is not None:
+        outcomes.append(unassessed)
 
     if deferred:
         _run_external_probes(deferred, ctx, cache, run_config, verify_cache,
@@ -643,6 +699,23 @@ def run_scan(
             f"partial scan ({scan_scope['basis']}): "
             f"{scan_scope['files_read']} of {scan_scope['files_total']} file(s) read. "
             "A grade would describe the changed files while reading as though "
+            "it described the repository."
+        )
+    from .lang_rules import unassessed_languages
+    langs = unassessed_languages(inv)
+    if langs:
+        report.scan_scope["languages_not_assessed"] = langs
+    share = sum(v["share"] for v in langs.values())
+    if share > UNASSESSED_SOURCE_LIMIT and not report.scorecard.withheld:
+        # The same withholding a partial scan gets, for the same reason: the
+        # number would describe the minority of the source that a rule pack
+        # read while reading as though it described the repository.
+        names = ", ".join(langs)
+        report.scorecard.withheld = True
+        report.scorecard.overall = None
+        report.scorecard.withheld_reason = (
+            f"{share:.0%} of source lines are in languages no rule pack reads ({names}); "
+            "a grade would describe the assessed minority while reading as though "
             "it described the repository."
         )
     # Control coverage. Summary only; the per-control detail is one command

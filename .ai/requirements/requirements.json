@@ -2591,6 +2591,146 @@
         "the PR comment and annotations are longer on repositories with many advisory findings; --sarif-min-severity and report.show: verified are the narrowing tools",
         "Completed 2026-10-24: default view shows every tier (planted 404/404, ai-corpus 127/127 via the regression_guard default-view check); gate unchanged (tiered); SARIF advisory capped at warning. FAIL-071 records why ARB-100's default was reverted."
       ]
+    },
+    {
+      "id": "ARB-143",
+      "category": "defect",
+      "title": "A target's own arbiter.yaml cannot set precision keys or loosen the gate",
+      "description": "Config found in the scanned repository root may tighten the gate and use suppressions, house rules and scoring, but its precision and verify blocks are dropped and any gate key that would loosen the gate is dropped, each recorded in scan_scope.config.ignored and printed. --config is trusted in full. precision.ledger resolves relative to the config file and may not escape its directory; a ledger bar never reads below DEFAULT_BAR.",
+      "priority": "critical",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/policy.py",
+        "src/arbiter/precision.py",
+        "src/arbiter/engine.py",
+        "src/arbiter/report.py",
+        "tests/test_target_config_trust.py",
+        "docs/configuration.md"
+      ],
+      "acceptance_criteria": [
+        "a target-root precision block yields no verified finding and a printed note",
+        "fail_on.severity null in a target root still fails on a critical",
+        "ledger path escaping the config directory is an error",
+        "ledger bar floored at DEFAULT_BAR"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_target_config_trust.py"
+      ],
+      "documentation_required": [
+        "docs/configuration.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": [
+        "suppress in a target root config is still honoured"
+      ]
+    },
+    {
+      "id": "ARB-144",
+      "category": "defect",
+      "title": "Source in languages without a rule pack is reported not assessed",
+      "description": "The inventory recognises the common languages no pack reads; one lang_unsupported outcome (skipped, applicable, sized like the missing packs) joins the coverage denominator; scan_scope.languages_not_assessed lists each language with files, lines and share; above 50% of source lines the grade is withheld with the languages named.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/inventory.py",
+        "src/arbiter/lang_rules.py",
+        "src/arbiter/engine.py",
+        "tests/test_unassessed_languages.py",
+        "docs/configuration.md"
+      ],
+      "acceptance_criteria": [
+        "a Kotlin/Scala/Swift-only repository has its grade withheld and names the languages",
+        "a repository in pack languages only has no lang_unsupported outcome"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_unassessed_languages.py"
+      ],
+      "documentation_required": [
+        "docs/configuration.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-145",
+      "category": "defect",
+      "title": "--only-files keeps dotfiles and refuses unknown paths",
+      "description": "Strip only a literal leading ./ (lstrip turned .husky into husky); accept an absolute path under the target; a path that names no file the scan can read, or a request that reads zero files, is an error.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/engine.py",
+        "tests/test_only_files_paths.py",
+        "docs/cli.md",
+        "docs/ci.md"
+      ],
+      "acceptance_criteria": [
+        "--only-files .husky/pre-commit reads that file",
+        "--only-files nope.py is a RuntimeError"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_only_files_paths.py"
+      ],
+      "documentation_required": [
+        "docs/cli.md",
+        "docs/ci.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-146",
+      "category": "defect",
+      "title": "An analyzer failing inside ok_exit is an error, never ran clean",
+      "description": "No output, non-JSON output, JSON without the manifest's findings key, and a tool-reported errors list (map.errors; bandit and semgrep) each record the adapter as error with the tool's message; findings produced beside tool errors are set aside and counted in the reason (CI-7).",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/adapters.py",
+        "src/arbiter/packs/adapters/bandit.adapter.toml",
+        "src/arbiter/packs/adapters/semgrep.adapter.toml",
+        "tests/test_adapter_failed_inside_ok_exit.py",
+        "docs/ci.md"
+      ],
+      "acceptance_criteria": [
+        "fake gitleaks exiting 1 with no report is status error",
+        "fake bandit with errors[] is status error naming the file",
+        "a clean JSON answer is still ran"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_adapter_failed_inside_ok_exit.py"
+      ],
+      "documentation_required": [
+        "docs/ci.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-147",
+      "category": "defect",
+      "title": "House-rule globs are globstar paths, case-sensitive on every OS",
+      "description": "src/arbiter/globs.py replaces fnmatch for house-rule files: and paths: patterns: * within a segment, ** across segments, [...] classes, case-sensitive; **/* reaches root files and src/**/*.py reaches src/a.py.",
+      "priority": "medium",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/globs.py",
+        "src/arbiter/probes.py",
+        "tests/test_globs.py",
+        "docs/configuration.md"
+      ],
+      "acceptance_criteria": [
+        "a content_match rule with the default glob fires on a root file",
+        "src/**/*.py matches src/a.py"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_globs.py"
+      ],
+      "documentation_required": [
+        "docs/configuration.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
     }
   ]
 }
