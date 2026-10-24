@@ -1362,3 +1362,23 @@ a no-op under the default but still overrides `report.show: verified` for
 one run, which is what the existing `run with --advisory to include them`
 hint relies on. The two flags are mutually exclusive.
 
+## 2026-10-24 — External real-CVE benchmark from GHSA (ARB-121)
+
+The first measurement of Arbiter against outside code at scale in all five
+languages: 500 reviewed GitHub advisories (100 per language) whose fix is a
+small single-parent GitHub commit, restricted to the CWEs the language pack's
+security rules are tagged with, so that a miss is a miss of a weakness
+Arbiter claims. Criteria, seeded order and the repository split were fixed in
+code and committed (02df982) before anything was scanned; repositories of
+every existing sealed set are excluded, gold development repositories are kept
+in development. The sealed half (188 repositories, `held_out_ghsa_r1`) is
+reported in aggregate only and was used once, for this baseline.
+
+Baseline primary recall is 9.4% on development (26/277) and 8.1% sealed
+(18/223); Python is highest (19.0% / 13.5%), Java and Go lowest. Looser regions
+add little (file level 12.6% / 10.8%): mostly nothing matching fires at all.
+The development misses, per CWE, are the recall work list (Phase 4 of
+docs/accuracy-roadmap.md); the sealed split must stay closed while rules change.
+Labels are patch-derived and not human-adjudicated: these are
+benchmark-conformance figures, not a population claim.
+
