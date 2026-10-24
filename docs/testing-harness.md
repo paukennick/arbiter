@@ -527,6 +527,17 @@ answers one question. Juliet cases split across files (`_54a` ... `_54e`)
 are labelled but kept out of labeller calibration, since no single-file
 excerpt shows whether their data is tainted.
 
+**External conformance scorecard** (ARB-120). The same three sources,
+scored per *case* rather than per finding (recall and safe-case
+false-positive rate as well as precision), with one manifest run record per
+benchmark: [external-scorecard.md](external-scorecard.md).
+
+```bash
+python tools/ground_truth/external_scorecard.py --aggregate-only \
+    --corpus ~/wt/corpus-gold --gt ~/wt/corpus-gt \
+    --out docs/external-scorecard.json --markdown docs/external-scorecard.md
+```
+
 **Model labellers** (`tools/label_models.py`), through the logged-in Claude
 CLI (`claude -p --model opus`, no tools, settings, skills or MCP servers, a
 replaced system prompt):

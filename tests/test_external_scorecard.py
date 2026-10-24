@@ -212,7 +212,8 @@ def test_weak_spots_rank_by_distance_from_the_bar():
 def _card():
     expected, findings = _owasp_fixture()
     sc = es.owasp_score(expected, findings, ALIASES, TEST_DIR, {"CWE-89", "CWE-338"}, "java")
-    res = es.summarise("owasp-java", sc, {"arbiter/java.sql": {"CWE-89"}}, multi_cluster=False,
+    res = es.summarise("owasp-java", sc, {"arbiter/java.sql": {"CWE-89"}, "arbiter/java.never": {"CWE-89"}},
+                       multi_cluster=False,
                        replicates=10, seed=0)
     prov = {k: None for k in ("arbiter_commit", "arbiter_worktree_clean", "benchmark_manifest_digest",
                               "benchmark_snapshot_or_pin", "evaluator_commit", "configuration_digest",
@@ -249,6 +250,15 @@ def test_output_is_aggregate_only():
     assert card["general_99_percent_claim"] is False and card["aggregate_only"] is True
     for pat in (r"T00\d", r"BenchmarkTest\d", r"GHSA-", r"\.java\b", r"src/testcode"):
         assert not re.search(pat, text), pat
+
+
+def test_markdown_separates_rules_that_fire_from_rules_that_flag_nothing():
+    md = es.render_markdown(_card())
+    fires, silent = md.split("### Fires, but short of the bar")[1].split("### Claims the CWE, flags nothing")
+    assert "`arbiter/java.sql`" in fires and "`CWE-89`" in fires
+    silent = silent.split("## owasp-java")[0]
+    assert "`arbiter/java.never`" in silent and "`arbiter/java.never`" not in fires
+    assert "`arbiter/java.sql`" not in silent
 
 
 def test_aggregate_only_flag_is_required(capsys):

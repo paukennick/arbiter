@@ -471,15 +471,25 @@ def render_markdown(card: dict, top: int = 20) -> str:
     out += ["", ("OWASP and Juliet are each one repository (one cluster): their intervals are "
             "case-level only. The Juliet and CVE vulnerable/safe units are Arbiter-defined (see "
             "Matching), not lists those benchmarks publish."), "",
-            f"## Weak spots (top {top} by gap to the 0.99 lower-bound bar)", "",
+            "## Weak spots", "",
             ("Gap = 0.99 minus the smaller of the precision and recall Wilson lower bounds; an "
-            "empty denominator counts as 0. In-scope CWEs and rules only."), "",
+            "empty denominator counts as 0. In-scope CWEs and rules only; the JSON's "
+            "`weak_spots` holds the full ranking."), "",
+            f"### Fires, but short of the bar (top {top} by gap)", "",
             "| benchmark | kind | name | precision lower | recall lower | limiting | vuln | safe | flagged | gap |",
             "|---|---|---|---:|---:|---|---:|---:|---:|---:|"]
-    for w in card["weak_spots"][:top]:
+    fired = [w for w in card["weak_spots"] if w["flagged"]]
+    for w in fired[:top]:
         out.append(f"| {w['benchmark']} | {w['kind']} | `{w['name']}` | {w['precision_lower_95']:.3f} "
                    f"| {w['recall_lower_95']:.3f} | {w['limiting']} | {w['vulnerable']} | {w['safe']} "
                    f"| {w['flagged']} | {w['gap_to_bar']:.3f} |")
+    silent = [w for w in card["weak_spots"] if not w["flagged"]]
+    out += ["", "### Claims the CWE, flags nothing (gap 0.990, by vulnerable units)", "",
+            "| benchmark | kind | name | vulnerable units missed |", "|---|---|---|---:|"]
+    for w in silent[:top]:
+        out.append(f"| {w['benchmark']} | {w['kind']} | `{w['name']}` | {w['vulnerable']} |")
+    if len(silent) > top:
+        out.append(f"\n{len(silent) - top} more in the JSON.")
     for name, b in card["benchmarks"].items():
         r = b["result"]
         out += ["", f"## {name}", "", r["uncertainty_note"], "",
