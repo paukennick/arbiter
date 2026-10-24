@@ -2162,6 +2162,56 @@
       "risk_notes": [
         "the census is informational; counts are not defects"
       ]
+    },
+    {
+      "id": "ARB-102",
+      "category": "legal",
+      "title": "Legal, regulatory and operating-rights documentation drafted for the owner's review",
+      "description": "Draft the documents an open-source security tool needs, for the copyright holder (Nicholas J Pauken) to review with counsel: an Arbiter trademark policy (TRADEMARKS.md, kept separate from the OmniEngineering identity policy), DISCLAIMER.md (as-is per Apache-2.0 sections 7-8, findings are not a guarantee, precision and tiers are estimates, control packs are not certification, export control), PRIVACY.md and docs/data-handling.md (every network path, what is sent, redaction limits, telemetry, files written), SECURITY.md (GitHub private vulnerability reporting, scope excluding deliberate fixtures and synthetic keys), DCO plus an inbound=outbound CONTRIBUTING.md, CODE_OF_CONDUCT.md (Contributor Covenant 2.1), docs/ai-assisted-development.md, and two report-only audits: docs/third-party-content.md and docs/readme-audit.md. Not legal advice; nothing here has been reviewed by counsel.",
+      "priority": "high",
+      "status": "needs_review",
+      "minimum_access_scope": [
+        "TRADEMARKS.md",
+        "DISCLAIMER.md",
+        "PRIVACY.md",
+        "SECURITY.md",
+        "DCO",
+        "CONTRIBUTING.md",
+        "CODE_OF_CONDUCT.md",
+        "NOTICE",
+        "NOTICE.md",
+        "docs/licensing.md",
+        "docs/README.md",
+        "docs/data-handling.md",
+        "docs/ai-assisted-development.md",
+        "docs/third-party-content.md",
+        "docs/readme-audit.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Every factual statement about Arbiter's behaviour cites the module or function it was checked against",
+        "The OmniEngineering trademark policy text is unchanged and clearly separate",
+        "Placeholders the owner must fill are marked in square brackets",
+        "No source code changes; README.md untouched",
+        "tests/test_docs.py and ./omni gate pass"
+      ],
+      "validation_required": [
+        "python -m pytest -q",
+        "./omni gate"
+      ],
+      "documentation_required": [
+        "docs/licensing.md",
+        "docs/README.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Drafted by an AI assistant",
+        "not a lawyer; needs the owner's and counsel's review before adoption",
+        "No trademark clearance search done; other software named Arbiter exists",
+        "Progress 2026-10-23: all ten deliverables drafted on branch legal-docs. Code facts found that contradict a clean privacy story, documented in docs/data-handling.md#known-gaps and not fixed here: (1) ast_metrics and context.parse can trigger a tree-sitter grammar download from github.com under offline when a grammar is not cached (ast._parser -> tree_sitter_language_pack.get_parser; ast_metrics declares no grammars); (2) semgrep version check and checkov Prisma Cloud guideline fetch run at start-up because the adapters pass neither --disable-version-check/--metrics=off nor --skip-download; (3) URL targets are git-cloned under every profile; (4) client.build_archive uploads git-ignored files (.env) despite its docstring; (5) _mask_secrets misses many key shapes and an excerpt-truncated PEM key; judgement truncates before masking; (6) hosted check_profile accepts assisted. README audit: 4 wrong, 2 stale (docs/readme-audit.md); suppression reason/expires are documented as mandatory but not enforced (policy.apply_suppressions). Third-party audit: label reasons quote verbatim fragments of GPL-licensed OWASP Benchmark code (535 fragments, ~12.9k chars). Follow-ups need separate requirements."
+      ]
     }
   ]
 }

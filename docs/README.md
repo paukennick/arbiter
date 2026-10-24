@@ -46,7 +46,16 @@ first scan, and gating. Then pick what you need below.
 | [architecture.md](architecture.md) | Modules, the scan pipeline, fingerprinting, caching, scoring |
 | [gaps-and-next-steps.md](gaps-and-next-steps.md) | A dated snapshot of gaps and the plan (2026-10-21, with a status note) |
 | [licensing.md](licensing.md) | The Apache-2.0 decision and third-party obligations |
+| [../DISCLAIMER.md](../DISCLAIMER.md) | What findings, precision figures and control mappings do and do not mean; export control |
+| [../PRIVACY.md](../PRIVACY.md) | Privacy in brief |
+| [data-handling.md](data-handling.md) | What runs locally, what is sent where under each profile, redaction and its limits, what is written to disk |
+| [../SECURITY.md](../SECURITY.md) | Supported versions, reporting a vulnerability, disclosure |
+| [../TRADEMARKS.md](../TRADEMARKS.md) | The Arbiter trademark policy, and the OmniEngineering one |
+| [third-party-content.md](third-party-content.md) | Third-party code and data in fixtures and label files: licences and risk |
+| [ai-assisted-development.md](ai-assisted-development.md) | How AI assistance is used and checked; rules for AI-assisted contributions |
+| [readme-audit.md](readme-audit.md) | README claims checked against the code (2026-10-23) |
 | [../CHANGELOG.md](../CHANGELOG.md) | Dated changes, by requirement |
 | [../NOTICE.md](../NOTICE.md) | Third-party components and their licenses |
-| [../CONTRIBUTING.md](../CONTRIBUTING.md) | How to report defects; contributions are not accepted yet |
+| [../CONTRIBUTING.md](../CONTRIBUTING.md) | Contribution terms: Apache-2.0 in and out, DCO sign-off ([../DCO](../DCO)) |
+| [../CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) | Contributor Covenant 2.1 |
 | [`../.claude/skills/arbiter/SKILL.md`](../.claude/skills/arbiter/SKILL.md) | The Claude Code skill for working with Arbiter |
