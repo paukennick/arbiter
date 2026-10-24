@@ -277,10 +277,29 @@ for human reviewers, with a strict **model-labelled conformance** label and no
 certified-accuracy claim. ARB-105 records the source review and execution
 design in [accuracy-measurement-expansion.md](accuracy-measurement-expansion.md):
 Semgrep/CodeQL disagreement is a differential signal, not ground truth; the
-first bounded RealVuln expansion will inventory the already cleared 11 Python
-repository pins, then score eligible CWE labels only if label completeness
-and exclusions validate. The broader RealVuln LLM-generated Python and
-TypeScript/JavaScript corpora are promising external AI-code strata, but each
-source repository's pinned license must be cleared before acquisition.
+first bounded RealVuln expansion is now recorded under ARB-106 below. The
+broader RealVuln LLM-generated Python and TypeScript/JavaScript corpora are
+promising external AI-code strata, but each source repository's pinned
+license must be cleared before acquisition.
+
+ARB-106 validated all labels in the already-cleared 11-repository Python
+subset, then scored only the 408 `manual_review` entries (341 positive, 67
+safe traps) across 53 primary CWEs. The aggregate result was TP 62, FN 279,
+FP 7, TN 60: 89.9% labelled-case precision and 18.2% labelled-case recall;
+25 unmatched findings remain unassessed. The largest aggregate miss buckets
+were CWE-79 (0/37), CWE-798 (1/22), CWE-918 (0/18), CWE-400 (1/18), CWE-22
+(0/17), and CWE-639 (0/13). Only 66 included entries explicitly set
+`manually_verified=true`; the labels are not independently adjudicated.
+The run used offline Python scans, executed no target code, and did not tune
+rules on the benchmark. The original CWE-89 result and matcher are unchanged.
+See [accuracy-baseline.md](accuracy-baseline.md) and the aggregate-only
+[run record](accuracy-realvuln-multicwe-run.json) for limitations, intervals,
+and reproducibility metadata.
+
+The next detection-improvement work must use development data and regression
+cases, not these evaluation examples. Keep exact RealVuln cases unopened for
+tuning; use only the aggregate miss buckets to prioritize broad investigation.
+The real-repository precision study and independent review process remain
+separate requirements.
 
 This roadmap is a program, not a result: it does not certify Arbiter at 99%.

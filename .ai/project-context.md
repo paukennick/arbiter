@@ -1437,3 +1437,27 @@ locked rules are available in the current environment; CodeQL is not
 installed. The generic manifest `run_record_template` remains the stable
 cross-study format; the existing Python/CWE-89 `evaluation_run` is not
 rewritten for other scopes.
+
+## 2026-10-24 — RealVuln multi-CWE baseline (ARB-106)
+
+Validated all 502 labels in the previously approved 11 MIT/Unlicense Python
+repository pins (65 primary CWEs). The aggregate-only run included only the
+408 `manual_review` labels across 53 CWEs; 66 of those explicitly set
+`manually_verified=true`. It excluded 75 `our-scanner`, 13
+`gt_expansion_verification_2026_04_29`, five `snyk`, and one `walkthrough`
+labels. Results: TP 62, FN 279, FP 7, TN 60; labelled-case precision 62/69
+(89.9%), recall 62/341 (18.2%), safe-trap false-positive rate 7/67 (10.4%).
+Twenty-five unmatched findings remain unassessed. Descriptive repository-
+cluster bootstrap intervals are 84.5%–94.7% for precision and 13.0%–23.8%
+for recall. All 11 Python probes ran; all overall scorecards were withheld
+because other probes were not assessed. The target source was never executed.
+
+This is benchmark-maintainer label conformance, not independent multi-reviewer
+truth, finding-level precision, production accuracy, or a 99% claim. No
+case-level examples were inspected and no rules were tuned on this benchmark.
+The additive multi-CWE evaluator reproduces the historical CWE-89 confusion
+counts exactly; the prior matcher and run record are unchanged. Aggregate
+results and per-repository source, label, and report hashes are in
+`docs/accuracy-realvuln-multicwe-run.json`; `docs/accuracy-benchmark-manifest.json`
+references its digest. Prioritize follow-up rule work using development data
+and independent regression cases, not these evaluation examples.

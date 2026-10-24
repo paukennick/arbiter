@@ -10,7 +10,6 @@ import sys
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-
 BENCHMARK_ID = "realvuln-3.1.0-python-cwe89-licensed-subset"
 REQUIRED_PROBE = "lang_python"
 DEFAULT_MANIFEST = Path(__file__).resolve().parents[2] / "docs" / "accuracy-benchmark-manifest.json"
@@ -416,6 +415,299 @@ def evaluate(
     return summary
 
 
+def _empty_confusion() -> dict[str, int]:
+    return {"tp": 0, "fn": 0, "fp": 0, "tn": 0}
+
+
+def _case_metrics(confusion: dict[str, int]) -> dict[str, Any]:
+    positives = confusion["tp"] + confusion["fn"]
+    safe_traps = confusion["fp"] + confusion["tn"]
+    precision_denominator = confusion["tp"] + confusion["fp"]
+    return {
+        "labelled_cases": {
+            "positive": positives,
+            "safe_traps": safe_traps,
+            "total": positives + safe_traps,
+        },
+        "case_level_confusion": confusion,
+        "metrics": {
+            "labelled_case_precision": {
+                "numerator": confusion["tp"],
+                "denominator": precision_denominator,
+                "value": _ratio(confusion["tp"], precision_denominator),
+            },
+            "labelled_case_recall": {
+                "numerator": confusion["tp"],
+                "denominator": positives,
+                "value": _ratio(confusion["tp"], positives),
+            },
+            "safe_trap_false_positive_rate": {
+                "numerator": confusion["fp"],
+                "denominator": safe_traps,
+                "value": _ratio(confusion["fp"], safe_traps),
+            },
+        },
+    }
+
+
+def _multi_cwe_cases_for_repo(
+    repo: dict[str, Any],
+    ground_truth_root: Path,
+    reports_root: Path,
+    tolerance: int,
+    ground_truth_version: str,
+) -> tuple[dict[str, dict[str, int]], int, bool, str, dict[str, int], dict[str, int]]:
+    repo_id = repo["repo_id"]
+    truth = _read_json(ground_truth_root / repo_id / "ground-truth.json")
+    if truth.get("repo_id") != repo["ground_truth_repo_id"] or truth.get("language") != "python":
+        raise EvaluationError(f"ground-truth identity mismatch for selected repository {repo_id}")
+    if truth.get("commit_sha") != repo["source_commit"]:
+        raise EvaluationError(f"ground-truth source pin mismatch for selected repository {repo_id}")
+    if truth.get("benchmark_version") != ground_truth_version:
+        raise EvaluationError(f"ground-truth benchmark version mismatch for selected repository {repo_id}")
+    if truth.get("ground_truth_version") != ground_truth_version:
+        raise EvaluationError(f"ground-truth version mismatch for selected repository {repo_id}")
+
+    entries = truth.get("findings")
+    if not isinstance(entries, list):
+        raise EvaluationError(f"ground-truth findings must be a list for selected repository {repo_id}")
+
+    cases: list[dict[str, Any]] = []
+    evidence_counts: dict[str, int] = {}
+    excluded_counts: dict[str, int] = {}
+    manually_verified = 0
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise EvaluationError(f"ground-truth entry must be an object for selected repository {repo_id}")
+        evidence = entry.get("evidence")
+        source = evidence.get("source") if isinstance(evidence, dict) else None
+        source_key = source if isinstance(source, str) and source else "missing"
+        evidence_counts[source_key] = evidence_counts.get(source_key, 0) + 1
+        if entry.get("scoring") == "non_scoring":
+            excluded_counts["non_scoring"] = excluded_counts.get("non_scoring", 0) + 1
+            continue
+        if source != "manual_review":
+            excluded_counts[source_key] = excluded_counts.get(source_key, 0) + 1
+            continue
+
+        primary_cwe = entry.get("primary_cwe")
+        vulnerable = entry.get("is_vulnerable")
+        if not isinstance(primary_cwe, str) or not primary_cwe:
+            raise EvaluationError(f"invalid primary CWE for selected repository {repo_id}")
+        if type(vulnerable) is not bool:
+            raise EvaluationError(f"unscorable manual-review label in selected repository {repo_id}")
+        if not isinstance(evidence, dict):
+            raise EvaluationError(f"missing manual-review evidence in selected repository {repo_id}")
+        verification_flag = evidence.get("manually_verified")
+        if verification_flag is True:
+            manually_verified += 1
+        elif verification_flag not in (None, False):
+            raise EvaluationError(f"invalid verification flag in selected repository {repo_id}")
+
+        accepted_cwes = entry.get("acceptable_cwes") or [primary_cwe]
+        if not isinstance(accepted_cwes, list) or not all(
+            isinstance(cwe, str) and cwe for cwe in accepted_cwes
+        ):
+            raise EvaluationError(f"invalid accepted CWE list in selected repository {repo_id}")
+        accepted_cwes = set(accepted_cwes)
+        accepted_cwes.add(primary_cwe)
+
+        file_path = _relative_path(entry.get("file"), "ground-truth file")
+        location = entry.get("location")
+        if not isinstance(location, dict):
+            raise EvaluationError(f"missing manual-review location in selected repository {repo_id}")
+        start_line = _line(location.get("start_line"), "ground-truth start_line")
+        end_line = _line(location.get("end_line", start_line), "ground-truth end_line")
+        if end_line < start_line:
+            raise EvaluationError(f"invalid manual-review line span in selected repository {repo_id}")
+        cases.append(
+            {
+                "file": file_path,
+                "start_line": start_line,
+                "end_line": end_line,
+                "cwes": accepted_cwes,
+                "primary_cwe": primary_cwe,
+                "vulnerable": vulnerable,
+            }
+        )
+
+    report = _read_json(reports_root / repo_id / "report.json")
+    if report.get("profile") != "offline":
+        raise EvaluationError(f"non-offline scan report for selected repository {repo_id}")
+    probes = report.get("probes")
+    python_probe = next(
+        (probe for probe in probes if isinstance(probe, dict) and probe.get("name") == REQUIRED_PROBE),
+        None,
+    ) if isinstance(probes, list) else None
+    if python_probe is None or python_probe.get("status") != "ran":
+        raise EvaluationError(f"Python rules probe was not assessed for selected repository {repo_id}")
+    findings = report.get("findings")
+    if not isinstance(findings, list):
+        raise EvaluationError(f"scan report findings must be a list for selected repository {repo_id}")
+
+    expected_cwes = set().union(*(case["cwes"] for case in cases)) if cases else set()
+    relevant_findings = [
+        finding
+        for finding in findings
+        if isinstance(finding, dict)
+        and isinstance(finding.get("cwe"), list)
+        and any(isinstance(cwe, str) and cwe in expected_cwes for cwe in finding["cwe"])
+    ]
+    confusion_by_cwe: dict[str, dict[str, int]] = {}
+    for case in cases:
+        confusion = confusion_by_cwe.setdefault(case["primary_cwe"], _empty_confusion())
+        detected = any(_case_matches(finding, case, tolerance) for finding in relevant_findings)
+        if case["vulnerable"]:
+            confusion["tp" if detected else "fn"] += 1
+        else:
+            confusion["fp" if detected else "tn"] += 1
+
+    matched_findings = sum(
+        any(_case_matches(finding, case, tolerance) for case in cases)
+        for finding in relevant_findings
+    )
+    scorecard = report.get("scorecard")
+    if not isinstance(scorecard, dict) or type(scorecard.get("withheld")) is not bool:
+        raise EvaluationError(f"scan report has invalid scorecard metadata for selected repository {repo_id}")
+    version = report.get("arbiter_version")
+    if not isinstance(version, str) or not version:
+        raise EvaluationError(f"scan report is missing Arbiter version for selected repository {repo_id}")
+    evidence_counts["manually_verified"] = manually_verified
+    return (
+        confusion_by_cwe,
+        len(relevant_findings) - matched_findings,
+        scorecard["withheld"],
+        version,
+        evidence_counts,
+        excluded_counts,
+    )
+
+
+def evaluate_multi_cwe(
+    manifest: dict[str, Any],
+    ground_truth_root: Path,
+    reports_root: Path,
+    tolerance: int = 10,
+    bootstrap_replicates: int = 10_000,
+    seed: int = 0,
+) -> dict[str, Any]:
+    if tolerance < 0:
+        raise EvaluationError("line tolerance must be non-negative")
+    if bootstrap_replicates < 1:
+        raise EvaluationError("bootstrap_replicates must be positive")
+
+    candidate = _candidate(manifest)
+    selected = candidate["selected_repositories"]
+    totals = _empty_confusion()
+    clusters_by_cwe: dict[str, dict[str, dict[str, int]]] = {}
+    versions: set[str] = set()
+    evidence_counts: dict[str, int] = {}
+    excluded_counts: dict[str, int] = {}
+    overall_clusters: list[dict[str, int]] = []
+    unmatched_findings = 0
+    withheld_scorecards = 0
+
+    for repo in selected:
+        (
+            repo_confusions,
+            unmatched,
+            withheld,
+            version,
+            repo_evidence,
+            repo_excluded,
+        ) = _multi_cwe_cases_for_repo(repo, ground_truth_root, reports_root, tolerance, candidate["ground_truth_version"])
+        repo_id = repo["repo_id"]
+        for cwe, confusion in repo_confusions.items():
+            clusters_by_cwe.setdefault(cwe, {})[repo_id] = confusion
+            for key in totals:
+                totals[key] += confusion[key]
+        overall_clusters.append(
+            {
+                key: sum(confusion[key] for confusion in repo_confusions.values())
+                for key in totals
+            }
+        )
+        for source, count in repo_evidence.items():
+            evidence_counts[source] = evidence_counts.get(source, 0) + count
+        for source, count in repo_excluded.items():
+            excluded_counts[source] = excluded_counts.get(source, 0) + count
+        versions.add(version)
+        unmatched_findings += unmatched
+        withheld_scorecards += int(withheld)
+
+    if len(versions) != 1:
+        raise EvaluationError("scan reports contain inconsistent Arbiter versions")
+
+    manually_verified_count = evidence_counts.pop("manually_verified", 0)
+    available_label_count = sum(evidence_counts.values())
+    cwe_results: dict[str, Any] = {}
+    for cwe, repo_clusters in sorted(clusters_by_cwe.items()):
+        ordered_clusters = [
+            repo_clusters.get(repo["repo_id"], _empty_confusion())
+            for repo in selected
+        ]
+        cwe_totals = {
+            key: sum(row[key] for row in ordered_clusters)
+            for key in totals
+        }
+        cwe_result = _case_metrics(cwe_totals)
+        cwe_result["repositories_with_labels"] = sum(
+            any(row[key] for key in ("tp", "fn", "fp", "tn"))
+            for row in ordered_clusters
+        )
+        cwe_result["metrics"]["repository_cluster_bootstrap"] = _cluster_bootstrap(
+            ordered_clusters, bootstrap_replicates, seed
+        )
+        cwe_results[cwe] = cwe_result
+
+    summary = _case_metrics(totals)
+    summary["metrics"]["repository_cluster_bootstrap"] = _cluster_bootstrap(
+        overall_clusters,
+        bootstrap_replicates,
+        seed,
+    )
+    summary.update(
+        {
+            "benchmark": {
+                "id": candidate["id"],
+                "version": candidate["published_version"],
+                "ground_truth_version": candidate["ground_truth_version"],
+                "commit": candidate["benchmark_commit"],
+                "scope": "all primary CWEs with evidence.source=manual_review",
+            },
+            "run": {
+                "arbiter_version": next(iter(versions)),
+                "profile": "offline",
+                "probe": REQUIRED_PROBE,
+                "repositories": len(selected),
+                "python_probe_assessed_repositories": len(selected),
+                "overall_scorecards_withheld": withheld_scorecards,
+                "line_tolerance": tolerance,
+                "cache_policy": "disabled by the pinned scan command; each scan uses --no-cache",
+                "manifest_sha256": hashlib.sha256(
+                    json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode("utf-8")
+                ).hexdigest(),
+            },
+            "label_provenance": {
+                "included_source": "manual_review",
+                "included_cases_with_manually_verified_flag": manually_verified_count,
+                "available_label_count": available_label_count,
+                "available_cases_by_source": evidence_counts,
+                "excluded_cases_by_source": excluded_counts,
+            },
+            "by_primary_cwe": cwe_results,
+            "unmatched_findings_unassessed": unmatched_findings,
+            "accuracy_claim_eligible": False,
+            "general_99_percent_claim": False,
+            "claim_scope": (
+                "RealVuln 3.1.0 approved 11-repository Python manual-review case conformance; "
+                "not independently adjudicated truth, finding-level precision, or production-population accuracy."
+            ),
+        }
+    )
+    return summary
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
@@ -429,12 +721,19 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="required: emit counts and metrics only, never case, file, or rule details",
     )
+    parser.add_argument(
+        "--multi-cwe",
+        action="store_true",
+        help="evaluate manual-review labels across all primary CWEs instead of the historical CWE-89 scope",
+    )
     args = parser.parse_args(argv)
     if not args.aggregate_only:
         parser.error("--aggregate-only is required")
     try:
-        result = evaluate(
-            _read_json(args.manifest),
+        manifest = _read_json(args.manifest)
+        evaluator = evaluate_multi_cwe if args.multi_cwe else evaluate
+        result = evaluator(
+            manifest,
             args.ground_truth_root,
             args.reports_root,
             args.tolerance,

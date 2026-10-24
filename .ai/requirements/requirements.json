@@ -2697,6 +2697,41 @@
         "Research gate only: CodeQL is unavailable in the current environment; source-level license eligibility for AI-generated repositories is not established. No benchmark corpus or target source has been acquired in this task.",
         "This requirement completes source review and study design only; the all-CWE run, model-label measurements, CodeQL scan, and broader RealVuln acquisition remain future work pending source rights and tool provisioning."
       ]
+    },
+    {
+      "id": "ARB-106",
+      "category": "accuracy",
+      "title": "Expanding labeled RealVuln baseline beyond CWE-89",
+      "description": "Extend the existing approved aggregate-only RealVuln pilot using only the 11 already-cleared pinned MIT/Unlicense Python repositories. Inventory all eligible CWE labels and non-scoring exclusions, validate completeness, and measure supported cases without changing the historical CWE-89 run or matcher. Do not inspect sealed fixtures, fetch additional repositories, or tune rules against evaluation data.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-roadmap.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "tools/ground_truth/realvuln_conformance.py",
+        "tests/test_realvuln_conformance.py",
+        "approved local RealVuln input/report artifacts only"
+      ],
+      "acceptance_criteria": [
+        "Inventory eligible labels and exclusions for all 11 approved source pins;validate label completeness and source commit identity;produce a reproducible additive multi-CWE aggregate run without altering historical CWE-89 data;report unsupported or unassessed cases explicitly;do not claim production accuracy or 99 percent certification"
+      ],
+      "validation_required": [
+        "focused evaluator tests;manifest schema validation;python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Benchmark labels are not independently adjudicated; the 11-repository subset is curated and Python-only; broader language expansion and rule tuning require separate rights and evaluation gates",
+        "Pinned-label inventory validated 11 approved source pins with 502 scorable cases across multiple CWEs and no identity/completeness errors; proceed with aggregate-only static scans and a separate evaluator while preserving the historical CWE-89 run.",
+        "Scope includes docs/accuracy-baseline.md and docs/accuracy-realvuln-multicwe-run.json so the current baseline and reproducible aggregate report stay aligned with the new result.",
+        "Completed the 11-repository aggregate-only multi-CWE baseline with pinned label provenance and digests; preserved historical CWE-89 output; validated focused and fast suites, schema, lint, mutation guards, Arbiter self-gate, and Omni gate."
+      ]
     }
   ]
 }

@@ -1,10 +1,12 @@
 # Accuracy Baseline and Evidence Gaps
 
-Inventory date: 2026-10-24. This records the existing evidence and one narrow
-benchmark-conformance run; it is not a 99% certification. Machine-readable
+Inventory date: 2026-10-24. This records the existing evidence and two
+benchmark-conformance runs; it is not a 99% certification. Machine-readable
 source inventory and run metadata are in
 [accuracy-benchmark-manifest.json](accuracy-benchmark-manifest.json), validated
 by [accuracy-benchmark-manifest.schema.json](accuracy-benchmark-manifest.schema.json).
+The additive multi-CWE aggregate report is
+[accuracy-realvuln-multicwe-run.json](accuracy-realvuln-multicwe-run.json).
 
 No detection rules were changed. The sealed AI and OWASP sources remain
 untouched; the approved RealVuln subset was evaluated through the aggregate-only
@@ -22,7 +24,7 @@ metadata is stated rather than guessed.
 | Pinned public gold repositories | Development and repository-level holdout | 24 repos across Go, Java, Python, Ruby, TypeScript; 17 development and 7 held out | Arbiter finding labels include model labels; the harness describes a 60-row human sheet from 5 repos/41 strata as not yet labelled | Public projects are not a random sample of all repositories. Four repositories report `NOASSERTION` license metadata; resolve license/provenance before external publication. |
 | OWASP Benchmark Java/Python | Sealed ground-truth sources | Java: 2,740 cases/11 CWEs; Python: 1,230 cases/14 CWEs | Benchmark expected results; human audit status not recorded | Java source is GPL-2.0; Python is GPL-3.0. Both are fetched at pins and have restrictions recorded in `tools/gold/benchmarks.json`. Synthetic benchmark scope is not production-repository scope. |
 | CVE fix pairs and Juliet Java | Sealed ground-truth sources | CVE language mix and Juliet license status not inventoried here; Juliet is Java | Patch-derived or benchmark-provided labels; independent human audit not recorded | License/provenance and label audit are gaps. These sources are held out; do not inspect them while tuning. |
-| RealVuln 3.1.0 Python CWE-89 subset | Aggregate-only external conformance pilot | 11 pinned repositories; 26 vulnerable labels and 34 safe traps | Benchmark-maintainer `manual_review`; only 5/60 explicitly set `manually_verified` | Completed at pinned source and benchmark commits using MIT/Unlicense sources only. Curated vulnerable applications; not representative production repositories or independently audited ground truth. Aggregate result and run metadata follow. |
+| RealVuln 3.1.0 Python subset | Aggregate-only external conformance pilots | 11 pinned repositories; 502 available labels across 65 primary CWEs; 408 `manual_review` labels scored across 53 CWEs | 66/408 included labels explicitly set `manually_verified`; labels are not independently multi-reviewer adjudicated | Completed on MIT/Unlicense source pins. Curated vulnerable applications; not representative production repositories. The original CWE-89 run is preserved; the additive multi-CWE run and metadata follow. |
 
 The existing precision ledger reports labels for 120 rules and three admitted
 rules. One rule, `supply.unpinned-action`, is declared verified (ARB-101: 690
@@ -93,6 +95,45 @@ accuracy claim. The machine-readable run record retains the commit, dirty
 worktree state, evaluator and configuration digests, runtime, matching
 tolerance, denominators, uncertainty method, and scope limits.
 
+## Completed multi-CWE conformance baseline
+
+ARB-106 validated all 502 labels in the 11 previously approved pinned
+repositories. The labels span 65 primary CWEs. The score includes only the
+408 entries with `evidence.source=manual_review`, covering 53 primary CWEs;
+it excludes 75 `our-scanner` labels, 13 `gt_expansion_verification_2026_04_29`
+labels, five `snyk` labels, and one `walkthrough` label rather than treating
+tool-derived or differently sourced labels as equivalent ground truth. Of the
+408 included labels, 66 explicitly set `manually_verified=true`. The source
+contains no explicit `non_scoring` entries. None of these labels has a
+documented independent multi-reviewer audit.
+
+| Measure | Aggregate result |
+|---|---:|
+| Included labelled cases | 408 (341 vulnerable, 67 safe traps) |
+| Case-level confusion | TP 62, FN 279, FP 7, TN 60 |
+| Labelled-case precision | 62/69 = 89.9% |
+| Labelled-case recall | 62/341 = 18.2% |
+| Safe-trap false-positive rate | 7/67 = 10.4% |
+| 95% repository-cluster bootstrap interval, precision | 84.5%–94.7% |
+| 95% repository-cluster bootstrap interval, recall | 13.0%–23.8% |
+| CWE findings unmatched to included labels | 25, left unassessed |
+
+The largest aggregate miss buckets were CWE-79 (0/37 positive cases detected),
+CWE-798 (1/22), CWE-918 (0/18), CWE-400 (1/18), CWE-22 (0/17), and CWE-639
+(0/13). These counts are prioritization signals only: no case-level examples
+were inspected, and no rules were tuned on this benchmark. The multi-CWE run
+used only the offline Python probe on all 11 repositories; all 11 overall
+scorecards were withheld because the other probes were not assessed. Source
+code was not executed. Results are maintainer-label case conformance, not
+independently adjudicated truth, finding-level precision, or a production
+population estimate.
+
+The multi-CWE evaluator reproduces the original CWE-89 confusion counts
+exactly (TP 21, FN 5, FP 6, TN 28); the historical run record and matcher
+remain unchanged. The source, label, and scan-report digests, tool versions,
+environment, and aggregate results are recorded in the separate run report
+and referenced from the benchmark manifest.
+
 A separate maintainer-authored Python planted-corpus regression run scored
 73/73, including all 8 planted SQL-injection cases, with no reported misses,
 unexpected findings, or safe-twin false positives. It ran on Python 3.14.4
@@ -149,17 +190,19 @@ the CI setup does not establish equivalent analyzer coverage on Windows.
 ## Baseline decision
 
 The evidence is not sufficient for a 99% precision-and-recall claim. The
-AI-heldout recall is 4%, AI-development recall is 28%, and this narrow
-RealVuln pilot measured 77.8% labelled-case precision and 80.8% labelled-case
-recall with wide, benchmark-specific cluster intervals. Human adjudication,
-representative populations, blind miss audits, and platform/segment coverage
-remain incomplete.
+AI-heldout recall is 4%, AI-development recall is 28%, and the RealVuln
+multi-CWE manual-review slice measured 89.9% labelled-case precision and
+18.2% labelled-case recall with benchmark-specific cluster intervals. The
+narrow CWE-89 slice remains at 77.8% precision and 80.8% recall. Human
+adjudication, representative populations, blind miss audits, and
+platform/segment coverage remain incomplete.
 
-**Next milestone:** obtain independent reviewers or an explicitly approved,
-larger source with defensible labels; conduct blind finding adjudication and
-repository miss audits; then validate the sampling design and uncertainty
-estimator before any rule tuning. Keep the existing sealed AI and gold sources
-closed.
+**Next milestone:** rule owners should address the broad missed weakness
+families using development data only, with regression tests and paired
+precision/recall checks. In parallel, execute the predeclared real-repository
+precision sample with blinded labels and prepare independent human review.
+Keep this RealVuln evaluation data and the existing sealed AI and gold sources
+closed to case-level tuning.
 
 Per the owner's 2026-10-24 decision, interim measurements may use blind model
 labels when human reviewers are unavailable. Report those results only as

@@ -1,7 +1,7 @@
 # External Accuracy Measurement Expansion
 
-This is a source-vetting and study-design record for the next accuracy
-measurements. It is not a scan result or a 99% claim. The immediate work is
+This records the source-vetting design and the first additive measurement
+execution. It is not a 99% claim. The immediate work is
 split into (1) real-repository finding precision, using Semgrep and CodeQL as
 differential signals with blinded model labels for now; (2) external
 AI-generated-code conformance; and (3) expanding the existing RealVuln
@@ -9,8 +9,11 @@ measurement beyond Python CWE-89.
 
 ## Status and guardrails
 
-- No new benchmark source or repository snapshot was downloaded or scanned
-  for this design.
+- ARB-105 was a design-only milestone. ARB-106 later reacquired and scanned
+  only the 11 previously approved pinned MIT/Unlicense Python repositories;
+  the sources and per-repository reports were kept in temporary storage.
+- No benchmark target code was executed. The committed output contains
+  aggregate labels and metrics only.
 - `semgrep` 1.177.0 and its locked rules are available locally. CodeQL is not
   installed or provisioned in the current environment.
 - Semgrep/CodeQL agreement is **not ground truth**. Each tool has its own
@@ -107,6 +110,39 @@ autobuild/manual builds or benchmark evaluation scripts that run target code.
 If static extraction cannot be completed without building or executing
 untrusted code, mark that language/repository not assessed and state why.
 
+## ARB-106: first multi-CWE baseline
+
+All 502 pinned label entries validated across the 11 approved repositories:
+65 distinct primary CWEs and no explicit `non_scoring` entries. The scored
+population is limited to 408 entries with `evidence.source=manual_review`,
+covering 53 primary CWEs. The other 94 labels are reported by provenance and
+excluded from the score: 75 `our-scanner`, 13
+`gt_expansion_verification_2026_04_29`, five `snyk`, and one `walkthrough`.
+Within the included 408, 66 entries explicitly set
+`manually_verified=true`. These are benchmark-maintainer labels, not
+independent multi-reviewer adjudication.
+
+The offline `lang_python` probe ran on all 11 pinned source snapshots; all 11
+overall scorecards were withheld because other probes were not assessed. On
+the manual-review cases, the result was TP 62, FN 279, FP 7, TN 60: labelled-
+case precision 62/69 (89.9%), recall 62/341 (18.2%), and safe-trap false-
+positive rate 7/67 (10.4%). The descriptive 95% repository-cluster bootstrap
+intervals were 84.5%–94.7% for precision and 13.0%–23.8% for recall. Twenty-
+five findings did not match included labels and remain unassessed.
+
+The largest miss buckets were CWE-79 (0/37 positive cases detected), CWE-798
+(1/22), CWE-918 (0/18), CWE-400 (1/18), CWE-22 (0/17), and CWE-639 (0/13).
+These are aggregate prioritization signals only; no case-level examples were
+inspected and no rules were tuned on this benchmark. The multi-CWE evaluator
+reproduces the historical CWE-89 counts exactly, and neither its matcher nor
+the prior CWE-89 run record was changed. This is curated benchmark
+conformance—not finding-level precision, independent truth, production
+accuracy, or a 99% claim.
+
+Full aggregate results and environment, source, label, and report digests are
+in [accuracy-realvuln-multicwe-run.json](accuracy-realvuln-multicwe-run.json);
+the benchmark manifest references its digest.
+
 ## Run-record and matcher compatibility
 
 Keep `docs/accuracy-benchmark-manifest.json`'s generic `run_record_template`
@@ -125,13 +161,13 @@ The current evaluator's case-matching behavior remains unchanged.
 
 ## Execution gates
 
-1. Confirm exact RealVuln pinned metadata, repository-level source rights,
-   and eligible scoring labels; do not fetch source code until the selected
-   subset is approved.
-2. Implement and test an aggregate-only multi-CWE evaluator over the
-   already-cleared repository subset, preserving the existing matcher and
-   historical pilot record. Treat non-scoring and unmatched findings
-   explicitly.
+1. Completed for the previously cleared 11 Python pins: exact metadata,
+   source commits, labels, and source permissions were validated; no other
+   repositories were acquired.
+2. Completed: an additive aggregate-only multi-CWE evaluator was implemented
+   and tested. It scores only `manual_review` labels, records exclusions and
+   unmatched findings, and preserves the existing matcher and historical
+   CWE-89 record.
 3. Confirm CodeQL CLI/query-pack installation and no-build extraction for
    each selected language. Revalidate Semgrep version and rules lock.
 4. Freeze the repository split, model labeler/rubric, run record, and analysis
@@ -140,8 +176,6 @@ The current evaluator's case-matching behavior remains unchanged.
    model-label limitations. Keep case-level results private unless their
    source license explicitly permits release.
 
-No expanded evaluator, CodeQL scan, model-label run, or new RealVuln accuracy
-result has been produced by this design. The first bounded experiment should
-inventory then, if eligible-label validation passes, run an aggregate
-evaluation over the already-cleared 11 RealVuln Python repository pins;
-cross-language and AI-authorship expansion follows source-rights verification.
+CodeQL differential scans, model-label runs, and cross-language or
+AI-authorship expansion remain future work pending tool provisioning,
+sampling freeze, and source-rights verification.

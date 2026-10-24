@@ -587,6 +587,315 @@
             },
             "additionalProperties": true
           },
+          "multi_cwe_label_inventory": {
+            "type": "object",
+            "required": [
+              "available_label_count",
+              "distinct_primary_cwes_across_available_labels",
+              "evidence_source_counts",
+              "included_label_source",
+              "included_label_count",
+              "included_primary_cwe_count",
+              "included_manually_verified_flag_count",
+              "excluded_cases_by_source",
+              "explicit_non_scoring_entries",
+              "scoring_field",
+              "label_limit"
+            ],
+            "properties": {
+              "available_label_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "distinct_primary_cwes_across_available_labels": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "evidence_source_counts": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "included_label_source": {
+                "const": "manual_review"
+              },
+              "included_label_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "included_primary_cwe_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "included_manually_verified_flag_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "excluded_cases_by_source": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "explicit_non_scoring_entries": {
+                "type": "integer",
+                "const": 0
+              },
+              "scoring_field": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label_limit": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          },
+          "multi_cwe_evaluation_run": {
+            "type": "object",
+            "required": [
+              "status",
+              "report_path",
+              "report_sha256",
+              "input_manifest_sha256",
+              "arbiter_commit",
+              "arbiter_worktree_clean",
+              "scanner_sources_match_commit",
+              "evaluator_sha256",
+              "configuration_sha256",
+              "started_at_utc",
+              "completed_at_utc",
+              "scanner_python_version",
+              "evaluator_python_version",
+              "operating_system",
+              "architecture",
+              "runtime_packages",
+              "profile",
+              "probe",
+              "adapters_enabled",
+              "cache_enabled",
+              "history_enabled",
+              "source_code_executed",
+              "repositories_scanned",
+              "python_probe_assessed_repositories",
+              "scorecards_withheld",
+              "labelled_cases",
+              "case_level_confusion",
+              "metrics",
+              "primary_cwe_count",
+              "unmatched_findings_unassessed",
+              "accuracy_claim_eligible",
+              "general_99_percent_claim",
+              "claim_scope"
+            ],
+            "properties": {
+              "status": {
+                "const": "completed_aggregate_only"
+              },
+              "report_path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "report_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "input_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "arbiter_commit": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{40}$"
+              },
+              "arbiter_worktree_clean": {
+                "type": "boolean"
+              },
+              "scanner_sources_match_commit": {
+                "type": "boolean"
+              },
+              "evaluator_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "configuration_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "started_at_utc": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "completed_at_utc": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "scanner_python_version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evaluator_python_version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "operating_system": {
+                "type": "string",
+                "minLength": 1
+              },
+              "architecture": {
+                "type": "string",
+                "minLength": 1
+              },
+              "runtime_packages": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "profile": {
+                "const": "offline"
+              },
+              "probe": {
+                "const": "lang_python"
+              },
+              "adapters_enabled": {
+                "const": false
+              },
+              "cache_enabled": {
+                "const": false
+              },
+              "history_enabled": {
+                "const": false
+              },
+              "source_code_executed": {
+                "const": false
+              },
+              "repositories_scanned": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "python_probe_assessed_repositories": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "scorecards_withheld": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "labelled_cases": {
+                "type": "object",
+                "required": [
+                  "positive",
+                  "safe_traps",
+                  "total"
+                ],
+                "properties": {
+                  "positive": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "safe_traps": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "total": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "additionalProperties": false
+              },
+              "case_level_confusion": {
+                "type": "object",
+                "required": [
+                  "tp",
+                  "fn",
+                  "fp",
+                  "tn"
+                ],
+                "properties": {
+                  "tp": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "fn": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "fp": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "tn": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "additionalProperties": false
+              },
+              "metrics": {
+                "type": "object",
+                "required": [
+                  "labelled_case_precision",
+                  "labelled_case_recall",
+                  "safe_trap_false_positive_rate",
+                  "precision_cluster_bootstrap_interval",
+                  "recall_cluster_bootstrap_interval",
+                  "cluster_bootstrap_replicates",
+                  "cluster_bootstrap_seed"
+                ],
+                "properties": {
+                  "labelled_case_precision": {
+                    "$ref": "#/$defs/aggregateMetric"
+                  },
+                  "labelled_case_recall": {
+                    "$ref": "#/$defs/aggregateMetric"
+                  },
+                  "safe_trap_false_positive_rate": {
+                    "$ref": "#/$defs/aggregateMetric"
+                  },
+                  "precision_cluster_bootstrap_interval": {
+                    "$ref": "#/$defs/rateInterval"
+                  },
+                  "recall_cluster_bootstrap_interval": {
+                    "$ref": "#/$defs/rateInterval"
+                  },
+                  "cluster_bootstrap_replicates": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "cluster_bootstrap_seed": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "primary_cwe_count": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "unmatched_findings_unassessed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "accuracy_claim_eligible": {
+                "const": false
+              },
+              "general_99_percent_claim": {
+                "const": false
+              },
+              "claim_scope": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          },
           "selection_gates": {
             "type": "array",
             "minItems": 1,

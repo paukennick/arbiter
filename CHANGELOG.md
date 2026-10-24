@@ -5,6 +5,7 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 `REQ-###` they serve. Rationale belongs in `.ai/project-context.md`.
 
 ## [Unreleased]
+- ARB-106 | Added an aggregate-only RealVuln baseline across 53 primary Python CWEs using 408 benchmark `manual_review` labels from 11 already-cleared pinned repositories: 89.9% labelled-case precision, 18.2% recall, and 25 unmatched findings left unassessed. Excluded non-manual/tool-derived labels, preserved the historical CWE-89 matcher and result, and recorded full aggregate and run provenance without executing target code or tuning on the benchmark.
 - ARB-105 | Researched external AI-code sources and specified a real-repository Semgrep/CodeQL differential with blinded model labels reported only as model-labelled conformance. Identified RealVuln's 90 LLM-generated Python/TypeScript/JavaScript repositories as a candidate expansion, while blocking acquisition until per-repository rights are checked; preserved the existing run-record template and CWE-89 matcher. No new source was acquired or scanned.
 ### 2026-10-24 (round 5, show everything)
 

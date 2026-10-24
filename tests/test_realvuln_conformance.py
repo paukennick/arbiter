@@ -1,6 +1,7 @@
 """Tests for the aggregate-only RealVuln CWE-89 evaluator."""
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import re
@@ -9,7 +10,6 @@ from pathlib import Path
 
 import pytest
 from helpers import ROOT
-
 
 _spec = importlib.util.spec_from_file_location(
     "realvuln_conformance",
@@ -130,6 +130,95 @@ def test_evaluate_maps_ground_truth_id_and_reports_case_metrics(tmp_path: Path) 
     assert result["run"]["overall_scorecards_withheld"] == 1
 
 
+def test_multi_cwe_scores_manual_review_cases_and_excludes_tool_labels(tmp_path: Path) -> None:
+    manifest, truth_root, report_root = _inputs(tmp_path)
+    truth_path = truth_root / "public-app" / "ground-truth.json"
+    truth = json.loads(truth_path.read_text(encoding="utf-8"))
+    truth["findings"].extend(
+        [
+            {
+                "primary_cwe": "CWE-79",
+                "acceptable_cwes": ["CWE-79"],
+                "is_vulnerable": True,
+                "file": "app.py",
+                "location": {"start_line": 50, "end_line": 51},
+                "evidence": {"source": "manual_review"},
+            },
+            {
+                "primary_cwe": "CWE-79",
+                "acceptable_cwes": ["CWE-79"],
+                "is_vulnerable": False,
+                "file": "app.py",
+                "location": {"start_line": 70, "end_line": 70},
+                "evidence": {"source": "manual_review"},
+            },
+            {
+                "primary_cwe": "CWE-22",
+                "is_vulnerable": True,
+                "file": "excluded.py",
+                "location": {"start_line": 1, "end_line": 1},
+                "evidence": {"source": "our-scanner"},
+            },
+        ]
+    )
+    truth_path.write_text(json.dumps(truth), encoding="utf-8")
+
+    report_path = report_root / "public-app" / "report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    report["findings"].extend(
+        [
+            {
+                "rule_id": "arbiter/python.xss",
+                "cwe": ["CWE-79"],
+                "location": {"path": "app.py", "start_line": 52, "end_line": 52},
+            },
+            {
+                "rule_id": "arbiter/python.xss",
+                "cwe": ["CWE-79"],
+                "location": {"path": "app.py", "start_line": 70, "end_line": 70},
+            },
+            {
+                "rule_id": "arbiter/python.path-traversal",
+                "cwe": ["CWE-22"],
+                "location": {"path": "excluded.py", "start_line": 1, "end_line": 1},
+            },
+        ]
+    )
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+
+    result = conformance.evaluate_multi_cwe(
+        manifest,
+        truth_root,
+        report_root,
+        bootstrap_replicates=100,
+    )
+
+    assert result["labelled_cases"] == {"positive": 2, "safe_traps": 2, "total": 4}
+    assert result["case_level_confusion"] == {"tp": 2, "fn": 0, "fp": 1, "tn": 1}
+    assert result["metrics"]["labelled_case_precision"]["value"] == pytest.approx(2 / 3)
+    assert result["metrics"]["labelled_case_recall"]["value"] == 1
+    assert result["metrics"]["repository_cluster_bootstrap"]["replicates"] == 100
+    assert result["by_primary_cwe"]["CWE-89"]["case_level_confusion"] == {
+        "tp": 1,
+        "fn": 0,
+        "fp": 0,
+        "tn": 1,
+    }
+    assert result["by_primary_cwe"]["CWE-79"]["repositories_with_labels"] == 1
+    assert result["label_provenance"]["available_cases_by_source"] == {
+        "manual_review": 4,
+        "our-scanner": 1,
+    }
+    assert result["label_provenance"]["available_label_count"] == 5
+    assert result["label_provenance"]["excluded_cases_by_source"] == {"our-scanner": 1}
+    assert result["label_provenance"]["included_cases_with_manually_verified_flag"] == 1
+    assert result["unmatched_findings_unassessed"] == 2
+    assert result["accuracy_claim_eligible"] is False
+    assert result["general_99_percent_claim"] is False
+
+    historical = conformance.evaluate(manifest, truth_root, report_root, bootstrap_replicates=100)
+    assert historical["case_level_confusion"] == {"tp": 1, "fn": 0, "fp": 0, "tn": 1}
+
 
 def test_evaluate_does_not_match_a_zero_end_line(tmp_path: Path) -> None:
     manifest, truth_root, report_root = _inputs(tmp_path)
@@ -213,3 +302,20 @@ def test_committed_manifest_registers_the_pinned_licensed_subset():
     assert candidate["aggregate_metadata"]["selected_vulnerable_cases"] == 26
     assert candidate["aggregate_metadata"]["selected_safe_trap_cases"] == 34
     assert re.fullmatch(candidate_schema["id"]["pattern"], candidate["id"])
+
+
+def test_committed_multi_cwe_run_is_aggregate_only_and_digest_bound():
+    manifest = json.loads((ROOT / "docs" / "accuracy-benchmark-manifest.json").read_text(encoding="utf-8"))
+    candidate = conformance._candidate(manifest)
+    run = candidate["multi_cwe_evaluation_run"]
+    report_path = ROOT / "docs" / run["report_path"]
+    report_bytes = report_path.read_bytes()
+    report = json.loads(report_bytes)
+
+    assert hashlib.sha256(report_bytes).hexdigest() == run["report_sha256"]
+    assert report["status"] == "completed_aggregate_only"
+    assert report["execution"]["target_code_executed"] is False
+    assert report["evaluation"]["case_level_confusion"] == run["case_level_confusion"]
+    assert report["evaluation"]["accuracy_claim_eligible"] is False
+    assert report["evaluation"]["general_99_percent_claim"] is False
+    assert "findings" not in report

@@ -493,6 +493,104 @@
         "claim_scope": "RealVuln 3.1.0 approved Python CWE-89 case-level conformance only; not Arbiter finding precision or production-population accuracy.",
         "general_99_percent_claim": false
       },
+      "multi_cwe_label_inventory": {
+        "available_label_count": 502,
+        "distinct_primary_cwes_across_available_labels": 65,
+        "evidence_source_counts": {
+          "manual_review": 408,
+          "gt_expansion_verification_2026_04_29": 13,
+          "our-scanner": 75,
+          "snyk": 5,
+          "walkthrough": 1
+        },
+        "included_label_source": "manual_review",
+        "included_label_count": 408,
+        "included_primary_cwe_count": 53,
+        "included_manually_verified_flag_count": 66,
+        "excluded_cases_by_source": {
+          "gt_expansion_verification_2026_04_29": 13,
+          "our-scanner": 75,
+          "snyk": 5,
+          "walkthrough": 1
+        },
+        "explicit_non_scoring_entries": 0,
+        "scoring_field": "absent from all 502 pinned entries",
+        "label_limit": "Benchmark-maintainer evidence; manual_review is not independent multi-reviewer adjudication."
+      },
+      "multi_cwe_evaluation_run": {
+        "status": "completed_aggregate_only",
+        "report_path": "accuracy-realvuln-multicwe-run.json",
+        "report_sha256": "4776a16f16677cce401a9033db78fa91dc723c1b7859671d4bb9a2814332dd00",
+        "input_manifest_sha256": "88e15366a2e15c952054c72ebe40b6d4a633a04e4db546d00c357f74db8367f6",
+        "arbiter_commit": "3a72985ff516e80850b0ffe0c7c2e1ba26418153",
+        "arbiter_worktree_clean": false,
+        "scanner_sources_match_commit": true,
+        "evaluator_sha256": "f7505eef88ed4b54dfc0c8e480631e62f973078d965ad7b33d3565cfe07e2a00",
+        "configuration_sha256": "e001cd6a3677c208d28c85a4cd6364b25a467e23405e59d0f7de7b9ab95d34ea",
+        "started_at_utc": "2026-10-24T22:18:54.900770Z",
+        "completed_at_utc": "2026-10-24T22:19:03.652162Z",
+        "scanner_python_version": "3.13.15",
+        "evaluator_python_version": "3.14.4",
+        "operating_system": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "architecture": "x86_64",
+        "runtime_packages": {
+          "PyYAML": "6.0.3",
+          "tree-sitter": "0.26.0",
+          "tree-sitter-language-pack": "1.22.1"
+        },
+        "profile": "offline",
+        "probe": "lang_python",
+        "adapters_enabled": false,
+        "cache_enabled": false,
+        "history_enabled": false,
+        "source_code_executed": false,
+        "repositories_scanned": 11,
+        "python_probe_assessed_repositories": 11,
+        "scorecards_withheld": 11,
+        "labelled_cases": {
+          "positive": 341,
+          "safe_traps": 67,
+          "total": 408
+        },
+        "case_level_confusion": {
+          "tp": 62,
+          "fn": 279,
+          "fp": 7,
+          "tn": 60
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "numerator": 62,
+            "denominator": 69,
+            "value": 0.8985507246376812
+          },
+          "labelled_case_recall": {
+            "numerator": 62,
+            "denominator": 341,
+            "value": 0.18181818181818182
+          },
+          "safe_trap_false_positive_rate": {
+            "numerator": 7,
+            "denominator": 67,
+            "value": 0.1044776119402985
+          },
+          "precision_cluster_bootstrap_interval": [
+            0.8448275862068966,
+            0.9473684210526315
+          ],
+          "recall_cluster_bootstrap_interval": [
+            0.13002952262854045,
+            0.23837305559833666
+          ],
+          "cluster_bootstrap_replicates": 10000,
+          "cluster_bootstrap_seed": 0
+        },
+        "primary_cwe_count": 53,
+        "unmatched_findings_unassessed": 25,
+        "accuracy_claim_eligible": false,
+        "general_99_percent_claim": false,
+        "claim_scope": "Curated RealVuln 3.1.0 11-repository Python manual-review case conformance; not independently adjudicated truth, finding-level precision, or production-population accuracy."
+      },
       "selection_gates": [
         "Use only the 11 selected Python source repositories whose license metadata is MIT or Unlicense at the exact pinned source commit; exclude GPL-3.0 and NOASSERTION repositories.",
         "The benchmark manifest and ground-truth metadata are pinned to commit 7a710251f55c17d32d3adcb13d37468e2e3b9e4a.",
