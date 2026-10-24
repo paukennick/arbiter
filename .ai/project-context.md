@@ -1362,3 +1362,57 @@ a no-op under the default but still overrides `report.show: verified` for
 one run, which is what the existing `run with --advisory to include them`
 hint relies on. The two flags are mutually exclusive.
 
+
+## 2026-10-24 — External conformance scorecard (ARB-120)
+
+**Why.** The 99% program needs evidence from code and labels Arbiter's
+authors did not write. OWASP Benchmark, Juliet and the GHSA fix pairs were
+already fetched and pinned, but they were only used per *finding* (ground-truth
+labels for the precision ledger). Nothing measured recall or safe-case
+false positives on them in the manifest's run-record format.
+
+**Decisions.**
+- **Score per case, not per finding.** Recall and safe-case FPR need a
+  denominator of cases. OWASP's are its `expectedresults` rows, and the
+  OWASP matching is `gold_benchmark.score_recall`'s, with a test holding the
+  two equal. Juliet and the CVE pairs publish no safe-case list, so their
+  units are Arbiter-defined, and the scorecard and docs say so:
+  - Juliet: one case stem, a `bad` unit and a `good*` unit, decided by
+    `benchmarks_gt.juliet_side`.
+  - CVE: the hunks the fix changed ±2 lines, vulnerable side versus fixed
+    side, using the same window on both. `cve_pairs.classify` uses exact
+    changed lines on the vulnerable side. A pure-insertion fix leaves the
+    sink line unchanged and could never match there.
+- **One cluster means case-level intervals.** OWASP and Juliet are single
+  repositories, so their Wilson intervals are stated as case-level only.
+  The CVE pairs (70 repositories) also get the RealVuln pilot's
+  repository-cluster percentile bootstrap (8198df7: 10,000 replicates,
+  seed 0). That code is reimplemented, not shared, until that branch
+  merges.
+- **The manifest and schema are not edited.** Copilot's unmerged 8198df7
+  rewrites both. The run records live in `docs/external-scorecard.json` and
+  a test validates them against the template subschema. `counts` and
+  `metrics` hold exactly the template's keys; everything else sits beside
+  them.
+- **Weak spots are ranked by `0.99 - min(precision lower, recall lower)`,**
+  shown in two lists. With dozens of zero-detection rules tied at 0.99, one
+  list hid the rules that fire but miss the bar.
+
+**What it showed** (Arbiter `f52484f`):
+- No benchmark, CWE or rule meets the 0.99 lower bound on both precision
+  and recall.
+- OWASP in-scope recall is about 0.97, against 0.34 on Juliet and 0.08 on
+  the CVE pairs. OWASP and Juliet were used to measure earlier rule changes
+  (ARB-065), so the OWASP figure is development-exposed, not holdout
+  evidence.
+- Injection rules trade precision for recall on safe cases: Juliet CWE-89
+  FPR 0.486 and CWE-78 FPR 0.457, at about 0.99 recall.
+
+**Holdout consequence.** Once a rule is tuned on these weak spots, OWASP,
+Juliet and the 70 CVE pairs are spent as sealed sets for it. ARB-121's
+frozen GHSA split is the fresh holdout.
+
+**Follow-up.**
+- Extend RealVuln beyond CWE-89 and share one bootstrap once 8198df7 merges.
+- The license and provenance inventory for Juliet and the CVE pairs is
+  still open.

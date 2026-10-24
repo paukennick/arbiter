@@ -5,6 +5,18 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 `REQ-###` they serve. Rationale belongs in `.ai/project-context.md`.
 
 ## [Unreleased]
+### 2026-10-24 (external conformance scorecard)
+
+- ARB-120 | `tools/ground_truth/external_scorecard.py --aggregate-only` scans the pinned Arbiter (offline, no adapters, no cache) over OWASP Benchmark Java 1.2 and Python 0.1, Juliet Java 1.3 and the 70 GHSA fix pairs. It writes `docs/external-scorecard.json`, which holds one run record per benchmark in the manifest's `run_record_template` shape plus per-CWE and per-rule TP/FN/FP/TN, case precision, recall and safe-case FPR with Wilson 95% intervals, and a repository-cluster bootstrap for the CVE pairs (70 clusters). It also writes `docs/external-scorecard.md`. It reuses `gold_benchmark.score_recall`'s OWASP matching (a test holds the two equal), `benchmarks_gt.juliet_side` and `cve_pairs`' hunk diff, aliases and project-rule exclusion. Juliet and CVE vulnerable/safe units are Arbiter-defined. Aggregate-only output; no rule changed
+- ARB-120 | Results at `f52484f`:
+  - OWASP Java: precision 0.808, recall 0.591, in-scope recall 0.970, safe FPR 0.149 (2,740 units).
+  - OWASP Python: 0.883 / 0.487 / 0.974 / 0.037 (1,230).
+  - Juliet Java: 0.688 / 0.309 / 0.342 / 0.140 (18,310).
+  - CVE pairs: 0.556 / 0.071 / 0.079 / 0.057 (140).
+  - Nothing reaches a 0.99 lower bound on both precision and recall; the closest is OWASP Java CWE-330 at 0.983.
+  - Largest gaps: Juliet CWE-190 and CWE-81 with no detections, argument-injection rules never firing, the CVE strata, Juliet XSS recall 0.16, and injection safe-case FPR (Juliet CWE-89 0.486, CWE-78 0.457; OWASP Java CWE-78 0.688).
+  - Summary and caveats: `docs/accuracy-baseline.md`, "External conformance scorecard".
+
 ### 2026-10-24 (round 5, show everything)
 
 - ARB-103 | Arbiter shows every finding by default again and blocks only on verified ones. `report.show` defaults to `all`: the console, markdown, pull-request comment, HTML, SARIF and GitHub annotations list verified findings first, then advisory, then inferred, each section labelled with what the tier means and whether it can block the gate (`FINDINGS (advisory) — not confirmed; shown, cannot block the gate`), under one summary line (`2 verified (can block the gate) · 71 advisory (shown, not gating) · 0 inferred`). `gate.tier_mode` stays `tiered`, so only verified findings can fail the gate. Reverses ARB-100's verified-only default, which with one verified rule hid every finding on the planted and AI-written corpora (FAIL-071)
