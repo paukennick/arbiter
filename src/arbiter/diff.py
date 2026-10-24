@@ -150,7 +150,7 @@ def render_pr_comment(after: Report, d: ReportDiff | None = None) -> str:
     L.append("")
 
     # The comparison ran over every finding (a baseline is about the whole
-    # set); what the comment lists follows the report's view (ARB-091), so a
+    # set); what the comment lists follows the report's view (ARB-100), so a
     # reviewer sees the verified tier by default and one line on the rest.
     from .report import (
         HINT_CONFIG,

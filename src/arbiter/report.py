@@ -58,7 +58,7 @@ def _tiered(report: Report) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# The view: which tiers a rendering lists (ARB-091)
+# The view: which tiers a rendering lists (ARB-100)
 # ---------------------------------------------------------------------------
 
 HINT_CLI = "run with --advisory to include them"

@@ -678,7 +678,7 @@ def run_scan(
     report.rules = rules_block(report.findings)
 
     report.gate = evaluate_gate(report, config)
-    # The view (ARB-091) is recorded after the gate: what the renderings show
+    # The view (ARB-100) is recorded after the gate: what the renderings show
     # is the verified tier plus whatever failed the gate.
     set_view(report, show_mode(config))
 

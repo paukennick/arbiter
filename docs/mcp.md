@@ -57,7 +57,7 @@ The draft takes no path argument the queue does not already take, so it is
 confined over HTTPS exactly as the others are and writes only under
 `output_dir`.
 
-`show` (ARB-091) is what an agent is shown, not what was found: under the
+`show` (ARB-100) is what an agent is shown, not what was found: under the
 default `verified` the answer's `findings` are the tier measured at least 99%
 precise (plus any finding that failed the gate) and `summary` reads, for
 example, `no verified findings; 23 advisory findings not shown (pass show:

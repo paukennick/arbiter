@@ -65,7 +65,7 @@ Nothing is re-graded: an advisory critical finding is still a critical
 finding in `report.json`. The tier decides two things: whether the finding
 may block the gate, and whether it is shown by default.
 
-**Gate.** `gate.tier_mode: tiered` (the default since ARB-091) reads only
+**Gate.** `gate.tier_mode: tiered` (the default since ARB-100) reads only
 the findings whose tier is in `gate.tiers` (default `[verified]`), so a
 build fails on what the ledger has measured to be right at least 99% of the
 time and on nothing else. The gate block records what it set aside
@@ -75,7 +75,7 @@ repository full of advisory criticals says so rather than reading as clean.
 active finding can fail it. It is an explicit opt-in for a repository that
 wants the louder gate while its rules are still on probation.
 
-**What is shown (ARB-091).** The human-facing renderings -- console,
+**What is shown (ARB-100).** The human-facing renderings -- console,
 markdown, the pull-request comment, SARIF, HTML and the GitHub annotations
 -- and the MCP tools' default answers list the **verified** tier only, with
 one line saying what was left out:

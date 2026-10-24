@@ -62,7 +62,7 @@ def test_gate_fails_on_critical(legacy_report):
 
 
 def test_the_default_gate_passes_the_fixture_and_says_why(legacy_report):
-    """Under the default tiered gate (ARB-091) no planted finding is verified
+    """Under the default tiered gate (ARB-100) no planted finding is verified
     (no rule is declared verified yet), so the gate passes; its block must
     say that every finding was excluded by tier, not read as clean."""
     gate = legacy_report.gate

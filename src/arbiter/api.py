@@ -694,7 +694,7 @@ def handle_scan(upload: bytes | str | Path, profile: str = "offline", only: str 
         # The hosted API is a machine surface: report.json travels as written,
         # every finding plus the view the scan recorded, and the client's own
         # renderers apply that view (`arbiter remote scan` shows the verified
-        # tier by default and every tier with --advisory; ARB-091).
+        # tier by default and every tier with --advisory; ARB-100).
         result = scan(str(source), str(ws.output), profile=profile, only=only,
                       skip=skip, timeout=timeout, show=None)
         # Deliberately not returning report_path: it names a directory that is

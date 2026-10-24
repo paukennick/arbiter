@@ -2164,7 +2164,7 @@
       ]
     },
     {
-      "id": "ARB-091",
+      "id": "ARB-100",
       "category": "capability",
       "title": "Verified-only output by default",
       "description": "Findings Arbiter shows by default are the verified tier only (ledger-admitted rules at a Wilson lower bound of at least 0.99 offline, or model-confirmed under assisted), so what a reader sees is at least 99% correct. Console, markdown, pr-comment, SARIF, HTML, GitHub annotations and the MCP tools' default responses show verified findings and one summary line saying how many advisory and inferred findings were left out; when nothing is verified they say so instead of reading as clean. --advisory (CLI), report.show: all (arbiter.yaml) and show: all (MCP) bring the other tiers back, sectioned and labelled by tier. The gate's default tier_mode becomes tiered, so only verified findings can fail it; legacy stays an explicit opt-in. report.json stays complete and backward compatible: every finding with its tier and tier_reason, every existing key with its meaning, plus a top-level tiers block {shown, counts, not_shown}. Baseline and new-vs-existing logic run on the full finding set.",

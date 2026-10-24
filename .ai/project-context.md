@@ -1140,7 +1140,7 @@ per-file licence headers, and a trademark policy for the name "Arbiter"
 change; the result and what it covered are in `CHANGELOG.md` under
 2026-10-21.
 
-## 2026-10-23 — What is shown by default is what is 99% right (ARB-091)
+## 2026-10-23 — What is shown by default is what is 99% right (ARB-100)
 
 **Decision.** The owner wants the findings Arbiter shows by default to be
 at least 99% correct. Every finding already carried a tier (ARB-065); what
@@ -1194,4 +1194,4 @@ queue reads the complete report (adjudication is exactly where advisory
 findings need a person); `history.jsonl` keeps full severity counts.
 
 **Also fixed.** `docs/precision.md` carried a stale 280-line second copy of
-itself from the round-4 merge (FAIL-057); removed.
+itself from the round-4 merge (FAIL-070); removed.

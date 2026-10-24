@@ -330,7 +330,7 @@ def test_assisted_profile_verifies_and_reports(tree, monkeypatch):
     f = next(f for f in rep.active() if f.rule_id == "arbiter/python.command-injection")
     assert f.verification["verdict"] == "rejected"
     assert f in rep.active()  # never dropped from the report
-    # The default view lists the verified tier only (ARB-091), and a rejected
+    # The default view lists the verified tier only (ARB-100), and a rejected
     # finding is advisory; the `all` view is where the verdict is read.
     assert "advisory findings not shown" in render_markdown(rep)
     from arbiter.precision import set_view

@@ -340,7 +340,7 @@ SHOW_MODES = ("verified", "all")
 
 
 def _view(report: dict, show: str) -> dict:
-    """The report as a caller sees it under `show` (ARB-091): under
+    """The report as a caller sees it under `show` (ARB-100): under
     `verified`, a copy whose `findings` are the verified tier only; under
     `all`, the report as written. Every other key is left as it is, and the
     file at `report_path` always holds every finding."""
@@ -387,7 +387,7 @@ def scan(target: str, output_dir: str, profile: str = "offline", only: str = "",
     """Analyse a repository and return the report.
 
     `output_dir` is required and is the sandbox: nothing is written outside it.
-    `show` is what the answer lists (ARB-091): `verified` (the default) returns
+    `show` is what the answer lists (ARB-100): `verified` (the default) returns
     the report with `findings` cut to the verified tier and `summary` saying
     what was left out; `all` returns every finding and a `tiers` block that
     says so. `None` returns report.json exactly as written -- every finding,

@@ -4,7 +4,7 @@ A finding is `verified` only when its rule is declared verified, the ledger
 admits the rule, and either the model confirmed the finding or the profile
 cannot call a model and the rule's bound alone reaches 0.99. Everything else
 is `advisory` (shown, never blocks a tiered gate) or `inferred`. The tiered
-gate is the default (ARB-091); `legacy` is an explicit opt-in and behaves as
+gate is the default (ARB-100); `legacy` is an explicit opt-in and behaves as
 it always did. What the renderings show is the verified view by default:
 tests/test_verified_view.py.
 """

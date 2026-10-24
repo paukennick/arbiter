@@ -28,7 +28,7 @@ the declaration (`tier: verified`) is intent; the CI precision guard
 
 ## Gate
 
-`gate.tier_mode: tiered` (the default since ARB-091) gates only on findings
+`gate.tier_mode: tiered` (the default since ARB-100) gates only on findings
 whose tier is in `gate.tiers` (default `[verified]`), so a build fails on
 what the ledger has measured and on nothing else. `legacy` gates on
 severity over every active finding, as before tiers; it is an explicit
@@ -38,7 +38,7 @@ block says so (`excluded_by_tier`).
 ## View
 
 What a person is shown is a separate decision from what the JSON holds
-(ARB-091). `report.show: verified` (the default) renders the verified tier
+(ARB-100). `report.show: verified` (the default) renders the verified tier
 only, with one line saying how many advisory and inferred findings were
 left out; `all` (or `--advisory`) renders every tier, sectioned. The
 report's top-level `tiers` block (`view_block`) records which view was

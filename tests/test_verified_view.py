@@ -1,4 +1,4 @@
-"""The verified view (ARB-091): what Arbiter shows by default is the
+"""The verified view (ARB-100): what Arbiter shows by default is the
 verified tier, and it says what it left out.
 
 report.json always carries every finding with its tier. The console,

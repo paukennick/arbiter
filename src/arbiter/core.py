@@ -367,7 +367,7 @@ class Report:
     # reads it to trace a rule to its requirements without loading packs.
     rules: list[dict] = field(default_factory=list)
     # Which tiers the human-facing renderings show and the active count per
-    # tier (precision.view_block, ARB-091): {shown, counts, shown_count,
+    # tier (precision.view_block, ARB-100): {shown, counts, shown_count,
     # not_shown}. `findings` below always holds every finding; this block is
     # how a reader of the JSON learns the console or PR comment showed fewer.
     # Empty on a report from before views, which then renders every finding.

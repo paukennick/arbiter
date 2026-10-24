@@ -55,7 +55,7 @@ DEFAULTS: dict[str, Any] = {
     "gate": {
         "fail_on": {"severity": "critical", "new": None, "coverage_below": None},
         "gate_on_inferred": False,
-        # tiered (the default since ARB-091): fail_on reads only findings
+        # tiered (the default since ARB-100): fail_on reads only findings
         # whose precision tier is in `tiers` (precision.py), so a build fails
         # on what Arbiter has measured to be right at least 99% of the time
         # and on nothing else. legacy: fail_on reads every active finding, as
@@ -65,7 +65,7 @@ DEFAULTS: dict[str, Any] = {
         "tiers": ["verified"],
     },
     # What the human-facing renderings (console, markdown, pr-comment, SARIF,
-    # HTML, annotations) and the MCP tools show by default (ARB-091).
+    # HTML, annotations) and the MCP tools show by default (ARB-100).
     # `verified`: the verified tier only, with one line saying how many
     # advisory and inferred findings were left out. `all`: every tier,
     # sectioned and labelled. `--advisory` on the command line is `all` for
