@@ -1684,6 +1684,38 @@
       "prevention_rules": [],
       "prevention_notes": "tools/regression_guard.py check now scans targets marked default_view (planted, ai-corpus) under the default configuration and fails if the default view lists fewer findings than the scan has active ones; test_default_view_hides_no_finding runs it in the fast suite. A requirement that changes a default should state what a user sees under it on the in-tree corpora before it is accepted.",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-100",
+      "date": "2026-10-24",
+      "title": "supply.unpinned-action reported quoted SHA pins and docker:// digests as unpinned, and never checked docker:// tags",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "A pinned step written `uses: \"actions/checkout@<40-hex>\"` or with single quotes was reported as pinned to the mutable ref `<sha>\"`; `uses: docker://alpine@sha256:<64-hex>` (a digest pin) was reported as action `docker://alpine` at ref `sha256:...`; `uses: docker://alpine:3.18` (a mutable tag) matched nothing and was never reported. This on the one rule declared verified (ledger 690/0).",
+      "how_detected": "owner/agent review of the pinning methods the rule claims to cover (ARB-130 brief), confirmed by reading the regex",
+      "root_cause": "The rule regex-matched YAML: `uses:[ \\t]*([^\\s@]+)@([^\\s#]+)`. The character classes excluded whitespace, @ and # but not quotes, so a quoted scalar carried its quotes into both groups and the 40-hex test failed. docker:// references are container images, but splitting at @ treated a digest as an action ref, and with no @ a tag was skipped. The 690 labels behind the verified claim never sampled a quoted or docker:// reference (the development corpora hold 6 quoted and 2 docker:// uses in all), so 0 FP said nothing about those shapes.",
+      "requirement": "ARB-130",
+      "affected": [
+        "src/arbiter/probes.py",
+        "src/arbiter/supply.py"
+      ],
+      "fix_summary": "uses: values read through PyYAML's node API (quotes stripped by the parser, line numbers from marks); the fallback line pattern for non-YAML CI files excludes quotes and requires the closing one; docker:// references routed to supply.unpinned-container-image (digest = pinned); composite action.yml checked.",
+      "fix_commits": [
+        "15013c5"
+      ],
+      "regression_tests": [
+        "tests/test_supply_pinning.py::test_a_quoted_sha_pin_is_pinned",
+        "tests/test_supply_pinning.py::test_a_quoted_tag_is_reported_without_the_quote",
+        "tests/test_supply_pinning.py::test_a_docker_digest_is_not_an_unpinned_action",
+        "tests/test_supply_pinning.py::test_a_docker_tag_is_an_unpinned_image",
+        "tests/test_supply_pinning.py::test_the_fallback_reader_handles_quotes_too"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        "tools/mutate_tests.py"
+      ],
+      "prevention_notes": "Structured files are parsed, not regex-matched (supply.py module docstring). Two mutations in tools/mutate_tests.py (quoted-uses-ref, docker-uses-read-as-action) put each defect back and require its test to fail. docs/precision.md records that the verified rule's population changed and that the new shapes are unlabelled until the next labelling round.",
+      "recurrence_of": ""
     }
   ]
 }

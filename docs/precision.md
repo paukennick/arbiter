@@ -361,6 +361,26 @@ reaches the 0.99 a rule needs without a model check, so its findings are
 are model labels, not human ones; the verified-tier held-out claim below
 still awaits human labels. The paragraphs that follow are the earlier state.
 
+**2026-10-24 (supply-chain pinning, ARB-130; FAIL-100).** The population
+behind the one verified rule, `supply.unpinned-action`, changed. The rule now reads `uses:` with a
+YAML parser, so a quoted pin (`uses: "actions/checkout@<sha>"`) is pinned
+rather than reported with its closing quote in the ref, and a
+`docker://image@sha256:...` digest is no longer reported as an action with
+a non-SHA ref; `docker://` references (digest, tag or none) move to the
+advisory `supply.unpinned-container-image`. Composite actions
+(`action.yml`/`action.yaml` with `runs:`) are now checked too. Measured on
+the development corpora (held-out repositories not scanned): 441
+maintained-code findings before and after, all the same lines; 5 evidence
+strings lost a stray quote (httpx's four `"actions/checkout@v4"`-style
+steps, one quoted reusable workflow in bullmq) and 1 composite-action
+finding was added (WebGoat `actions/setup-java@v5`). planted and ai-corpus
+contain no workflow, so their snapshot count for the rule is 0 before and
+after. None of the 690 labels sampled a quoted or `docker://` reference,
+so the 0 FP there said nothing about either form; the ledger numbers are
+unchanged, and the new shapes are unlabelled until the next labelling
+round. Eight rules were added at the same time, all advisory
+([probes.md](probes.md#supply-chain-pinning)).
+
 As of 2026-10-23 (relabel at labeller `v3`): the ledger holds ground-truth
 and `v3` model labels for 120 rules. **2 are admitted**:
 `java.weak-random-for-secret` (218/218 ground truth, lower 0.983) and
