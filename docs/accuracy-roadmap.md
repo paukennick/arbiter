@@ -262,11 +262,14 @@ only five of which are explicitly marked manually verified. It does not
 certify production accuracy or the 99% target, and no detection rules were
 changed or tuned on the benchmark.
 
-The next milestone is to secure independent reviewers or an explicitly
-approved larger source with defensible labels, then conduct blind finding
-adjudication and repository-level miss audits. Validate the sampling design
-and cluster-aware uncertainty before rule tuning. Keep the existing sealed AI
-and gold sources closed; do not expand the claim beyond the measured
-language/weakness slice.
+ARB-104 defines the reviewer roles, blind finding-adjudication and
+repository-miss-audit procedures, sampling safeguards, and claim limits in
+[accuracy-review-protocol.md](accuracy-review-protocol.md). This is protocol
+readiness only: no independent reviewers have been engaged, no new benchmark
+has been approved, and no new labels or audits have been collected. The next
+execution gate is to secure an independent coordinator and reviewers, approve
+the source/license and sampling plan, then freeze the study before any cases
+are shared. Keep the existing sealed AI and gold sources closed; do not tune
+rules on the evaluation data or expand claims beyond measured strata.
 
 This roadmap is a program, not a result: it does not certify Arbiter at 99%.
