@@ -607,7 +607,7 @@ class Adapter:
                 confidence=m.get("confidence", "high"),
                 repo_id=repo_id,
                 probe=self.name,
-                location=Location(path=path, start_line=line, logical=logical),
+                location=Location(path=path, start_line=line, logical=logical, repo_id=repo_id),
                 description=desc[:1000],
                 remediation=remediation[:500],
                 remediation_source=remediation_source,
