@@ -1526,6 +1526,59 @@
       "prevention_rules": [],
       "prevention_notes": "The installer pin test uses a fake old Ruff binary and requires the mismatch to remain visible; the CI lock check then fails on any remaining version drift.",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-059",
+      "date": "2026-10-23",
+      "title": "Cache install test mocked staging path",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "Focused tooling tests failed with KeyError after the installer published the staged cache under its final lock-keyed path.",
+      "how_detected": "Focused pytest run",
+      "root_cause": "The fake version probe keyed expected output by the staging executable's absolute path, but installation atomically renamed the staging directory before the final verification pass, so the mock no longer recognized the executable.",
+      "requirement": "ARB-093",
+      "affected": [
+        "tests/test_tooling.py::test_install_committed_lock_resolves_each_cached_analyzer"
+      ],
+      "fix_summary": "Keyed fake version output by analyzer binary name, which remains stable across the staging-to-cache rename.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_tooling.py::test_install_committed_lock_resolves_each_cached_analyzer"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        "controlled.consult_failure_history",
+        "completion.regression_test"
+      ],
+      "prevention_notes": "Tests of staged publication should identify executables by stable tool identity rather than temporary filesystem paths.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-060",
+      "date": "2026-10-23",
+      "title": "Adapter cache guidance changed without a lock",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "The fast suite reported that a missing adapter rules file no longer advised running tools/install_tools.sh when the repository had no tooling lock.",
+      "how_detected": "Full fast pytest suite",
+      "root_cause": "The lock-aware dependency callback always displayed the new tools-install command, even when it had selected the pre-existing machine-wide cache path and installer.",
+      "requirement": "ARB-093",
+      "affected": [
+        "src/arbiter/adapters.py",
+        "tests/test_adapter_not_assessed.py::test_a_missing_required_file_is_not_assessed_and_named"
+      ],
+      "fix_summary": "Choose the install guidance from the selected cache source: arbiter tools install for a lock-managed cache, tools/install_tools.sh for the existing global cache.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_adapter_not_assessed.py::test_a_missing_required_file_is_not_assessed_and_named"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        "controlled.preserve_behavior",
+        "completion.regression_test"
+      ],
+      "prevention_notes": "Adapter dependency guidance must match whether its files resolve through a lock-managed cache or the existing global cache.",
+      "recurrence_of": ""
     }
   ]
 }

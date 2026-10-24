@@ -1163,3 +1163,27 @@ During validation, lock verification found that `install_tools.sh` accepted
 preinstalled `ruff` regardless of version. The installer now accepts only an
 exact pin match, attempts the pinned install on drift, and leaves any remaining
 mismatch visible to the lock-verification step (FAIL-058).
+
+## 2026-10-23 — Isolated installation of locked analyzers (ARB-093)
+
+`arbiter tools install [TARGET]` provisions analyzers named by the repository
+lock into a user cache keyed by the resolved repository path and exact lock
+contents. Python analyzers use separate virtual environments; gitleaks is
+downloaded only on this explicit command and checked against the release
+checksum; Semgrep rules are fetched at the pinned commit. No executable is
+written into the target checkout, and scans do not download tools.
+
+Adapters resolve binaries declared by a lock only from its matching cache.
+The engine uses adapter-aware preflight checks so a missing or mismatched
+locked binary remains not assessed even when another version is on `PATH`.
+The `arbiter probes` diagnostic and A/B tool runs share the same lock-aware
+preflight. Locks without a given analyzer preserve the existing global-`PATH`
+behavior.
+The installer does not provision tree-sitter grammars; those continue to use
+the existing optional AST/grammar setup, and a missing required grammar is
+reported as an install failure rather than treated as satisfied.
+One regression test initially keyed fake version output to the temporary
+staging path rather than the published cache path; it now uses the stable
+binary name (FAIL-059). A missing-rules guidance regression for repositories
+without a lock was corrected to preserve the existing machine-wide installer
+instruction (FAIL-060).

@@ -484,7 +484,7 @@ def run_scan(
             oc.reason = (f"partial scan ({scan_scope['basis']}): {probe.scope_reason}, "
                          "so it cannot answer from a subset")
             continue
-        blocked, why = probe.prevented()
+        blocked, why = probe.prevented(ctx)
         if blocked:
             # Prevented, not inapplicable: the gap counts against coverage.
             oc.status, oc.reason = "skipped", why
@@ -494,7 +494,8 @@ def run_scan(
             oc.status, oc.reason = "skipped", why
             oc.applicable = False
             continue
-        missing = [b for b in probe.binaries if shutil.which(b) is None]
+        missing = (probe.binary_checker(ctx) if probe.binary_checker is not None
+                   else [b for b in probe.binaries if shutil.which(b) is None])
         if missing:
             oc.status, oc.reason = "skipped", f"missing binary: {', '.join(missing)}"
             continue

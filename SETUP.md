@@ -69,6 +69,26 @@ exactly what was not checked. Nothing silently becomes a pass.
 
 ## External analyzers
 
+For a repository with a tooling lock, use Arbiter's explicit installer to
+provision analyzers and the pinned Semgrep rules outside the checkout:
+
+```bash
+arbiter tools plan ./my-repo --write-lock
+arbiter tools install ./my-repo
+arbiter scan ./my-repo
+```
+
+The default isolated cache is `~/.cache/arbiter/toolchains`, keyed by the
+repository path and exact lock contents. Python analyzers run from their own
+virtual environments; gitleaks is checksum-verified. Scans use cached
+executables for analyzers named in the lock and report them as not assessed if
+the cache is missing or mismatched; they do not fall back to another binary on
+`PATH` and never install tools during a scan. Set `ARBITER_TOOL_CACHE` to
+override the cache root.
+
+The existing machine-wide installer remains useful for local development and
+also provisions tree-sitter grammars:
+
 ```bash
 ./tools/install_tools.sh
 ```
@@ -83,8 +103,8 @@ here is optional: a missing analyzer is recorded as not assessed with the
 binary named. Nothing here fails a build.
 
 The analyzer pins, Semgrep rules revision, and default grammar list are stored
-in `src/arbiter/tooling.json` and shared with the installer. To inspect a
-repository's tool plan and record a lock, run:
+in `src/arbiter/tooling.json`. To inspect a repository's tool plan and record
+a lock, run:
 
 ```bash
 arbiter tools plan ./my-repo

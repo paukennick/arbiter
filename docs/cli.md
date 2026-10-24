@@ -12,7 +12,7 @@ every flag of a command; this page explains them and shows what to type.
 - [Baselines and comparison](#baselines-and-comparison)
 - [Adjudication and calibration](#adjudication-and-calibration)
 - [Integrity and compliance](#integrity-and-compliance)
-- [Tool planning and verification](#tool-planning-and-verification)
+- [Tool planning, installation and verification](#tool-planning-installation-and-verification)
 - [The air-gapped bundle](#the-air-gapped-bundle)
 - [Hosted and MCP surfaces](#hosted-and-mcp-surfaces)
 - [Output formats](#output-formats)
@@ -28,7 +28,7 @@ every flag of a command; this page explains them and shows what to type.
 | `scan` | analyze and report |
 | `gate` | analyze, report, and exit 1 on policy failure |
 | `probes` | list probes and whether each can run here |
-| `tools` | plan relevant optional tools and verify them against a lock |
+| `tools` | plan, install and verify optional tools against a lock |
 | `explain` | show one finding in full |
 | `baseline` | write a baseline from a report |
 | `diff` | compare two reports: new, fixed, unchanged |
@@ -60,6 +60,7 @@ arbiter scan . --no-history                     # leave history.jsonl alone this
 arbiter probes ./repo                           # what can run here, and why not
 arbiter tools plan ./repo                       # applicable analyzers and grammar cache status
 arbiter tools plan ./repo --write-lock          # write .arbiter/tooling.lock.json
+arbiter tools install ./repo                    # install locked analyzers into the user cache
 arbiter tools verify                            # verify tools against the lock
 arbiter explain f:8c41d2ae9b07                  # one finding in full, from arbiter-out/report.json
 ```
@@ -96,7 +97,7 @@ terminal) and `--verify-cache`.
 names another. `explain` needs the full id; `feedback` also accepts the end of
 one (`8c41d2ae9b07`).
 
-### Tool planning and verification
+### Tool planning, installation and verification
 
 `arbiter tools plan [TARGET]` detects languages in the repository and reports
 the applicable external analyzers, installed versions, Semgrep rules revision,
@@ -106,16 +107,35 @@ and relevant tree-sitter grammars. Planning is read-only. Add
 capability is required by default. `--cache-dir` selects the Arbiter cache used
 to check Semgrep rules.
 
+`arbiter tools install [TARGET] [--lock FILE]` explicitly provisions the
+locked analyzer versions and Semgrep rules into a user cache keyed by the
+repository path and lock contents. Python analyzers each get an isolated
+virtual environment; the gitleaks release archive is checked against its
+published SHA-256 checksum. Nothing is written into the target checkout, and
+scans never download tools. The default cache is
+`~/.cache/arbiter/toolchains`; set `ARBITER_TOOL_CACHE` to use another cache
+root. Network access is needed only for this explicit install step.
+
+When a scan's lock declares an analyzer, Arbiter resolves it only from that
+lock's cache. `arbiter probes` and A/B tool arms use the same resolution.
+A missing or wrong-version cached binary is reported as not assessed; Arbiter
+does not silently substitute a different global `PATH` binary. An analyzer
+not listed in the lock keeps the normal `PATH` behavior.
+The install command does not provision tree-sitter grammars; locked grammar
+entries are checked against Arbiter's existing grammar cache and missing
+required grammars remain an explicit install failure.
+
 `arbiter tools verify [LOCK]` checks required analyzer versions, grammars, and
-the Semgrep rules revision against the lock. It does not install, update, or
+the Semgrep rules revision against the lock, using the isolated cache when one
+exists and the current environment otherwise. It does not install, update, or
 download anything. It exits 1 when a required capability is missing or does
 not match, and 2 for an invalid lock or operational error. Edit the lock to
 mark an analyzer or grammar optional (`"required": false`), or remove
 `semgrep_rules`, when a capability is not part of the repository's intended
 tool set. Verification also fails if the packaged catalog changed since the
 lock was written. The version pins and default grammar list come from the
-packaged `tooling.json`; the installer reads the same catalog. Scans continue
-to use the available adapters and report missing capabilities as not assessed.
+packaged `tooling.json`; the machine-wide installer reads the same catalog.
+Scans report unavailable capabilities as not assessed.
 
 ### The result cache
 

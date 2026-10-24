@@ -2227,6 +2227,39 @@
         "Starting CI enforcement as the first follow-up; automatic installs and additional adapters remain sequenced later.",
         "Committed repository lock and enabled Linux PR/nightly verification after provisioning; installer now rejects version drift. Repo-local isolated installation and additional adapters remain sequenced follow-ups."
       ]
+    },
+    {
+      "id": "ARB-093",
+      "category": "tooling",
+      "title": "Install locked tools in isolated cache",
+      "description": "Add an explicit command that provisions the committed tooling lock into an isolated per-repository user cache keyed by the lock, and make scans, probe diagnostics, and A/B tool runs use cached pinned tools without writing executables into the repository. Engine and A/B preflight checks must keep a locked-but-missing cache not assessed rather than falling back to global PATH.",
+      "priority": "medium",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/tooling.py",
+        "src/arbiter/cli.py",
+        "src/arbiter/adapters.py",
+        "tests for tooling and adapters",
+        "docs/cli.md",
+        "SETUP.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "arbiter tools install explicitly provisions required tools in user cache keyed by repository lock;install does not write binaries into target checkout;install verifies versions and reports failures explicitly;scans use lock-keyed cached executable paths when installed and do not download tools;missing cache stays not assessed without PATH fallback when lock declares tools;tests cover install planning and execution resolution;docs/changelog updated"
+      ],
+      "validation_required": [
+        "focused pytest;python -m pytest -q -rs -m not slow;python omni gate;arbiter gate ."
+      ],
+      "documentation_required": [
+        "docs/cli.md",
+        "SETUP.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": [
+        "Implementation scope includes src/arbiter/engine.py because its preflight binary check currently uses PATH directly; lock-aware adapter resolution alone cannot prevent the engine from skipping or running the wrong executable.",
+        "Scope includes src/arbiter/engine.py and src/arbiter/ab.py because scan, probe-list, and A/B preflight paths previously checked PATH directly and could bypass lock-aware resolution."
+      ]
     }
   ]
 }
