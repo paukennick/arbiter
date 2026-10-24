@@ -2304,6 +2304,144 @@
         "Scope clarification: Adapter normalization requires src/arbiter/adapters.py; preserving the existing no-lock global install path requires tools/install_tools.sh. The vulnerability DB is separate from the binary and must be provisioned only by explicit installation.",
         "Trivy binary/database provisioning was validated with mocked downloads, not a live install; database freshness and digest are not pinned."
       ]
+    },
+    {
+      "id": "ARB-095",
+      "category": "measurement",
+      "title": "Establish a defensible 99 percent accuracy program",
+      "description": "Define and sequence an evidence-based program to achieve at least 99 percent precision and recall on declared, independently adjudicated benchmark populations, with claims scoped by rule, weakness, applicable language, repository population, and execution platform. Do not claim universal accuracy beyond measured coverage; keep unsupported rules and segments advisory or not assessed.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-roadmap.md",
+        "docs/precision.md",
+        "docs/testing-harness.md",
+        "README.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md",
+        "tools",
+        "tests"
+      ],
+      "acceptance_criteria": [
+        "Publish definitions for precision and recall",
+        "Define a frozen development and held-out benchmark strategy",
+        "Require blind independent human adjudication with documented disagreement resolution",
+        "Specify representative strata and minimum evidence with confidence bounds",
+        "Separate OS and architecture execution compatibility from source-language recall",
+        "Set rule and segment promotion gates with explicit not-assessed behavior",
+        "Provide phased deliverables owners and exit criteria without claiming current achievement"
+      ],
+      "validation_required": [
+        "Review roadmap against existing precision ledger and testing harness",
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-roadmap.md",
+        "README.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "An arbitrary-repository universal 99 percent guarantee is not statistically or operationally supportable",
+        "Public or synthetic corpora may not represent production code",
+        "Findings within a repository are correlated and cannot be counted as independent samples",
+        "Human adjudication and benchmark licensing require ongoing resources",
+        "This closes the roadmap and metric contract only; benchmark expansion, cluster-aware evaluator work, human labelling, and per-segment certification are future implementation milestones."
+      ]
+    },
+    {
+      "id": "ARB-096",
+      "category": "measurement",
+      "title": "Inventory accuracy benchmarks and freeze evaluation manifest",
+      "description": "Inventory existing benchmark sources, label provenance, licenses, language and repository coverage, and development versus sealed evaluation boundaries; produce a versioned, reproducible accuracy evaluation manifest and a baseline/evidence-gap report without inspecting sealed labels, findings, or excerpts and without tuning detection rules.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-roadmap.md",
+        "docs/testing-harness.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-baseline.md",
+        "tools/gold",
+        "tools/ai_corpus_score.py",
+        "tools/precision_ledger.py",
+        "fixtures/ai-corpus/manifest.json",
+        "fixtures/planted",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Inventory benchmark sources and source licenses/provenance using metadata only",
+        "Inventory language and repository populations and split roles",
+        "Preserve sealed holdout boundaries without opening labels findings or excerpts",
+        "Define versioned manifest schema for source snapshots tooling commit and evaluator configuration",
+        "Record baseline measurements only where existing aggregate evidence is available",
+        "Publish an evidence-gap report that prioritizes human adjudication and cluster-aware metrics",
+        "Make no detection-rule changes"
+      ],
+      "validation_required": [
+        "Validate manifest JSON against its schema and verify referenced metadata paths",
+        "Review the holdout access boundary",
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-roadmap.md",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Current aggregate scores differ by benchmark role and are not comparable as a single rate",
+        "Labels and benchmark licenses may be incomplete or model-generated",
+        "Repository-level clustering reduces effective sample size",
+        "Sealed labels/findings must remain unopened during this inventory",
+        "Completes metadata inventory and historical baseline only; no human-adjudicated pilot, cluster-aware estimator, external license review, or detection-rule tuning was performed. These remain required future milestones."
+      ]
+    },
+    {
+      "id": "ARB-097",
+      "category": "measurement",
+      "title": "Build a Python SQL injection oracle-conformance pilot",
+      "description": "Evaluate Arbiter's Python CWE-89 detection against an independent machine-labelled benchmark only after its license, source provenance, and holdout use are cleared. Use locally generated vulnerable/safe pairs for regression conformance, not population accuracy. Do not fabricate human labels, inspect sealed data, tune on the sealed evaluation source, or claim general 99 percent accuracy. If no external dataset clears approval, report the blocker and do not run it.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "docs/accuracy-roadmap.md",
+        "docs/accuracy-baseline.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "tools/ground_truth",
+        "tools",
+        "tests",
+        "fixtures/planted",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Select a licensed independently labelled Python CWE-89 dataset or explicitly stop on unresolved clearance",
+        "Keep machine-oracle evaluation data separate from development and regression pairs",
+        "Define aggregate-only evaluation outputs that do not expose sealed per-example data",
+        "Record pinned source evaluator and runtime metadata",
+        "Report precision recall denominators and uncertainty without generalizing beyond the benchmark",
+        "Keep existing detection rules unchanged until source and protocol are approved"
+      ],
+      "validation_required": [
+        "Verify source license provenance and holdout policy before ingestion",
+        "Test manifest and evaluator on non-sealed examples",
+        "Run benchmark only in approved aggregate-only mode",
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-baseline.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "No human reviewers are available so claims must remain benchmark-specific",
+        "Independent scanners and model judges are not ground truth",
+        "Dataset license and current held-out restrictions may prevent use",
+        "Small or synthetic samples cannot support a general 99 percent claim",
+        "The owner approved metadata-only retrieval; the 12.7 GB CVEfixes transfer was stopped after 105 MB at about 0.4 MB/s and the partial archive was removed. Find a smaller/pre-aggregated metadata source or obtain an explicitly approved alternative before ingestion."
+      ]
     }
   ]
 }

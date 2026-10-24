@@ -1206,3 +1206,56 @@ fetches the database for the legacy no-lock path. Container image and registry
 scanning are out of scope; unsupported release platforms and missing data stay
 not assessed. The cache-resolution regression and stale positional test
 assumptions found during implementation are recorded as FAIL-061 and FAIL-062.
+
+## 2026-10-23 — Accuracy measurement program (ARB-095)
+
+The 99% goal is two separate claims: precision of reported findings and recall
+of independently labelled in-scope defects. Each requires a 95% lower
+confidence bound of at least 99% for every claimed applicable segment. The
+program requires human adjudication, sealed repository-level holdouts,
+cluster-aware uncertainty, and visible coverage; unsupported or under-sampled
+rules remain advisory or not assessed. `docs/accuracy-roadmap.md` sets the
+phases and next milestone. It is a plan, not an accuracy result: current
+evidence still shows no verified-tier precision claim and low recall.
+
+## 2026-10-23 — Accuracy benchmark inventory (ARB-096)
+
+`docs/accuracy-benchmark-manifest.json` records benchmark roles, available
+provenance and license metadata, holdout policy, historical aggregate
+baselines, platform evidence, and the required fields for future evaluation
+runs. `docs/accuracy-baseline.md` prioritizes the gaps: independent human
+adjudication, cluster-aware intervals, representative repositories,
+false-negative audits, segment coverage, platform evidence, source licensing,
+and run reproducibility.
+
+No detection rules were changed and no sealed labels, findings, or excerpts
+were opened. The held-out AI corpus remains aggregate-only. Existing aggregate
+scores were cited from documentation, not regenerated; the historical run
+metadata is incomplete. The next step is a new, non-sealed pilot dataset and
+a validated cluster-aware estimator; the human-review dependency is recorded
+as unavailable in ARB-097, so machine-oracle results remain benchmark-specific.
+
+## 2026-10-23 — Oracle-conformance pilot research (ARB-097)
+
+Two independent human reviewers are not available for the selected Python
+CWE-89 pilot. The verification route is therefore restricted to benchmark
+conformance, not a general accuracy claim. A known-answer benchmark can
+measure agreement with its expected results; generated safe/unsafe twins are
+only regression evidence, and agreement among other scanners or model judges
+is only triage evidence.
+
+CVEfixes v1.0.8 is recorded as a candidate, not approved or ingested. Its
+maintainers report a CC BY 4.0 dataset derived automatically from CVE-linked
+fixes (11,873 CVEs, 12,107 fixing commits, 4,249 projects, 272 CWEs; dataset
+DOI 10.5281/zenodo.13118970). A usable Python CWE-89 sample has not been
+confirmed; underlying source-code licenses and patch-label noise remain
+unresolved. The archive was not downloaded. The existing OWASP Python source
+is sealed in this workspace and marked “never redistributed or run,” so it is
+not used without separate clearance. No rules were changed.
+
+The owner approved a metadata-only CVEfixes download to check the Python
+CWE-89 population. The 12.7 GB archive transfer was stopped after 105 MB
+because the observed rate was about 0.4 MB/s (estimated transfer time over
+eight hours); the partial file was removed. No archive or source data was
+retained. A smaller or pre-aggregated metadata source is needed before the
+candidate can be accepted or rejected.

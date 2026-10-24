@@ -52,6 +52,11 @@ Arbiter is honest about what it measures, and the measurements are modest:
   [docs/testing-harness.md](docs/testing-harness.md#what-the-numbers-say).
   A clean report means the checks that ran found nothing, not that the code
   is safe.
+- **The 99% goal is not achieved.** Arbiter is working toward separate,
+  benchmark-scoped precision and recall claims with confidence bounds; it
+  will not infer accuracy for unmeasured languages, repositories, or
+  platforms. See the [accuracy roadmap](docs/accuracy-roadmap.md) and the
+  [current benchmark baseline](docs/accuracy-baseline.md).
 
 ## Install
 
