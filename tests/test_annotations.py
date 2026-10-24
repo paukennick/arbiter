@@ -46,7 +46,11 @@ def test_annotations_mark_gating_findings_as_errors_and_the_rest_as_warnings(tmp
     """Exactly the findings that failed the gate are errors; the rest warn."""
     (tmp_path / "leak.py").write_text(HIGH_PY, encoding="utf-8")
     cfg = load_config(None)
-    cfg["gate"] = {"fail_on": {"severity": "high"}}
+    # The severity gate over every finding: the legacy gate. Every finding is
+    # annotated under the default `all` view (ARB-103); the default tiered
+    # gate and the verified-only view are covered in
+    # tests/test_verified_view.py.
+    cfg["gate"] = {"fail_on": {"severity": "high"}, "tier_mode": "legacy"}
     cfg["rules"] = [{
         "id": "readme-present", "type": "file_exists", "paths": ["README.md"],
         "title": "README.md is required", "severity": "low",
@@ -87,9 +91,12 @@ def test_annotations_use_notice_for_findings_outside_the_change():
     outside = Finding(rule_id="r/b", title="B", location=Location(path="b.py", start_line=4),
                       tags=["outside-this-change"])
     text = render_annotations(_report([inside, outside], {"passed": True, "failing_ids": []}))
-    assert "::warning file=a.py,line=3,title=r/a::A" in text
-    assert "::notice file=b.py,line=4,title=r/b::B" in text
-    # Control: a failing finding is an error even when outside the change.
+    # Neither finding is verified, so neither can block the default gate,
+    # and each message says so first (ARB-103).
+    assert "::warning file=a.py,line=3,title=r/a::[advisory: not gating] A" in text
+    assert "::notice file=b.py,line=4,title=r/b::[advisory: not gating] B" in text
+    # Control: a failing finding is an error even when outside the change,
+    # and is not labelled as unable to block what it just failed.
     text = render_annotations(_report([inside, outside],
                                       {"passed": False, "failing_ids": [outside.id]}))
     assert "::error file=b.py,line=4,title=r/b::B" in text
@@ -100,18 +107,18 @@ def test_annotations_skip_suppressed_findings_and_omit_a_zero_line():
     hidden = Finding(rule_id="r/b", title="B", location=Location(path="b.py", start_line=2),
                      suppressed=True)
     text = render_annotations(_report([shown, hidden]))
-    assert text == "::warning file=a.py,title=r/a::A"
+    assert text == "::warning file=a.py,title=r/a::[advisory: not gating] A"
     assert "line=" not in text
     assert "r/b" not in text
     # Control: unsuppressed, the same finding is printed.
     hidden.suppressed = False
-    assert "::warning file=b.py,line=2,title=r/b::B" in render_annotations(_report([shown, hidden]))
+    assert "::warning file=b.py,line=2,title=r/b::[advisory: not gating] B" in render_annotations(_report([shown, hidden]))
 
 
 def test_annotations_escape_workflow_command_syntax():
     """`:` `,` `%` and newlines would otherwise end the command early."""
     f = Finding(rule_id="r/x:y,z", title="50% done: a, b\nsecond line\r",
-                location=Location(path="dir,name:x/f.py", start_line=7))
+                location=Location(path="dir,name:x/f.py", start_line=7), tier="verified")
     text = render_annotations(_report([f]))
     assert text == (
         "::warning file=dir%2Cname%3Ax/f.py,line=7,title=r/x%3Ay%2Cz"
@@ -144,7 +151,7 @@ def test_annotations_are_written_beside_the_other_formats(tmp_path):
     written = write_all(_report([f]), str(tmp_path / "out"), ["json", "annotations"])
     assert set(written) == {"json", "annotations"}
     body = Path(written["annotations"]).read_text(encoding="utf-8")
-    assert body == "::warning file=a.py,line=1,title=r/a::A\n"
+    assert body == "::warning file=a.py,line=1,title=r/a::[advisory: not gating] A\n"
     # Control: not requested, not written.
     written = write_all(_report([f]), str(tmp_path / "out2"), ["json"])
     assert "annotations" not in written
@@ -163,7 +170,8 @@ def test_the_gate_names_the_findings_that_failed_it():
     inferred = Finding(rule_id="r/i", title="i", severity="critical", provenance="inferred")
     rep = _report([crit, new_high, old_high, low, inferred])
 
-    gate = evaluate_gate(rep, {"gate": {"fail_on": {"severity": "critical", "new": "high"}}})
+    legacy = {"tier_mode": "legacy"}
+    gate = evaluate_gate(rep, {"gate": {"fail_on": {"severity": "critical", "new": "high"}, **legacy}})
     assert gate["passed"] is False
     assert gate["reasons"] == ["1 finding(s) at or above critical",
                                "2 new finding(s) at or above high"]
@@ -174,16 +182,16 @@ def test_the_gate_names_the_findings_that_failed_it():
 
     # A passing gate names nothing.
     gate = evaluate_gate(rep, {"gate": {"fail_on": {"severity": "critical"},
-                                        "gate_on_inferred": False}})
+                                        "gate_on_inferred": False, **legacy}})
     assert gate["failing_ids"] == [crit.id]
-    gate = evaluate_gate(_report([low]), {"gate": {"fail_on": {"severity": "critical"}}})
+    gate = evaluate_gate(_report([low]), {"gate": {"fail_on": {"severity": "critical"}, **legacy}})
     assert gate["passed"] is True
     assert gate["failing_ids"] == []
 
     # A coverage reason has no finding to name.
     thin = _report([low])
     thin.scorecard.coverage = 0.1
-    gate = evaluate_gate(thin, {"gate": {"fail_on": {"coverage_below": 0.5}}})
+    gate = evaluate_gate(thin, {"gate": {"fail_on": {"coverage_below": 0.5}, **legacy}})
     assert gate["passed"] is False and gate["failing_ids"] == []
 
 
@@ -191,7 +199,7 @@ def test_failing_ids_round_trip_through_the_json_report(tmp_path):
     from arbiter.report import write_all
     f = Finding(rule_id="r/c", title="c", severity="critical")
     rep = _report([f])
-    rep.gate = evaluate_gate(rep, {"gate": {"fail_on": {"severity": "critical"}}})
+    rep.gate = evaluate_gate(rep, {"gate": {"fail_on": {"severity": "critical"}, "tier_mode": "legacy"}})
     written = write_all(rep, str(tmp_path), ["json"])
     import json
     back = Report.from_dict(json.loads(Path(written["json"]).read_text(encoding="utf-8")))
@@ -214,8 +222,10 @@ def leaky(tmp_path):
     target = tmp_path / "repo"
     target.mkdir()
     (target / "leak.py").write_text(HIGH_PY, encoding="utf-8")
+    # The legacy gate: the planted token is advisory (no rule is declared
+    # verified yet) and the tiered default would wave it through.
     (target / "arbiter.yaml").write_text(
-        "gate:\n  fail_on:\n    severity: high\n", encoding="utf-8")
+        "gate:\n  fail_on:\n    severity: high\n  tier_mode: legacy\n", encoding="utf-8")
     return target
 
 

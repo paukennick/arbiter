@@ -1139,3 +1139,226 @@ per-file licence headers, and a trademark policy for the name "Arbiter"
 **The pre-publication check.** A full-history gitleaks scan was run for this
 change; the result and what it covered are in `CHANGELOG.md` under
 2026-10-21.
+
+## 2026-10-23 — Reproducible tool planning (ARB-091)
+
+`src/arbiter/tooling.json` is the shared source for the supported analyzer
+versions, Semgrep rules revision and default tree-sitter grammars. The
+`arbiter tools plan` command detects applicable tools for a repository and can
+write an explicit `.arbiter/tooling.lock.json`; `arbiter tools verify` checks
+the lock without installing or updating tools. The existing installer reads
+the same catalog. Analyzer binaries remain separately installed and are not
+bundled or redistributed. Scans continue to report missing capabilities as
+not assessed.
+
+## 2026-10-23 — Enforce the tooling lock in CI (ARB-092)
+
+The repository commits `.arbiter/tooling.lock.json` for the five external
+analyzers and the pinned Semgrep rules revision. The Linux pull-request and
+nightly training workflows verify this lock immediately after the explicit
+installer runs. Verification never installs or updates tools; while the
+installer may report a missing tool for local use, CI turns that missing
+required capability into a failure before the self-gate or training cycle.
+During validation, lock verification found that `install_tools.sh` accepted
+preinstalled `ruff` regardless of version. The installer now accepts only an
+exact pin match, attempts the pinned install on drift, and leaves any remaining
+mismatch visible to the lock-verification step (FAIL-058).
+
+## 2026-10-23 — Isolated installation of locked analyzers (ARB-093)
+
+`arbiter tools install [TARGET]` provisions analyzers named by the repository
+lock into a user cache keyed by the resolved repository path and exact lock
+contents. Python analyzers use separate virtual environments; gitleaks is
+downloaded only on this explicit command and checked against the release
+checksum; Semgrep rules are fetched at the pinned commit. No executable is
+written into the target checkout, and scans do not download tools.
+
+Adapters resolve binaries declared by a lock only from its matching cache.
+The engine uses adapter-aware preflight checks so a missing or mismatched
+locked binary remains not assessed even when another version is on `PATH`.
+The `arbiter probes` diagnostic and A/B tool runs share the same lock-aware
+preflight. Locks without a given analyzer preserve the existing global-`PATH`
+behavior.
+The installer does not provision tree-sitter grammars; those continue to use
+the existing optional AST/grammar setup, and a missing required grammar is
+reported as an install failure rather than treated as satisfied.
+One regression test initially keyed fake version output to the temporary
+staging path rather than the published cache path; it now uses the stable
+binary name (FAIL-059). A missing-rules guidance regression for repositories
+without a lock was corrected to preserve the existing machine-wide installer
+instruction (FAIL-060).
+
+## 2026-10-23 — Trivy filesystem adapter (ARB-094)
+
+Trivy 0.76.1 is now a pinned release analyzer for filesystem dependency
+vulnerabilities and failed IaC misconfigurations. Its platform assets are
+selected from the catalog and verified against the upstream SHA-256 file
+before the binary is written to the lock-keyed user cache. The adapter
+normalizes vulnerability and misconfiguration records into Arbiter findings
+and ignores passing misconfiguration checks.
+
+The vulnerability database is separate from the binary pin. Explicit
+installation fetches it only when absent into the same isolated cache;
+verification checks that it exists. Scans use that cache and skip database and
+checks-bundle updates, so scanning does not require network access. A repeated
+install preserves the database snapshot. The machine-wide installer also
+fetches the database for the legacy no-lock path. Container image and registry
+scanning are out of scope; unsupported release platforms and missing data stay
+not assessed. The cache-resolution regression and stale positional test
+assumptions found during implementation are recorded as FAIL-061 and FAIL-062.
+
+## 2026-10-23 — Accuracy measurement program (ARB-095)
+
+The 99% goal is two separate claims: precision of reported findings and recall
+of independently labelled in-scope defects. Each requires a 95% lower
+confidence bound of at least 99% for every claimed applicable segment. The
+program requires human adjudication, sealed repository-level holdouts,
+cluster-aware uncertainty, and visible coverage; unsupported or under-sampled
+rules remain advisory or not assessed. `docs/accuracy-roadmap.md` sets the
+phases and next milestone. It is a plan, not an accuracy result: current
+evidence still shows no verified-tier precision claim and low recall.
+
+## 2026-10-23 — Accuracy benchmark inventory (ARB-096)
+
+`docs/accuracy-benchmark-manifest.json` records benchmark roles, available
+provenance and license metadata, holdout policy, historical aggregate
+baselines, platform evidence, and the required fields for future evaluation
+runs. `docs/accuracy-baseline.md` prioritizes the gaps: independent human
+adjudication, cluster-aware intervals, representative repositories,
+false-negative audits, segment coverage, platform evidence, source licensing,
+and run reproducibility.
+
+No detection rules were changed and no sealed labels, findings, or excerpts
+were opened. The held-out AI corpus remains aggregate-only. Existing aggregate
+scores were cited from documentation, not regenerated; the historical run
+metadata is incomplete. The next step is a new, non-sealed pilot dataset and
+a validated cluster-aware estimator; the human-review dependency is recorded
+as unavailable in ARB-097, so machine-oracle results remain benchmark-specific.
+
+## 2026-10-23 — Oracle-conformance pilot research (ARB-097)
+
+Two independent human reviewers are not available for the selected Python
+CWE-89 pilot. The verification route is therefore restricted to benchmark
+conformance, not a general accuracy claim. A known-answer benchmark can
+measure agreement with its expected results; generated safe/unsafe twins are
+only regression evidence, and agreement among other scanners or model judges
+is only triage evidence.
+
+CVEfixes v1.0.8 is recorded as a candidate, not approved or ingested. Its
+maintainers report a CC BY 4.0 dataset derived automatically from CVE-linked
+fixes (11,873 CVEs, 12,107 fixing commits, 4,249 projects, 272 CWEs; dataset
+DOI 10.5281/zenodo.13118970). A usable Python CWE-89 sample has not been
+confirmed; underlying source-code licenses and patch-label noise remain
+unresolved. The archive was not downloaded. The existing OWASP Python source
+is sealed in this workspace and marked “never redistributed or run,” so it is
+not used without separate clearance. No rules were changed.
+
+The owner approved a metadata-only CVEfixes download to check the Python
+CWE-89 population. The 12.7 GB archive transfer was stopped after 105 MB
+because the observed rate was about 0.4 MB/s (estimated transfer time over
+eight hours); the partial file was removed. No archive or source data was
+retained. A smaller or pre-aggregated metadata source is needed before the
+candidate can be accepted or rejected.
+## 2026-10-23 — What is shown by default is what is 99% right (ARB-100)
+
+**Decision.** The owner wants the findings Arbiter shows by default to be
+at least 99% correct. Every finding already carried a tier (ARB-065); what
+changed is that the tier now decides visibility and the gate by default,
+not only the gate on opt-in. `report.show` (default `verified`) and
+`--advisory` select the view; `gate.tier_mode` defaults to `tiered`.
+
+**The view lives in the renderers, not the writer.** `report.json` is the
+canonical record and stays complete, with one additive key (top-level
+`tiers: {shown, counts, shown_count, not_shown}`); schema stays 1.0 because
+nothing a consumer already read changed meaning. OmniEngineering's
+`make_ai.py` reads `findings[]` (`severity`, `status`, `suppressed`) and
+`gate.passed/reasons` from `report.json`, and sees the whole set as before.
+The baseline and the diff run over every finding too; only what is listed
+narrows. Doing it this way means a hidden finding is one `--advisory` away,
+never lost, and the regression guard (raw findings) did not move.
+
+**Nothing verified must not look clean.** The console's first line under
+the header is the view line; when nothing is verified it replaces the
+severity counts (`no verified findings; 23 advisory findings not shown`)
+and is never green. The same line is in the markdown "Read first" block,
+the PR comment, the HTML, the SARIF invocation, the MCP `summary`, and the
+gate block carries `excluded_by_tier` so a passing tiered gate explains
+itself. The alternative -- keep the severity counts of the full set above
+an empty list -- was rejected: "3 critical" over no findings is a different
+kind of misleading.
+
+**Gate failures are always shown.** Under `legacy`, an advisory finding can
+fail the gate. A FAIL whose cause the reader cannot see is worse than an
+advisory line, so `shown_findings` is the verified tier plus
+`gate.failing_ids`, and the view block counts those as shown. Under the
+default tiered gate this adds nothing.
+
+**A report with no recorded view renders everything.** `Report()` built in
+memory, and reports written before this change, have no `tiers` block;
+renderers list every finding for them rather than invent a filter for a
+file that never said to. Every scan records a view, so the default a person
+meets is `verified`. This also kept the unit tests that build `Report()` by
+hand honest without rewriting them; the tests that exercised severity
+gating over unverified findings now say `tier_mode: legacy`.
+
+**MCP.** `arbiter_scan` returns the view (`show`, default `verified`) with
+`finding_count` meaning what was returned and `findings_total` the whole;
+the complete report is at `report_path`. The hosted API keeps returning the
+whole report: it is a machine surface and `arbiter remote scan` renders the
+view locally.
+
+**Left as it was.** Scoring and the dimension table count every active
+finding (the scorecard is about the repository, not the view); the review
+queue reads the complete report (adjudication is exactly where advisory
+findings need a person); `history.jsonl` keeps full severity counts.
+
+**Also fixed.** `docs/precision.md` carried a stale 280-line second copy of
+itself from the round-4 merge (FAIL-070); removed.
+
+## 2026-10-24 — Show everything, block on verified (ARB-103)
+
+**Decision.** The default view goes back to every finding; only the gate
+stays verified-only. `report.show` defaults to `all`, `gate.tier_mode` to
+`tiered`. Renderings list verified, then advisory, then inferred, each
+section saying what the tier means and whether it can block the gate, and
+one line counts the tiers (`2 verified (can block the gate) · 71 advisory
+(shown, not gating) · 0 inferred`). `report.show: verified` and
+`--verified-only` remain as the opt-in; `--advisory` is accepted as a no-op.
+
+**Why ARB-100's default was a regression.** Arbiter exists to catch
+mistakes, especially in AI-written code. ARB-100 tied what is *shown* to the
+99% bar that belongs to what *blocks*. With one verified rule
+(`supply.unpinned-action`), the default scan of the planted corpus listed 0
+of 404 findings and of the AI-written corpus 0 of 127; legacy-platform
+listed its two unpinned-Action lows and hid three criticals. The
+implementation did what the brief asked; the brief was wrong, and no check
+measured what a user sees by default, so every guard stayed green
+(FAIL-071). Blocking and showing are now separate settings, and the
+precision bar governs only blocking. An advisory finding is not confirmed,
+and the labels say so; it is still what a reviewer of AI-written code needs
+to see.
+
+**The guard.** `tools/regression_guard.py check` scans targets marked
+`default_view` (planted, ai-corpus) under the default configuration and
+fails if the default view lists fewer findings than the scan has active
+ones; `test_default_view_hides_no_finding` runs it in the fast suite. It
+measures defaults, not rules, so it has no snapshot.
+
+**SARIF level.** ARB-065 made a result that cannot block a tiered gate a
+`note` ("an `error` the gate ignores teaches people to ignore errors");
+ARB-100's tiered default turned that into every advisory result. That
+reason argues against `error`, not against visibility, so the level is now
+capped at `warning`: an advisory critical or high is a warning, a medium
+stays a warning, a low or info stays a note. Under `legacy` the severity's
+level stands, as before.
+
+**Labels follow the gate.** "can block the gate" is computed from the
+gate block (`precision.gating_tiers`): under `legacy`, or with `advisory`
+in `gate.tiers`, advisory sections say they can block. A finding that
+failed the gate is never labelled "not gating".
+
+**`--advisory`.** Kept because scripts were written against ARB-100. It is
+a no-op under the default but still overrides `report.show: verified` for
+one run, which is what the existing `run with --advisory to include them`
+hint relies on. The two flags are mutually exclusive.
+

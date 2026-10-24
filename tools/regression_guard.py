@@ -6,6 +6,7 @@
     python tools/regression_guard.py fetch --corpus ~/corpus-guard   # the small pinned repos
     python tools/regression_guard.py check --corpus ~/corpus-guard
     python tools/regression_guard.py update --corpus ~/wt/corpus-gold   # after an intended change
+    python tools/regression_guard.py check --targets planted,ai-corpus --no-perf --no-snapshots  # default view only
 
 Two questions the other benchmarks do not ask:
 
@@ -26,6 +27,17 @@ Two questions the other benchmarks do not ask:
       fails. The reference is a fixed pure-Python workload that runs no
       Arbiter code (see calibration_workload): a reference Arbiter took
       part in would slow down with the regression and hide it.
+
+  Does the default view hide anything?  For each target marked
+      `"default_view": true` (the in-tree corpora), a scan under the default
+      configuration must list at least as many findings as it has active
+      ones: what a person sees by default is the whole result, labelled by
+      tier, never a filtered subset. ARB-100 made the default view
+      verified-only and, with one verified rule, hid every finding on these
+      corpora while every other check stayed green, because they all
+      measured the raw findings and none measured what a user is shown
+      (FAIL-071). The check is about defaults, not rules, so it needs no
+      snapshot and no `update`.
 
   Did the held-out score move?  A target marked `"aggregate": true` (the
       held-out AI corpus, fixtures/ai-corpus-heldout) never stores or prints
@@ -66,6 +78,7 @@ class Target:
     pinned_sha: str = ""
     url: str = ""
     aggregate: bool = False
+    default_view: bool = False
 
 
 @dataclass
@@ -102,7 +115,8 @@ def resolve_targets(guards: dict, corpus: Path | None, names: list[str] | None =
         if names and name not in names:
             continue
         if spec.get("path"):
-            out.append(Target(name, ROOT / spec["path"], aggregate=bool(spec.get("aggregate"))))
+            out.append(Target(name, ROOT / spec["path"], aggregate=bool(spec.get("aggregate")),
+                              default_view=bool(spec.get("default_view"))))
             continue
         url, sha = pins.get(name, ("", ""))
         base = corpus if corpus else Path("/nonexistent")
@@ -138,6 +152,28 @@ def finding_keys(path: Path) -> list[str]:
     from arbiter.policy import load_config
     report = run_scan([str(path)], load_config(None), use_adapters=False, use_cache=False)
     return sorted(f"{f.rule_id}\t{f.location.path}\t{f.location.start_line}" for f in report.active())
+
+
+def default_view(path: Path) -> dict:
+    """What a person is shown by default on `path`: the active findings of a
+    scan under the default configuration and how many of them the default
+    view lists (report.shown_findings, the list every rendering draws)."""
+    from arbiter.engine import run_scan
+    from arbiter.policy import load_config
+    from arbiter.report import shown_findings
+    report = run_scan([str(path)], load_config(None), use_adapters=False, use_cache=False)
+    return {"active": len(report.active()), "shown": len(shown_findings(report)),
+            "view": (report.tiers or {}).get("shown", "")}
+
+
+def view_failure(name: str, v: dict) -> str:
+    """Why the default view of a target fails the guard; '' when it hides
+    nothing."""
+    if v["shown"] >= v["active"]:
+        return ""
+    return (f"the default view ({v['view'] or 'unrecorded'}) lists {v['shown']} of "
+            f"{v['active']} active findings, hiding {v['active'] - v['shown']}; the default "
+            "must show everything and leave the narrowing to an opt-in (FAIL-071)")
 
 
 def timed_scan(path: Path) -> tuple[list[str], float]:
@@ -303,7 +339,8 @@ def perf_baseline_path() -> Path:
 # ---------------------------------------------------------------------------
 
 def check(guards: dict, targets: list[Target], do_snap: bool, do_perf: bool,
-          scan=timed_scan, ref_seconds=None, out=print, agg_scan=timed_aggregate_scan) -> int:
+          scan=timed_scan, ref_seconds=None, out=print, agg_scan=timed_aggregate_scan,
+          do_view: bool = False, view=default_view) -> int:
     failures = 0
     perf = guards["perf"]
     base = json.loads(perf_baseline_path().read_text()) if perf_baseline_path().is_file() else {}
@@ -322,6 +359,16 @@ def check(guards: dict, targets: list[Target], do_snap: bool, do_perf: bool,
         why = available(t)
         if why:
             out(f"SKIP {t.name}: {why}")
+            continue
+        if do_view and t.default_view:
+            v = view(t.path)
+            why_view = view_failure(t.name, v)
+            if why_view:
+                failures += 1
+                out(f"FAIL {t.name}: {why_view}")
+            else:
+                out(f"ok   {t.name}: default view shows {v['shown']} of {v['active']} active findings")
+        if not (do_snap or do_perf):
             continue
         score = None
         if t.aggregate:
@@ -430,6 +477,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--targets", help="comma-separated target names (default: all)")
     ap.add_argument("--no-perf", action="store_true")
     ap.add_argument("--no-snapshots", action="store_true")
+    ap.add_argument("--no-view", action="store_true",
+                    help="check: skip the default-view check (targets with default_view: true)")
     ap.add_argument("--repeats", type=int, default=3, help="update: scans per target for the time baseline")
     ap.add_argument("--guards", type=Path, default=GUARDS)
     args = ap.parse_args(argv)
@@ -443,7 +492,7 @@ def main(argv: list[str] | None = None) -> int:
         return fetch(targets)
     if args.cmd == "update":
         return update(guards, targets, not args.no_snapshots, not args.no_perf, args.repeats)
-    return check(guards, targets, not args.no_snapshots, not args.no_perf)
+    return check(guards, targets, not args.no_snapshots, not args.no_perf, do_view=not args.no_view)
 
 
 if __name__ == "__main__":

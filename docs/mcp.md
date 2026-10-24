@@ -45,8 +45,8 @@ them without the SDK installed.
 
 | Tool | Takes | Returns |
 |---|---|---|
-| `arbiter_scan` | `target`, `output_dir`, `profile`, `only`, `skip` | the full report JSON |
-| `arbiter_gate` | `target`, `output_dir`, `profile`, `only`, `skip` | pass or fail, with the claim ledger |
+| `arbiter_scan` | `target`, `output_dir`, `profile`, `only`, `skip`, `show` | the report JSON with `findings` in the view (`show: all`, the default, or `verified`), plus `finding_count` (what was returned), `findings_total`, `tiers` and a one-line `summary`; `report_path` names the complete report on disk |
+| `arbiter_gate` | `target`, `output_dir`, `profile`, `only`, `skip` | pass or fail, with the claim ledger, the `tiers` block and the same `summary` |
 | `arbiter_review_queue` | `report_path`, `output_dir`, `limit`, `rule` | a queue with every mark blank |
 | `arbiter_review_draft` | `report_path`, `output_dir`, `verdicts`, `limit`, `rule` | `review-draft.md`: the same queue with the proposed marks and a reason under each; counts, the unknown ids, and the ledger entries the `y` marks would draft, as text. Records nothing |
 
@@ -56,6 +56,18 @@ An id that is not in the queue is reported back, not raised, and gets no mark.
 The draft takes no path argument the queue does not already take, so it is
 confined over HTTPS exactly as the others are and writes only under
 `output_dir`.
+
+`show` (ARB-100, ARB-103) is what an agent is shown, not what was found.
+Under the default `all` the answer's `findings` are every finding, each with
+its `tier`, and `summary` reads, for example, `2 verified (can block the
+gate) · 71 advisory (shown, not gating) · 0 inferred`; an agent should treat
+an advisory finding as a lead to check, not a confirmed defect. Under
+`show: verified` the `findings` are the tier measured at least 99% precise
+(plus any finding that failed the gate) and `summary` says what was left
+out, for example `no verified findings; 23 advisory findings not shown
+(pass show: all to include them)`. `arbiter_gate`'s `summary` is the `all`
+line. The complete report, every finding with its tier, is at
+`report_path`, which is also what `arbiter_review_queue` reads.
 
 `profile` is restricted to `offline` and `ci` on both scanning tools. Both run
 with the network off. An agent cannot ask for the network by naming a profile,

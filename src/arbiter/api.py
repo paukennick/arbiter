@@ -691,8 +691,12 @@ def handle_scan(upload: bytes | str | Path, profile: str = "offline", only: str 
     """Scan an uploaded archive and return the report. Keeps nothing."""
     with Workspace() as ws:
         source = _ingest(ws, upload)
+        # The hosted API is a machine surface: report.json travels as written,
+        # every finding plus the view the scan recorded, and the client's own
+        # renderers apply that view (`arbiter remote scan` shows every tier by
+        # default and the verified tier with --verified-only; ARB-100, ARB-103).
         result = scan(str(source), str(ws.output), profile=profile, only=only,
-                      skip=skip, timeout=timeout)
+                      skip=skip, timeout=timeout, show=None)
         # Deliberately not returning report_path: it names a directory that is
         # about to stop existing, and a caller should not learn server paths.
         return {"report": result["report"], "finding_count": result["finding_count"]}

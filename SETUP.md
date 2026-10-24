@@ -59,7 +59,7 @@ the wiring.
 |---|---|---|
 | `ast` | `pip install -e ".[ast]"` | the language rule packs (`lang_python`, `lang_typescript`, `lang_go`, `lang_java`, `lang_ruby`: 176 of the 263 shipped rules), `ast_metrics` (function length, complexity and nesting in 11 languages), `aiapp`'s function boundaries and your own tree-sitter queries (`house_rules_ast`) |
 | `dev` | `pip install -e ".[dev]"` | the test suite (pytest, hypothesis) |
-| `tools` | `pip install -e ".[tools]"` | external analyzers as Python packages (ruff, bandit, checkov, semgrep; gitleaks comes from `install_tools.sh`) |
+| `tools` | `pip install -e ".[tools]"` | external analyzer packages (ruff, bandit, checkov, semgrep; Trivy and gitleaks come from `install_tools.sh`) |
 | `mcp` | `pip install -e ".[mcp]"` | `arbiter mcp`, the MCP server ([docs/mcp.md](docs/mcp.md)) |
 | `api` | `pip install -e ".[api]"` | `arbiter api serve`, the hosted HTTPS API ([docs/hosted-api.md](docs/hosted-api.md)) |
 
@@ -69,18 +69,66 @@ exactly what was not checked. Nothing silently becomes a pass.
 
 ## External analyzers
 
+For a repository with a tooling lock, use Arbiter's explicit installer to
+provision analyzers and the pinned Semgrep rules outside the checkout:
+
+```bash
+arbiter tools plan ./my-repo --write-lock
+arbiter tools install ./my-repo
+arbiter scan ./my-repo
+```
+
+The default isolated cache is `~/.cache/arbiter/toolchains`, keyed by the
+repository path and exact lock contents. Python analyzers run from their own
+virtual environments; gitleaks and Trivy archives are checksum-verified.
+Explicit installation also fetches Trivy's vulnerability database into its
+isolated cache when missing. Scans use cached executables and database data for
+analyzers named in the lock and report them as not assessed if a required
+capability is missing or mismatched; they do not fall back to another binary
+on `PATH` and never install tools or update databases during a scan. Set
+`ARBITER_TOOL_CACHE` to override the cache root.
+
+The existing machine-wide installer remains useful for local development and
+also provisions tree-sitter grammars:
+
 ```bash
 ./tools/install_tools.sh
 ```
 
-Installs checkov, semgrep, bandit, ruff and gitleaks at pinned versions, and
-caches the tree-sitter grammars the language packs need (`ARBITER_GRAMMARS`,
+Installs checkov, semgrep, bandit, ruff, Trivy and gitleaks at pinned versions,
+and caches Trivy's vulnerability database and the tree-sitter grammars the
+language packs need (`ARBITER_GRAMMARS`,
 default `python javascript typescript tsx go java ruby`; needs the `ast` extra
 and network). Scans never download a grammar, so one not cached here reports
 as not assessed — including the Rust, PHP, C, C++ and shell grammars
 `ast_metrics` can use unless you add them to `ARBITER_GRAMMARS`. Everything
 here is optional: a missing analyzer is recorded as not assessed with the
 binary named. Nothing here fails a build.
+
+The analyzer pins, Semgrep rules revision, and default grammar list are stored
+in `src/arbiter/tooling.json`. To inspect a repository's tool plan and record
+a lock, run:
+
+```bash
+arbiter tools plan ./my-repo
+arbiter tools plan ./my-repo --write-lock
+arbiter tools verify
+```
+
+The lock at `.arbiter/tooling.lock.json` records applicable tools and grammars
+as required. `verify` checks them, including the Trivy vulnerability database
+when Trivy is locked, without installing or updating anything and returns a
+nonzero status when a required component is missing or mismatched.
+The lock includes the catalog digest, so `verify` also detects when the tool
+catalog changed and the lock needs to be regenerated. The lock is explicit:
+remove or mark a capability `"required": false` when it is intentionally not
+part of the repo's tool set. Scans never install tools and continue to report
+unavailable checks as not assessed.
+
+Arbiter's Linux pull-request and nightly CI jobs verify the committed tooling
+lock immediately after installing the analyzers. Their install script remains
+separate from the verification command, so a scan or lock check never installs
+or updates tools implicitly.
 
 Arbiter does not vendor or redistribute these tools. Their licenses are listed
 in [NOTICE.md](NOTICE.md).

@@ -18,8 +18,8 @@ the overall grade when that coverage is too low.
 
 It never executes the code it scans. It runs 21 native probes (263 rules,
 176 of them in tree-sitter packs for Python, TypeScript/JavaScript, Go, Java
-and Ruby), wraps five external analyzers (ruff, bandit, semgrep, checkov,
-gitleaks) when they are installed, and maps findings to ten control
+and Ruby), wraps six external analyzers (ruff, bandit, semgrep, checkov,
+gitleaks, Trivy) when they are installed, and maps findings to ten control
 frameworks, including the 2024 CWE Top 25 per language.
 
 ## Contents
@@ -41,10 +41,11 @@ Arbiter is honest about what it measures, and the measurements are modest:
 
 - **Precision.** Every finding carries a precision tier. A rule becomes
   `verified` only when it is declared verified and the precision ledger has
-  enough labels to admit it. As of 2026-10-23, 2 of the 120 labelled rules
-  meet the admission bar and none is declared verified, so **every finding is
-  `advisory`**. There is no verified-tier precision figure yet, and the 99%
-  target is not reached. Details: [docs/precision.md](docs/precision.md#current-numbers).
+  enough labels to admit it. As of 2026-10-24, 3 rules meet the admission bar
+  and one, `supply.unpinned-action`, is declared verified, so **nearly every
+  finding is `advisory`**: shown, labelled, and unable to block the gate.
+  There is no human-labelled verified-tier precision figure yet. Details:
+  [docs/precision.md](docs/precision.md#current-numbers).
 - **Recall is low.** On 25 AI-written services, after rules were written for
   their defect classes, the native probes catch 33 of 117 labelled code
   defects (28%). On a held-out set of 40 such apps, scored once before those
@@ -52,6 +53,11 @@ Arbiter is honest about what it measures, and the measurements are modest:
   [docs/testing-harness.md](docs/testing-harness.md#what-the-numbers-say).
   A clean report means the checks that ran found nothing, not that the code
   is safe.
+- **The 99% goal is not achieved.** Arbiter is working toward separate,
+  benchmark-scoped precision and recall claims with confidence bounds; it
+  will not infer accuracy for unmeasured languages, repositories, or
+  platforms. See the [accuracy roadmap](docs/accuracy-roadmap.md) and the
+  [current benchmark baseline](docs/accuracy-baseline.md).
 
 ## Install
 
@@ -59,7 +65,7 @@ Arbiter is honest about what it measures, and the measurements are modest:
 git clone https://github.com/paukennick/arbiter && cd arbiter
 python -m venv .venv && . .venv/bin/activate     # Windows: .venv\Scripts\activate
 pip install -e ".[ast]"                            # the ast extra runs the language packs
-./tools/install_tools.sh                           # optional: the five analyzers and the grammars (bash)
+./tools/install_tools.sh                           # optional: the six analyzers and the grammars (bash)
 ```
 
 Without the `ast` extra, or without the analyzers, Arbiter still runs; what
@@ -76,14 +82,44 @@ arbiter scan fixtures/legacy-platform --no-open
 
 ```text
   3 critical  3 high  4 medium  8 low  5 info
-  tiers: 0 verified · 23 advisory · 0 inferred (tier_mode legacy: gate reads every tier)
+  2 verified (can block the gate) · 21 advisory (shown, not gating) · 0 inferred
+  tiers: 2 verified · 21 advisory · 0 inferred (tier_mode tiered: gate reads verified)
   overall 61.0/100   coverage 98%
   ...
+  FINDINGS (verified) — measured at least 99% precise; can block the gate
+  low      root:.github/workflows/ci.yml:9  Action `actions/checkout` pinned to a mutable ref (`v4`)
+  ...
+  FINDINGS (advisory) — not confirmed; shown, cannot block the gate
   critical root:app/config.py:4  AWS access key ID committed
            arbiter/secrets.aws-access-key  f:cf802335c8f2  [advisory] rule on probation: not declared verified
+  ...
+  gate PASS
 ```
 
-That writes `arbiter-out/report.json`. Then:
+Arbiter shows everything it finds, and blocks only on what it has measured.
+Findings come in three tiers, listed in this order, each in its own labelled
+section:
+
+- **verified**: rules the precision ledger has measured to be right at least
+  99% of the time. Only these can fail the gate (`gate.tier_mode: tiered`).
+  One rule has reached that bar so far, `supply.unpinned-action`.
+- **advisory**: everything else a rule found. Not confirmed, shown, and
+  unable to block the gate. Most real defects are here today, which is why
+  they are shown.
+- **inferred**: found by a model. Not confirmed, shown, not gating.
+
+The gate above passes because the two verified findings are low and the
+default gate fails on criticals; the three advisory criticals are listed but
+do not block. `--verified-only` (or `report.show: verified`) narrows the
+listing to the verified tier for one run, and then says how many findings it
+left out instead of reading as clean:
+
+```text
+  2 verified findings shown; 21 advisory findings not shown (run with --advisory to include them)
+```
+
+`arbiter-out/report.json` holds every finding either way, each with its
+`tier`. Then:
 
 ```bash
 arbiter explain f:cf802335c8f2      # one finding in full
@@ -121,9 +157,13 @@ arbiter baseline arbiter-out/report.json             # accept today's findings i
 arbiter gate . --profile ci --baseline .arbiter/baseline.json
 ```
 
-With the default policy the gate fails on any critical finding. Add
-`new: high` (below) so it also fails on new high findings while the baseline
-absorbs existing ones. A ready-made GitHub workflow (a fast check on pull
+With the default policy the gate fails on any **verified** critical finding
+(`gate.tier_mode: tiered`): a build fails on what Arbiter has measured to be
+right, and on nothing else, while the report still lists every finding.
+Blocking (`gate.tier_mode`) and showing (`report.show`) are separate
+settings. `gate.tier_mode: legacy` fails on every critical
+finding whatever its tier. Add `new: high` (below) so the gate also fails on
+new high findings while the baseline absorbs existing ones. A ready-made GitHub workflow (a fast check on pull
 requests, a full scan nightly) is in `examples/pull-request-gate/`; the
 composite action, SARIF upload, annotations and GitLab are in
 [docs/ci.md](docs/ci.md). `arbiter gate . --changed origin/main` reads only
@@ -139,9 +179,12 @@ version: 1
 profile: ci                 # offline (default) | ci | assisted | connected | audit
 gate:
   fail_on:
-    severity: critical      # any critical fails
-    new: high               # new highs fail; ones in the baseline don't
+    severity: critical      # any verified critical fails
+    new: high               # new verified highs fail; ones in the baseline don't
     coverage_below: 0.60    # refuse to pass a thin scan
+  tier_mode: tiered         # tiered (default): only verified findings fail | legacy: every finding
+report:
+  show: all                 # all (default): every tier, labelled | verified: verified findings only
 suppress:
   - rule: "arbiter/secrets.*"
     path: "tests/fixtures/**"

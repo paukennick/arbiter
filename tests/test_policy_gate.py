@@ -51,8 +51,33 @@ def test_live_suppressions_apply():
 
 
 def test_gate_fails_on_critical(legacy_report):
-    assert legacy_report.gate["passed"] is False
-    assert any("critical" in r for r in legacy_report.gate["reasons"])
+    """The severity gate, in `legacy` mode, fails on the planted criticals."""
+    from arbiter.policy import DEFAULTS, evaluate_gate
+    import copy
+    cfg = copy.deepcopy(DEFAULTS)
+    cfg["gate"]["tier_mode"] = "legacy"
+    gate = evaluate_gate(legacy_report, cfg)
+    assert gate["passed"] is False
+    assert any("critical" in r for r in gate["reasons"])
+
+
+def test_the_default_gate_passes_the_fixture_and_says_why(legacy_report):
+    """Under the default tiered gate (ARB-100) only verified findings are
+    considered. The one rule declared verified (supply.unpinned-action,
+    ARB-101) fires on the fixture's workflow; its findings sit below
+    `fail_on`, so the gate passes, and every other active finding is
+    reported as excluded by tier, not as clean -- and is still shown: the
+    default view lists every tier (ARB-103)."""
+    gate = legacy_report.gate
+    active = legacy_report.active()
+    verified = [f for f in active if f.tier == "verified"]
+    assert gate["passed"] is True and gate["tier_mode"] == "tiered"
+    assert verified and {f.rule_id for f in verified} == {"arbiter/supply.unpinned-action"}
+    assert gate["considered"] == len(verified)
+    assert gate["considered"] + sum(gate["excluded_by_tier"].values()) == len(active)
+    assert any(f.severity == "critical" and f.tier != "verified" for f in active)
+    assert legacy_report.tiers["shown"] == "all" and legacy_report.tiers["not_shown"] == {}
+    assert legacy_report.tiers["shown_count"] == len(active)
 
 
 # --------------------------------------------------------------------------

@@ -36,7 +36,15 @@ def test_a_review_queue_from_the_service_is_unmarked(tmp_path):
     (tmp_path / "billing.py").write_text('KEY = "sk_live_51H8xQ2LkdIwHu7ix' + "Z" * 20 + '"\n')
     out = tmp_path / "out"
     scanned = service.scan(str(tmp_path), str(out), only="secrets")
-    assert scanned["finding_count"] >= 1, "fixture produced nothing, so this proves nothing"
+    assert scanned["findings_total"] >= 1, "fixture produced nothing, so this proves nothing"
+    # The default answer lists every tier (ARB-103); the queue reads the
+    # complete report at report_path either way.
+    assert scanned["shown"] == "all" and scanned["finding_count"] == len(scanned["report"]["findings"])
+    assert scanned["finding_count"] == scanned["findings_total"], "the default answer hides nothing"
+    assert "advisory (shown, not gating)" in scanned["summary"]
+    narrow = service.scan(str(tmp_path), str(out), only="secrets", show="verified")
+    assert narrow["shown"] == "verified" and narrow["summary"].startswith(
+        ("no verified findings", "1 verified", "2 verified"))
     queue = service.review_queue(scanned["report_path"], str(out), limit=5)
     assert queue["recorded"] is False
     assert queue["entry_count"] >= 1

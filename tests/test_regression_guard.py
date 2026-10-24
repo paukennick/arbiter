@@ -87,6 +87,49 @@ def test_in_tree_snapshots_match(capsys):
     assert rg.check(guards, targets, do_snap=True, do_perf=False, out=lines.append) == 0, "\n".join(lines)
 
 
+def test_default_view_hides_no_finding():
+    """What a person sees by default on the in-tree corpora is every active
+    finding, labelled by tier (ARB-103). ARB-100 made the default view
+    verified-only, which listed 0 of 404 findings on planted and 0 of 127
+    on ai-corpus while every snapshot, precision and perf check stayed green: they all
+    measured the raw findings, and nothing measured what a user is shown
+    (FAIL-071). No tree-sitter needed: the property is about defaults, so it
+    has to hold in the fast tier too."""
+    guards = rg.load_guards()
+    targets = rg.resolve_targets(guards, None, ["planted", "ai-corpus"])
+    assert all(t.default_view for t in targets), "guards.json must mark both in-tree corpora"
+    lines: list[str] = []
+    assert rg.check(guards, targets, do_snap=False, do_perf=False, do_view=True,
+                    out=lines.append) == 0, "\n".join(lines)
+    for t in targets:
+        v = rg.default_view(t.path)
+        assert v["active"] >= 1, f"{t.name} produced nothing, so this proves nothing"
+        assert v["shown"] >= v["active"], (t.name, v)
+        assert v["view"] == "all"
+
+
+def test_the_default_view_guard_fails_when_the_default_hides_findings(monkeypatch):
+    """Seeded regression: put back ARB-100's verified-only default and the
+    guard must fail on the planted corpus, naming how much it hid."""
+    from arbiter import policy
+    monkeypatch.setitem(policy.DEFAULTS, "report", {"show": "verified"})
+    guards = rg.load_guards()
+    targets = rg.resolve_targets(guards, None, ["planted"])
+    lines: list[str] = []
+    assert rg.check(guards, targets, do_snap=False, do_perf=False, do_view=True,
+                    out=lines.append) == 1, lines
+    assert any(line.startswith("FAIL planted: the default view (verified) lists") and "hiding" in line
+               for line in lines), lines
+    # Control: the same check with the guard switched off says nothing.
+    assert rg.check(guards, targets, do_snap=False, do_perf=False, do_view=False,
+                    out=lines.append) == 0
+
+
+def test_view_failure_is_empty_only_when_nothing_is_hidden():
+    assert rg.view_failure("t", {"active": 3, "shown": 3, "view": "all"}) == ""
+    assert "hiding 1" in rg.view_failure("t", {"active": 3, "shown": 2, "view": "verified"})
+
+
 def test_every_pinned_guard_target_is_a_gold_pin_with_a_snapshot():
     guards = rg.load_guards()
     pins = rg._pins()

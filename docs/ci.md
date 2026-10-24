@@ -115,11 +115,11 @@ are the changed ones plus dependency manifests, lockfiles, CI workflows and
 Terraform, which is where a rule genuinely reasons about a file it is not
 reporting on.
 
-**All five external analyzers are repo-scoped, so a partial scan does not run
-them.** ruff, bandit, checkov, semgrep and gitleaks each declare `scope = "repo"`
-in their manifest, and a `--changed` run records all five as not assessed. The
+**All six external analyzers are repo-scoped, so a partial scan does not run
+them.** ruff, bandit, checkov, semgrep, gitleaks and Trivy each declare
+`scope = "repo"` in their manifest, and a `--changed` run records all six as not assessed. The
 reason is different from the one that holds back a native repo probe: those
-genuinely reason across files, whereas nobody has measured whether these five
+genuinely reason across files, whereas nobody has measured whether these six
 return the same findings from a subset. Until someone does, claiming they do
 would be a guess printed as a fact. The practical consequence is worth stating
 plainly — **a pull-request gate runs Arbiter's own probes and no third-party
@@ -204,13 +204,27 @@ baseline.
 barely ran. Without it, an analyzer that failed to install looks identical to an
 analyzer that found nothing.
 
-`gate.tier_mode` decides which findings `fail_on` reads. `legacy` (the
-default) reads every active finding. `tiered` reads only findings whose
-precision tier is in `gate.tiers` (default `[verified]`), and the SARIF marks
-the others as `note`. Today no rule is declared verified, so a tiered gate
-blocks nothing; keep `legacy` until the rules you care about are admitted
+`gate.tier_mode` decides which findings `fail_on` reads. `tiered` (the
+default) reads only findings whose precision tier is in `gate.tiers`
+(default `[verified]`) and records what it set aside as `excluded_by_tier`.
+`legacy` reads every active finding. Today one rule is declared verified,
+`supply.unpinned-action` (ARB-101), so a tiered gate reads only those
+findings; set `legacy` if you want the severity gate over every finding
+until the rules you care about are admitted
 ([configuration.md](configuration.md#precision-tiers),
 [precision.md](precision.md#tiers)).
+
+What can block and what is shown are separate settings. The comment, the
+annotations and the SARIF upload list **every** finding by default, verified
+first: the comment's summary line reads `2 verified (can block the gate) ·
+71 advisory (shown, not gating) · 0 inferred` and its table marks each
+unverified row `advisory (not gating)`; each annotation of a finding that
+cannot block starts `[advisory: not gating]`; in the SARIF a result that
+cannot block a tiered gate is at most a `warning`, never an `error` the gate
+ignores. `--verified-only` or `report.show: verified` lists the verified
+tier only and then says how many it left out (`no verified findings; N
+advisory findings not shown` when there are none), so an empty comment never
+reads as a clean one ([configuration.md](configuration.md#what-the-report-shows)).
 
 The `assisted` profile is `ci` plus a model check of each finding at or above
 `verify.min_severity` (default `medium`). It needs `ANTHROPIC_API_KEY` as a
@@ -233,7 +247,7 @@ Two workflows, split by how long they take rather than by what they cover.
 | | `pr-check.yml` | `train.yml` |
 |---|---|---|
 | when | every pull request | 08:00 UTC nightly |
-| what | the fast tier of the test suite (`-m "not slow"`), `tools/integrity.py`, `tools/precision_guard.py check`, `tools/mutate_tests.py`, `python omni doctor`, `python omni gate`; on Linux also the five analyzers, the `api` extra, and `arbiter gate . --github --no-cache --sarif-min-severity medium`; and, in a parallel `slow-tier` job, the slow tier (`-m slow`) with the analyzers installed, then the regression guards over pinned gold repositories (`tools/regression_guard.py fetch` / `check`) | the full measurement cycle |
+| what | the fast tier of the test suite (`-m "not slow"`), `tools/integrity.py`, `tools/precision_guard.py check`, `tools/mutate_tests.py`, `python omni doctor`, `python omni gate`; on Linux also the six analyzers, the `api` extra, and `arbiter gate . --github --no-cache --sarif-min-severity medium`; and, in a parallel `slow-tier` job, the slow tier (`-m slow`) with the analyzers installed, then the regression guards over pinned gold repositories (`tools/regression_guard.py fetch` / `check`) | the full measurement cycle |
 | how long | Windows about two minutes; the Linux cell is dominated by the self-gate's semgrep pass (about six minutes over this tree) now that the adapter tests have moved to the slow tier; the slow tier is about five minutes locally, most of it one full scan through every analyzer | about two hours |
 | platforms | ubuntu-latest (Python 3.11 and 3.10) **and** windows-latest (3.11); the slow tier on ubuntu-latest only | ubuntu-latest |
 | writes to the repo | no | yes — `.arbiter/` and `training/` |
@@ -273,6 +287,14 @@ not run the self-gate, because not every analyzer installs there and a gate at
 lower coverage would answer a different question. The same job installs the
 `api` extra, so the sixteen hosted-API tests run on every pull request instead
 of skipping (ARB-034).
+
+**The tool lock is enforced after provisioning.** The Linux pull-request job
+and nightly training job run `arbiter tools verify .arbiter/tooling.lock.json`
+immediately after `tools/install_tools.sh`. The lock requires the six pinned
+analyzers and Semgrep rules revision; a missing or mismatched version, rules
+checkout, or catalog digest fails CI. This verification step does not install
+or update tools. The Windows matrix cell does not verify the analyzer lock
+because it does not provision those tools.
 
 **Two tiers (ARB-046).** The suite's wall clock was almost entirely the tests
 that run a real analyzer through the adapters or scan something larger than

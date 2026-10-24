@@ -31,7 +31,7 @@ def test_every_shipped_adapter_declares_its_scope_rather_than_inheriting_one():
     and needs to see that the question was asked (REQ-022)."""
     from arbiter.adapters import PACKS, _toml_loads
     manifests = sorted(PACKS.glob("*.adapter.toml"))
-    assert len(manifests) == 5, f"expected five shipped adapters, found {len(manifests)}"
+    assert len(manifests) == 6, f"expected six shipped adapters, found {len(manifests)}"
     for p in manifests:
         data = _toml_loads(p.read_text(encoding="utf-8"))
         assert "scope" in data, f"{p.name} does not declare a scope"

@@ -1476,6 +1476,214 @@
       "prevention_rules": [],
       "prevention_notes": "Anything a model returns that may quote corpus code is masked before it is written to a tracked file",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-057",
+      "date": "2026-10-23",
+      "title": "Installer pin test assumed shell literals",
+      "status": "fixed",
+      "severity": "low",
+      "symptom": "The fast suite failed because test_install_script_pins_every_version could not find version literals in tools/install_tools.sh after the pins moved to tooling.json.",
+      "how_detected": "python -m pytest -q -rs -m 'not slow'",
+      "root_cause": "The regression test encoded the old implementation detail (literal constants in the shell script) instead of asserting the behavior that versions come from one shared catalog.",
+      "requirement": "ARB-091",
+      "affected": [
+        "tests/test_tools_training.py",
+        "tools/install_tools.sh",
+        "src/arbiter/tooling.json"
+      ],
+      "fix_summary": "Updated the installer test to load the catalog and assert the installer uses its version, Semgrep rules, and grammar fields.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_tools_training.py::test_install_script_reads_pins_from_tooling_catalog"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Tests for tool pinning now assert the shared catalog is authoritative rather than depending on where its literals are stored.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-058",
+      "date": "2026-10-23",
+      "title": "Installer accepted analyzer version drift",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "Tool lock verification found Ruff 0.17.1 where the committed lock requires 0.15.11; tools/install_tools.sh reported any existing binary as installed without checking its version.",
+      "how_detected": "arbiter tools verify .arbiter/tooling.lock.json",
+      "root_cause": "The install helper equated command presence with the pinned capability, so it bypassed installation for a mismatched executable and made the pinned installer nondeterministic.",
+      "requirement": "ARB-092",
+      "affected": [
+        "tools/install_tools.sh",
+        ".arbiter/tooling.lock.json",
+        ".github/workflows/pr-check.yml"
+      ],
+      "fix_summary": "The installer now checks exact analyzer versions before accepting existing binaries and reports when the pinned binary is still unavailable on PATH; CI verification enforces the committed lock.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_tools_training.py::test_install_script_does_not_accept_an_unpinned_existing_binary"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "The installer pin test uses a fake old Ruff binary and requires the mismatch to remain visible; the CI lock check then fails on any remaining version drift.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-059",
+      "date": "2026-10-23",
+      "title": "Cache install test mocked staging path",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "Focused tooling tests failed with KeyError after the installer published the staged cache under its final lock-keyed path.",
+      "how_detected": "Focused pytest run",
+      "root_cause": "The fake version probe keyed expected output by the staging executable's absolute path, but installation atomically renamed the staging directory before the final verification pass, so the mock no longer recognized the executable.",
+      "requirement": "ARB-093",
+      "affected": [
+        "tests/test_tooling.py::test_install_committed_lock_resolves_each_cached_analyzer"
+      ],
+      "fix_summary": "Keyed fake version output by analyzer binary name, which remains stable across the staging-to-cache rename.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_tooling.py::test_install_committed_lock_resolves_each_cached_analyzer"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        "controlled.consult_failure_history",
+        "completion.regression_test"
+      ],
+      "prevention_notes": "Tests of staged publication should identify executables by stable tool identity rather than temporary filesystem paths.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-060",
+      "date": "2026-10-23",
+      "title": "Adapter cache guidance changed without a lock",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "The fast suite reported that a missing adapter rules file no longer advised running tools/install_tools.sh when the repository had no tooling lock.",
+      "how_detected": "Full fast pytest suite",
+      "root_cause": "The lock-aware dependency callback always displayed the new tools-install command, even when it had selected the pre-existing machine-wide cache path and installer.",
+      "requirement": "ARB-093",
+      "affected": [
+        "src/arbiter/adapters.py",
+        "tests/test_adapter_not_assessed.py::test_a_missing_required_file_is_not_assessed_and_named"
+      ],
+      "fix_summary": "Choose the install guidance from the selected cache source: arbiter tools install for a lock-managed cache, tools/install_tools.sh for the existing global cache.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_adapter_not_assessed.py::test_a_missing_required_file_is_not_assessed_and_named"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        "controlled.preserve_behavior",
+        "completion.regression_test"
+      ],
+      "prevention_notes": "Adapter dependency guidance must match whether its files resolve through a lock-managed cache or the existing global cache.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-061",
+      "date": "2026-10-23",
+      "title": "Trivy-only locks used the global data cache",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "A Trivy lock without semgrep_rules resolved the data cache to the global Arbiter cache, so missing database preflight checked a global path instead of the lock-keyed cache.",
+      "how_detected": "Focused Trivy tooling and adapter tests",
+      "root_cause": "locked_cache_dir returned a lock-keyed path only when semgrep_rules was present; it did not recognize Trivy as another lock-scoped data consumer.",
+      "requirement": "ARB-094",
+      "affected": [
+        "src/arbiter/tooling.py",
+        "src/arbiter/adapters.py"
+      ],
+      "fix_summary": "Resolve the lock-keyed cache when the lock includes Trivy and add a missing-database preflight regression test.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_tooling.py::test_locked_trivy_missing_database_is_not_assessed"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "When a new adapter owns lock-scoped data, add its lock entry to cache resolution and test the isolated preflight path.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-062",
+      "date": "2026-10-23",
+      "title": "Tooling tests assumed analyzer list order",
+      "status": "fixed",
+      "severity": "low",
+      "symptom": "Focused tests failed after Trivy was added because tests selected Ruff with analyzers[-2] and the plan test omitted the new analyzer.",
+      "how_detected": "Focused Trivy tooling and adapter tests",
+      "root_cause": "Tests coupled tool identity to catalog position instead of the stable analyzer name, so adding a catalog entry changed which tool they exercised.",
+      "requirement": "ARB-094",
+      "affected": [
+        "tests/test_tooling.py"
+      ],
+      "fix_summary": "Select Ruff by name and include Trivy in the expected applicable tool set.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_tooling.py::test_build_plan_includes_only_applicable_tools_and_grammars",
+        "tests/test_tooling.py::test_inspect_binary_reports_installed_state",
+        "tests/test_tooling.py::test_install_lock_uses_lock_keyed_user_cache_without_checkout_binaries",
+        "tests/test_tooling.py::test_adapter_invokes_locked_cache_executable"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Tooling tests must identify catalog items by stable names rather than array positions.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-070",
+      "date": "2026-10-23",
+      "title": "docs/precision.md carried a stale second copy of itself after the round-4 merge",
+      "status": "fixed",
+      "severity": "low",
+      "symptom": "docs/precision.md was 825 lines: after 'Current numbers' a line read '## Model verification`), which supplies' followed by a 280-line older copy of Definition, Tiers, Ledger, Label format and Current numbers (the pre-ARB-065 wording, without the population-weighted claim), and only then the real Model verification section",
+      "how_detected": "review while updating the Tiers section for ARB-100 (grep '^## ' showed every heading twice)",
+      "root_cause": "The round-4 branch merge (r4-weights into round4-integration, c70c113) resolved a conflict in the document's intro paragraph by keeping both sides' bodies: one side's tail was spliced into the other's heading, and nothing checks a document for duplicated headings",
+      "requirement": "ARB-100",
+      "affected": [
+        "docs/precision.md"
+      ],
+      "fix_summary": "Lines 405-684 (the garbled heading through the line before the real '## Model verification') removed; the newer first half is the one kept",
+      "fix_commits": [
+        "r5-verified-output"
+      ],
+      "regression_tests": [],
+      "no_test_reason": "a documentation merge artefact; tests/test_docs.py checks links and anchors, not duplicate headings, and a one-off doc check is not worth a permanent test",
+      "prevention_rules": [],
+      "prevention_notes": "After a merge that touched a long document, grep its H2 headings once; a repeated heading is a merge that kept both sides",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-071",
+      "date": "2026-10-24",
+      "title": "default view hid ~all findings (only one verified rule); no check measured what a user sees by default",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "After ARB-100 the default report showed verified findings only. With one verified rule (supply.unpinned-action), a default scan listed 0 of 404 active findings on fixtures/planted and 0 of 127 on fixtures/ai-corpus, and on the AI-written-code corpus showed roughly none of the known mistakes; legacy-platform showed its 2 unpinned-Action lows and hid 71 findings including 3 criticals. Every test, snapshot, precision and perf guard stayed green.",
+      "how_detected": "owner review of PR #17 (round5-integration)",
+      "root_cause": "In the recommendation and the brief, not the implementation. ARB-100 was specified as 'what is shown by default is what is 99% right', which conflated two decisions: what may block a build (where a 99% bar is right) and what a reader is shown (where hiding unconfirmed findings defeats a tool whose purpose is to catch mistakes, especially in AI-written code). Nobody weighed the brief against how few rules were verified (one), so the default view was built correctly to a wrong requirement. And no check measured the default view: the regression guard, the precision guard and the snapshots all read raw findings, which ARB-100 deliberately left untouched, so a change that hid everything from users moved no number.",
+      "requirement": "ARB-103",
+      "affected": [
+        "src/arbiter/policy.py",
+        "src/arbiter/report.py",
+        "src/arbiter/service.py",
+        "src/arbiter/mcp.py",
+        "src/arbiter/cli.py"
+      ],
+      "fix_summary": "ARB-103: report.show defaults to all (verified first, advisory then inferred, each labelled with whether it can block the gate); gate.tier_mode stays tiered so only verified findings block; --verified-only / report.show: verified is the opt-in; MCP show defaults to all; SARIF caps non-gating results at warning instead of note.",
+      "fix_commits": [
+        "e241de4",
+        "e0035da"
+      ],
+      "regression_tests": [
+        "tests/test_regression_guard.py::test_default_view_hides_no_finding",
+        "tests/test_regression_guard.py::test_the_default_view_guard_fails_when_the_default_hides_findings",
+        "tests/test_verified_view.py::test_a_default_scan_shows_every_finding_labelled_by_tier"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "tools/regression_guard.py check now scans targets marked default_view (planted, ai-corpus) under the default configuration and fails if the default view lists fewer findings than the scan has active ones; test_default_view_hides_no_finding runs it in the fast suite. A requirement that changes a default should state what a user sees under it on the in-tree corpora before it is accepted.",
+      "recurrence_of": ""
     }
   ]
 }

@@ -12,6 +12,7 @@ every flag of a command; this page explains them and shows what to type.
 - [Baselines and comparison](#baselines-and-comparison)
 - [Adjudication and calibration](#adjudication-and-calibration)
 - [Integrity and compliance](#integrity-and-compliance)
+- [Tool planning, installation and verification](#tool-planning-installation-and-verification)
 - [The air-gapped bundle](#the-air-gapped-bundle)
 - [Hosted and MCP surfaces](#hosted-and-mcp-surfaces)
 - [Output formats](#output-formats)
@@ -27,6 +28,7 @@ every flag of a command; this page explains them and shows what to type.
 | `scan` | analyze and report |
 | `gate` | analyze, report, and exit 1 on policy failure |
 | `probes` | list probes and whether each can run here |
+| `tools` | plan, install and verify optional tools against a lock |
 | `explain` | show one finding in full |
 | `baseline` | write a baseline from a report |
 | `diff` | compare two reports: new, fixed, unchanged |
@@ -56,6 +58,10 @@ arbiter scan . --pin-knowledge k:4cf3d3fa2f02   # freeze calibration for a relea
 arbiter gate ./repo --baseline .arbiter/baseline.json   # exit 1 on policy failure
 arbiter scan . --no-history                     # leave history.jsonl alone this run
 arbiter probes ./repo                           # what can run here, and why not
+arbiter tools plan ./repo                       # applicable analyzers and grammar cache status
+arbiter tools plan ./repo --write-lock          # write .arbiter/tooling.lock.json
+arbiter tools install ./repo                    # install locked analyzers into the user cache
+arbiter tools verify                            # verify tools against the lock
 arbiter explain f:8c41d2ae9b07                  # one finding in full, from arbiter-out/report.json
 ```
 
@@ -80,6 +86,8 @@ Flags shared by `scan` and `gate`:
 | `--no-cache`, `--cache-path FILE` | bypass or relocate the result cache ([below](#the-result-cache)) |
 | `--github`, `--no-github` | GitHub Actions mode ([below](#output-formats)); on by default when `GITHUB_ACTIONS=true` |
 | `--sarif-min-severity SEV` | drop findings below `SEV` from `report.sarif` only |
+| `--verified-only` | list verified findings only, with one line on how many advisory and inferred findings were left out (`report.show: verified` for one run, [configuration.md](configuration.md#what-the-report-shows)). By default every rendering lists every tier, verified first, each section labelled with whether it can block the gate. Does not change what can fail the gate. `report.json` holds every finding either way |
+| `--advisory` | show every tier. A no-op under the default, which already does; kept for scripts written when the verified tier was the default (ARB-100), and overrides `report.show: verified` for one run. Cannot be combined with `--verified-only` |
 | `--no-history` | do not append to `<out>/history.jsonl` |
 | `--out DIR`, `--format LIST` | output directory (default `arbiter-out`) and formats (default `json,console`) |
 
@@ -90,6 +98,51 @@ terminal) and `--verify-cache`.
 `explain` and `feedback` read `arbiter-out/report.json` unless `--report`
 names another. `explain` needs the full id; `feedback` also accepts the end of
 one (`8c41d2ae9b07`).
+
+### Tool planning, installation and verification
+
+`arbiter tools plan [TARGET]` detects languages in the repository and reports
+the applicable external analyzers, installed versions, Semgrep rules revision,
+and relevant tree-sitter grammars. Planning is read-only. Add
+`--write-lock [FILE]` to record applicable tools and grammars in
+`TARGET/.arbiter/tooling.lock.json` (or the named file); each listed
+capability is required by default. `--cache-dir` selects the Arbiter cache used
+to check Semgrep rules.
+
+`arbiter tools install [TARGET] [--lock FILE]` explicitly provisions the
+locked analyzer versions and Semgrep rules into a user cache keyed by the
+repository path and lock contents. Python analyzers each get an isolated
+virtual environment; gitleaks and Trivy release archives are checked against
+their published SHA-256 checksums. Trivy's separate vulnerability database is
+fetched only during explicit installation into the same isolated cache.
+Nothing is written into the target checkout, and scans never download tools
+or database updates. The default cache is
+`~/.cache/arbiter/toolchains`; set `ARBITER_TOOL_CACHE` to use another cache
+root. Network access is needed only for this explicit install step.
+
+When a scan's lock declares an analyzer, Arbiter resolves it only from that
+lock's cache. `arbiter probes` and A/B tool arms use the same resolution.
+A missing or wrong-version cached binary is reported as not assessed; Arbiter
+does not silently substitute a different global `PATH` binary. An analyzer
+not listed in the lock keeps the normal `PATH` behavior.
+The install command does not provision tree-sitter grammars; locked grammar
+entries are checked against Arbiter's existing grammar cache and missing
+required grammars remain an explicit install failure.
+
+`arbiter tools verify [LOCK]` checks required analyzer versions, grammars, the
+Semgrep rules revision, and the Trivy vulnerability database when Trivy is
+locked, using the isolated cache when one exists and the current environment
+otherwise. It does not install, update, or download anything. The database
+snapshot is separate from the binary version pin; repeated installs preserve
+an existing snapshot. To refresh it, remove the cached Trivy database and run
+`arbiter tools install` again. The command exits 1 when a required capability
+is missing or does not match, and 2 for an invalid lock or operational error.
+Edit the lock to mark an analyzer or grammar optional (`"required": false`), or remove
+`semgrep_rules`, when a capability is not part of the repository's intended
+tool set. Verification also fails if the packaged catalog changed since the
+lock was written. The version pins and default grammar list come from the
+packaged `tooling.json`; the machine-wide installer reads the same catalog.
+Scans report unavailable capabilities as not assessed.
 
 ### The result cache
 
@@ -137,7 +190,10 @@ arbiter ab --spec examples/ab-native-vs-checkov.yaml --out ab-out
 ```
 
 `diff` accepts `--format console,json,markdown,pr-comment` (default
-`console`); `--out DIR` writes the chosen formats to files.
+`console`); `--out DIR` writes the chosen formats to files. The
+pull-request comment follows the view the later report recorded (every tier,
+by default); `--verified-only` narrows it to the verified tier and
+`--advisory` widens a verified-only report to every tier.
 
 A baseline is what makes "fail on new findings only" usable: findings are
 matched by fingerprint, which deliberately excludes the line number, so
@@ -196,7 +252,7 @@ arbiter bundle verify ./arbiter-bundle                       # exit 1 on a missi
 
 `build` writes Arbiter and its runtime dependencies as wheels, the checkout's
 knowledge file when it has one, `install.sh` / `install.ps1` and a
-`MANIFEST.json` with a SHA-256 per file. The five analyzers are not included,
+`MANIFEST.json` with a SHA-256 per file. The six analyzers are not included,
 and the manifest says so: their redistribution review (ARB-005) is pending.
 `verify` recomputes every hash and refuses anything the manifest does not name.
 See [bundle.md](bundle.md).

@@ -32,14 +32,40 @@ HTML page, Markdown and SARIF are renderings of it
   stacks: github_actions, python, terraform
 
   3 critical  3 high  4 medium  8 low  5 info
-  tiers: 0 verified · 23 advisory · 0 inferred (tier_mode legacy: gate reads every tier)
+  2 verified (can block the gate) · 21 advisory (shown, not gating) · 0 inferred
+  tiers: 2 verified · 21 advisory · 0 inferred (tier_mode tiered: gate reads verified)
   overall 61.0/100   coverage 98%
 
   DIMENSION        SCORE   COVERAGE   FINDINGS
   ...
-  FINDINGS
+  FINDINGS (verified) — measured at least 99% precise; can block the gate
+  low      root:.github/workflows/ci.yml:9  Action `actions/checkout` pinned to a mutable ref (`v4`)
+           arbiter/supply.unpinned-action  f:26d61de7d352  [verified] ledger lower bound 0.994 >= 0.99 with no model check (profile offline)
+  ...
+  FINDINGS (advisory) — not confirmed; shown, cannot block the gate
   critical root:app/config.py:4  AWS access key ID committed
            arbiter/secrets.aws-access-key  f:cf802335c8f2  [advisory] rule on probation: not declared verified
+  ...
+  gate PASS
+```
+
+The first line after the severity counts is the view line. By default every
+finding is listed, and the line counts each tier and says whether it can
+block the gate. Below it the findings come in sections, verified first
+(the rule has a measured precision of at least 99%; these alone can fail the
+default gate), then advisory (not confirmed: read them, but expect some to
+be wrong), then inferred (found by a model). The gate passes here although
+three criticals are listed, because none of them is verified.
+
+With `--verified-only` (or `report.show: verified` in `arbiter.yaml`) only
+the verified tier is listed, and the line says what was left out; when
+nothing is verified it reads `no verified findings; 23 advisory findings not
+shown (run with --advisory to include them)` rather than anything that looks
+clean:
+
+```text
+  2 low
+  2 verified findings shown; 21 advisory findings not shown (run with --advisory to include them)
 ```
 
 Each finding line gives severity, `repo:path:line`, the title, the rule id,
@@ -124,15 +150,23 @@ Every finding has a tier:
 - `verified`: the rule is declared verified, the precision ledger admits it,
   and either a model confirmed this finding or the profile cannot ask a model
   and the rule's measured lower bound is at least 0.99.
-- `advisory`: everything else. Today that is every deterministic finding,
-  because no rule is declared verified yet.
+- `advisory`: everything else. Today that is every deterministic finding
+  except `supply.unpinned-action`, the one rule declared verified (ARB-101).
 - `inferred`: found by a model.
 
-The tier never hides or re-grades a finding: an advisory critical is still
-critical. It decides only what a `tier_mode: tiered` gate reads. The default
-gate (`legacy`) reads every tier. Details:
+The tier never re-grades a finding: an advisory critical is still critical
+in `report.json`. It decides what the default `tier_mode: tiered` gate reads
+(`legacy` reads every tier) and how each finding is labelled; it does not
+decide whether a finding is shown (every tier is, by default;
+`--verified-only` or `report.show: verified` for the verified tier only). Details:
 [precision.md](precision.md#tiers). `scan_scope.tiers` holds the counts and
-how many ledger rules are admitted.
+how many ledger rules are admitted; the top-level `tiers` block records the
+view:
+
+```json
+"tiers": {"shown": "all", "counts": {"verified": 2, "advisory": 21, "inferred": 0},
+          "shown_count": 23, "not_shown": {}}
+```
 
 ## Model verdicts
 
@@ -147,15 +181,19 @@ call. `scan_scope.verification` holds the counts. Details:
 ## The gate block
 
 ```json
-"gate": {"passed": false, "reasons": ["3 finding(s) at or above critical"],
-         "considered": 23, "gate_on_inferred": false, "tier_mode": "legacy",
-         "failing_ids": ["f:4fc72a8cdfaa", "f:904314e96155", "f:cf802335c8f2"]}
+"gate": {"passed": true, "reasons": [], "considered": 0, "gate_on_inferred": false,
+         "tier_mode": "tiered", "tiers": ["verified"], "excluded_by_tier": {"advisory": 23},
+         "failing_ids": []}
 ```
 
 `reasons` says what failed; `failing_ids` names the findings behind the
 severity and new-finding reasons; `considered` is how many findings the gate
-read after suppressions, provenance and tiers. `arbiter gate` exits 1 when
-`passed` is false.
+read after suppressions, provenance and tiers, and under `tiered`
+`excluded_by_tier` counts the active findings it set aside by tier, so the
+pass above is readable for what it is: 23 advisory findings, none verified.
+Under `tier_mode: legacy` the same fixture fails with `"reasons": ["3
+finding(s) at or above critical"]` and three `failing_ids`. `arbiter gate`
+exits 1 when `passed` is false.
 
 ## Other top-level keys
 
@@ -167,5 +205,6 @@ read after suppressions, provenance and tiers. `arbiter gate` exits 1 when
 | `controls` | per-framework control coverage summary; `arbiter controls` shows the detail |
 | `learning` | the knowledge version and what calibration changed ([calibration.md](calibration.md)) |
 | `rules` | every rule that fired, with its requirements and tier |
+| `tiers` | the view the renderings used (`shown`), the active count per tier, and `not_shown` ([above](#precision-tiers)) |
 | `stacks`, `loc_by_language`, `loc_by_role`, `repos` | what was scanned |
 | `fingerprint` | the finding-id scheme in use (`occurrence-v1`); a baseline cut under an older scheme needs `arbiter baseline --migrate` |

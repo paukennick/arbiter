@@ -88,7 +88,13 @@ TOOLS: list[dict[str, Any]] = [
     {
         "name": "arbiter_scan",
         "description": "Analyse a repository for security, compliance, quality "
-                       "and drift findings. Returns the full report JSON.",
+                       "and drift findings. Returns the report JSON with every "
+                       "finding, each labelled by tier (verified: measured at "
+                       "least 99% precise and can block the gate; advisory and "
+                       "inferred: not confirmed, shown, not gating) and a summary "
+                       "counting each tier; show: verified cuts the findings to "
+                       "the verified tier and says how many were left out. "
+                       "report_path names the complete report on disk.",
         "inputSchema": {
             "type": "object",
             "required": ["target", "output_dir"],
@@ -100,6 +106,10 @@ TOOLS: list[dict[str, Any]] = [
                             "description": "both run with the network off"},
                 "only": {"type": "string", "description": "comma-separated probes to run"},
                 "skip": {"type": "string", "description": "comma-separated probes to skip"},
+                "show": {"type": "string", "enum": ["verified", "all"], "default": "all",
+                         "description": "all (default): every tier, each finding labelled "
+                                        "by its tier; verified: only findings whose rule is "
+                                        "measured at least 99% precise"},
             },
         },
     },

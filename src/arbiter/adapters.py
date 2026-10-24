@@ -229,8 +229,32 @@ class Adapter:
     raw: dict = field(default_factory=dict)
 
     # -- lifecycle ---------------------------------------------------------
-    def missing_binaries(self) -> list[str]:
-        return [b for b in self.binaries if shutil.which(b) is None]
+    def missing_binaries(self, ctx: ProbeContext | None = None) -> list[str]:
+        if ctx is None:
+            return [binary for binary in self.binaries if shutil.which(binary) is None]
+        missing: list[str] = []
+        for binary in self.binaries:
+            for repo in ctx.repos:
+                from .tooling import resolve_locked_binary
+                locked, executable = resolve_locked_binary(repo.path, binary)
+                if (locked and executable is None) or (not locked and shutil.which(binary) is None):
+                    missing.append(binary)
+                    break
+        return missing
+
+
+    def missing_files(self, ctx: ProbeContext) -> tuple[bool, str]:
+        from .tooling import locked_cache_dir
+
+        for repo in ctx.repos:
+            locked_cache = locked_cache_dir(repo.path)
+            cache = locked_cache or cache_dir()
+            for spec in self.files:
+                path = Path(spec.replace("{cache}", str(cache)))
+                if not path.exists():
+                    install = "arbiter tools install" if locked_cache else "tools/install_tools.sh"
+                    return True, f"missing required file: {path} (run {install})"
+        return False, ""
 
     def tool_version(self) -> str:
         """The analyzer's own version string, probed once per installed binary.
@@ -302,7 +326,9 @@ class Adapter:
         if any("{report_file}" in a for a in self.argv):
             fd, report_file = tempfile.mkstemp(prefix="arbiter-report-", suffix=".json")
             os.close(fd)
-        argv = [a.replace("{workdir}", workdir).replace("{cache}", str(cache_dir()))
+        from .tooling import locked_cache_dir
+        cache = locked_cache_dir(workdir) or cache_dir()
+        argv = [a.replace("{workdir}", workdir).replace("{cache}", str(cache))
                 .replace("{report_file}", report_file or "")
                 for a in self.argv]
         if argv:
@@ -313,8 +339,13 @@ class Adapter:
             # missing_binaries() but then fails every invocation with
             # WinError 2. Resolving to the full, extensioned path here makes
             # invocation match the availability check.
-            argv[0] = shutil.which(argv[0]) or argv[0]
-        cwd = (self.cwd.replace("{workdir}", workdir).replace("{cache}", str(cache_dir()))
+            from .tooling import resolve_locked_binary
+            binary = Path(argv[0]).name
+            locked, executable = resolve_locked_binary(workdir, binary)
+            if locked and executable is None:
+                raise FileNotFoundError(f"locked analyzer {binary} is missing or has the wrong version in its cache")
+            argv[0] = executable if locked else (shutil.which(argv[0]) or argv[0])
+        cwd = (self.cwd.replace("{workdir}", workdir).replace("{cache}", str(cache))
                if self.cwd else None)
         env = dict(os.environ)
         env.setdefault("PYTHONIOENCODING", "utf-8")
@@ -410,6 +441,63 @@ class Adapter:
         out = out.strip()
         if not out:
             return []
+        if self.parse == "trivy":
+            try:
+                document = json.loads(out)
+            except ValueError:
+                return []
+            results = document.get("Results", []) if isinstance(document, dict) else []
+            if not isinstance(results, list):
+                return []
+            rows: list[dict[str, Any]] = []
+            for result in results:
+                if not isinstance(result, dict):
+                    continue
+                target = str(result.get("Target") or "")
+                if not target:
+                    continue
+                for vulnerability in result.get("Vulnerabilities") or []:
+                    if not isinstance(vulnerability, dict):
+                        continue
+                    identifier = str(vulnerability.get("VulnerabilityID") or "")
+                    if not identifier:
+                        continue
+                    package = str(vulnerability.get("PkgName") or "")
+                    installed = str(vulnerability.get("InstalledVersion") or "")
+                    fixed = str(vulnerability.get("FixedVersion") or "")
+                    logical = "@".join(part for part in (package, installed) if part)
+                    remediation = f"Upgrade {package} to {fixed}." if package and fixed else ""
+                    rows.append({
+                        "rule_id": f"vulnerability:{identifier}",
+                        "title": str(vulnerability.get("Title") or f"{identifier} in {package}"),
+                        "path": target,
+                        "line": 0,
+                        "logical": logical,
+                        "severity": str(vulnerability.get("Severity") or "unknown"),
+                        "description": str(vulnerability.get("Description") or ""),
+                        "remediation": remediation,
+                    })
+                for misconfiguration in result.get("Misconfigurations") or []:
+                    if not isinstance(misconfiguration, dict):
+                        continue
+                    if str(misconfiguration.get("Status") or "").upper() != "FAIL":
+                        continue
+                    identifier = str(misconfiguration.get("ID") or "")
+                    if not identifier:
+                        continue
+                    cause = misconfiguration.get("CauseMetadata")
+                    line = cause.get("StartLine", 0) if isinstance(cause, dict) else 0
+                    rows.append({
+                        "rule_id": f"misconfiguration:{identifier}",
+                        "title": str(misconfiguration.get("Title") or identifier),
+                        "path": target,
+                        "line": line,
+                        "logical": str(misconfiguration.get("Resource") or ""),
+                        "severity": str(misconfiguration.get("Severity") or "unknown"),
+                        "description": str(misconfiguration.get("Message") or ""),
+                        "remediation": str(misconfiguration.get("Resolution") or ""),
+                    })
+            return rows
         if self.parse == "jsonlines":
             rows = []
             for line in out.split("\n"):
@@ -519,7 +607,7 @@ class Adapter:
                 confidence=m.get("confidence", "high"),
                 repo_id=repo_id,
                 probe=self.name,
-                location=Location(path=path, start_line=line, logical=logical),
+                location=Location(path=path, start_line=line, logical=logical, repo_id=repo_id),
                 description=desc[:1000],
                 remediation=remediation[:500],
                 remediation_source=remediation_source,
@@ -664,6 +752,8 @@ def register_adapters(extra_dirs: list[str] | None = None) -> list[Adapter]:
             run=a.run,
             stacks=a.stacks,
             binaries=a.binaries,
+            binary_checker=a.missing_binaries,
+            dependency_checker=a.missing_files,
             files=a.files,
             network=a.network,
             scope=a.scope,

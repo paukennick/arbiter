@@ -28,10 +28,29 @@ the declaration (`tier: verified`) is intent; the CI precision guard
 
 ## Gate
 
-`gate.tier_mode: legacy` (the default) gates on severity exactly as before.
-`tiered` gates only on findings whose tier is in `gate.tiers` (default
-`[verified]`). With an empty ledger, a tiered gate blocks nothing, which is
-why legacy stays the default until the ledger has numbers in it.
+`gate.tier_mode: tiered` (the default since ARB-100) gates only on findings
+whose tier is in `gate.tiers` (default `[verified]`), so a build fails on
+what the ledger has measured and on nothing else. `legacy` gates on
+severity over every active finding, as before tiers; it is an explicit
+opt-in. With an empty ledger a tiered gate blocks nothing, and the gate
+block says so (`excluded_by_tier`).
+
+## View
+
+What a person is shown is a separate decision from what can block the
+gate (ARB-100, ARB-103). `report.show: all` (the default since ARB-103)
+renders every tier, verified first, then advisory, then inferred, each in a
+labelled section, with one line of counts that says which tiers can block
+the gate (`tier_line`). `verified` (or `--verified-only`) is an opt-in that
+renders the verified tier only, with one line saying how many advisory and
+inferred findings were left out. The report's top-level `tiers` block
+(`view_block`) records which view was in force and the counts per tier;
+report.json always carries every finding.
+
+ARB-100 made `verified` the default. With one verified rule that hid nearly
+everything Arbiter found, which defeats a tool whose job is to catch
+mistakes; blocking (`gate.tier_mode`) and showing (`report.show`) are now
+separate decisions (FAIL-071).
 """
 from __future__ import annotations
 
@@ -274,6 +293,96 @@ def annotate(findings: list, config: dict | None, profile: str) -> dict:
                       if admission(e, ledger["bar"])[0])
     return {"counts": counts, "ledger_rules": len(ledger.get("rules") or {}),
             "admitted_rules": len(admitted), "ledger_generated": ledger.get("generated", "")}
+
+
+SHOW_VERIFIED = "verified"
+SHOW_ALL = "all"
+TIER_ORDER = ("verified", "advisory", "inferred")
+
+
+def shown_tiers(show: str) -> tuple[str, ...]:
+    """The tiers a rendering lists under `show`."""
+    return TIER_ORDER if show == SHOW_ALL else ("verified",)
+
+
+def view_block(findings: list, show: str, failing: set | frozenset | tuple = ()) -> dict:
+    """The report's top-level `tiers` block: which view the renderings use,
+    the active count per tier, and what that view leaves out. `failing` is
+    the gate's `failing_ids`: a finding that failed the gate is shown
+    whatever its tier (report.py), so it is never counted as not shown.
+    `not_shown` is empty under `all`; a reader who sees it non-empty knows
+    the human-facing output was a subset of `findings`."""
+    counts = {t: 0 for t in TIER_ORDER}
+    hidden = {t: 0 for t in TIER_ORDER}
+    listed = shown_tiers(show)
+    for f in findings:
+        if getattr(f, "suppressed", False):
+            continue
+        t = getattr(f, "tier", "") or "advisory"
+        counts[t] = counts.get(t, 0) + 1
+        if t not in listed and getattr(f, "id", None) not in failing:
+            hidden[t] = hidden.get(t, 0) + 1
+    active = sum(counts.values())
+    return {
+        "shown": show,
+        "counts": counts,
+        "shown_count": active - sum(hidden.values()),
+        "not_shown": {t: n for t, n in hidden.items() if n},
+    }
+
+
+def gating_tiers(gate: dict | None) -> tuple[str, ...]:
+    """The tiers whose findings can fail this gate block, in tier order.
+
+    `tiered` (the default): the tiers in `gate.tiers`, inferred only when
+    `gate_on_inferred` is also set. `legacy`: verified and advisory, and
+    inferred under `gate_on_inferred`. A report with no gate block is read
+    as the default gate (verified only)."""
+    gate = gate or {}
+    inferred = bool(gate.get("gate_on_inferred"))
+    if gate.get("tier_mode") == "legacy":
+        allowed = {"verified", "advisory"} | ({"inferred"} if inferred else set())
+    else:
+        allowed = set(gate.get("tiers") or ["verified"])
+        if not inferred:
+            allowed.discard("inferred")
+    return tuple(t for t in TIER_ORDER if t in allowed)
+
+
+def tier_line(counts: dict, gating: Iterable[str]) -> str:
+    """`2 verified (can block the gate) · 71 advisory (shown, not gating) ·
+    0 inferred`: the summary line of the `all` view. A tier with findings
+    says whether they can fail the gate; a zero says nothing more."""
+    gating = set(gating)
+    parts = []
+    for t in TIER_ORDER:
+        n = int(counts.get(t, 0) or 0)
+        note = "" if not n else (" (can block the gate)" if t in gating else " (shown, not gating)")
+        parts.append(f"{n} {t}{note}")
+    return " · ".join(parts)
+
+
+TIER_MEANING = {
+    "verified": "measured at least 99% precise",
+    "advisory": "not confirmed",
+    "inferred": "found by a model, not confirmed",
+}
+
+
+def tier_note(tier: str, gating: Iterable[str]) -> str:
+    """What a tier's section heading says after the tier's name: what the
+    tier means and whether it can block the gate, so an advisory finding
+    never reads as a verified one (`not confirmed; shown, cannot block the
+    gate`)."""
+    gate = "can block the gate" if tier in set(gating) else "shown, cannot block the gate"
+    return f"{TIER_MEANING.get(tier, tier)}; {gate}"
+
+
+def set_view(report, show: str) -> None:
+    """Re-point a report's view (for `--advisory` or `--verified-only` on a
+    report read back from JSON); the findings are untouched."""
+    failing = set((report.gate or {}).get("failing_ids") or [])
+    report.tiers = view_block(report.findings, show, failing)
 
 
 def default_tier(d: dict) -> tuple[str, str]:

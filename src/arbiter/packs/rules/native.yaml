@@ -126,7 +126,8 @@ rules:
   - id: arbiter/supply.pull-request-target
     requirements: [ARB-087]
   - id: arbiter/supply.unpinned-action
-    requirements: [ARB-087]
+    requirements: [ARB-087, ARB-101]
+    tier: verified            # ledger 690/0, Wilson 95% lower 0.9945 (ARB-101)
   - id: arbiter/supply.unpinned-npm-dep
     requirements: [ARB-087]
   - id: arbiter/supply.unpinned-python-dep

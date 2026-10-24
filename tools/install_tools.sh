@@ -5,7 +5,7 @@
 # Why this file exists
 # --------------------
 # The adapters were written, shipped, and never once run end to end, because
-# getting the five tools installed was a manual step nobody had written down.
+# getting the six tools installed was a manual step nobody had written down.
 # When they were finally installed by hand, checkov alone contributed 477
 # findings on a single repository -- more than three times everything the
 # native probes found.
@@ -33,32 +33,58 @@
 #   ./tools/install_tools.sh -y           # everything, skip the confirm prompt
 #
 # Run with no arguments at an interactive terminal and it asks which of the
-# five to install and then asks you to confirm before touching anything.
+# six to install and then asks you to confirm before touching anything.
 # Pass -y/--yes to skip that confirmation (selection by name still works).
 #
 set -uo pipefail
 
-CHECKOV_VERSION="${CHECKOV_VERSION:-3.3.17}"
-SEMGREP_VERSION="${SEMGREP_VERSION:-1.177.0}"
-BANDIT_VERSION="${BANDIT_VERSION:-1.9.4}"
-RUFF_VERSION="${RUFF_VERSION:-0.15.11}"
-GITLEAKS_VERSION="${GITLEAKS_VERSION:-8.21.2}"
+CATALOG_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/src/arbiter/tooling.json"
+IFS=$'\t' read -r CATALOG_CHECKOV CATALOG_SEMGREP CATALOG_BANDIT CATALOG_RUFF \
+  CATALOG_TRIVY CATALOG_GITLEAKS CATALOG_SEMGREP_RULES CATALOG_GRAMMARS < <(
+  python3 - "$CATALOG_FILE" <<'PY'
+import json
+import sys
 
-# Pinned the same way the tool versions above are: bump it deliberately, then
-# re-run tools/calibrate_external.py, because a ruleset that changes
-# underneath you changes your findings same as a tool that does.
-# HEAD of https://github.com/semgrep/semgrep-rules as of 2026-09-15.
-SEMGREP_RULES_REF="${SEMGREP_RULES_REF:-40b8c63f75dc7c22c8a77482d73bfb864b146f7e}"
+with open(sys.argv[1], encoding="utf-8") as source:
+    catalog = json.load(source)
+versions = {tool["name"]: tool["version"] for tool in catalog["analyzers"]}
+print("\t".join([
+    versions["checkov"],
+    versions["semgrep"],
+    versions["bandit"],
+    versions["ruff"],
+    versions["trivy"],
+    versions["gitleaks"],
+    catalog["semgrep_rules_ref"],
+    " ".join(catalog["tree_sitter"]["default_grammars"]),
+]))
+PY
+)
+if [ -z "${CATALOG_CHECKOV:-}" ] || [ -z "${CATALOG_GRAMMARS:-}" ]; then
+  echo "Could not read tool versions from $CATALOG_FILE" >&2
+  exit 2
+fi
+
+CHECKOV_VERSION="${CHECKOV_VERSION:-$CATALOG_CHECKOV}"
+SEMGREP_VERSION="${SEMGREP_VERSION:-$CATALOG_SEMGREP}"
+BANDIT_VERSION="${BANDIT_VERSION:-$CATALOG_BANDIT}"
+RUFF_VERSION="${RUFF_VERSION:-$CATALOG_RUFF}"
+TRIVY_VERSION="${TRIVY_VERSION:-$CATALOG_TRIVY}"
+GITLEAKS_VERSION="${GITLEAKS_VERSION:-$CATALOG_GITLEAKS}"
+SEMGREP_RULES_REF="${SEMGREP_RULES_REF:-$CATALOG_SEMGREP_RULES}"
+ARBITER_GRAMMARS="${ARBITER_GRAMMARS:-$CATALOG_GRAMMARS}"
 
 # Must match arbiter.adapters.cache_dir() -- the adapter reads the rules from
 # here at scan time, so a mismatch here is a silent "config not found" there.
 ARBITER_CACHE_DIR="${ARBITER_CACHE_DIR:-$HOME/.cache/arbiter}"
+TRIVY_CACHE_DIR="$ARBITER_CACHE_DIR/trivy-cache"
 
 TOOL_LICENSES=(
   "checkov:Apache-2.0"
   "semgrep:LGPL-2.1"
   "bandit:Apache-2.0"
   "ruff:MIT"
+  "trivy:Apache-2.0"
   "gitleaks:MIT"
 )
 
@@ -87,7 +113,7 @@ if [ ${#WANT[@]} -eq 0 ] && [ -t 0 ] && [ -t 1 ]; then
   fi
 fi
 
-[ ${#WANT[@]} -eq 0 ] && WANT=(checkov semgrep bandit ruff gitleaks)
+[ ${#WANT[@]} -eq 0 ] && WANT=(checkov semgrep bandit ruff trivy gitleaks)
 
 wants() { for w in "${WANT[@]}"; do [ "$w" = "$1" ] && return 0; done; return 1; }
 
@@ -109,16 +135,35 @@ python3 -c "import sys; sys.exit(0)" 2>/dev/null && \
   pip install --help 2>/dev/null | grep -q break-system-packages && \
   PIP_FLAGS="--break-system-packages"
 
+tool_version_matches() {
+  local name="$1" expected="$2" output
+  if ! command -v "$name" >/dev/null 2>&1; then
+    return 1
+  fi
+  if [ "$name" = gitleaks ]; then
+    output="$("$name" version 2>&1 | head -1)" || return 1
+  else
+    output="$("$name" --version 2>&1 | head -1)" || return 1
+  fi
+  if [[ "$output" =~ v?([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+    [ "${BASH_REMATCH[1]}" = "$expected" ]
+  else
+    return 1
+  fi
+}
+
 pip_install() {
-  local name="$1" spec="$2"
-  if command -v "$name" >/dev/null 2>&1; then
-    printf '  have   %-10s %s\n' "$name" "$($name --version 2>&1 | head -1)"
+  local name="$1" spec="$2" expected="${2##*==}"
+  if tool_version_matches "$name" "$expected"; then
+    printf '  have   %-10s %s\n' "$name" "$expected"
     return 0
   fi
-  if pip install --quiet $PIP_FLAGS "$spec" >/dev/null 2>&1; then
+  if pip install --quiet $PIP_FLAGS "$spec" >/dev/null 2>&1 \
+     && tool_version_matches "$name" "$expected"; then
     printf '  got    %-10s %s\n' "$name" "$spec"
   else
-    printf '  MISSED %-10s %s — Arbiter will report it as not assessed\n' "$name" "$spec"
+    printf '  MISSED %-10s %s — pinned version unavailable on PATH; Arbiter will report it as not assessed\n' \
+      "$name" "$spec"
   fi
 }
 
@@ -253,8 +298,8 @@ wants ruff    && pip_install ruff    "ruff==${RUFF_VERSION}"
 # (MINGW*/MSYS*) gets its own branch: the release asset there is a .zip
 # containing gitleaks.exe, not a .tar.gz containing gitleaks.
 if wants gitleaks; then
-  if command -v gitleaks >/dev/null 2>&1; then
-    printf '  have   %-10s %s\n' gitleaks "$(gitleaks version 2>&1 | head -1)"
+  if tool_version_matches gitleaks "$GITLEAKS_VERSION"; then
+    printf '  have   %-10s %s\n' gitleaks "$GITLEAKS_VERSION"
   else
     case "$(uname -s)" in
       Linux)                 OS=linux ;;
@@ -312,10 +357,118 @@ if wants gitleaks; then
   fi
 fi
 
+install_trivy() {
+  local trivy_bin="" os machine asset ext binary filename checksums tmp dest
+  if tool_version_matches trivy "$TRIVY_VERSION"; then
+    trivy_bin="$(command -v trivy)"
+    printf '  have   %-10s %s\n' trivy "$TRIVY_VERSION"
+  else
+    case "$(uname -s)" in
+      Linux) os=Linux ;;
+      Darwin) os=macOS ;;
+      MINGW*|MSYS*|CYGWIN*) os=windows ;;
+      *) os="" ;;
+    esac
+    machine="$(uname -m)"
+    case "$os/$machine" in
+      Linux/x86_64|Linux/amd64) asset=Linux-64bit; ext=tar.gz; binary=trivy ;;
+      Linux/i386|Linux/i686) asset=Linux-32bit; ext=tar.gz; binary=trivy ;;
+      Linux/armv7l) asset=Linux-ARM; ext=tar.gz; binary=trivy ;;
+      Linux/aarch64|Linux/arm64) asset=Linux-ARM64; ext=tar.gz; binary=trivy ;;
+      Linux/ppc64le) asset=Linux-PPC64LE; ext=tar.gz; binary=trivy ;;
+      Linux/s390x) asset=Linux-s390x; ext=tar.gz; binary=trivy ;;
+      macOS/x86_64|macOS/amd64) asset=macOS-64bit; ext=tar.gz; binary=trivy ;;
+      macOS/arm64|macOS/aarch64) asset=macOS-ARM64; ext=tar.gz; binary=trivy ;;
+      windows/x86_64|windows/amd64) asset=windows-64bit; ext=zip; binary=trivy.exe ;;
+      *) asset="" ;;
+    esac
+    if [ -z "$asset" ]; then
+      printf '  MISSED %-10s no release build for %s/%s\n' trivy "$(uname -s)" "$machine"
+      return 0
+    fi
+    filename="trivy_${TRIVY_VERSION}_${asset}.${ext}"
+    checksums="trivy_${TRIVY_VERSION}_checksums.txt"
+    tmp="$(mktemp -d)"
+    if ! curl -fsSL --fail --max-time 120 \
+      "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/${checksums}" \
+      -o "$tmp/$checksums" 2>/dev/null \
+      || ! curl -fsSL --fail --max-time 180 \
+      "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/${filename}" \
+      -o "$tmp/$filename" 2>/dev/null; then
+      printf '  MISSED %-10s release download failed\n' trivy
+      rm -rf "$tmp"
+      return 0
+    fi
+    if ! python3 - "$tmp/$checksums" "$tmp/$filename" "$filename" <<'PY'
+import hashlib
+import pathlib
+import sys
+
+checksums_path, archive_path = map(pathlib.Path, sys.argv[1:3])
+filename = sys.argv[3]
+expected = next(
+    (line.split()[0] for line in checksums_path.read_text(encoding="utf-8").splitlines()
+     if len(line.split()) >= 2 and pathlib.Path(line.split()[-1].lstrip("*")).name == filename),
+    None,
+)
+actual = hashlib.sha256(archive_path.read_bytes()).hexdigest()
+sys.exit(0 if expected and expected.lower() == actual.lower() else 1)
+PY
+    then
+      printf '  MISSED %-10s release checksum validation failed\n' trivy
+      rm -rf "$tmp"
+      return 0
+    fi
+    if [ "$ext" = zip ]; then
+      if ! command -v unzip >/dev/null 2>&1 \
+         || ! unzip -p "$tmp/$filename" "$binary" > "$tmp/$binary" 2>/dev/null; then
+        printf '  MISSED %-10s Windows archive extraction failed\n' trivy
+        rm -rf "$tmp"
+        return 0
+      fi
+    elif ! tar -xzf "$tmp/$filename" -C "$tmp" "$binary" 2>/dev/null; then
+      printf '  MISSED %-10s release archive extraction failed\n' trivy
+      rm -rf "$tmp"
+      return 0
+    fi
+    dest="${TRIVY_DEST:-$HOME/.local/bin}"
+    mkdir -p "$dest"
+    if ! cp "$tmp/$binary" "$dest/$binary" 2>/dev/null; then
+      printf '  MISSED %-10s could not write to %s\n' trivy "$dest"
+      rm -rf "$tmp"
+      return 0
+    fi
+    chmod 0755 "$dest/$binary" 2>/dev/null || true
+    trivy_bin="$dest/$binary"
+    local version_output
+    version_output="$("$trivy_bin" --version 2>&1 | head -1)"
+    if [[ ! "$version_output" =~ v?([0-9]+\.[0-9]+\.[0-9]+) ]] \
+       || [ "${BASH_REMATCH[1]}" != "$TRIVY_VERSION" ]; then
+      printf '  MISSED %-10s installed release did not report version %s\n' trivy "$TRIVY_VERSION"
+      rm -rf "$tmp"
+      return 0
+    fi
+    printf '  got    %-10s %s -> %s\n' trivy "$TRIVY_VERSION" "$dest"
+    rm -rf "$tmp"
+  fi
+
+  if [ -f "$TRIVY_CACHE_DIR/db/trivy.db" ]; then
+    printf '  have   %-10s vulnerability database\n' trivy-db
+  elif "$trivy_bin" --cache-dir "$TRIVY_CACHE_DIR" image --download-db-only >/dev/null 2>&1 \
+       && [ -f "$TRIVY_CACHE_DIR/db/trivy.db" ]; then
+    printf '  got    %-10s vulnerability database -> %s\n' trivy-db "$TRIVY_CACHE_DIR"
+  else
+    printf '  MISSED %-10s vulnerability database download failed\n' trivy-db
+  fi
+}
+
+if wants trivy; then
+  install_trivy
+fi
+
 # tree-sitter grammars for the language packs (packs/rules/ast). The pack
 # downloads a grammar on first use; fetching them here keeps scans offline and
 # makes a missing one a "not assessed" fact at install time, not mid-scan.
-ARBITER_GRAMMARS="${ARBITER_GRAMMARS:-python javascript typescript tsx go java ruby}"
 fetch_grammars() {
   local py
   py="$(command -v python3 || command -v python)"
