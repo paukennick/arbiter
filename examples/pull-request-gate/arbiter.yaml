@@ -45,9 +45,11 @@ quality:
 
 report:
   # What the pull-request comment, the annotations and the SARIF list.
-  # `verified` (the default) is the verified tier plus one line on how many
-  # advisory and inferred findings were left out; `all` lists every tier,
-  # sectioned. report.json holds every finding either way.
-  show: verified
+  # `all` (the default) is every finding, verified first, each labelled
+  # with whether it can block the gate (only verified findings can, under
+  # tier_mode: tiered). `verified` lists the verified tier only plus one line
+  # on how many advisory and inferred findings were left out. report.json
+  # holds every finding either way.
+  show: all
 
 suppress: []

@@ -330,14 +330,18 @@ def test_assisted_profile_verifies_and_reports(tree, monkeypatch):
     f = next(f for f in rep.active() if f.rule_id == "arbiter/python.command-injection")
     assert f.verification["verdict"] == "rejected"
     assert f in rep.active()  # never dropped from the report
-    # The default view lists the verified tier only (ARB-100), and a rejected
-    # finding is advisory; the `all` view is where the verdict is read.
-    assert "advisory findings not shown" in render_markdown(rep)
+    # A rejected finding is advisory. The default view lists every tier
+    # (ARB-103), so the verdict is read in it; the verified-only opt-in
+    # leaves the finding out and says so.
     from arbiter.precision import set_view
-    set_view(rep, "all")
+    assert rep.tiers["shown"] == "all"
     md = render_markdown(rep)
     assert "model: rejected -- cmd is a constant here" in md
     assert "rejected" in md.split("## Findings")[0]
+    set_view(rep, "verified")
+    assert "advisory findings not shown" in render_markdown(rep)
+    assert "model: rejected -- cmd is a constant here" not in render_markdown(rep)
+    set_view(rep, "all")
     out = render_console(rep, color=False)
     assert "model verification (claude-opus-5-5" in out
     # round trip through JSON keeps the verdict

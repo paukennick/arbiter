@@ -19,19 +19,19 @@ from arbiter.report import render_html, render_markdown, write_sarif
 # --------------------------------------------------------------------------
 
 def test_sarif_is_wellformed(legacy_report, tmp_path):
-    from arbiter.precision import set_view
     p = tmp_path / "r.sarif"
-    # Every tier, so there is something to check the shape of; the default
-    # (verified) view of this fixture is empty and is tested in
+    # The default view lists every tier (ARB-103), so every active finding
+    # is a result; the verified-only opt-in is tested in
     # tests/test_verified_view.py.
     rep = Report.from_dict(json.loads(json.dumps(legacy_report.to_dict())))
-    set_view(rep, "all")
+    assert rep.tiers["shown"] == "all"
     write_sarif(rep, str(p))
     doc = json.loads(p.read_text())
     assert doc["version"] == "2.1.0"
     run = doc["runs"][0]
     rule_ids = {r["id"] for r in run["tool"]["driver"]["rules"]}
     assert rule_ids
+    assert len(run["results"]) == len(rep.active())
     for res in run["results"]:
         assert res["ruleId"] in rule_ids
         assert res["level"] in ("error", "warning", "note", "none")

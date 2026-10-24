@@ -1,17 +1,27 @@
-"""The verified view (ARB-100): what Arbiter shows by default is the
-verified tier, and it says what it left out.
+"""What Arbiter shows, and what can block (ARB-100, ARB-103).
 
-report.json always carries every finding with its tier. The console,
-markdown, PR comment, SARIF, HTML and GitHub annotations list verified
-findings (plus whatever failed the gate) unless `--advisory` or
-`report.show: all` asks for every tier, sectioned by tier. The gate's
-default is `tiered`, so only verified findings can fail it; `legacy` is an
-explicit opt-in (tests/test_precision_tiers.py).
+Showing and blocking are separate decisions. By default (`report.show:
+all`) the console, markdown, PR comment, SARIF, HTML and GitHub annotations
+list every finding: verified first, then advisory, then inferred, each
+section labelled with whether it can block the gate, and one line of counts
+(`2 verified (can block the gate) · 71 advisory (shown, not gating) · 0
+inferred`). The gate's default is `tiered`, so only verified findings can
+fail it; `legacy` is an explicit opt-in (tests/test_precision_tiers.py).
+
+`report.show: verified` (or `--verified-only`) is an opt-in: verified
+findings (plus whatever failed the gate) and one line on what was left out,
+which never reads as a clean report. report.json always carries every
+finding with its tier.
+
+ARB-100 made the verified view the default and, with one verified rule, hid
+nearly everything Arbiter found (FAIL-071); the tests that pinned that
+behaviour now set `show: verified` explicitly.
 """
 from __future__ import annotations
 
 import copy
 import json
+from html import escape as e
 from pathlib import Path
 
 import pytest
@@ -51,6 +61,12 @@ def _scan(repo: Path, config: dict | None = None, **kw) -> Report:
     return run_scan([str(repo)], cfg, only=["secrets"], use_adapters=False, use_cache=False, **kw)
 
 
+def _verified_only() -> dict:
+    cfg = copy.deepcopy(DEFAULTS)
+    cfg["report"] = {"show": "verified"}
+    return cfg
+
+
 def _f(rule: str, tier: str, severity: str = "high", title: str | None = None, **kw) -> Finding:
     f = Finding(rule_id=rule, title=title or f"{tier} finding of {rule}", severity=severity,
                 location=Location(path=f"{rule.split('/')[-1]}.py", start_line=2),
@@ -69,11 +85,58 @@ def _three() -> tuple[Report, Finding, Finding, Finding]:
 
 
 # ---------------------------------------------------------------------------
-# A real scan: nothing verified, and every rendering says so
+# A real scan, by default: every finding shown, labelled by tier
 # ---------------------------------------------------------------------------
 
-def test_a_scan_records_the_verified_view_and_shows_no_unverified_finding(tmp_path):
+def test_a_default_scan_shows_every_finding_labelled_by_tier(tmp_path):
+    """The default view hides nothing: every rendering lists the advisory
+    finding and says it cannot block the gate, and the gate still passes
+    because nothing verified fired."""
     rep = _scan(_secrets_repo(tmp_path))
+    n = len(rep.active())
+    assert n >= 1, "fixture produced nothing, so this proves nothing"
+    assert all(f.tier == "advisory" for f in rep.active()), "this fixture has no finding of a rule declared verified"
+    assert rep.tiers == {"shown": "all",
+                         "counts": {"verified": 0, "advisory": n, "inferred": 0},
+                         "shown_count": n, "not_shown": {}}
+    assert rep.gate["passed"] is True, "showing an advisory finding must not make it block"
+    title = rep.active()[0].title
+    line = f"0 verified · {n} advisory (shown, not gating) · 0 inferred"
+
+    console = render_console(rep, color=False)
+    assert line in console and title in console
+    assert "FINDINGS (advisory) — not confirmed; shown, cannot block the gate" in console
+    assert "not shown" not in console
+
+    md = render_markdown(rep)
+    assert f"**Shown:** {line}" in md and title in md
+    assert f"## Findings (advisory, {n}) — not confirmed; shown, cannot block the gate" in md
+
+    pr = render_pr_comment(rep)
+    assert line in pr and "No findings." not in pr
+
+    html = render_html(rep)
+    assert e(line) in html and e(title) in html and "Findings (advisory" in html
+
+    ann = render_annotations(rep)
+    assert ann.count("::warning ") == n and "[advisory: not gating] " in ann and "::error" not in ann
+
+    write_sarif(rep, str(tmp_path / "r.sarif"))
+    run = json.loads((tmp_path / "r.sarif").read_text(encoding="utf-8"))["runs"][0]
+    assert len(run["results"]) == n
+    assert {r["properties"]["tier"] for r in run["results"]} == {"advisory"}
+    assert "error" not in {r["level"] for r in run["results"]}, "an error the gate ignores"
+    props = run["invocations"][0]["properties"]
+    assert props["shown"] == "all" and props["not_shown"] == {} and props["summary"] == line
+
+
+# ---------------------------------------------------------------------------
+# A real scan under the verified-only opt-in: nothing verified, and every
+# rendering says so
+# ---------------------------------------------------------------------------
+
+def test_verified_only_with_nothing_verified_says_so_and_never_reads_clean(tmp_path):
+    rep = _scan(_secrets_repo(tmp_path), _verified_only())
     n = len(rep.active())
     assert n >= 1, "fixture produced nothing, so this proves nothing"
     assert all(f.tier == "advisory" for f in rep.active()), "this fixture has no finding of a rule declared verified"
@@ -113,7 +176,7 @@ def test_a_scan_records_the_verified_view_and_shows_no_unverified_finding(tmp_pa
 def test_the_json_report_keeps_every_finding_and_every_key(tmp_path):
     """Machine consumers (omni gate reads `findings`, `gate.passed`, `status`,
     `severity`, `suppressed`) see the whole set, whatever the view."""
-    rep = _scan(_secrets_repo(tmp_path))
+    rep = _scan(_secrets_repo(tmp_path), _verified_only())
     d = json.loads(json.dumps(rep.to_dict()))
     assert d["schema_version"] == "1.0"
     assert BASE_KEYS <= set(d)
@@ -134,7 +197,8 @@ def test_the_json_report_keeps_every_finding_and_every_key(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# A verified finding is shown; --advisory shows every tier in sections
+# Under verified-only a verified finding is shown and the rest counted; the
+# default shows every tier in labelled sections, verified first
 # ---------------------------------------------------------------------------
 
 def test_the_verified_view_lists_verified_findings_and_counts_the_rest(tmp_path):
@@ -156,27 +220,69 @@ def test_the_verified_view_lists_verified_findings_and_counts_the_rest(tmp_path)
     assert render_annotations(rep).count("::") == 2 and v.rule_id in render_annotations(rep)
 
 
-def test_all_shows_every_tier_sectioned_and_labelled(tmp_path):
+def test_all_shows_every_tier_verified_first_sectioned_and_labelled(tmp_path):
     rep, v, a, i = _three()
+    # Report order puts the verified finding last, so every rendering below
+    # has to sort it to the top rather than inherit the order it was given.
+    rep.findings = [i, a, v]
     set_view(rep, "all")
     assert rep.tiers["not_shown"] == {} and rep.tiers["shown_count"] == 3
+    line = "1 verified (can block the gate) · 1 advisory (shown, not gating) · 1 inferred (shown, not gating)"
+    assert view_summary(rep) == line
     console = render_console(rep, color=False)
-    assert "all tiers shown: 1 verified · 1 advisory · 1 inferred" in console
-    for section in ("verified", "advisory", "inferred"):
-        assert f"FINDINGS ({section})" in console
+    assert line in console
+    assert "FINDINGS (verified) — measured at least 99% precise; can block the gate" in console
+    assert "FINDINGS (advisory) — not confirmed; shown, cannot block the gate" in console
+    assert "FINDINGS (inferred) — found by a model, not confirmed; shown, cannot block the gate" in console
     assert console.index(v.title) < console.index(a.title) < console.index(i.title)
     assert "[advisory] test: advisory" in console
     md = render_markdown(rep)
     for section in ("verified", "advisory", "inferred"):
         assert f"## Findings ({section}, 1)" in md
+    assert md.index("## Findings (verified") < md.index("## Findings (advisory") < md.index("## Findings (inferred")
+    assert "not confirmed; shown, cannot block the gate" in md
     html = render_html(rep)
     assert "Findings (advisory, 1)" in html and a.title in html
+    assert html.index("Findings (verified") < html.index("Findings (advisory") < html.index("Findings (inferred")
     write_sarif(rep, str(tmp_path / "r.sarif"))
     results = json.loads((tmp_path / "r.sarif").read_text(encoding="utf-8"))["runs"][0]["results"]
+    assert [r["ruleId"] for r in results] == [v.rule_id, a.rule_id, i.rule_id], "verified first"
     assert {r["ruleId"]: r["properties"]["tier"] for r in results} == {
         v.rule_id: "verified", a.rule_id: "advisory", i.rule_id: "inferred"}
-    # Under the tiered gate the unverified results are notes, not errors.
-    assert {r["ruleId"]: r["level"] for r in results}[a.rule_id] == "note"
+    # Under the tiered gate an unverified high is a warning: shown, never an
+    # error the gate ignores (ARB-065), never buried as a note (ARB-103).
+    levels = {r["ruleId"]: r["level"] for r in results}
+    assert levels == {v.rule_id: "error", a.rule_id: "warning", i.rule_id: "warning"}
+    ann = render_annotations(rep).splitlines()
+    assert [v.rule_id in ann[0], a.rule_id in ann[1], i.rule_id in ann[2]] == [True, True, True]
+    assert "[advisory: not gating] Advisory high" in ann[1]
+    assert "[inferred: not gating] Inferred medium" in ann[2]
+    assert "not gating" not in ann[0]
+
+
+def test_a_console_cut_at_its_limit_keeps_the_verified_findings():
+    """`--limit` cuts the list; the cut falls on advisory findings, never on
+    a verified one listed after them in report order."""
+    many = [_f(f"arbiter/a{n}.rule", "advisory", "high", title=f"Advisory {n}") for n in range(5)]
+    v = _f("arbiter/v.rule", "verified", "low", title="Verified low")
+    rep = Report(findings=[*many, v])
+    rep.gate = evaluate_gate(rep, copy.deepcopy(DEFAULTS))
+    set_view(rep, "all")
+    console = render_console(rep, color=False, limit=2)
+    assert v.title in console and "… 4 more" in console
+
+
+def test_a_legacy_gate_says_advisory_findings_can_block():
+    """The labels follow the gate: under `legacy` an advisory finding can
+    fail the build, and the console must not tell the reader otherwise."""
+    rep, *_ = _three()
+    cfg = copy.deepcopy(DEFAULTS)
+    cfg["gate"]["tier_mode"] = "legacy"
+    rep.gate = evaluate_gate(rep, cfg)
+    set_view(rep, "all")
+    assert view_summary(rep) == ("1 verified (can block the gate) · 1 advisory (can block the gate)"
+                                 " · 1 inferred (shown, not gating)")
+    assert "FINDINGS (advisory) — not confirmed; can block the gate" in render_console(rep, color=False)
 
 
 def test_a_finding_that_failed_a_legacy_gate_is_shown_whatever_its_tier():
@@ -204,15 +310,21 @@ def test_a_finding_that_failed_a_legacy_gate_is_shown_whatever_its_tier():
 # Configuration and the command line
 # ---------------------------------------------------------------------------
 
-def test_report_show_all_in_arbiter_yaml(tmp_path):
+def test_the_default_is_all_and_report_show_verified_in_arbiter_yaml_opts_in(tmp_path):
+    assert show_mode(DEFAULTS) == "all" and show_mode({}) == "all"
+    assert DEFAULTS["gate"]["tier_mode"] == "tiered", "showing everything did not change the gate"
     repo = _secrets_repo(tmp_path)
-    (repo / "arbiter.yaml").write_text("report:\n  show: all\n", encoding="utf-8")
+    (repo / "arbiter.yaml").write_text("report:\n  show: verified\n", encoding="utf-8")
     cfg = load_config(None, str(repo))
-    assert show_mode(cfg) == "all" and show_mode(DEFAULTS) == "verified"
+    assert show_mode(cfg) == "verified"
     rep = _scan(repo, cfg)
-    assert rep.tiers["shown"] == "all"
+    assert rep.tiers["shown"] == "verified"
     console = render_console(rep, color=False)
-    assert "all tiers shown" in console and rep.active()[0].title in console
+    assert "no verified findings" in console and rep.active()[0].title not in console
+    (repo / "arbiter.yaml").write_text("report:\n  show: all\n", encoding="utf-8")
+    rep = _scan(repo, load_config(None, str(repo)))
+    console = render_console(rep, color=False)
+    assert rep.tiers["shown"] == "all" and rep.active()[0].title in console
     assert "FINDINGS (advisory)" in console
 
 
@@ -222,7 +334,10 @@ def test_a_misspelt_report_show_is_an_error(tmp_path):
         load_config(None, str(tmp_path))
 
 
-def test_the_advisory_flag_shows_every_tier_and_the_json_is_the_same_either_way(tmp_path, capsys):
+def test_the_view_flags_and_the_json_is_the_same_either_way(tmp_path, capsys):
+    """No flag shows every tier; `--verified-only` is the verified view for
+    one run; `--advisory` is accepted and, under the default, changes
+    nothing. report.json holds the same findings every time."""
     from arbiter.cli import main
     repo = _secrets_repo(tmp_path)
     out = tmp_path / "out"
@@ -231,26 +346,52 @@ def test_the_advisory_flag_shows_every_tier_and_the_json_is_the_same_either_way(
     assert main(["scan", *common]) == 0
     plain = capsys.readouterr().out
     first = json.loads((out / "report.json").read_text(encoding="utf-8"))
-    assert "no verified findings" in plain and "FINDINGS (" not in plain
-    assert first["tiers"]["shown"] == "verified" and len(first["findings"]) >= 1
+    assert "advisory (shown, not gating)" in plain and "FINDINGS (advisory)" in plain
+    assert first["tiers"]["shown"] == "all" and len(first["findings"]) >= 1
+
+    assert main(["scan", *common, "--verified-only"]) == 0
+    quiet = capsys.readouterr().out
+    second = json.loads((out / "report.json").read_text(encoding="utf-8"))
+    assert "no verified findings" in quiet and "FINDINGS (" not in quiet
+    assert "(run with --advisory to include them)" in quiet
+    assert second["tiers"]["shown"] == "verified"
 
     assert main(["scan", *common, "--advisory"]) == 0
     loud = capsys.readouterr().out
-    second = json.loads((out / "report.json").read_text(encoding="utf-8"))
-    assert "all tiers shown" in loud and "FINDINGS (advisory)" in loud
-    assert second["tiers"]["shown"] == "all"
-    assert [f["id"] for f in second["findings"]] == [f["id"] for f in first["findings"]]
-    # The flag exists on both scan and gate.
+    third = json.loads((out / "report.json").read_text(encoding="utf-8"))
+    assert "FINDINGS (advisory)" in loud and "not shown" not in loud
+    assert third["tiers"]["shown"] == "all"
+    ids = [f["id"] for f in first["findings"]]
+    assert [f["id"] for f in second["findings"]] == ids == [f["id"] for f in third["findings"]]
+    # The flags exist on scan, gate, diff and remote scan, and exclude each other.
     from arbiter.cli import build_parser
-    for cmd in ("scan", "gate"):
-        assert build_parser().parse_args([cmd, "x", "--advisory"]).show_all is True
+    for argv in (["scan", "x"], ["gate", "x"], ["diff", "a", "b"], ["remote", "scan", "x"]):
+        assert build_parser().parse_args([*argv, "--advisory"]).show_all is True
+        assert build_parser().parse_args([*argv, "--verified-only"]).verified_only is True
+        with pytest.raises(SystemExit):
+            build_parser().parse_args([*argv, "--advisory", "--verified-only"])
+    capsys.readouterr()
 
 
 # ---------------------------------------------------------------------------
 # The pull-request comment and the baseline
 # ---------------------------------------------------------------------------
 
-def test_the_pr_comment_lists_new_verified_findings_and_counts_the_hidden_new_ones():
+def test_the_pr_comment_lists_every_new_finding_verified_first_by_default():
+    rep, v, a, i = _three()
+    for f in (v, a, i):
+        f.status = "new"
+    rep.findings = [a, i, v]
+    set_view(rep, "all")
+    d = diff_reports(Report(), rep)
+    text = render_pr_comment(rep, d)
+    assert "not listed" not in text and "| Tier |" in text
+    assert text.index(v.title) < text.index(a.title) < text.index(i.title)
+    assert "| advisory (not gating) |" in text and "| verified |" in text
+    assert "1 verified (can block the gate) · 1 advisory (shown, not gating)" in text
+
+
+def test_the_pr_comment_under_verified_only_counts_the_hidden_new_ones():
     rep, v, a, i = _three()
     for f in (v, a, i):
         f.status = "new"
@@ -269,12 +410,12 @@ def test_the_pr_comment_lists_new_verified_findings_and_counts_the_hidden_new_on
 
 def test_baseline_status_is_decided_over_every_finding_not_the_shown_ones(tmp_path):
     repo = _secrets_repo(tmp_path)
-    first = _scan(repo)
+    first = _scan(repo, _verified_only())
     assert first.tiers["shown_count"] == 0, "nothing verified: the whole set is hidden"
     bl = tmp_path / "baseline.json"
     write_baseline(first, str(bl))
     (repo / "ci.py").write_text(GITHUB, encoding="utf-8")
-    second = _scan(repo, baseline=str(bl))
+    second = _scan(repo, _verified_only(), baseline=str(bl))
     by_path = {f.location.path: f.status for f in second.active()}
     assert by_path["billing.py"] == "existing" and by_path["ci.py"] == "new"
     assert second.tiers["not_shown"]["advisory"] == len(second.active())
@@ -285,7 +426,7 @@ def test_baseline_status_is_decided_over_every_finding_not_the_shown_ones(tmp_pa
 # The service and MCP answer
 # ---------------------------------------------------------------------------
 
-def test_the_service_answer_lists_the_verified_tier_and_names_the_complete_file():
+def test_the_service_answer_lists_every_tier_by_default_and_names_the_complete_file():
     from arbiter import mcp, service
     rep, v, a, _i = _three()
     sup = _f("arbiter/s.rule", "advisory", "low", title="Suppressed", suppressed=True)
@@ -306,17 +447,23 @@ def test_the_service_answer_lists_the_verified_tier_and_names_the_complete_file(
     with pytest.raises(service.ServiceError, match="show is one of"):
         service._view(full, "verified-ish")
 
+    set_view(rep, "all")
+    assert service._summary(everything["tiers"], full["gate"]) == view_summary(rep) == (
+        "1 verified (can block the gate) · 1 advisory (shown, not gating) · 1 inferred (shown, not gating)"
+    ), "the MCP line is the console's line; the suppressed finding is in neither"
+
     scan_tool = next(t for t in mcp.TOOLS if t["name"] == "arbiter_scan")
     assert scan_tool["inputSchema"]["properties"]["show"]["enum"] == ["verified", "all"]
-    assert scan_tool["inputSchema"]["properties"]["show"]["default"] == "verified"
+    assert scan_tool["inputSchema"]["properties"]["show"]["default"] == "all"
+    import inspect
+    assert inspect.signature(service.scan).parameters["show"].default == "all"
 
 
 def test_the_hosted_api_sends_the_report_as_written_and_the_client_renders_the_view(tmp_path):
     """`/v1/scan` is a machine surface: every finding travels with the view the
-    scan recorded, so `arbiter remote scan` renders the verified tier by
-    default and `--advisory` can bring the rest back without another upload.
-    A copy whose `tiers.shown` said `all` would make the remote console louder
-    than the local one for the same repository."""
+    scan recorded, so `arbiter remote scan` renders what the local console
+    would (every tier, by default) and `--verified-only` can narrow it
+    without another upload."""
     import tarfile
 
     from arbiter import api, client
@@ -329,13 +476,14 @@ def test_the_hosted_api_sends_the_report_as_written_and_the_client_renders_the_v
     report = result["report"]
     n = len(report["findings"])
     assert n >= 1 and result["finding_count"] == n, "fixture produced nothing, so this proves nothing"
-    assert report["tiers"]["shown"] == "verified" and report["tiers"]["not_shown"] == {"advisory": n}
+    assert report["tiers"]["shown"] == "all" and report["tiers"]["not_shown"] == {}
 
     rep = client.report_from(result)
     console = render_console(rep, color=False)
+    assert "FINDINGS (advisory)" in console
+    set_view(rep, "verified")
+    console = render_console(rep, color=False)
     assert "no verified findings" in console and "FINDINGS (" not in console
-    set_view(rep, "all")
-    assert "FINDINGS (advisory)" in render_console(rep, color=False)
 
 
 def test_view_block_counts_only_active_findings():

@@ -68,7 +68,7 @@ HINT_CONFIG = "run with --advisory, or set report.show: all, to include them"
 def view_of(report: Report) -> str:
     """`verified` or `all`: the view the scan recorded in `report.tiers`.
 
-    Every scan records one (the default is `verified`). A report with none
+    Every scan records one (the default is `all` since ARB-103). A report with none
     -- written before views existed, or a `Report` built in memory -- renders
     every finding: no view was decided for it, and a renderer must not
     invent one and quietly drop findings from a file that never said to.
@@ -88,12 +88,27 @@ def _is_shown(report: Report, f: Finding, listed: tuple[str, ...], failing: set[
     return (f.tier or "advisory") in listed or f.id in failing
 
 
+def _tier_rank(f: Finding) -> int:
+    t = f.tier or "advisory"
+    return TIER_ORDER.index(t) if t in TIER_ORDER else len(TIER_ORDER)
+
+
 def shown_findings(report: Report) -> list[Finding]:
-    """The active findings this report's view lists, in report order."""
+    """The active findings this report's view lists: verified first, then
+    advisory, then inferred (ARB-103), report order within a tier. Every
+    rendering lists in this order, so a console cut at `--limit` or a PR
+    comment's first ten rows never drop a verified finding for an advisory
+    one."""
     from .precision import shown_tiers
     listed = shown_tiers(view_of(report))
     failing = _failing_ids(report)
-    return [f for f in report.active() if _is_shown(report, f, listed, failing)]
+    return sorted((f for f in report.active() if _is_shown(report, f, listed, failing)),
+                  key=_tier_rank)
+
+
+def _gating(report: Report) -> tuple[str, ...]:
+    from .precision import gating_tiers
+    return gating_tiers(report.gate)
 
 
 def not_shown(report: Report) -> dict[str, int]:
@@ -112,15 +127,18 @@ def not_shown(report: Report) -> dict[str, int]:
 def view_summary(report: Report, hint: str = HINT_CLI) -> str:
     """One line on what the rendering shows and what it leaves out.
 
-    `12 verified findings shown; 340 advisory and 3 inferred findings not
-    shown (run with --advisory to include them)`. When nothing is verified
-    it says `no verified findings; ...` rather than nothing: a report that
-    lists no findings because none passed the bar must not read like a
-    report that found none. Under `all`: `all tiers shown: ...`.
+    Under `all` (the default): the count per tier and whether each can block
+    the gate, `2 verified (can block the gate) · 71 advisory (shown, not
+    gating) · 0 inferred`. Under `verified`: `12 verified findings shown;
+    340 advisory and 3 inferred findings not shown (run with --advisory to
+    include them)`, and when nothing is verified it says `no verified
+    findings; ...` rather than nothing: a report that lists no findings
+    because none passed the bar must not read like a report that found none.
     """
+    from .precision import tier_line
     counts = tier_counts(report.active())
     if view_of(report) == "all":
-        return "all tiers shown: " + " · ".join(f"{counts[t]} {t}" for t in TIER_ORDER)
+        return tier_line(counts, _gating(report))
     n = counts["verified"]
     head = (f"{n} verified finding{'s' if n != 1 else ''} shown" if n
             else "no verified findings")
@@ -133,32 +151,41 @@ def view_summary(report: Report, hint: str = HINT_CLI) -> str:
     return f"{head}; {' and '.join(hidden)} findings not shown ({hint})"
 
 
-def _sections(report: Report, findings: list[Finding]) -> list[tuple[str, list[Finding]]]:
-    """Findings split by tier, in tier order, for a rendering that shows
-    every tier: labelled sections, so a reader never mistakes an advisory
-    finding for a verified one. Under the verified view: one section."""
+def _sections(report: Report, findings: list[Finding]) -> list[tuple[str, str, list[Finding]]]:
+    """(name, note, findings) per section, in tier order, for a rendering
+    that shows every tier: labelled sections whose note says what the tier
+    means and whether it can block the gate, so a reader never mistakes an
+    advisory finding for a verified one. Under the verified view: one
+    section."""
+    from .precision import tier_note
+    gating = _gating(report)
     if view_of(report) != "all":
         if not findings:
             return []
         if all((f.tier or "advisory") == "verified" for f in findings):
-            return [("verified", findings)]
-        return [("verified, and gate failures", findings)]
+            return [("verified", tier_note("verified", gating), findings)]
+        return [("verified, and gate failures", "", findings)]
     out = []
     for t in TIER_ORDER:
         group = [f for f in findings if (f.tier or "advisory") == t]
         if group:
-            out.append((t, group))
+            out.append((t, tier_note(t, gating), group))
     return out
 
 
 def _sarif_level(report: Report, f: Finding) -> str:
     """Severity's level, except that under a tiered gate a finding that
-    cannot block (advisory, inferred) is a note: an `error` the gate ignores
-    teaches people to ignore errors. Under legacy every finding can block, so
-    the level stays the severity's."""
-    if _tiered(report) and (f.tier or "advisory") != "verified":
-        return "note"
-    return SARIF_LEVEL.get(f.severity, "warning")
+    cannot block it (advisory and inferred, by default) is at most a
+    `warning`: an `error` the gate ignores teaches people to ignore errors
+    (ARB-065), and a `note` buries a finding Arbiter means to show (ARB-103:
+    ARB-100 made every advisory result a note). So an advisory critical or
+    high is a warning, a medium stays a warning, a low or info stays a note.
+    Under legacy every finding can block, so the level stays the
+    severity's."""
+    level = SARIF_LEVEL.get(f.severity, "warning")
+    if _tiered(report) and (f.tier or "advisory") not in _gating(report) and level == "error":
+        return "warning"
+    return level
 
 
 def _verification_text(f: Finding) -> str:
@@ -488,13 +515,18 @@ def render_annotations(report: Report) -> str:
 
     `::error` for the findings that failed the gate (`gate.failing_ids`),
     `::notice` for findings in files the change did not touch (tagged
-    `outside-this-change`), `::warning` for everything else. Only the rule id,
-    the title and the location are printed: never evidence or a snippet, so
-    the build log is not where a credential gets reprinted.
+    `outside-this-change`), `::warning` for everything else. Verified first,
+    then advisory, then inferred; a finding whose tier cannot block the gate
+    says so at the start of its message (`[advisory: not gating]`). Only the
+    rule id, the title and the location are printed: never evidence or a
+    snippet, so the build log is not where a credential gets reprinted.
     """
     failing = set((report.gate or {}).get("failing_ids") or [])
+    gating = _gating(report)
     lines: list[str] = []
     for f in shown_findings(report):
+        tier = f.tier or "advisory"
+        label = "" if tier in gating or f.id in failing else f"[{tier}: not gating] "
         if f.id in failing:
             level = "error"
         elif "outside-this-change" in f.tags:
@@ -507,7 +539,7 @@ def render_annotations(report: Report) -> str:
             if f.location.start_line:
                 props.append(f"line={f.location.start_line}")
         props.append(f"title={_wc_property(f.rule_id)}")
-        lines.append(f"::{level} {','.join(props)}::{_wc_message(f.title)}")
+        lines.append(f"::{level} {','.join(props)}::{_wc_message(label + f.title)}")
     return "\n".join(lines)
 
 
@@ -584,8 +616,8 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
         L.append("")
 
     shown = listed[:limit]
-    for section, members in _sections(report, shown):
-        L.append(_color(color, "bold", f"  FINDINGS ({section})"))
+    for section, note, members in _sections(report, shown):
+        L.append(_color(color, "bold", f"  FINDINGS ({section})") + (f" — {note}" if note else ""))
         for f in members:
             tag = _color(color, f.severity, f"{f.severity:<8}")
             conf = "" if f.confidence == "high" else _color(color, "dim", f" [{f.confidence} confidence]")
@@ -695,8 +727,8 @@ def render_markdown(report: Report) -> str:
             L.append(" · ".join(legend))
             L.append("")
 
-    for section, members in _sections(report, listed):
-        L.append(f"## Findings ({section}, {len(members)})")
+    for section, note, members in _sections(report, listed):
+        L.append(f"## Findings ({section}, {len(members)})" + (f" — {note}" if note else ""))
         L.append("")
         for sev in SEV_ORDER:
             group = [f for f in members if f.severity == sev]
@@ -957,10 +989,12 @@ def render_html(report: Report) -> str:
     view_html = (f"<p class='sub' style='margin:8px 0 0'>{e(view_summary(report, HINT_CONFIG))}"
                  f" · {e(tier_summary(report))}</p>") if active else ""
     findings_html = "".join(
-        f"<h2>Findings ({e(section)}, {len(members)})</h2><div class=\"tw\"><table>"
+        f"<h2>Findings ({e(section)}, {len(members)})</h2>"
+        + (f"<p class='sub'>{e(note)}</p>" if note else "")
+        + "<div class=\"tw\"><table>"
         "<thead><tr><th>Severity</th><th>Finding</th><th>Repo</th><th>Location</th><th>Dimension</th></tr></thead>"
         f"<tbody>{_html_rows_findings(members, loc_cell)}</tbody></table></div>"
-        for section, members in _sections(report, listed)
+        for section, note, members in _sections(report, listed)
     ) or f"<h2>Findings (0)</h2><p class='sub'>{e(view_summary(report, HINT_CONFIG)) if active else 'No findings.'}</p>"
 
     return f"""<!doctype html><html><head><meta charset="utf-8">

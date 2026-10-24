@@ -150,8 +150,11 @@ def render_pr_comment(after: Report, d: ReportDiff | None = None) -> str:
     L.append("")
 
     # The comparison ran over every finding (a baseline is about the whole
-    # set); what the comment lists follows the report's view (ARB-100), so a
-    # reviewer sees the verified tier by default and one line on the rest.
+    # set); what the comment lists follows the report's view (ARB-100): every
+    # tier by default (ARB-103), verified first, each row saying whether its
+    # tier can block the gate; the verified tier only under `report.show:
+    # verified`, with one line on the rest.
+    from .precision import gating_tiers
     from .report import (
         HINT_CONFIG,
         requirement_block,
@@ -160,13 +163,14 @@ def render_pr_comment(after: Report, d: ReportDiff | None = None) -> str:
         view_summary,
     )
     listed = shown_findings(after)
-    listed_ids = {f.id for f in listed}
+    rank = {f.id: i for i, f in enumerate(listed)}
+    gating = gating_tiers(gate)
     if after.active():
         L.append(f"_{view_summary(after, HINT_CONFIG)}._")
         L.append("")
 
     if d is not None:
-        new_shown = [f for f in d.new if f.id in listed_ids]
+        new_shown = sorted((f for f in d.new if f.id in rank), key=lambda f: rank[f.id])
         L.append(f"`{len(d.new)}` new · `{len(d.fixed)}` fixed · `{len(d.persisting)}` unchanged")
         hidden_new = len(d.new) - len(new_shown)
         if hidden_new:
@@ -177,8 +181,9 @@ def render_pr_comment(after: Report, d: ReportDiff | None = None) -> str:
             L.append("| Severity | Finding | Location |" + (" Tier |" if tier_col else ""))
             L.append("|---|---|---|" + ("---|" if tier_col else ""))
             for f in new_shown[:10]:
+                tier = f.tier or "advisory"
                 L.append(f"| {f.severity} | {f.title} | `{f.location.short()}` |"
-                         + (f" {f.tier or 'advisory'} |" if tier_col else ""))
+                         + (f" {tier}{'' if tier in gating else ' (not gating)'} |" if tier_col else ""))
             if len(new_shown) > 10:
                 L.append(f"| | _… {len(new_shown) - 10} more_ | |" + (" |" if tier_col else ""))
             L.append("")

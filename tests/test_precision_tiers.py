@@ -5,7 +5,7 @@ admits the rule, and either the model confirmed the finding or the profile
 cannot call a model and the rule's bound alone reaches 0.99. Everything else
 is `advisory` (shown, never blocks a tiered gate) or `inferred`. The tiered
 gate is the default (ARB-100); `legacy` is an explicit opt-in and behaves as
-it always did. What the renderings show is the verified view by default:
+it always did. What the renderings show (every tier by default, ARB-103):
 tests/test_verified_view.py.
 """
 from __future__ import annotations
@@ -269,8 +269,29 @@ def test_text_markdown_and_sarif_show_the_tier(tmp_path):
     write_sarif(rep, str(tmp_path / "r.sarif"))
     res = {r["ruleId"]: r for r in json.loads((tmp_path / "r.sarif").read_text())["runs"][0]["results"]}
     assert res[RULE]["level"] == "error" and res[RULE]["properties"]["tier"] == "verified"
-    assert res["arbiter/python.weak-hash"]["level"] == "note"
+    # An advisory high cannot block a tiered gate: a warning, not an error
+    # the gate ignores (ARB-065) and not a note that buries it (ARB-103).
+    assert res["arbiter/python.weak-hash"]["level"] == "warning"
     assert res["arbiter/python.weak-hash"]["properties"]["tier_reason"].startswith("rule on probation")
+
+
+def test_sarif_caps_a_result_that_cannot_block_at_warning_under_the_tiered_gate(tmp_path):
+    """ARB-103: shown at the level it had before ARB-100 made it a note,
+    except that nothing the gate ignores is an `error`."""
+    rows = {sev: _f(rule=f"arbiter/x.{sev}", severity=sev) for sev in ("critical", "medium", "low")}
+    for f in rows.values():
+        f.tier = "advisory"
+    rep = _report(*rows.values())
+    rep.gate = evaluate_gate(rep, _cfg(tier_mode="tiered"))
+    write_sarif(rep, str(tmp_path / "r.sarif"))
+    levels = {r["ruleId"]: r["level"] for r in json.loads((tmp_path / "r.sarif").read_text())["runs"][0]["results"]}
+    assert levels == {"arbiter/x.critical": "warning", "arbiter/x.medium": "warning", "arbiter/x.low": "note"}
+    # Control: a tiered gate told to read advisory findings can be failed by
+    # them, so their level is the severity's again.
+    rep.gate = evaluate_gate(rep, _cfg(tier_mode="tiered", tiers=["verified", "advisory"]))
+    write_sarif(rep, str(tmp_path / "r.sarif"))
+    levels = {r["ruleId"]: r["level"] for r in json.loads((tmp_path / "r.sarif").read_text())["runs"][0]["results"]}
+    assert levels["arbiter/x.critical"] == "error"
 
 
 def test_sarif_levels_stay_by_severity_under_the_legacy_gate(tmp_path):

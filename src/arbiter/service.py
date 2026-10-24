@@ -341,8 +341,8 @@ SHOW_MODES = ("verified", "all")
 
 def _view(report: dict, show: str) -> dict:
     """The report as a caller sees it under `show` (ARB-100): under
-    `verified`, a copy whose `findings` are the verified tier only; under
-    `all`, the report as written. Every other key is left as it is, and the
+    `all` (the default since ARB-103), the report as written; under
+    `verified`, a copy whose `findings` are the verified tier only. Every other key is left as it is, and the
     file at `report_path` always holds every finding."""
     if show not in SHOW_MODES:
         raise ServiceError(f"show is one of {SHOW_MODES}, got {show!r}")
@@ -369,10 +369,14 @@ class _Row:
         self.id = d.get("id") or ""
 
 
-def _summary(block: dict, hint: str = "pass show: all to include them") -> str:
+def _summary(block: dict, gate: dict | None = None,
+             hint: str = "pass show: all to include them") -> str:
+    """The same line the console prints (report.view_summary), from JSON:
+    under `all`, the count per tier and whether it can block `gate`."""
+    from .precision import gating_tiers, tier_line
     counts = block.get("counts") or {}
     if block.get("shown") == "all":
-        return "all tiers shown: " + " · ".join(f"{counts.get(t, 0)} {t}" for t in ("verified", "advisory", "inferred"))
+        return tier_line(counts, gating_tiers(gate))
     n = counts.get("verified", 0)
     head = f"{n} verified finding{'s' if n != 1 else ''} shown" if n else "no verified findings"
     hidden = [f"{k} {t}" for t, k in (block.get("not_shown") or {}).items()]
@@ -383,14 +387,15 @@ def _summary(block: dict, hint: str = "pass show: all to include them") -> str:
 
 def scan(target: str, output_dir: str, profile: str = "offline", only: str = "",
          skip: str = "", allow_network: bool = False,
-         timeout: int = DEFAULT_TIMEOUT, show: str | None = "verified") -> dict:
+         timeout: int = DEFAULT_TIMEOUT, show: str | None = "all") -> dict:
     """Analyse a repository and return the report.
 
     `output_dir` is required and is the sandbox: nothing is written outside it.
-    `show` is what the answer lists (ARB-100): `verified` (the default) returns
+    `show` is what the answer lists (ARB-100, ARB-103): `all` (the default)
+    returns every finding and a `tiers` block that says so, with `summary`
+    counting each tier and whether it can block the gate; `verified` returns
     the report with `findings` cut to the verified tier and `summary` saying
-    what was left out; `all` returns every finding and a `tiers` block that
-    says so. `None` returns report.json exactly as written -- every finding,
+    what was left out. `None` returns report.json exactly as written -- every finding,
     and the `tiers` block the scan itself recorded -- for a machine surface
     (the hosted API) whose client applies the view with its own renderers.
     `report_path` names the complete report in every case.
@@ -417,7 +422,7 @@ def scan(target: str, output_dir: str, profile: str = "offline", only: str = "",
         "findings_total": len(full.get("findings") or []),
         "shown": block.get("shown") or "all",
         "tiers": block,
-        "summary": _summary(block),
+        "summary": _summary(block, full.get("gate")),
     }
 
 
@@ -436,7 +441,7 @@ def gate(target: str, output_dir: str, profile: str = "ci", only: str = "",
     if proc.returncode == EXIT_ERROR:
         raise ServiceError(f"gate failed: {(proc.stderr or proc.stdout).strip()[:800]}")
     report = _read_report(out)
-    block = _view(report, "verified")["tiers"]
+    block = _view(report, "all")["tiers"]
     return {
         "passed": bool((report.get("gate") or {}).get("passed")),
         "exit_code": proc.returncode,
@@ -444,7 +449,7 @@ def gate(target: str, output_dir: str, profile: str = "ci", only: str = "",
         "claims": report.get("claims") or [],
         "report_path": str(out / "report.json"),
         "tiers": block,
-        "summary": _summary(block, hint="arbiter_scan with show: all lists them"),
+        "summary": _summary(block, report.get("gate")),
     }
 
 

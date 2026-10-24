@@ -66,7 +66,8 @@ def test_the_default_gate_passes_the_fixture_and_says_why(legacy_report):
     considered. The one rule declared verified (supply.unpinned-action,
     ARB-101) fires on the fixture's workflow; its findings sit below
     `fail_on`, so the gate passes, and every other active finding is
-    reported as excluded by tier, not as clean."""
+    reported as excluded by tier, not as clean -- and is still shown: the
+    default view lists every tier (ARB-103)."""
     gate = legacy_report.gate
     active = legacy_report.active()
     verified = [f for f in active if f.tier == "verified"]
@@ -75,6 +76,8 @@ def test_the_default_gate_passes_the_fixture_and_says_why(legacy_report):
     assert gate["considered"] == len(verified)
     assert gate["considered"] + sum(gate["excluded_by_tier"].values()) == len(active)
     assert any(f.severity == "critical" and f.tier != "verified" for f in active)
+    assert legacy_report.tiers["shown"] == "all" and legacy_report.tiers["not_shown"] == {}
+    assert legacy_report.tiers["shown_count"] == len(active)
 
 
 # --------------------------------------------------------------------------

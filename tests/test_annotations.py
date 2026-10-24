@@ -46,11 +46,11 @@ def test_annotations_mark_gating_findings_as_errors_and_the_rest_as_warnings(tmp
     """Exactly the findings that failed the gate are errors; the rest warn."""
     (tmp_path / "leak.py").write_text(HIGH_PY, encoding="utf-8")
     cfg = load_config(None)
-    # The severity gate over every finding, and every finding annotated: the
-    # legacy gate and the `all` view. The default (tiered gate, verified
-    # view) is covered in tests/test_verified_view.py.
+    # The severity gate over every finding: the legacy gate. Every finding is
+    # annotated under the default `all` view (ARB-103); the default tiered
+    # gate and the verified-only view are covered in
+    # tests/test_verified_view.py.
     cfg["gate"] = {"fail_on": {"severity": "high"}, "tier_mode": "legacy"}
-    cfg["report"] = {"show": "all"}
     cfg["rules"] = [{
         "id": "readme-present", "type": "file_exists", "paths": ["README.md"],
         "title": "README.md is required", "severity": "low",
@@ -91,9 +91,12 @@ def test_annotations_use_notice_for_findings_outside_the_change():
     outside = Finding(rule_id="r/b", title="B", location=Location(path="b.py", start_line=4),
                       tags=["outside-this-change"])
     text = render_annotations(_report([inside, outside], {"passed": True, "failing_ids": []}))
-    assert "::warning file=a.py,line=3,title=r/a::A" in text
-    assert "::notice file=b.py,line=4,title=r/b::B" in text
-    # Control: a failing finding is an error even when outside the change.
+    # Neither finding is verified, so neither can block the default gate,
+    # and each message says so first (ARB-103).
+    assert "::warning file=a.py,line=3,title=r/a::[advisory: not gating] A" in text
+    assert "::notice file=b.py,line=4,title=r/b::[advisory: not gating] B" in text
+    # Control: a failing finding is an error even when outside the change,
+    # and is not labelled as unable to block what it just failed.
     text = render_annotations(_report([inside, outside],
                                       {"passed": False, "failing_ids": [outside.id]}))
     assert "::error file=b.py,line=4,title=r/b::B" in text
@@ -104,18 +107,18 @@ def test_annotations_skip_suppressed_findings_and_omit_a_zero_line():
     hidden = Finding(rule_id="r/b", title="B", location=Location(path="b.py", start_line=2),
                      suppressed=True)
     text = render_annotations(_report([shown, hidden]))
-    assert text == "::warning file=a.py,title=r/a::A"
+    assert text == "::warning file=a.py,title=r/a::[advisory: not gating] A"
     assert "line=" not in text
     assert "r/b" not in text
     # Control: unsuppressed, the same finding is printed.
     hidden.suppressed = False
-    assert "::warning file=b.py,line=2,title=r/b::B" in render_annotations(_report([shown, hidden]))
+    assert "::warning file=b.py,line=2,title=r/b::[advisory: not gating] B" in render_annotations(_report([shown, hidden]))
 
 
 def test_annotations_escape_workflow_command_syntax():
     """`:` `,` `%` and newlines would otherwise end the command early."""
     f = Finding(rule_id="r/x:y,z", title="50% done: a, b\nsecond line\r",
-                location=Location(path="dir,name:x/f.py", start_line=7))
+                location=Location(path="dir,name:x/f.py", start_line=7), tier="verified")
     text = render_annotations(_report([f]))
     assert text == (
         "::warning file=dir%2Cname%3Ax/f.py,line=7,title=r/x%3Ay%2Cz"
@@ -132,8 +135,7 @@ def test_annotations_never_print_evidence(tmp_path):
     """A finding names where a credential is and what kind; never its value."""
     value = "sk_live_51H8xQ2LkdIwHu7ix" + "Z" * 20
     (tmp_path / "billing.py").write_text(f'STRIPE_KEY = "{value}"\n', encoding="utf-8")
-    cfg = {**load_config(None), "report": {"show": "all"}}
-    rep = run_scan([str(tmp_path)], cfg, only=["secrets"], use_adapters=False)
+    rep = run_scan([str(tmp_path)], load_config(None), only=["secrets"], use_adapters=False)
     assert rep.findings, "fixture produced nothing, so this proves nothing"
     text = render_annotations(rep)
     assert text, "nothing rendered, so this proves nothing"
@@ -149,7 +151,7 @@ def test_annotations_are_written_beside_the_other_formats(tmp_path):
     written = write_all(_report([f]), str(tmp_path / "out"), ["json", "annotations"])
     assert set(written) == {"json", "annotations"}
     body = Path(written["annotations"]).read_text(encoding="utf-8")
-    assert body == "::warning file=a.py,line=1,title=r/a::A\n"
+    assert body == "::warning file=a.py,line=1,title=r/a::[advisory: not gating] A\n"
     # Control: not requested, not written.
     written = write_all(_report([f]), str(tmp_path / "out2"), ["json"])
     assert "annotations" not in written

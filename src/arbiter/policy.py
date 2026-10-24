@@ -65,12 +65,15 @@ DEFAULTS: dict[str, Any] = {
         "tiers": ["verified"],
     },
     # What the human-facing renderings (console, markdown, pr-comment, SARIF,
-    # HTML, annotations) and the MCP tools show by default (ARB-100).
-    # `verified`: the verified tier only, with one line saying how many
-    # advisory and inferred findings were left out. `all`: every tier,
-    # sectioned and labelled. `--advisory` on the command line is `all` for
-    # one run. report.json always holds every finding, whatever this says.
-    "report": {"show": "verified"},
+    # HTML, annotations) and the MCP tools show (ARB-100, ARB-103).
+    # `all` (the default): every tier, verified first, then advisory, then
+    # inferred, each section labelled with whether it can block the gate.
+    # `verified`: an opt-in for the verified tier only, with one line saying
+    # how many advisory and inferred findings were left out;
+    # `--verified-only` is that for one run. Showing is not blocking: the
+    # gate reads `gate.tier_mode`, whatever this says. report.json always
+    # holds every finding.
+    "report": {"show": "all"},
     # Precision tiers (precision.py, docs/precision.md). `ledger: null` reads
     # the ledger shipped with Arbiter; `verified_rules` declares more rules
     # verified (globs), which still need the ledger to admit them.
@@ -166,8 +169,9 @@ def check_report_config(config: dict, where: str = "config") -> None:
 
 
 def show_mode(config: dict | None) -> str:
-    """Which tiers the renderings show under this configuration."""
-    return str(((config or {}).get("report") or {}).get("show") or "verified")
+    """Which tiers the renderings show under this configuration (default
+    `all`, ARB-103)."""
+    return str(((config or {}).get("report") or {}).get("show") or "all")
 
 
 def load_system(path: str) -> dict:
