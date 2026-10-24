@@ -1139,3 +1139,36 @@ per-file licence headers, and a trademark policy for the name "Arbiter"
 **The pre-publication check.** A full-history gitleaks scan was run for this
 change; the result and what it covered are in `CHANGELOG.md` under
 2026-10-21.
+
+## 2026-10-23 — Legal and policy documents drafted for review (ARB-102)
+
+**What changed.** The documents an open-source security tool is expected to
+carry were drafted on branch `legal-docs` as one pull request for the owner
+to review, with counsel, before any is adopted: an Arbiter™ trademark policy
+in `TRADEMARKS.md` (ahead of, and separate from, the unchanged OmniEngineering
+identity policy), `DISCLAIMER.md`, `PRIVACY.md` with `docs/data-handling.md`,
+`SECURITY.md`, `DCO` with a `CONTRIBUTING.md` that now accepts contributions,
+`CODE_OF_CONDUCT.md` and `docs/ai-assisted-development.md`. They were written
+by an AI assistant, which is not a lawyer, and say so only where it matters
+(the registry entry and the report), not on every file.
+
+**Why the privacy page is long.** It was written from the code rather than
+from the design rules, and the code does not quite match them. "`offline`
+never touches the network" is true of Arbiter's own model and registry calls
+and of the scanned source, but not of everything that runs: an uncached
+tree-sitter grammar is fetched by the grammar library, semgrep checks its
+version and checkov fetches policy guidelines when they start, and a URL
+target is cloned under any profile. None sends source code. Redaction is
+partial in measurable ways. The page records these as known gaps instead of
+restating the intended behaviour, because a privacy statement that is wrong
+in the reassuring direction is worse than none.
+
+**What was deliberately not done.** No code was changed: the six gaps,
+the unenforced "mandatory" suppression `reason`/`expires`, and the label
+files' quotations of third-party code (including the GPL-licensed OWASP
+Benchmark) are reported in `docs/data-handling.md`,
+`docs/readme-audit.md` and `docs/third-party-content.md` for separate
+requirements. `README.md` was not edited because another branch is
+rewriting it; its audit lists the fixes. No trademark clearance search was
+done, and other software named "Arbiter" exists. A CI check for DCO
+sign-offs is proposed, not added.

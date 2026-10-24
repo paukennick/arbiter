@@ -1,37 +1,81 @@
 # Contributing
 
-**Arbiter is not accepting external contributions at this time.**
+Defect reports, reproductions, documentation corrections and pull requests
+are welcome, on the terms below.
 
-## The licence that applies
+- Security problems: do not open a public issue; see [SECURITY.md](SECURITY.md).
+- Everyone taking part is expected to follow the
+  [Code of Conduct](CODE_OF_CONDUCT.md).
 
-Arbiter is licensed under the Apache License, Version 2.0 ([LICENSE](LICENSE)).
-Section 5 of that licence says that, unless explicitly stated otherwise, any
-contribution intentionally submitted for inclusion in the Work is offered under
-the terms of the licence — inbound terms match outbound. That is the basis on
-which a contribution would be offered if this policy changes.
+## The terms: Apache-2.0 in, Apache-2.0 out
 
-## Why contributions are still not taken
+Arbiter is licensed under the Apache License, Version 2.0
+([LICENSE](LICENSE)). Contributions are accepted under the same licence:
+section 5 of the licence says that, unless you explicitly state otherwise,
+any contribution you intentionally submit for inclusion is offered under its
+terms. There is no contributor licence agreement and no copyright assignment;
+you keep the copyright in your contribution.
 
-Whether to rely on §5 alone, or also to ask for a Developer Certificate of
-Origin sign-off or a contributor licence agreement, has not been decided, and
-neither has whether to take outside patches at all. Settling that *before*
-taking patches is cheaper than retrofitting it afterwards, which means tracing
-every contribution already merged back to its author. Requirement **L-8** in
-[docs/licensing.md](docs/licensing.md) records this. Until it is decided, a
-pull request is not merged.
+## Sign your commits: the Developer Certificate of Origin
 
-## What is welcome
+Every commit in a pull request must carry a `Signed-off-by` line. By adding
+it you certify the [Developer Certificate of Origin](DCO) (version 1.1):
+in short, that you wrote the change or otherwise have the right to submit it
+under the project's licence, and that you understand the contribution and
+your sign-off are public and kept permanently.
 
-Defect reports, reproductions and documentation corrections, filed as issues.
+Git adds the line for you:
 
-Please do not attach patches, diffs or code suggestions to issues while this
-policy stands.
+```bash
+git commit -s -m "Describe the change"
+```
 
-Forks need no permission: Apache-2.0 allows them. Keep `LICENSE` and `NOTICE`,
-mark the files you change (§4), and see [TRADEMARKS.md](TRADEMARKS.md) on
-naming.
+which appends
 
-## If this changes
+```text
+Signed-off-by: Your Name <you@example.com>
+```
 
-This file is the record. When inbound terms are settled they will be stated
-here. Do not assume a different arrangement from any other source.
+using your `user.name` and `user.email`. Use your real name, or the name you
+are publicly known by, and an address you can be reached at. Anonymous and
+pseudonymous sign-offs cannot be accepted, because the point of the
+certificate is that someone is answerable for it.
+
+Forgot? Amend the last commit with `git commit --amend -s --no-edit`, or sign
+every commit on your branch with `git rebase --signoff origin/main`, then
+force-push the branch.
+
+A pull request whose commits are not all signed off cannot be merged.
+
+## AI-assisted contributions
+
+You may use AI tools to help write a contribution. You are still its author
+for the purposes of the DCO: you must have the right to submit it, and you
+must have read, understood and tested it. Say in the pull request which
+tools you used. The project's own practice and the rules for contributors are
+in [docs/ai-assisted-development.md](docs/ai-assisted-development.md).
+
+## Third-party code
+
+Do not paste code, tests or data from other projects into a contribution
+unless their licence allows it and is compatible with Apache-2.0. Name the
+source and its licence in the pull request. Code from GPL, AGPL or unknown
+sources cannot be accepted into `src/`. See
+[docs/third-party-content.md](docs/third-party-content.md) for how the
+repository's existing third-party test material is inventoried.
+
+## Before you open a pull request
+
+- Follow the workflow in [AGENTS.md](AGENTS.md) and `.ai/`: tie the change to
+  a requirement id, record it in [CHANGELOG.md](CHANGELOG.md), and run
+  `python -m pytest -q -m "not slow"` and `python omni gate`.
+- Keep a change to one concern. A rule change needs tests that show the
+  defect it catches and the correct code it leaves alone.
+- Do not change files under `fixtures/` to make a test pass; they are the
+  measurement.
+
+## Forks and names
+
+Forks need no permission: keep `LICENSE` and `NOTICE`, and mark files you
+change (licence §4). If you distribute a modified version, see
+[TRADEMARKS.md](TRADEMARKS.md) on naming it.

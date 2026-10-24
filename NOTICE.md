@@ -7,7 +7,13 @@ which is governed by its own licence.
 
 The adapters in `src/arbiter/packs/adapters/` invoke external analyzers as
 separate executables but do not vendor or redistribute them. Each is installed
-separately by the operator.
+separately by the operator. What those analyzers may send over the network
+when Arbiter runs them is described in
+[docs/data-handling.md](docs/data-handling.md#third-party-analyzers).
+
+Third-party code and data quoted in the repository's own test material
+(fixtures and label files) is a separate question, inventoried in
+[docs/third-party-content.md](docs/third-party-content.md).
 
 The **Redistributed** column is the load-bearing one.
 

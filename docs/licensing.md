@@ -38,8 +38,10 @@ a git subtree and is itself Apache-2.0.
 | Copyright and attribution notice | `NOTICE` | "Arbiter / Copyright 2026 Nicholas J Pauken", followed by the OmniEngineering workspace's own NOTICE |
 | Licence referenced from metadata | `pyproject.toml` | `license = { file = "LICENSE" }` plus the `License :: OSI Approved :: Apache Software License` classifier |
 | Ownership of scan output | `README.md`, `NOTICE`, this file | stated: output belongs to the user (L-4) |
-| Inbound contribution terms | `CONTRIBUTING.md` | outside contributions not accepted yet; Apache-2.0 §5 stated as the basis if that changes |
-| Trademark policy | `TRADEMARKS.md` | the OmniEngineering identity policy; Apache-2.0 §6 grants no trademark rights |
+| Inbound contribution terms | `CONTRIBUTING.md`, `DCO` | drafted 2026-10-23 for the owner's review (ARB-102): inbound = outbound under Apache-2.0 §5, with a Developer Certificate of Origin 1.1 sign-off on every commit |
+| Trademark policy | `TRADEMARKS.md` | drafted 2026-10-23 for the owner's review (ARB-102): an Arbiter™ policy, followed by the separate OmniEngineering identity policy; Apache-2.0 §6 grants no trademark rights |
+| Disclaimer, privacy, security, conduct | `DISCLAIMER.md`, `PRIVACY.md` with [data-handling.md](data-handling.md), `SECURITY.md`, `CODE_OF_CONDUCT.md` | drafted 2026-10-23 for the owner's review (ARB-102) |
+| Third-party content in test data | [third-party-content.md](third-party-content.md) | audited 2026-10-23; findings open for counsel |
 | Third-party component inventory | `NOTICE.md` | present, accurate |
 | Redistribution review for bundled analyzers | not started | **absent** — L-6 |
 
@@ -78,7 +80,7 @@ licence. Their state under Apache-2.0:
 | **L-5** — third-party components remain separable | **met** — `NOTICE.md` inventories them; Apache-2.0 grants rights only in the Work |
 | **L-6** — bundled redistribution requires a completed review | **open** — see below |
 | **L-7** — fixtures carry no live or third-party-owned credentials | **met** for what was checked — the 2026-10-21 full-history gitleaks scan reported only synthetic test values and the published AWS example key (`CHANGELOG.md`) |
-| **L-8** — contribution terms stated before outside contributions | **met** — `CONTRIBUTING.md` says outside contributions are not accepted yet and names Apache-2.0 §5 as the inbound basis; whether to add a CLA or DCO is the owner's open decision |
+| **L-8** — contribution terms stated before outside contributions | **met** — `CONTRIBUTING.md` states Apache-2.0 §5 as the inbound basis and, as drafted on 2026-10-23 (ARB-102), requires a DCO sign-off; nothing yet enforces the sign-off in CI |
 
 ### L-6 — Bundled redistribution requires a completed review
 
@@ -155,12 +157,23 @@ superseded by the 2026-10-21 decision. What remains:
    licensed documents ([compliance.md](compliance.md)).
 3. **Should source files carry per-file Apache-2.0 headers**, or is the root
    `LICENSE` plus `NOTICE` sufficient? Undecided; none have been added.
-4. **Inbound contribution terms** — whether to accept outside contributions at
-   all, and if so whether to rely on Apache-2.0 §5 alone or add a DCO or CLA.
-   Undecided; see [CONTRIBUTING.md](../CONTRIBUTING.md).
-5. **A trademark policy for the name "Arbiter".** `TRADEMARKS.md` is the
-   OmniEngineering identity policy and names only OmniEngineering marks. No
-   Arbiter-specific policy has been adopted.
+4. **Inbound contribution terms.** Drafted 2026-10-23 (ARB-102): Apache-2.0
+   §5 plus a DCO sign-off, no CLA ([CONTRIBUTING.md](../CONTRIBUTING.md),
+   [DCO](../DCO)). Open until the owner adopts it, and until CI enforces the
+   sign-off.
+5. **A trademark policy for the name "Arbiter".** Drafted 2026-10-23
+   (ARB-102) in [TRADEMARKS.md](../TRADEMARKS.md), in the style of the Apache
+   Software Foundation's policy. No clearance search has been done, other
+   software named "Arbiter" exists, and the mark is unregistered, so the
+   policy claims only use of the name for this software.
+6. **Third-party code quoted in label files.** Model labels in
+   `tools/gold/labels/` quote short fragments of the code they judged,
+   including from the GPL-licensed OWASP Benchmark and from sources with no
+   recorded licence ([third-party-content.md](third-party-content.md)).
+   Whether that is acceptable in an Apache-2.0 repository, and whether git
+   history matters, needs counsel.
+7. **Copyright in AI-assisted material.** See
+   [ai-assisted-development.md](ai-assisted-development.md).
 
 ## History: the superseded proprietary draft
 

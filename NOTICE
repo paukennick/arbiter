@@ -7,7 +7,12 @@ from your own material belong to you; Arbiter's licence claims no rights over
 them.
 
 Third-party components that Arbiter depends on or invokes, and whether any of
-them is redistributed, are inventoried in NOTICE.md.
+them is redistributed, are inventoried in NOTICE.md; third-party content in
+the repository's test data is inventoried in docs/third-party-content.md.
+
+"Arbiter" is used as a trademark for this software; TRADEMARKS.md sets out how
+the name may be used. DISCLAIMER.md, PRIVACY.md and SECURITY.md describe what
+results mean, what data leaves the machine, and how to report a vulnerability.
 
 -------------------------------------------------------------------------------
 
