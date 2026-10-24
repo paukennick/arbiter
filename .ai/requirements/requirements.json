@@ -2190,7 +2190,8 @@
       "risk_notes": [
         "Labels are model labels",
         "not human labels. 993 tp / 12 fp / 5 unsure. Only supply.unpinned-action reaches Wilson lower >= 0.99 (0.9924",
-        "500/500); no rule is admitted by this commit."
+        "500/500); no rule is admitted by this commit.",
+        "2026-10-24: owner decided to declare supply.unpinned-action verified (ledger 690/0, lower 0.9945). Held-out r5 labels now feed the ledger, so r5 is used for measurement only; tuning a rule against them would spoil the set."
       ]
     }
   ]
