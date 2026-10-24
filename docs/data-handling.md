@@ -166,7 +166,7 @@ all), takes the **first 6,000 characters** of each, masks them, and stops at
 each preceded by `=== <repository-relative path> ===`. The default model is
 `claude-sonnet-4-5` (`judgement.DEFAULT_MODEL`; `judgement.model` overrides
 it). Findings it returns are marked `provenance: inferred` and do not gate
-unless `gate.gate_inferred` is set.
+unless `gate.gate_on_inferred` is set.
 
 ### Who receives it
 
