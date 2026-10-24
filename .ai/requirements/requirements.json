@@ -2598,7 +2598,7 @@
       "title": "External conformance scorecard over OWASP Benchmark, Juliet and CVE fix pairs",
       "description": "One reproducible command runs the pinned Arbiter (offline, no adapters, no cache) over the outside benchmarks already wired (OWASP Benchmark Java 1.2 and Python 0.1, Juliet Java 1.3, the 70 GHSA fix pairs) and records one run record per benchmark in the accuracy manifest's run_record_template format, with per-benchmark, per-CWE and per-rule case-level TP/FP/FN/TN, labelled-case precision, recall and safe-case false-positive rate, Wilson intervals, a repository-cluster bootstrap where there are several repositories, coverage and not-assessed reasons, and the weak spots ranked by distance from the 0.99 lower-bound bar. Measurement only: benchmark-conformance results, aggregate-only output, no detection rule changes.",
       "priority": "high",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "tools/ground_truth/external_scorecard.py",
         "tests/test_external_scorecard.py",
