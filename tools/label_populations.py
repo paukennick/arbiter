@@ -87,7 +87,11 @@ def encode(path: Path, records: list[dict]) -> bytes:
 
 
 def heldout_repos() -> set[str]:
-    return set(json.loads(HELDOUT.read_text(encoding="utf-8"))["held_out"]["gold_repos"])
+    """Gold-style repositories in every held-out set of heldout.json: `held_out` (2026-10-22) and any later
+    set (a top-level key holding `gold_repos`, e.g. `held_out_r5`, ARB-092)."""
+    data = json.loads(HELDOUT.read_text(encoding="utf-8"))
+    return {r for v in data.values() if isinstance(v, dict) for r in v.get("gold_repos", [])
+            if isinstance(v.get("gold_repos"), list)}
 
 
 def load_report(path: Path) -> dict:

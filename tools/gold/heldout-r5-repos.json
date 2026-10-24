@@ -1,0 +1,2606 @@
+{
+ "_about": "Held-out set r5 (ARB-092), frozen 2026-10-23 before any scan. 10 repositories per language: 5 well-run (OpenSSF Scorecard >= 7.0; Ruby >= 6.0) and 5 applications (deployed services, web apps, self-hosted tools), each the top by stars among repositories with >= 1000 stars, pushed in the last 60 days, not archived/fork/template, an OSI licence, the language >= 60% of bytes (Ruby >= 50%), size <= 400000 KB, a .github/workflows directory, and not used before in Arbiter's corpora. Chosen from GitHub and Scorecard metadata, descriptions and READMEs only: nothing was cloned, scanned or read as source before the list was frozen. Each repo is pinned to its default-branch HEAD on 2026-10-23. `rejected` lists every repository above each cut-off that was skipped, with the reason, so the selection can be audited.",
+ "frozen": "2026-10-23",
+ "repos": {
+  "py-yt-dlp": {
+   "github": "yt-dlp/yt-dlp",
+   "language": "python",
+   "kind": "well-run",
+   "default_branch": "master",
+   "pinned_sha": "fa9886678eb65103303c627b8e013f13f8999b41",
+   "pinned_commit_date": "2026-10-23T15:18:52Z",
+   "stars": 200964,
+   "license": "Unlicense",
+   "languages": {
+    "Python": 0.9987,
+    "Makefile": 0.001,
+    "Shell": 0.0003,
+    "Dockerfile": 0.0,
+    "Batchfile": 0.0
+   },
+   "size_kb": 64911,
+   "scorecard": 8,
+   "why": "Command-line audio/video downloader; Scorecard 8.0, #1 by stars among eligible repos with a score >= 7"
+  },
+  "py-scikit-learn": {
+   "github": "scikit-learn/scikit-learn",
+   "language": "python",
+   "kind": "well-run",
+   "default_branch": "main",
+   "pinned_sha": "59106029d483678e79825f753bde67f8ade4332b",
+   "pinned_commit_date": "2026-10-23T13:36:06Z",
+   "stars": 67883,
+   "license": "BSD-3-Clause",
+   "languages": {
+    "Python": 0.9241,
+    "Cython": 0.0563,
+    "C++": 0.0101,
+    "C": 0.0028,
+    "Shell": 0.0026,
+    "Meson": 0.0023
+   },
+   "size_kb": 188234,
+   "scorecard": 9.4,
+   "why": "Machine-learning library; Scorecard 9.4, #2 by stars among eligible scored >= 7"
+  },
+  "py-last30days-skill": {
+   "github": "mvanhorn/last30days-skill",
+   "language": "python",
+   "kind": "well-run",
+   "default_branch": "main",
+   "pinned_sha": "f3cd06a620e385ce15109ed6d3b70fc20c89eccc",
+   "pinned_commit_date": "2026-10-23T01:28:07Z",
+   "stars": 65214,
+   "license": "MIT",
+   "languages": {
+    "Python": 0.9685,
+    "Go": 0.0163,
+    "HTML": 0.0125,
+    "Shell": 0.0027
+   },
+   "size_kb": 53852,
+   "scorecard": 7.7,
+   "why": "Agent-skill plugin with a Python research pipeline (97% Python); Scorecard 7.7, #3 by stars among eligible scored >= 7"
+  },
+  "py-scrapy": {
+   "github": "scrapy/scrapy",
+   "language": "python",
+   "kind": "well-run",
+   "default_branch": "master",
+   "pinned_sha": "171ccbedb734c988fd86708fd5e0803029b6c730",
+   "pinned_commit_date": "2026-10-22T21:57:27Z",
+   "stars": 64983,
+   "license": "BSD-3-Clause",
+   "languages": {
+    "Python": 0.9809,
+    "HTML": 0.0162,
+    "Go Template": 0.0023,
+    "Roff": 0.0005,
+    "Shell": 0.0001
+   },
+   "size_kb": 33569,
+   "scorecard": 7.3,
+   "why": "Web crawling framework; Scorecard 7.3, #4 by stars among eligible scored >= 7"
+  },
+  "py-keras": {
+   "github": "keras-team/keras",
+   "language": "python",
+   "kind": "well-run",
+   "default_branch": "master",
+   "pinned_sha": "cfebb2af8a202fcb31b8b86766f44eabe6295a7a",
+   "pinned_commit_date": "2026-10-23T22:31:20Z",
+   "stars": 64378,
+   "license": "Apache-2.0",
+   "languages": {
+    "Python": 0.9999,
+    "Shell": 0.0001
+   },
+   "size_kb": 58158,
+   "scorecard": 7.4,
+   "why": "Deep-learning framework; Scorecard 7.4, #5 by stars among eligible scored >= 7"
+  },
+  "py-comfyui": {
+   "github": "Comfy-Org/ComfyUI",
+   "language": "python",
+   "kind": "application",
+   "default_branch": "master",
+   "pinned_sha": "dea870e1a36614b3614c0008a820734d0fecdf4f",
+   "pinned_commit_date": "2026-10-24T00:24:07Z",
+   "stars": 142348,
+   "license": "GPL-3.0",
+   "languages": {
+    "Python": 0.9973,
+    "GLSL": 0.0025,
+    "Batchfile": 0.0001,
+    "Mako": 0.0
+   },
+   "size_kb": 105311,
+   "scorecard": null,
+   "why": "Self-hosted diffusion-model web GUI, API and backend server; highest-starred eligible application"
+  },
+  "py-deep-live-cam": {
+   "github": "hacksider/Deep-Live-Cam",
+   "language": "python",
+   "kind": "application",
+   "default_branch": "main",
+   "pinned_sha": "f8f9b85275b06edc039a22d17867751e9f20933b",
+   "pinned_commit_date": "2026-10-22T15:41:41Z",
+   "stars": 97182,
+   "license": "AGPL-3.0",
+   "languages": {
+    "Python": 0.9998,
+    "Batchfile": 0.0002
+   },
+   "size_kb": 156266,
+   "scorecard": null,
+   "why": "End-user desktop GUI app for real-time face swap (product, not a library/CLI); #2 eligible application by stars"
+  },
+  "py-odysseus": {
+   "github": "odysseus-dev/odysseus",
+   "language": "python",
+   "kind": "application",
+   "default_branch": "dev",
+   "pinned_sha": "f8e043e8ca7cb051785b36dc1e7a669d386fd7fa",
+   "pinned_commit_date": "2026-10-23T19:19:04Z",
+   "stars": 94310,
+   "license": "AGPL-3.0",
+   "languages": {
+    "Python": 0.6403,
+    "JavaScript": 0.2942,
+    "CSS": 0.0507,
+    "HTML": 0.0115,
+    "Shell": 0.0025,
+    "PowerShell": 0.0003
+   },
+   "size_kb": 38202,
+   "scorecard": null,
+   "why": "Self-hosted AI workspace deployed via docker compose with admin login (default branch is dev); #3 eligible application"
+  },
+  "py-mirofish": {
+   "github": "666ghj/MiroFish",
+   "language": "python",
+   "kind": "application",
+   "default_branch": "main",
+   "pinned_sha": "7657031ac01184afe2cb220f5ee3545573b5e843",
+   "pinned_commit_date": "2026-10-01T18:20:36Z",
+   "stars": 81538,
+   "license": "AGPL-3.0",
+   "languages": {
+    "Python": 0.6659,
+    "Vue": 0.3254,
+    "JavaScript": 0.0078,
+    "HTML": 0.0005,
+    "Dockerfile": 0.0004
+   },
+   "size_kb": 16817,
+   "scorecard": null,
+   "why": "Multi-agent prediction web app (backend + frontend, hosted live demo); #4 eligible application"
+  },
+  "py-daily-stock-analysis": {
+   "github": "ZhuLinsen/daily_stock_analysis",
+   "language": "python",
+   "kind": "application",
+   "default_branch": "main",
+   "pinned_sha": "ec66bf46caf6993f673bd4be59c883754667b686",
+   "pinned_commit_date": "2026-10-21T09:50:50Z",
+   "stars": 66945,
+   "license": "MIT",
+   "languages": {
+    "Python": 0.7907,
+    "TypeScript": 0.193,
+    "JavaScript": 0.0075,
+    "CSS": 0.0043,
+    "Shell": 0.0018,
+    "Jinja": 0.0011
+   },
+   "size_kb": 119745,
+   "scorecard": null,
+   "why": "Self-hosted stock-analysis system with web dashboard, bot/API and scheduled push notifications (FastAPI, Docker); #5 eligible application"
+  },
+  "java-rxjava": {
+   "github": "ReactiveX/RxJava",
+   "language": "java",
+   "kind": "well-run",
+   "default_branch": "4.x",
+   "pinned_sha": "9c632106cd94649ac6229c916688909ce131fbe4",
+   "pinned_commit_date": "2026-10-23T17:28:46Z",
+   "stars": 48160,
+   "license": "Apache-2.0",
+   "languages": {
+    "Java": 0.999,
+    "CSS": 0.0008,
+    "Shell": 0.0002
+   },
+   "size_kb": 180140,
+   "scorecard": 9.1,
+   "why": "Reactive Extensions library for the JVM; Scorecard 9.1, top-starred eligible repo with score >= 7."
+  },
+  "java-dubbo": {
+   "github": "apache/dubbo",
+   "language": "java",
+   "kind": "well-run",
+   "default_branch": "3.3",
+   "pinned_sha": "843b98b3a1c70134e965ab04efc2de668238e0b2",
+   "pinned_commit_date": "2026-10-21T02:25:11Z",
+   "stars": 41574,
+   "license": "Apache-2.0",
+   "languages": {
+    "Java": 0.9936,
+    "Groovy": 0.0033,
+    "Mustache": 0.002,
+    "Shell": 0.0004,
+    "Batchfile": 0.0002,
+    "JavaScript": 0.0002
+   },
+   "size_kb": 61746,
+   "scorecard": 7.4,
+   "why": "Apache Dubbo RPC/microservice framework (Java implementation); Scorecard 7.4."
+  },
+  "java-ruoyi-vue-pro": {
+   "github": "YunaiV/ruoyi-vue-pro",
+   "language": "java",
+   "kind": "application",
+   "default_branch": "master",
+   "pinned_sha": "48809cbd4d4cb5253d4f153640af803981ff3a80",
+   "pinned_commit_date": "2026-10-23T15:49:03Z",
+   "stars": 40020,
+   "license": "MIT",
+   "languages": {
+    "Java": 0.6483,
+    "PLpgSQL": 0.2978,
+    "TSQL": 0.0505,
+    "JavaScript": 0.0016,
+    "Python": 0.0012,
+    "Shell": 0.0003
+   },
+   "size_kb": 201895,
+   "scorecard": null,
+   "why": "RuoYi-Vue Pro: Spring Boot back-office admin web application (RBAC, workflow, mall, CRM, ERP, payment, AI modules) with live demo deployments; a deployable web app, not a library. Top-starred eligible application."
+  },
+  "java-kafka": {
+   "github": "apache/kafka",
+   "language": "java",
+   "kind": "application",
+   "default_branch": "trunk",
+   "pinned_sha": "71312a111e9fe07214a8d2849049a5baad1ca8b3",
+   "pinned_commit_date": "2026-10-23T16:11:13Z",
+   "stars": 34107,
+   "license": "Apache-2.0",
+   "languages": {
+    "Java": 0.903,
+    "Scala": 0.0761,
+    "Python": 0.0182,
+    "Shell": 0.0018,
+    "Batchfile": 0.0005,
+    "Dockerfile": 0.0003
+   },
+   "size_kb": 321148,
+   "scorecard": 6.1,
+   "why": "Apache Kafka: deployed distributed event-streaming broker/service (repo also carries clients, streams and connect). Counted as a deployed service."
+  },
+  "java-nacos": {
+   "github": "alibaba/nacos",
+   "language": "java",
+   "kind": "application",
+   "default_branch": "develop",
+   "pinned_sha": "7f71d44f880535dcf0ba14829df4a98329fc4e06",
+   "pinned_commit_date": "2026-10-23T08:29:03Z",
+   "stars": 33472,
+   "license": "Apache-2.0",
+   "languages": {
+    "Java": 0.9396,
+    "TypeScript": 0.0511,
+    "SCSS": 0.0041,
+    "Shell": 0.0016,
+    "JavaScript": 0.0015,
+    "PLpgSQL": 0.0007
+   },
+   "size_kb": 110271,
+   "scorecard": 5.9,
+   "why": "Nacos: self-hosted service-discovery and configuration server with web console; a deployed service."
+  },
+  "java-xxl-job": {
+   "github": "xuxueli/xxl-job",
+   "language": "java",
+   "kind": "application",
+   "default_branch": "master",
+   "pinned_sha": "693d27640be76d02ed7214ede57ce75f7f9ebb71",
+   "pinned_commit_date": "2026-10-09T15:00:54Z",
+   "stars": 30627,
+   "license": "GPL-3.0",
+   "languages": {
+    "Java": 0.9985,
+    "Dockerfile": 0.0015
+   },
+   "size_kb": 39371,
+   "scorecard": 3.8,
+   "why": "XXL-JOB: distributed task-scheduling platform shipped as a deployable admin server (xxl-job-admin) with web UI; self-hosted tool."
+  },
+  "java-apollo": {
+   "github": "apolloconfig/apollo",
+   "language": "java",
+   "kind": "application",
+   "default_branch": "master",
+   "pinned_sha": "ea356770c6393deccd1dbfb18e5a7607e71f2f9e",
+   "pinned_commit_date": "2026-10-17T01:39:31Z",
+   "stars": 29822,
+   "license": "Apache-2.0",
+   "languages": {
+    "Java": 0.7312,
+    "JavaScript": 0.1281,
+    "HTML": 0.1117,
+    "Shell": 0.0155,
+    "Python": 0.0069,
+    "CSS": 0.005
+   },
+   "size_kb": 58193,
+   "scorecard": null,
+   "why": "Apollo: configuration-management system, Spring Boot server side with portal/admin/config services; a deployed service."
+  },
+  "java-skywalking": {
+   "github": "apache/skywalking",
+   "language": "java",
+   "kind": "well-run",
+   "default_branch": "master",
+   "pinned_sha": "1527483d9603eebd9f0e166053f2a824541b5b5a",
+   "pinned_commit_date": "2026-10-23T14:07:56Z",
+   "stars": 24974,
+   "license": "Apache-2.0",
+   "languages": {
+    "Java": 0.9707,
+    "Shell": 0.0178,
+    "ANTLR": 0.0048,
+    "Python": 0.0022,
+    "Lua": 0.0011,
+    "FreeMarker": 0.001
+   },
+   "size_kb": 181670,
+   "scorecard": 7.1,
+   "why": "Apache SkyWalking APM/observability system; Scorecard 7.1. (Also an application, but assigned to well-run; it ranks below the 5th application pick anyway.)"
+  },
+  "java-mybatis-3": {
+   "github": "mybatis/mybatis-3",
+   "language": "java",
+   "kind": "well-run",
+   "default_branch": "master",
+   "pinned_sha": "0437d36bf06c7601f07ae1a3ffac796f7bb14f15",
+   "pinned_commit_date": "2026-10-23T17:54:14Z",
+   "stars": 20437,
+   "license": "Apache-2.0",
+   "languages": {
+    "Java": 0.9944,
+    "CSS": 0.0023,
+    "TSQL": 0.0015,
+    "PLpgSQL": 0.0015,
+    "Shell": 0.0004
+   },
+   "size_kb": 159068,
+   "scorecard": 7.1,
+   "why": "MyBatis SQL mapper framework; Scorecard 7.1."
+  },
+  "java-caffeine": {
+   "github": "ben-manes/caffeine",
+   "language": "java",
+   "kind": "well-run",
+   "default_branch": "master",
+   "pinned_sha": "e8fc857ef523bd04439661d0265f28bbe29f0848",
+   "pinned_commit_date": "2026-10-23T00:11:38Z",
+   "stars": 17907,
+   "license": "Apache-2.0",
+   "languages": {
+    "Java": 0.6667,
+    "HTML": 0.1664,
+    "Python": 0.1601,
+    "Shell": 0.0044,
+    "Kotlin": 0.0023
+   },
+   "size_kb": 117897,
+   "scorecard": 9.0,
+   "why": "Caffeine high-performance caching library; Scorecard 9.0 (Java 67% of bytes, rest is mostly Kotlin/Gradle build and JMH)."
+  },
+  "go-moby": {
+   "github": "moby/moby",
+   "language": "go",
+   "kind": "well-run",
+   "default_branch": "master",
+   "pinned_sha": "b711d21792db6db488de976eb3c4a653c92c3bc3",
+   "pinned_commit_date": "2026-10-22T09:41:14Z",
+   "stars": 72201,
+   "license": "Apache-2.0",
+   "languages": {
+    "Go": 97.4,
+    "Shell": 1.3,
+    "Dockerfile": 0.4,
+    "PowerShell": 0.3,
+    "Lua": 0.2,
+    "Go Template": 0.2,
+    "Makefile": 0.1,
+    "Python": 0.1
+   },
+   "size_kb": 276465,
+   "scorecard": 9.1,
+   "why": "Moby/Docker Engine container runtime daemon; Scorecard 9.1, highest-starred eligible repo with score >= 7.0"
+  },
+  "go-prometheus": {
+   "github": "prometheus/prometheus",
+   "language": "go",
+   "kind": "well-run",
+   "default_branch": "main",
+   "pinned_sha": "a2fda0ef4638518a6a6fb27fc48be88fbd732f4b",
+   "pinned_commit_date": "2026-10-23T14:30:15Z",
+   "stars": 66723,
+   "license": "Apache-2.0",
+   "languages": {
+    "Go": 88.5,
+    "TypeScript": 10.2,
+    "Yacc": 0.4,
+    "Shell": 0.2,
+    "JavaScript": 0.2,
+    "SCSS": 0.1,
+    "CSS": 0.1,
+    "Lex": 0.1,
+    "Makefile": 0.1
+   },
+   "size_kb": 294922,
+   "scorecard": 8.1,
+   "why": "Prometheus monitoring system and time-series database; Scorecard 8.1, 2nd by stars among score >= 7.0"
+  },
+  "go-gitea": {
+   "github": "go-gitea/gitea",
+   "language": "go",
+   "kind": "well-run",
+   "default_branch": "main",
+   "pinned_sha": "7c91252be3c1bad6b434f877e8d238364b748b19",
+   "pinned_commit_date": "2026-10-24T00:51:27Z",
+   "stars": 58663,
+   "license": "MIT",
+   "languages": {
+    "Go": 83.3,
+    "Handlebars": 6.9,
+    "TypeScript": 5.4,
+    "CSS": 1.7,
+    "Vue": 1.1,
+    "JavaScript": 1.0,
+    "Shell": 0.2,
+    "Makefile": 0.1,
+    "Jsonnet": 0.1
+   },
+   "size_kb": 366895,
+   "scorecard": 7.1,
+   "why": "Gitea self-hosted Git forge; Scorecard 7.1, 3rd by stars among score >= 7.0 (also an application, counted once as well-run)"
+  },
+  "go-gh-cli": {
+   "github": "cli/cli",
+   "language": "go",
+   "kind": "well-run",
+   "default_branch": "trunk",
+   "pinned_sha": "4f2cfe92e3499f8581bf39db77e0a1431fa7b55c",
+   "pinned_commit_date": "2026-10-23T20:08:01Z",
+   "stars": 46722,
+   "license": "MIT",
+   "languages": {
+    "Go": 98.9,
+    "Shell": 1.1
+   },
+   "size_kb": 82535,
+   "scorecard": 7.0,
+   "why": "GitHub's official gh command-line tool; Scorecard 7.0, 4th by stars among score >= 7.0"
+  },
+  "go-fiber": {
+   "github": "gofiber/fiber",
+   "language": "go",
+   "kind": "well-run",
+   "default_branch": "main",
+   "pinned_sha": "4d728a6296466d0fa2a3d082cb10afa169501a39",
+   "pinned_commit_date": "2026-10-23T09:49:01Z",
+   "stars": 40228,
+   "license": "MIT",
+   "languages": {
+    "Go": 100.0
+   },
+   "size_kb": 45556,
+   "scorecard": 7.0,
+   "why": "Fiber Express-style web framework; Scorecard 7.0, 5th by stars among score >= 7.0"
+  },
+  "go-ollama": {
+   "github": "ollama/ollama",
+   "language": "go",
+   "kind": "application",
+   "default_branch": "main",
+   "pinned_sha": "675150d6ad2747df1e218ef59de9194bc4a7e538",
+   "pinned_commit_date": "2026-10-23T23:15:08Z",
+   "stars": 184489,
+   "license": "MIT",
+   "languages": {
+    "Go": 72.3,
+    "C": 19.3,
+    "TypeScript": 5.0,
+    "C++": 0.9,
+    "Objective-C": 0.8,
+    "CMake": 0.7,
+    "PowerShell": 0.4,
+    "Shell": 0.4,
+    "Dockerfile": 0.1,
+    "Inno Setup": 0.1,
+    "Go Template": 0.1
+   },
+   "size_kb": 96479,
+   "scorecard": null,
+   "why": "Ollama self-hosted LLM server (installer/Docker image, HTTP API, desktop app); highest-starred eligible application"
+  },
+  "go-frp": {
+   "github": "fatedier/frp",
+   "language": "go",
+   "kind": "application",
+   "default_branch": "dev",
+   "pinned_sha": "93b52799bb7e6dad7ae1152c8b593eefcc17d595",
+   "pinned_commit_date": "2026-10-23T07:52:11Z",
+   "stars": 110097,
+   "license": "Apache-2.0",
+   "languages": {
+    "Go": 84.9,
+    "Vue": 10.6,
+    "TypeScript": 3.0,
+    "CSS": 0.6,
+    "Shell": 0.5,
+    "SCSS": 0.1,
+    "Makefile": 0.1,
+    "JavaScript": 0.1
+   },
+   "size_kb": 32920,
+   "scorecard": 5.4,
+   "why": "frp reverse-proxy server/client (frps/frpc) with web dashboard, deployed as a self-hosted service; 2nd application by stars"
+  },
+  "go-ragflow": {
+   "github": "infiniflow/ragflow",
+   "language": "go",
+   "kind": "application",
+   "default_branch": "main",
+   "pinned_sha": "a55dccee4c211046b4e4d216a538bc60fae78dfd",
+   "pinned_commit_date": "2026-10-23T12:09:20Z",
+   "stars": 92763,
+   "license": "Apache-2.0",
+   "languages": {
+    "Go": 71.4,
+    "TypeScript": 21.9,
+    "C++": 3.8,
+    "Python": 1.8,
+    "C": 0.4,
+    "Shell": 0.3,
+    "Less": 0.1,
+    "CSS": 0.1,
+    "JavaScript": 0.1
+   },
+   "size_kb": 185951,
+   "scorecard": null,
+   "why": "RAGFlow RAG engine web product (cloud service plus Docker local deployment); 3rd application by stars"
+  },
+  "go-syncthing": {
+   "github": "syncthing/syncthing",
+   "language": "go",
+   "kind": "application",
+   "default_branch": "main",
+   "pinned_sha": "a4a2da477f32d29eda98cc6eb08554dfe5078875",
+   "pinned_commit_date": "2026-10-23T05:03:25Z",
+   "stars": 89666,
+   "license": "MPL-2.0",
+   "languages": {
+    "Go": 84.6,
+    "HTML": 7.1,
+    "JavaScript": 5.7,
+    "Shell": 1.8,
+    "CSS": 0.8
+   },
+   "size_kb": 127744,
+   "scorecard": 5.8,
+   "why": "Syncthing continuous file-sync daemon with web GUI and REST API, self-hosted; 4th application by stars"
+  },
+  "go-pocketbase": {
+   "github": "pocketbase/pocketbase",
+   "language": "go",
+   "kind": "application",
+   "default_branch": "master",
+   "pinned_sha": "9d281ccaba65f2686eb7b0b614ccda72d1116a1b",
+   "pinned_commit_date": "2026-10-23T10:44:14Z",
+   "stars": 61564,
+   "license": "MIT",
+   "languages": {
+    "Go": 69.2,
+    "JavaScript": 24.5,
+    "CSS": 6.3
+   },
+   "size_kb": 147527,
+   "scorecard": 4.6,
+   "why": "PocketBase standalone backend server (SQLite, auth/users, admin dashboard, REST API; also usable as a Go toolkit); 5th application by stars"
+  },
+  "ruby-jekyll": {
+   "github": "jekyll/jekyll",
+   "language": "ruby",
+   "kind": "well-run",
+   "pinned_sha": "97c3bdc822df9d5bea4c269b29a28de5a5e29d70",
+   "pinned_commit_date": "2026-10-13T18:43:37Z",
+   "default_branch": "master",
+   "stars": 51732,
+   "license": "MIT",
+   "languages": {
+    "Ruby": 70.7,
+    "Gherkin": 23.1,
+    "JavaScript": 3.7,
+    "HTML": 1.2,
+    "Shell": 0.8,
+    "Dockerfile": 0.2,
+    "Earthly": 0.1,
+    "CSS": 0.1,
+    "SCSS": 0.1,
+    "CoffeeScript": 0,
+    "Hack": 0
+   },
+   "size_kb": 71705,
+   "scorecard": 6.2,
+   "why": "Blog-aware static site generator (the engine behind GitHub Pages); Scorecard 6.2, #1 eligible Ruby repo by stars"
+  },
+  "ruby-huginn": {
+   "github": "huginn/huginn",
+   "language": "ruby",
+   "kind": "well-run",
+   "pinned_sha": "80dd296d232e2ccb59f732bc646250a20cd1203b",
+   "pinned_commit_date": "2026-10-23T15:57:17Z",
+   "default_branch": "master",
+   "stars": 50109,
+   "license": "MIT",
+   "languages": {
+    "Ruby": 89.1,
+    "HTML": 6.8,
+    "JavaScript": 2.7,
+    "Shell": 0.9,
+    "Dockerfile": 0.3,
+    "SCSS": 0.2,
+    "Procfile": 0.1,
+    "Makefile": 0
+   },
+   "size_kb": 12125,
+   "scorecard": 6.1,
+   "why": "Self-hosted agent/automation platform (Rails); Scorecard 6.1, #2 eligible by stars (also an application, but well-run slots are filled first)"
+  },
+  "ruby-fastlane": {
+   "github": "fastlane/fastlane",
+   "language": "ruby",
+   "kind": "well-run",
+   "pinned_sha": "6e99a926e7fa8d118b67c963017b9b2788c04c40",
+   "pinned_commit_date": "2026-10-20T16:33:05Z",
+   "default_branch": "master",
+   "stars": 42290,
+   "license": "MIT",
+   "languages": {
+    "Ruby": 83,
+    "Swift": 14.1,
+    "HTML": 1,
+    "Objective-C": 0.7,
+    "Shell": 0.6,
+    "Java": 0.6,
+    "Lua": 0,
+    "C": 0
+   },
+   "size_kb": 86304,
+   "scorecard": 8.3,
+   "why": "iOS/Android build and release automation toolchain; Scorecard 8.3, #3 eligible by stars"
+  },
+  "ruby-fluentd": {
+   "github": "fluent/fluentd",
+   "language": "ruby",
+   "kind": "well-run",
+   "pinned_sha": "f984d657130231c772ae588e5a74971da8b7a35a",
+   "pinned_commit_date": "2026-10-23T05:51:30Z",
+   "default_branch": "master",
+   "stars": 13609,
+   "license": "Apache-2.0",
+   "languages": {
+    "Ruby": 99.7,
+    "HTML": 0.2,
+    "PowerShell": 0.1
+   },
+   "size_kb": 21665,
+   "scorecard": 8.8,
+   "why": "CNCF unified logging layer / log collector daemon; Scorecard 8.8, #4 eligible by stars"
+  },
+  "ruby-faker": {
+   "github": "faker-ruby/faker",
+   "language": "ruby",
+   "kind": "well-run",
+   "pinned_sha": "577447c403c67c92200bca045390c3dfdb6d643b",
+   "pinned_commit_date": "2026-10-24T00:39:46Z",
+   "default_branch": "main",
+   "stars": 11945,
+   "license": "MIT",
+   "languages": {
+    "Ruby": 100,
+    "Shell": 0
+   },
+   "size_kb": 15076,
+   "scorecard": 7.6,
+   "why": "Fake-data generation library; Scorecard 7.6, #5 eligible by stars"
+  },
+  "ruby-devdocs": {
+   "github": "freeCodeCamp/devdocs",
+   "language": "ruby",
+   "kind": "application",
+   "pinned_sha": "1cedda18ef92c2857fd459896eea79b64f6571b3",
+   "pinned_commit_date": "2026-10-21T03:43:18Z",
+   "default_branch": "main",
+   "stars": 39560,
+   "license": "MPL-2.0",
+   "languages": {
+    "Ruby": 74.7,
+    "JavaScript": 19.4,
+    "SCSS": 4.6,
+    "HTML": 0.9,
+    "CSS": 0.2,
+    "Shell": 0.2,
+    "Dockerfile": 0,
+    "Procfile": 0
+   },
+   "size_kb": 33553,
+   "scorecard": 5.9,
+   "why": "API documentation browser web app deployed at devdocs.io and self-hostable (Ruby backend scraping/serving docs); top application by stars"
+  },
+  "ruby-postal": {
+   "github": "postalserver/postal",
+   "language": "ruby",
+   "kind": "application",
+   "pinned_sha": "d96eddbadeda600595d6247486f9ceb8e99cbc15",
+   "pinned_commit_date": "2026-10-01T11:32:46Z",
+   "default_branch": "main",
+   "stars": 16888,
+   "license": "MIT",
+   "languages": {
+    "Ruby": 76.8,
+    "Haml": 15,
+    "SCSS": 6,
+    "CoffeeScript": 0.8,
+    "HTML": 0.8,
+    "Shell": 0.3,
+    "Dockerfile": 0.2,
+    "JavaScript": 0
+   },
+   "size_kb": 3508,
+   "scorecard": null,
+   "why": "Self-hosted mail delivery platform (SMTP server + Rails web UI/API); #2 application by stars"
+  },
+  "ruby-ubicloud": {
+   "github": "ubicloud/ubicloud",
+   "language": "ruby",
+   "kind": "application",
+   "pinned_sha": "798615e30b846b4dc1bce8a103e5d670261b779d",
+   "pinned_commit_date": "2026-10-23T17:39:51Z",
+   "default_branch": "main",
+   "stars": 12330,
+   "license": "AGPL-3.0",
+   "languages": {
+    "Ruby": 94,
+    "HTML": 5.3,
+    "JavaScript": 0.4,
+    "CSS": 0.1,
+    "Go": 0.1,
+    "Shell": 0.1,
+    "Dockerfile": 0,
+    "PLpgSQL": 0,
+    "Procfile": 0
+   },
+   "size_kb": 24663,
+   "scorecard": null,
+   "why": "Open-source cloud control plane (compute, storage, managed Postgres, K8s) run as a hosted service and self-hostable; #3 application by stars"
+  },
+  "ruby-dawarich": {
+   "github": "Freika/dawarich",
+   "language": "ruby",
+   "kind": "application",
+   "pinned_sha": "c7c82d0e04e3b736210915b2f76e5c4ca59a2ab3",
+   "pinned_commit_date": "2026-10-23T20:44:27Z",
+   "default_branch": "master",
+   "stars": 10718,
+   "license": "AGPL-3.0",
+   "languages": {
+    "Ruby": 67.8,
+    "JavaScript": 23.7,
+    "HTML": 6.9,
+    "CSS": 1.4,
+    "Shell": 0.1,
+    "Dockerfile": 0.1,
+    "Procfile": 0
+   },
+   "size_kb": 123994,
+   "scorecard": null,
+   "why": "Self-hosted location-history / Google Timeline alternative (Rails app); #4 application by stars"
+  },
+  "ruby-sure": {
+   "github": "we-promise/sure",
+   "language": "ruby",
+   "kind": "application",
+   "pinned_sha": "2250ba8015b803200673fed59a6d068840fff463",
+   "pinned_commit_date": "2026-10-23T06:11:42Z",
+   "default_branch": "main",
+   "stars": 10641,
+   "license": "AGPL-3.0",
+   "languages": {
+    "Ruby": 81.2,
+    "HTML": 10.5,
+    "Dart": 4.3,
+    "JavaScript": 3.2,
+    "Rust": 0.3,
+    "Shell": 0.2,
+    "CSS": 0.2,
+    "Go Template": 0.1,
+    "TypeScript": 0.1,
+    "Java": 0,
+    "Objective-C": 0,
+    "Dockerfile": 0,
+    "Swift": 0,
+    "Kotlin": 0
+   },
+   "size_kb": 154968,
+   "scorecard": null,
+   "why": "Self-hosted personal finance web app (Rails, community continuation of Maybe; not a GitHub fork); #5 application by stars"
+  },
+  "ts-firecrawl": {
+   "github": "firecrawl/firecrawl",
+   "language": "typescript",
+   "kind": "application",
+   "pinned_sha": "e1dc7a43954b1dd61eb7c7230363c62539a652b2",
+   "pinned_commit_date": "2026-10-23T22:42:26Z",
+   "default_branch": "main",
+   "stars": 194683,
+   "license": "AGPL-3.0",
+   "languages": {
+    "TypeScript": 72.5,
+    "Python": 12.1,
+    "Rust": 3.4,
+    "Java": 2.9,
+    "PHP": 2.3,
+    "Elixir": 1.8,
+    "Go": 1.6,
+    "C#": 1.5,
+    "Ruby": 1.2
+   },
+   "size_kb": 187108,
+   "scorecard": null,
+   "scorecard_date": null,
+   "pushed_at": "2026-10-24T00:43:34Z",
+   "star_rank_in_search": 8,
+   "why": "Web scraping/crawling API service, hosted at firecrawl.dev and self-hostable (Node/TS API server, queues, workers); highest-starred eligible application"
+  },
+  "ts-gstack": {
+   "github": "garrytan/gstack",
+   "language": "typescript",
+   "kind": "well-run",
+   "pinned_sha": "6f7488a70f23bc71745bde704eda98033cc33bfa",
+   "pinned_commit_date": "2026-10-23T18:35:59Z",
+   "default_branch": "main",
+   "stars": 137393,
+   "license": "MIT",
+   "languages": {
+    "TypeScript": 90.0,
+    "Shell": 4.7,
+    "Go Template": 3.9,
+    "JavaScript": 0.8
+   },
+   "size_kb": 196541,
+   "scorecard": 7,
+   "scorecard_date": "2026-10-23T18:36:24Z",
+   "pushed_at": "2026-10-23T18:36:24Z",
+   "star_rank_in_search": 12,
+   "why": "Claude Code skill/tool suite (TypeScript+Bun); Scorecard 7.0; highest-starred eligible repo with Scorecard >= 7"
+  },
+  "ts-ant-design": {
+   "github": "ant-design/ant-design",
+   "language": "typescript",
+   "kind": "well-run",
+   "pinned_sha": "599b78b6c63c96818627a0efdaba583da0b55047",
+   "pinned_commit_date": "2026-10-23T09:24:56Z",
+   "default_branch": "master",
+   "stars": 99882,
+   "license": "MIT",
+   "languages": {
+    "TypeScript": 99.5
+   },
+   "size_kb": 283136,
+   "scorecard": 7.1,
+   "scorecard_date": "2026-10-19",
+   "pushed_at": "2026-10-23T11:21:28Z",
+   "star_rank_in_search": 24,
+   "why": "React UI component library; Scorecard 7.1; 2nd highest-starred eligible repo with Scorecard >= 7"
+  },
+  "ts-tailwindcss": {
+   "github": "tailwindlabs/tailwindcss",
+   "language": "typescript",
+   "kind": "well-run",
+   "pinned_sha": "8cc0551b1217d36dc565840b90920964d37cb46c",
+   "pinned_commit_date": "2026-10-19T15:50:54Z",
+   "default_branch": "main",
+   "stars": 98037,
+   "license": "MIT",
+   "languages": {
+    "TypeScript": 80.4,
+    "Rust": 17.8,
+    "CSS": 0.6,
+    "HTML": 0.6
+   },
+   "size_kb": 114512,
+   "scorecard": 7,
+   "scorecard_date": "2026-10-19",
+   "pushed_at": "2026-10-19T15:50:56Z",
+   "star_rank_in_search": 26,
+   "why": "Utility-first CSS framework (TS + Rust oxide); Scorecard 7.0; 3rd highest-starred eligible repo with Scorecard >= 7"
+  },
+  "ts-nextchat": {
+   "github": "ChatGPTNextWeb/NextChat",
+   "language": "typescript",
+   "kind": "application",
+   "pinned_sha": "1d3dc331512929a4b1d3e82354e72acce33b5c7a",
+   "pinned_commit_date": "2026-10-20T10:19:31Z",
+   "default_branch": "main",
+   "stars": 88883,
+   "license": "MIT",
+   "languages": {
+    "TypeScript": 91.9,
+    "SCSS": 6.7,
+    "JavaScript": 0.7
+   },
+   "size_kb": 23969,
+   "scorecard": null,
+   "scorecard_date": null,
+   "pushed_at": "2026-10-20T10:19:31Z",
+   "star_rank_in_search": 35,
+   "why": "Multi-provider AI chat web app (Next.js with server-side API routes proxying LLM providers), deployed at nextchat.club and one-click deployable to Vercel/Docker"
+  },
+  "ts-hoppscotch": {
+   "github": "hoppscotch/hoppscotch",
+   "language": "typescript",
+   "kind": "application",
+   "pinned_sha": "63273f8e599e73f0fb38c0739314e8d46b6bc83d",
+   "pinned_commit_date": "2026-09-30T06:59:53Z",
+   "default_branch": "main",
+   "stars": 80677,
+   "license": "MIT",
+   "languages": {
+    "TypeScript": 68.5,
+    "Vue": 23.5,
+    "Rust": 3.5,
+    "JavaScript": 3.3
+   },
+   "size_kb": 100863,
+   "scorecard": 5.9,
+   "scorecard_date": "2026-10-19",
+   "pushed_at": "2026-10-23T08:14:56Z",
+   "star_rank_in_search": 40,
+   "why": "API development platform (Postman alternative), hosted at hoppscotch.io and self-hostable on-prem; includes NestJS backend with auth, teams and collections"
+  },
+  "ts-code-server": {
+   "github": "coder/code-server",
+   "language": "typescript",
+   "kind": "application",
+   "pinned_sha": "4677c9d8658b50ee34ca42223dda3eaaf84c70f9",
+   "pinned_commit_date": "2026-10-23T23:32:11Z",
+   "default_branch": "main",
+   "stars": 79684,
+   "license": "MIT",
+   "languages": {
+    "TypeScript": 82.0,
+    "Shell": 14.0,
+    "HTML": 0.9,
+    "CSS": 0.8,
+    "HCL": 0.8,
+    "JavaScript": 0.5
+   },
+   "size_kb": 54960,
+   "scorecard": null,
+   "scorecard_date": null,
+   "pushed_at": "2026-10-23T23:32:13Z",
+   "star_rank_in_search": 42,
+   "why": "VS Code served over HTTP from a remote machine; self-hosted Node server with auth, proxy and TLS handling"
+  },
+  "ts-plane": {
+   "github": "makeplane/plane",
+   "language": "typescript",
+   "kind": "application",
+   "pinned_sha": "d9726d5c9615756135f3d6cd512ece8e2dd42902",
+   "pinned_commit_date": "2026-10-23T15:33:23Z",
+   "default_branch": "preview",
+   "stars": 61346,
+   "license": "AGPL-3.0",
+   "languages": {
+    "TypeScript": 67.1,
+    "Python": 29.8,
+    "HTML": 2.3,
+    "Shell": 0.5
+   },
+   "size_kb": 219030,
+   "scorecard": null,
+   "scorecard_date": null,
+   "pushed_at": "2026-10-23T15:40:15Z",
+   "star_rank_in_search": 62,
+   "why": "Open-source Jira/Linear alternative, hosted at plane.so and self-hostable (Docker/Kubernetes); TS web/admin/space apps plus Node live-collaboration service; API server is Django (Python 30%)"
+  },
+  "ts-nuxt": {
+   "github": "nuxt/nuxt",
+   "language": "typescript",
+   "kind": "well-run",
+   "pinned_sha": "2a81d4a628b8b4c8c844e8dcbfdcf7ae7a7a612e",
+   "pinned_commit_date": "2026-10-23T15:03:33Z",
+   "default_branch": "main",
+   "stars": 60982,
+   "license": "MIT",
+   "languages": {
+    "TypeScript": 97.6,
+    "Vue": 1.1,
+    "HTML": 0.6
+   },
+   "size_kb": 157845,
+   "scorecard": 7.8,
+   "scorecard_date": "2026-07-14T15:22:38Z",
+   "pushed_at": "2026-10-23T19:17:00Z",
+   "star_rank_in_search": 63,
+   "why": "Vue meta-framework; Scorecard 7.8; 4th highest-starred eligible repo with Scorecard >= 7"
+  },
+  "ts-babel": {
+   "github": "babel/babel",
+   "language": "typescript",
+   "kind": "well-run",
+   "pinned_sha": "0b1ff081d0a3ec01fee52897ebdb757df9617a0e",
+   "pinned_commit_date": "2026-10-23T21:28:44Z",
+   "default_branch": "main",
+   "stars": 44044,
+   "license": "MIT",
+   "languages": {
+    "TypeScript": 75.3,
+    "JavaScript": 24.0,
+    "Shell": 0.5
+   },
+   "size_kb": 147932,
+   "scorecard": 7.3,
+   "scorecard_date": "2026-10-19",
+   "pushed_at": "2026-10-23T22:44:47Z",
+   "star_rank_in_search": 104,
+   "why": "JavaScript compiler; Scorecard 7.3; 5th highest-starred eligible repo with Scorecard >= 7"
+  }
+ },
+ "rejected": {
+  "python": [
+   {
+    "github": "public-apis/public-apis",
+    "rank": 1,
+    "stars": 491681,
+    "reason": "curated list repo (awesome-list), not software; Scorecard 5.0"
+   },
+   {
+    "github": "EbookFoundation/free-programming-books",
+    "rank": 2,
+    "stars": 399931,
+    "reason": "licence not OSI SPDX (CC-BY-4.0); also a list/teaching/docs repo by description"
+   },
+   {
+    "github": "donnemartin/system-design-primer",
+    "rank": 3,
+    "stars": 375338,
+    "reason": "licence not OSI SPDX (NOASSERTION); also a list/teaching/docs repo by description"
+   },
+   {
+    "github": "vinta/awesome-python",
+    "rank": 4,
+    "stars": 329744,
+    "reason": "licence not OSI SPDX (NOASSERTION); also a list/teaching/docs repo by description"
+   },
+   {
+    "github": "practical-tutorials/project-based-learning",
+    "rank": 5,
+    "stars": 287729,
+    "reason": "tutorial list repo; no Scorecard entry"
+   },
+   {
+    "github": "NousResearch/hermes-agent",
+    "rank": 6,
+    "stars": 256530,
+    "reason": "size 1314392 KB > 400000"
+   },
+   {
+    "github": "TheAlgorithms/Python",
+    "rank": 7,
+    "stars": 225483,
+    "reason": "educational algorithms collection; Scorecard 5.7"
+   },
+   {
+    "github": "microsoft/markitdown",
+    "rank": 9,
+    "stars": 191828,
+    "reason": "conversion library / CLI tool, not an application; no Scorecard entry"
+   },
+   {
+    "github": "Significant-Gravitas/AutoGPT",
+    "rank": 10,
+    "stars": 187719,
+    "reason": "licence not OSI SPDX (NOASSERTION); size 589358 KB > 400000"
+   },
+   {
+    "github": "521xueweihan/HelloGitHub",
+    "rank": 11,
+    "stars": 183944,
+    "reason": "licence not OSI SPDX (None)"
+   },
+   {
+    "github": "anthropics/skills",
+    "rank": 12,
+    "stars": 183298,
+    "reason": "licence not OSI SPDX (None)"
+   },
+   {
+    "github": "huggingface/transformers",
+    "rank": 13,
+    "stars": 168047,
+    "reason": "size 540172 KB > 400000"
+   },
+   {
+    "github": "langgenius/dify",
+    "rank": 14,
+    "stars": 159377,
+    "reason": "licence not OSI SPDX (NOASSERTION); size 646103 KB > 400000"
+   },
+   {
+    "github": "open-webui/open-webui",
+    "rank": 15,
+    "stars": 156587,
+    "reason": "licence not OSI SPDX (NOASSERTION); size 508442 KB > 400000"
+   },
+   {
+    "github": "langflow-ai/langflow",
+    "rank": 16,
+    "stars": 155968,
+    "reason": "size 1671749 KB > 400000"
+   },
+   {
+    "github": "langchain-ai/langchain",
+    "rank": 17,
+    "stars": 148333,
+    "reason": "size 615368 KB > 400000"
+   },
+   {
+    "github": "Shubhamsaboo/awesome-llm-apps",
+    "rank": 18,
+    "stars": 142820,
+    "reason": "Python 45% of bytes (<60%); awesome-style collection of demo apps"
+   },
+   {
+    "github": "github/spec-kit",
+    "rank": 19,
+    "stars": 142604,
+    "reason": "CLI toolkit (specify), not an application; no Scorecard entry"
+   },
+   {
+    "github": "nextlevelbuilder/ui-ux-pro-max-skill",
+    "rank": 21,
+    "stars": 139443,
+    "reason": "AI agent skill pack, not an application; no Scorecard entry"
+   },
+   {
+    "github": "harry0703/MoneyPrinterTurbo",
+    "rank": 22,
+    "stars": 134579,
+    "reason": "size 540587 KB > 400000"
+   },
+   {
+    "github": "Graphify-Labs/graphify",
+    "rank": 23,
+    "stars": 133908,
+    "reason": "code-analysis CLI/skill tool, not an application; no Scorecard entry"
+   },
+   {
+    "github": "browser-use/browser-use",
+    "rank": 24,
+    "stars": 118983,
+    "reason": "library (browser agents), not an application; no Scorecard entry"
+   },
+   {
+    "github": "TauricResearch/TradingAgents",
+    "rank": 25,
+    "stars": 113401,
+    "reason": "multi-agent framework, not an application; no Scorecard entry"
+   },
+   {
+    "github": "openai/whisper",
+    "rank": 26,
+    "stars": 111144,
+    "reason": "ML model/library, not an application; Scorecard 4.3"
+   },
+   {
+    "github": "pytorch/pytorch",
+    "rank": 27,
+    "stars": 105021,
+    "reason": "licence not OSI SPDX (NOASSERTION); size 1684176 KB > 400000"
+   },
+   {
+    "github": "fastapi/fastapi",
+    "rank": 28,
+    "stars": 104064,
+    "reason": "web framework, not an application; no Scorecard entry"
+   },
+   {
+    "github": "Panniantong/Agent-Reach",
+    "rank": 29,
+    "stars": 101343,
+    "reason": "CLI utility for agents, not an application; no Scorecard entry"
+   },
+   {
+    "github": "3b1b/manim",
+    "rank": 31,
+    "stars": 95578,
+    "reason": "animation library, not an application; Scorecard 4.3"
+   },
+   {
+    "github": "vllm-project/vllm",
+    "rank": 32,
+    "stars": 95253,
+    "reason": "LLM inference engine/library, not an application; no Scorecard entry"
+   },
+   {
+    "github": "sherlock-project/sherlock",
+    "rank": 33,
+    "stars": 94807,
+    "reason": "CLI utility, not an application; Scorecard 5.6"
+   },
+   {
+    "github": "home-assistant/core",
+    "rank": 35,
+    "stars": 91683,
+    "reason": "size 920876 KB > 400000"
+   },
+   {
+    "github": "PaddlePaddle/PaddleOCR",
+    "rank": 36,
+    "stars": 91578,
+    "reason": "size 1970859 KB > 400000"
+   },
+   {
+    "github": "django/django",
+    "rank": 37,
+    "stars": 91576,
+    "reason": "already used (exclude list)"
+   },
+   {
+    "github": "D4Vinci/Scrapling",
+    "rank": 38,
+    "stars": 89349,
+    "reason": "web-scraping framework, not an application; no Scorecard entry"
+   },
+   {
+    "github": "unclecode/crawl4ai",
+    "rank": 39,
+    "stars": 86115,
+    "reason": "crawler library, not an application; no Scorecard entry"
+   },
+   {
+    "github": "bytedance/deer-flow",
+    "rank": 40,
+    "stars": 84342,
+    "reason": "self-described agent harness/framework, not an application; no Scorecard entry"
+   },
+   {
+    "github": "datawhalechina/hello-agents",
+    "rank": 41,
+    "stars": 84338,
+    "reason": "licence not OSI SPDX (NOASSERTION)"
+   },
+   {
+    "github": "debpalash/VoiceStudio",
+    "rank": 42,
+    "stars": 83353,
+    "reason": "Python 50% of bytes (<60%)"
+   },
+   {
+    "github": "opendatalab/MinerU",
+    "rank": 43,
+    "stars": 82378,
+    "reason": "licence not OSI SPDX (NOASSERTION)"
+   },
+   {
+    "github": "swisskyrepo/PayloadsAllTheThings",
+    "rank": 44,
+    "stars": 82010,
+    "reason": "payload cheat-sheet list, not software; Scorecard 3.9"
+   },
+   {
+    "github": "Z4nzu/hackingtool",
+    "rank": 46,
+    "stars": 81347,
+    "reason": "CLI menu utility, not an application; no Scorecard entry"
+   },
+   {
+    "github": "abi/screenshot-to-code",
+    "rank": 47,
+    "stars": 80666,
+    "reason": "Python 54% of bytes (<60%); no .github/workflows directory"
+   },
+   {
+    "github": "shareAI-lab/learn-claude-code",
+    "rank": 48,
+    "stars": 79099,
+    "reason": "educational/teaching repo; no Scorecard entry"
+   },
+   {
+    "github": "unslothai/unsloth",
+    "rank": 49,
+    "stars": 78485,
+    "reason": "size 626078 KB > 400000"
+   },
+   {
+    "github": "ComposioHQ/awesome-claude-skills",
+    "rank": 50,
+    "stars": 77771,
+    "reason": "licence not OSI SPDX (None); also a list/teaching/docs repo by description"
+   },
+   {
+    "github": "python/cpython",
+    "rank": 51,
+    "stars": 77748,
+    "reason": "licence not OSI SPDX (NOASSERTION); size 898052 KB > 400000"
+   },
+   {
+    "github": "headroomlabs-ai/headroom",
+    "rank": 52,
+    "stars": 77660,
+    "reason": "context-compression library, not an application; no Scorecard entry"
+   },
+   {
+    "github": "tensorflow/models",
+    "rank": 53,
+    "stars": 77649,
+    "reason": "licence not OSI SPDX (NOASSERTION); size 660474 KB > 400000"
+   },
+   {
+    "github": "Asabeneh/30-Days-Of-Python",
+    "rank": 54,
+    "stars": 76946,
+    "reason": "licence not OSI SPDX (None); also a list/teaching/docs repo by description"
+   },
+   {
+    "github": "hiyouga/LlamaFactory",
+    "rank": 55,
+    "stars": 75696,
+    "reason": "fine-tuning framework, not an application; no Scorecard entry"
+   },
+   {
+    "github": "apache/superset",
+    "rank": 56,
+    "stars": 75275,
+    "reason": "size 1379221 KB > 400000"
+   },
+   {
+    "github": "pallets/flask",
+    "rank": 57,
+    "stars": 75029,
+    "reason": "already used (exclude list)"
+   },
+   {
+    "github": "josephmisiti/awesome-machine-learning",
+    "rank": 58,
+    "stars": 74650,
+    "reason": "licence not OSI SPDX (NOASSERTION); also a list/teaching/docs repo by description"
+   },
+   {
+    "github": "openbq-org/OpenBB",
+    "rank": 59,
+    "stars": 74594,
+    "reason": "licence not OSI SPDX (NOASSERTION); size 2438014 KB > 400000"
+   },
+   {
+    "github": "rohitg00/ai-engineering-from-scratch",
+    "rank": 60,
+    "stars": 72811,
+    "reason": "Python 46% of bytes (<60%); course/teaching repo"
+   },
+   {
+    "github": "usestrix/strix",
+    "rank": 61,
+    "stars": 71450,
+    "reason": "AI pentest CLI agent tool, not an application; no Scorecard entry"
+   },
+   {
+    "github": "calesthio/OpenMontage",
+    "rank": 62,
+    "stars": 71191,
+    "reason": "agent-skill/pipeline toolkit that runs inside a coding assistant, not a deployed application; no Scorecard entry"
+   },
+   {
+    "github": "ansible/ansible",
+    "rank": 63,
+    "stars": 71079,
+    "reason": "no .github/workflows directory (Scorecard 7.5 but ineligible); also an automation platform/CLI, not an application"
+   },
+   {
+    "github": "asgeirtj/system_prompts_leaks",
+    "rank": 64,
+    "stars": 70113,
+    "reason": "licence not OSI SPDX (CC0-1.0); also a list/teaching/docs repo by description"
+   },
+   {
+    "github": "docling-project/docling",
+    "rank": 65,
+    "stars": 69466,
+    "reason": "size 463103 KB > 400000"
+   },
+   {
+    "github": "NanmiCoder/MediaCrawler",
+    "rank": 67,
+    "stars": 67823,
+    "reason": "licence not OSI SPDX (NOASSERTION)"
+   },
+   {
+    "github": "mem0ai/mem0",
+    "rank": 68,
+    "stars": 67711,
+    "reason": "Python 58% of bytes (<60%)"
+   },
+   {
+    "github": "xtekky/gpt4free",
+    "rank": 70,
+    "stars": 66918,
+    "reason": "LLM client library/API package (pip g4f), not an application; no Scorecard entry"
+   },
+   {
+    "github": "hugohe3/ppt-master",
+    "rank": 71,
+    "stars": 66751,
+    "reason": "no .github/workflows directory"
+   }
+  ],
+  "java": [
+   {
+    "github": "krahets/hello-algo",
+    "stars": 130934,
+    "reason": "size 482257 KB > 400000; Java 16% of bytes < 60%; licence not a recognised OSI SPDX id on GitHub (NOASSERTION); algorithms textbook; (no Scorecard result (API 404))"
+   },
+   {
+    "github": "iluwatar/java-design-patterns",
+    "stars": 94816,
+    "reason": "licence not a recognised OSI SPDX id on GitHub (NOASSERTION); teaching repo (design-pattern catalogue); (Scorecard 5.4 < 7.0)"
+   },
+   {
+    "github": "NationalSecurityAgency/ghidra",
+    "stars": 93654,
+    "reason": "size 415627 KB > 400000; (Scorecard 3.7 < 7.0)"
+   },
+   {
+    "github": "macrozheng/mall",
+    "stars": 84950,
+    "reason": "no .github/workflows directory; (Scorecard 2.0 < 7.0)"
+   },
+   {
+    "github": "spring-projects/spring-boot",
+    "stars": 81773,
+    "reason": "Scorecard 5.6 < 7.0 so not well-run; framework (not application)"
+   },
+   {
+    "github": "doocs/advanced-java",
+    "stars": 79161,
+    "reason": "licence not a recognised OSI SPDX id on GitHub (CC-BY-SA-4.0); interview-prep/book; (Scorecard 3.8 < 7.0)"
+   },
+   {
+    "github": "elastic/elasticsearch",
+    "stars": 78354,
+    "reason": "size 1825323 KB > 400000; licence not a recognised OSI SPDX id on GitHub (NOASSERTION); (Scorecard 6.0 < 7.0)"
+   },
+   {
+    "github": "TheAlgorithms/Java",
+    "stars": 66397,
+    "reason": "teaching/algorithms collection; (Scorecard 6.2 < 7.0)"
+   },
+   {
+    "github": "termux/termux-app",
+    "stars": 63281,
+    "reason": "licence not a recognised OSI SPDX id on GitHub (NOASSERTION); (Scorecard 4.7 < 7.0)"
+   },
+   {
+    "github": "spring-projects/spring-framework",
+    "stars": 60298,
+    "reason": "Scorecard 6.2 < 7.0 so not well-run; framework (not application)"
+   },
+   {
+    "github": "dbeaver/dbeaver",
+    "stars": 52184,
+    "reason": "Scorecard 5.7 < 7.0 so not well-run; desktop database-client application, not a deployed service/web app (classified as desktop client, see ambiguity note)"
+   },
+   {
+    "github": "google/guava",
+    "stars": 51917,
+    "reason": "size 1431669 KB > 400000; (Scorecard 8.7 >= 7.0 but fails the hard filters above)"
+   },
+   {
+    "github": "skylot/jadx",
+    "stars": 51219,
+    "reason": "Scorecard 4.7 < 7.0 so not well-run; developer decompiler utility (CLI + GUI), not a deployed product/service"
+   },
+   {
+    "github": "jeecgboot/JeecgBoot",
+    "stars": 48270,
+    "reason": "no .github/workflows directory; (no Scorecard result (API 404))"
+   },
+   {
+    "github": "lysine-dev/retrofit",
+    "stars": 43939,
+    "reason": "no Scorecard result (API 404) so not well-run; HTTP client library"
+   },
+   {
+    "github": "TeamNewPipe/NewPipe",
+    "stars": 40264,
+    "reason": "Scorecard 5.4 < 7.0 so not well-run; Android client app, not a deployed service/web app (mobile client)"
+   },
+   {
+    "github": "halo-dev/halo",
+    "stars": 39972,
+    "reason": "Java 48% of bytes < 60%; (Scorecard 5.5 < 7.0)"
+   },
+   {
+    "github": "alibaba/arthas",
+    "stars": 37587,
+    "reason": "Scorecard 3.9 < 7.0 so not well-run; JVM diagnostic CLI utility"
+   },
+   {
+    "github": "keycloak/keycloak",
+    "stars": 37487,
+    "reason": "already used (exclude list); size 624862 KB > 400000; (Scorecard 9.3 >= 7.0 but fails the hard filters above)"
+   },
+   {
+    "github": "eugenp/tutorials",
+    "stars": 37311,
+    "reason": "no .github/workflows directory; tutorial collection; (Scorecard 4.4 < 7.0)"
+   },
+   {
+    "github": "doocs/leetcode",
+    "stars": 36709,
+    "reason": "size 874873 KB > 400000; Java 21% of bytes < 60%; licence not a recognised OSI SPDX id on GitHub (CC-BY-SA-4.0); interview-prep solutions; (Scorecard 4.7 < 7.0)"
+   },
+   {
+    "github": "yuliskov/SmartTube",
+    "stars": 35415,
+    "reason": "no Scorecard result (API 404) so not well-run; Android TV client app, not a deployed service/web app (mobile client)"
+   },
+   {
+    "github": "netty/netty",
+    "stars": 35065,
+    "reason": "already used (exclude list); (Scorecard 7.2 >= 7.0 but fails the hard filters above)"
+   },
+   {
+    "github": "bumptech/glide",
+    "stars": 35005,
+    "reason": "licence not a recognised OSI SPDX id on GitHub (NOASSERTION); (Scorecard 4.7 < 7.0)"
+   },
+   {
+    "github": "SeleniumHQ/selenium",
+    "stars": 34562,
+    "reason": "size 2407852 KB > 400000; Java 34% of bytes < 60%; (Scorecard 2.8 < 7.0)"
+   },
+   {
+    "github": "zxing/zxing",
+    "stars": 34176,
+    "reason": "Scorecard 6.1 < 7.0 so not well-run; barcode library"
+   },
+   {
+    "github": "binarywang/WxJava",
+    "stars": 33164,
+    "reason": "no Scorecard result (API 404) so not well-run; WeChat SDK"
+   },
+   {
+    "github": "conductor-oss/conductor",
+    "stars": 32374,
+    "reason": "Java 59% of bytes < 60%; (no Scorecard result (API 404))"
+   },
+   {
+    "github": "chinabugotech/hutool",
+    "stars": 30237,
+    "reason": "no .github/workflows directory; (no Scorecard result (API 404))"
+   },
+   {
+    "github": "DrKLO/Telegram",
+    "stars": 30143,
+    "reason": "size 789624 KB > 400000; no .github/workflows directory; (Scorecard 3.5 < 7.0)"
+   },
+   {
+    "github": "opendataloader-project/opendataloader-pdf",
+    "stars": 29979,
+    "reason": "no Scorecard result (API 404) so not well-run; PDF parsing library/CLI"
+   },
+   {
+    "github": "kestra-io/kestra",
+    "stars": 29965,
+    "reason": "Java 56% of bytes < 60%; (Scorecard 6.3 < 7.0)"
+   },
+   {
+    "github": "Anuken/Mindustry",
+    "stars": 29449,
+    "reason": "size 2015215 KB > 400000; (Scorecard 3.7 < 7.0)"
+   },
+   {
+    "github": "alibaba/spring-cloud-alibaba",
+    "stars": 29169,
+    "reason": "Scorecard 6.4 < 7.0 so not well-run; framework"
+   },
+   {
+    "github": "OtterMind/Chat2DB",
+    "stars": 28330,
+    "reason": "Java 57% of bytes < 60%; licence not a recognised OSI SPDX id on GitHub (NOASSERTION); (no Scorecard result (API 404))"
+   },
+   {
+    "github": "Gathin23/cleanyourtv",
+    "stars": 27981,
+    "reason": "Java 52% of bytes < 60%; licence not a recognised OSI SPDX id on GitHub (NOASSERTION); (no Scorecard result (API 404))"
+   },
+   {
+    "github": "floci-io/floci",
+    "stars": 27064,
+    "reason": "no Scorecard result (API 404) so not well-run; self-hosted AWS emulator service; application candidate but ranks below the 5th application pick (apollo, 29822 stars)"
+   },
+   {
+    "github": "OpenAPITools/openapi-generator",
+    "stars": 26818,
+    "reason": "size 1016457 KB > 400000; (Scorecard 4.0 < 7.0)"
+   },
+   {
+    "github": "jenkinsci/jenkins",
+    "stars": 26678,
+    "reason": "Scorecard 6.6 < 7.0 so not well-run; automation server; application candidate but ranks below the 5th application pick (apollo, 29822 stars)"
+   },
+   {
+    "github": "iBotPeaches/Apktool",
+    "stars": 26613,
+    "reason": "Scorecard 5.1 < 7.0 so not well-run; APK reverse-engineering CLI utility"
+   },
+   {
+    "github": "apache/flink",
+    "stars": 26421,
+    "reason": "size 557421 KB > 400000; (Scorecard 5.9 < 7.0)"
+   },
+   {
+    "github": "apache/incubator-seata",
+    "stars": 26004,
+    "reason": "no Scorecard result (API 404) so not well-run; distributed-transaction middleware framework (client framework + TC server); classified as framework"
+   },
+   {
+    "github": "bazelbuild/bazel",
+    "stars": 25982,
+    "reason": "size 1029080 KB > 400000; (Scorecard 5.5 < 7.0)"
+   },
+   {
+    "github": "libgdx/libgdx",
+    "stars": 25469,
+    "reason": "size 1107331 KB > 400000; Java 55% of bytes < 60%; (Scorecard 5.0 < 7.0)"
+   },
+   {
+    "github": "LSPosed/LSPosed",
+    "stars": 25156,
+    "reason": "no Scorecard result (API 404) so not well-run; Android Xposed hooking framework"
+   },
+   {
+    "github": "dataease/dataease",
+    "stars": 24626,
+    "reason": "licence not a recognised OSI SPDX id on GitHub (NOASSERTION); (no Scorecard result (API 404))"
+   },
+   {
+    "github": "redisson/redisson",
+    "stars": 24416,
+    "reason": "Scorecard 5.7 < 7.0 so not well-run; Redis client library"
+   },
+   {
+    "github": "google/gson",
+    "stars": 24236,
+    "reason": "already used (exclude list); (Scorecard 9.4 >= 7.0 but fails the hard filters above)"
+   },
+   {
+    "github": "openjdk/jdk",
+    "stars": 23463,
+    "reason": "size 1522783 KB > 400000; (Scorecard 5.4 < 7.0)"
+   },
+   {
+    "github": "doocs/source-code-hunter",
+    "stars": 23133,
+    "reason": "licence not a recognised OSI SPDX id on GitHub (CC-BY-SA-4.0); teaching/book; (Scorecard 3.7 < 7.0)"
+   },
+   {
+    "github": "apache/rocketmq",
+    "stars": 22643,
+    "reason": "Scorecard 6.8 < 7.0 so not well-run; messaging platform; application candidate but ranks below the 5th application pick (apollo, 29822 stars)"
+   },
+   {
+    "github": "thingsboard/thingsboard",
+    "stars": 22599,
+    "reason": "size 414381 KB > 400000; licence not a recognised OSI SPDX id on GitHub (NOASSERTION); (Scorecard 5.2 < 7.0)"
+   },
+   {
+    "github": "oracle/graal",
+    "stars": 21738,
+    "reason": "size 539470 KB > 400000; licence not a recognised OSI SPDX id on GitHub (NOASSERTION); (Scorecard 4.0 < 7.0)"
+   },
+   {
+    "github": "CarGuo/GSYVideoPlayer",
+    "stars": 21524,
+    "reason": "size 522774 KB > 400000; (Scorecard 2.9 < 7.0)"
+   },
+   {
+    "github": "apache/shardingsphere",
+    "stars": 20813,
+    "reason": "size 709433 KB > 400000; (Scorecard 8.6 >= 7.0 but fails the hard filters above)"
+   },
+   {
+    "github": "JetBrains/intellij-community",
+    "stars": 20657,
+    "reason": "size 6061584 KB > 400000; Java 46% of bytes < 60%; licence not a recognised OSI SPDX id on GitHub (NOASSERTION); (Scorecard 4.4 < 7.0)"
+   },
+   {
+    "github": "didi/DoKit",
+    "stars": 20413,
+    "reason": "Java 51% of bytes < 60%; no .github/workflows directory; (no Scorecard result (API 404))"
+   },
+   {
+    "github": "ReactiveX/RxAndroid",
+    "stars": 19898,
+    "reason": "Scorecard 3.8 < 7.0 so not well-run; library"
+   },
+   {
+    "github": "YunaiV/yudao-cloud",
+    "stars": 19671,
+    "reason": "no Scorecard result (API 404) so not well-run; Spring Cloud variant of ruoyi-vue-pro; application candidate but ranks below the 5th application pick (apollo, 29822 stars)"
+   },
+   {
+    "github": "dromara/Sa-Token",
+    "stars": 19098,
+    "reason": "no .github/workflows directory; (no Scorecard result (API 404))"
+   },
+   {
+    "github": "APIJSON/APIJSON",
+    "stars": 18389,
+    "reason": "licence not a recognised OSI SPDX id on GitHub (NOASSERTION); (no Scorecard result (API 404))"
+   }
+  ],
+  "go": [
+   {
+    "github": "avelino/awesome-go",
+    "reason": "awesome list (curated links), not a code repository"
+   },
+   {
+    "github": "golang/go",
+    "reason": "size 462903 KB > 400000"
+   },
+   {
+    "github": "kubernetes/kubernetes",
+    "reason": "size 1537220 KB > 400000"
+   },
+   {
+    "github": "JuliusBrussee/caveman",
+    "reason": "Go 48% of bytes < 60%"
+   },
+   {
+    "github": "microsoft/TypeScript",
+    "reason": "size 2927339 KB > 400000 (appears in Go search by mistake; TypeScript repo)"
+   },
+   {
+    "github": "gohugoio/hugo",
+    "reason": "static-site generator CLI utility, not an application; Scorecard 5.5 < 7.0"
+   },
+   {
+    "github": "gin-gonic/gin",
+    "reason": "web framework, not an application; Scorecard 6.2 < 7.0"
+   },
+   {
+    "github": "junegunn/fzf",
+    "reason": "command-line fuzzy finder (CLI utility); Scorecard 6.5 < 7.0"
+   },
+   {
+    "github": "jesseduffield/lazygit",
+    "reason": "terminal UI for git (CLI utility); Scorecard 4.1 < 7.0"
+   },
+   {
+    "github": "netdata/netdata",
+    "reason": "Go 47% of bytes < 60%"
+   },
+   {
+    "github": "caddyserver/caddy",
+    "reason": "already used (exclude list)"
+   },
+   {
+    "github": "traefik/traefik",
+    "reason": "already used (exclude list)"
+   },
+   {
+    "github": "usememos/memos",
+    "reason": "Go 52% of bytes < 60%"
+   },
+   {
+    "github": "rclone/rclone",
+    "reason": "cloud-storage sync CLI utility, not an application; Scorecard 5.4 < 7.0"
+   },
+   {
+    "github": "router-for-me/CLIProxyAPI",
+    "reason": "application (API proxy service) but the 5 application slots were filled by higher-starred applications; Scorecard not available (null) so not well-run"
+   },
+   {
+    "github": "multica-ai/multica",
+    "reason": "licence NOASSERTION (custom), not verifiable as OSI-approved"
+   },
+   {
+    "github": "etcd-io/etcd",
+    "reason": "already used (exclude list)"
+   },
+   {
+    "github": "ethereum/go-ethereum",
+    "reason": "protocol/node client implementation; below the application cut-off (pocketbase) and Scorecard 6.3 < 7.0"
+   },
+   {
+    "github": "QuantumNous/new-api",
+    "reason": "application (AI gateway) but below the application cut-off (5 slots filled); Scorecard null"
+   },
+   {
+    "github": "AlistGo/alist",
+    "reason": "application (file list/WebDAV server) but below the application cut-off; Scorecard null"
+   },
+   {
+    "github": "hashicorp/terraform",
+    "reason": "licence NOASSERTION (BUSL-1.1), not OSI-approved"
+   },
+   {
+    "github": "mudler/LocalAI",
+    "reason": "application (AI engine server) but below the application cut-off; Scorecard null"
+   },
+   {
+    "github": "MHSanaei/3x-ui",
+    "reason": "application (proxy admin panel) but below the application cut-off; Scorecard null"
+   },
+   {
+    "github": "alibaba/open-code-review",
+    "reason": "code-review tool, below the application cut-off; Scorecard null"
+   },
+   {
+    "github": "gogs/gogs",
+    "reason": "application (self-hosted Git service) but below the application cut-off; Scorecard 5.3 < 7.0"
+   },
+   {
+    "github": "v2ray/v2ray-core",
+    "reason": "proxy platform core, below the application cut-off; Scorecard 3.7 < 7.0"
+   },
+   {
+    "github": "milvus-io/milvus",
+    "reason": "vector database service, below the application cut-off; Scorecard 4.4 < 7.0"
+   },
+   {
+    "github": "charmbracelet/bubbletea",
+    "reason": "TUI framework, not an application; Scorecard 5.3 < 7.0"
+   },
+   {
+    "github": "juanfont/headscale",
+    "reason": "application (Tailscale control server) but below the application cut-off; Scorecard 5.4 < 7.0"
+   },
+   {
+    "github": "Wei-Shaw/sub2api",
+    "reason": "application (subscription/API service) but below the application cut-off; Scorecard null"
+   },
+   {
+    "github": "danielmiessler/Fabric",
+    "reason": "AI prompt CLI/framework, below the application cut-off; Scorecard null"
+   },
+   {
+    "github": "XTLS/Xray-core",
+    "reason": "proxy platform core, below the application cut-off; Scorecard 5.4 < 7.0"
+   },
+   {
+    "github": "schollz/croc",
+    "reason": "file-transfer CLI utility; Scorecard 5.4 < 7.0"
+   },
+   {
+    "github": "pingcap/tidb",
+    "reason": "size 817643 KB > 400000"
+   },
+   {
+    "github": "photoprism/photoprism",
+    "reason": "size 417152 KB > 400000 (also licence NOASSERTION)"
+   }
+  ],
+  "ruby": [
+   {
+    "github": "rails/rails",
+    "stars": 58850,
+    "reason": "already used (exclude list)"
+   },
+   {
+    "github": "mastodon/mastodon",
+    "stars": 50441,
+    "reason": "repo size 423678 KB > 400000 KB"
+   },
+   {
+    "github": "Homebrew/brew",
+    "stars": 50089,
+    "reason": "well-run: Scorecard 5.9 < 6.0; application: package-manager CLI tool, not an app"
+   },
+   {
+    "github": "discourse/discourse",
+    "stars": 48000,
+    "reason": "repo size 1231117 KB > 400000 KB"
+   },
+   {
+    "github": "rapid7/metasploit-framework",
+    "stars": 39220,
+    "reason": "repo size 1236819 KB > 400000 KB (also NOASSERTION licence)"
+   },
+   {
+    "github": "chatwoot/chatwoot",
+    "stars": 38151,
+    "reason": "licence not a single OSI licence: GitHub reports NOASSERTION; LICENSE is MIT except enterprise/ which is under a proprietary enterprise licence (would otherwise be well-run 6.7 / application, Ruby 51%)"
+   },
+   {
+    "github": "hashicorp/vagrant",
+    "stars": 27215,
+    "reason": "licence BUSL-1.1 (not OSI); Scorecard 5.8; CLI tool"
+   },
+   {
+    "github": "matteocrippa/awesome-swift",
+    "stars": 26341,
+    "reason": "awesome-list; CC0-1.0 licence; Scorecard 3.6"
+   },
+   {
+    "github": "gitlabhq/gitlabhq",
+    "stars": 24536,
+    "reason": "repo size 2975186 KB > 400000 KB"
+   },
+   {
+    "github": "heartcombo/devise",
+    "stars": 24355,
+    "reason": "library (auth gem); Scorecard 4.6"
+   },
+   {
+    "github": "ruby/ruby",
+    "stars": 23791,
+    "reason": "repo size 413009 KB > 400000 KB"
+   },
+   {
+    "github": "forem/forem",
+    "stars": 22807,
+    "reason": "repo size 1829774 KB > 400000 KB"
+   },
+   {
+    "github": "Homebrew/homebrew-cask",
+    "stars": 22267,
+    "reason": "repo size 528849 KB > 400000 KB; package-definition repo"
+   },
+   {
+    "github": "lewagon/setup",
+    "stars": 19689,
+    "reason": "teaching/bootcamp setup instructions; no licence; Scorecard 4.7"
+   },
+   {
+    "github": "docusealco/docuseal",
+    "stars": 18779,
+    "reason": "Ruby 37.0% of bytes < 50%; no Scorecard"
+   },
+   {
+    "github": "opf/openproject",
+    "stars": 16594,
+    "reason": "repo size 3069327 KB > 400000 KB"
+   },
+   {
+    "github": "spree/spree",
+    "stars": 15773,
+    "reason": "e-commerce framework distributed as Rails engine gems rather than a deployed app; Scorecard 5.5 < 6.0"
+   },
+   {
+    "github": "Homebrew/homebrew-core",
+    "stars": 15638,
+    "reason": "repo size 1274691 KB > 400000 KB"
+   },
+   {
+    "github": "basecamp/kamal",
+    "stars": 14679,
+    "reason": "CLI deployment tool, not an app; no Scorecard"
+   },
+   {
+    "github": "mame/quine-relay",
+    "stars": 14614,
+    "reason": "no licence; novelty program"
+   },
+   {
+    "github": "github-linguist/linguist",
+    "stars": 13747,
+    "reason": "library; no Scorecard"
+   },
+   {
+    "github": "tmuxinator/tmuxinator",
+    "stars": 13736,
+    "reason": "CLI utility; Scorecard 3.2"
+   },
+   {
+    "github": "sidekiq/sidekiq",
+    "stars": 13561,
+    "reason": "already used (exclude list)"
+   },
+   {
+    "github": "rubocop/rubocop",
+    "stars": 12915,
+    "reason": "linter CLI/library; Scorecard 5.5"
+   },
+   {
+    "github": "Shopify/liquid",
+    "stars": 11908,
+    "reason": "template-language library, not an app; Scorecard 7.0 but ranked below the 5th well-run pick (faker 11945 stars)"
+   },
+   {
+    "github": "greatghoul/remote-working",
+    "stars": 11790,
+    "reason": "curated resource list; no .github/workflows"
+   },
+   {
+    "github": "jordansissel/fpm",
+    "stars": 11512,
+    "reason": "packaging CLI; NOASSERTION licence; Scorecard 3.8"
+   }
+  ],
+  "typescript": [
+   {
+    "github": "freeCodeCamp/freeCodeCamp",
+    "stars": 457795,
+    "star_rank_in_search": 1,
+    "reason": "size 584267KB > 400000"
+   },
+   {
+    "github": "openclaw/openclaw",
+    "stars": 392886,
+    "star_rank_in_search": 2,
+    "reason": "size 10347822KB > 400000"
+   },
+   {
+    "github": "morluto/rea",
+    "stars": 373233,
+    "star_rank_in_search": 3,
+    "reason": "local reverse-engineering MCP server + CLI developer tool, not a deployed service; no Scorecard entry (404)"
+   },
+   {
+    "github": "nilbuild/developer-roadmap",
+    "stars": 370236,
+    "star_rank_in_search": 4,
+    "reason": "licence NOASSERTION not OSI"
+   },
+   {
+    "github": "deepseek-ai/deepseek-harness",
+    "stars": 259445,
+    "star_rank_in_search": 5,
+    "reason": "agent harness/framework (plugin architecture on Cordis) run locally via npx, not a deployed product; no Scorecard entry (404)"
+   },
+   {
+    "github": "anomalyco/opencode",
+    "stars": 220632,
+    "star_rank_in_search": 6,
+    "reason": "size 596359KB > 400000"
+   },
+   {
+    "github": "n8n-io/n8n",
+    "stars": 208412,
+    "star_rank_in_search": 7,
+    "reason": "size 748399KB > 400000"
+   },
+   {
+    "github": "microsoft/vscode",
+    "stars": 194254,
+    "star_rank_in_search": 9,
+    "reason": "size 1618850KB > 400000"
+   },
+   {
+    "github": "anthropics/claude-code",
+    "stars": 153174,
+    "star_rank_in_search": 10,
+    "reason": "licence NONE not OSI"
+   },
+   {
+    "github": "iptv-org/iptv",
+    "stars": 142118,
+    "star_rank_in_search": 11,
+    "reason": "size 1400256KB > 400000"
+   },
+   {
+    "github": "excalidraw/excalidraw",
+    "stars": 134439,
+    "star_rank_in_search": 13,
+    "reason": "Scorecard 5.2 < 7; client-side whiteboard editor + npm package, collaboration server lives in a separate repo"
+   },
+   {
+    "github": "shadcn-ui/ui",
+    "stars": 126366,
+    "star_rank_in_search": 14,
+    "reason": "UI component kit; no Scorecard entry (404)"
+   },
+   {
+    "github": "earendil-works/pi",
+    "stars": 117444,
+    "star_rank_in_search": 15,
+    "reason": "AI agent toolkit / coding-agent CLI (library + CLI), not a deployed service; no Scorecard entry (404)"
+   },
+   {
+    "github": "immich-app/immich",
+    "stars": 117030,
+    "star_rank_in_search": 16,
+    "reason": "ts 53.8% < 60"
+   },
+   {
+    "github": "supabase/supabase",
+    "stars": 113791,
+    "star_rank_in_search": 17,
+    "reason": "size 2505389KB > 400000"
+   },
+   {
+    "github": "google-gemini/gemini-cli",
+    "stars": 107564,
+    "star_rank_in_search": 18,
+    "reason": "CLI utility; no Scorecard entry (404)"
+   },
+   {
+    "github": "paperclipai/paperclip",
+    "stars": 106597,
+    "star_rank_in_search": 19,
+    "reason": "size 401225KB > 400000"
+   },
+   {
+    "github": "stablyai/orca",
+    "stars": 103886,
+    "star_rank_in_search": 20,
+    "reason": "size 1630618KB > 400000"
+   },
+   {
+    "github": "nexu-io/open-design",
+    "stars": 103598,
+    "star_rank_in_search": 21,
+    "reason": "size 3562547KB > 400000"
+   },
+   {
+    "github": "thedotmack/claude-mem",
+    "stars": 102569,
+    "star_rank_in_search": 22,
+    "reason": "size 655020KB > 400000"
+   },
+   {
+    "github": "angular/angular",
+    "stars": 101098,
+    "star_rank_in_search": 23,
+    "reason": "size 669548KB > 400000"
+   },
+   {
+    "github": "microsoft/playwright",
+    "stars": 98384,
+    "star_rank_in_search": 25,
+    "reason": "Scorecard 6.5 < 7; testing framework/library"
+   },
+   {
+    "github": "OpenCut-app/OpenCut",
+    "stars": 95922,
+    "star_rank_in_search": 27,
+    "reason": "client-side video editor (web/desktop/mobile) currently mid-rewrite, no server-side service; no Scorecard entry (404)"
+   },
+   {
+    "github": "puppeteer/puppeteer",
+    "stars": 95740,
+    "star_rank_in_search": 28,
+    "reason": "size 1596649KB > 400000"
+   },
+   {
+    "github": "Stirling-Tools/Stirling-PDF",
+    "stars": 94819,
+    "star_rank_in_search": 29,
+    "reason": "size 658868KB > 400000"
+   },
+   {
+    "github": "OpenHands/OpenHands",
+    "stars": 91679,
+    "star_rank_in_search": 30,
+    "reason": "size 546978KB > 400000"
+   },
+   {
+    "github": "modelcontextprotocol/servers",
+    "stars": 91525,
+    "star_rank_in_search": 31,
+    "reason": "licence NOASSERTION not OSI"
+   },
+   {
+    "github": "storybookjs/storybook",
+    "stars": 91356,
+    "star_rank_in_search": 32,
+    "reason": "size 1135058KB > 400000"
+   },
+   {
+    "github": "mermaid-js/mermaid",
+    "stars": 90829,
+    "star_rank_in_search": 33,
+    "reason": "ts 52.9% < 60"
+   },
+   {
+    "github": "koala73/worldmonitor",
+    "stars": 89354,
+    "star_rank_in_search": 34,
+    "reason": "ts 49.6% < 60"
+   },
+   {
+    "github": "Egonex-AI/Understand-Anything",
+    "stars": 87931,
+    "star_rank_in_search": 36,
+    "reason": "ts 59.8% < 60"
+   },
+   {
+    "github": "realworld-apps/realworld",
+    "stars": 84320,
+    "star_rank_in_search": 37,
+    "reason": "licence NOASSERTION not OSI"
+   },
+   {
+    "github": "vitejs/vite",
+    "stars": 83493,
+    "star_rank_in_search": 38,
+    "reason": "Scorecard 6.6 < 7; frontend build tool"
+   },
+   {
+    "github": "lobehub/lobehub",
+    "stars": 83450,
+    "star_rank_in_search": 39,
+    "reason": "size 1015596KB > 400000"
+   },
+   {
+    "github": "cheaper-inference/OmniRoute",
+    "stars": 80413,
+    "star_rank_in_search": 41,
+    "reason": "size 1942811KB > 400000"
+   },
+   {
+    "github": "ruvnet/ruflo",
+    "stars": 78786,
+    "star_rank_in_search": 43,
+    "reason": "size 658821KB > 400000"
+   },
+   {
+    "github": "grafana/grafana",
+    "stars": 77463,
+    "star_rank_in_search": 44,
+    "reason": "size 2076285KB > 400000"
+   },
+   {
+    "github": "nestjs/nest",
+    "stars": 76893,
+    "star_rank_in_search": 45,
+    "reason": "already used (exclude list)"
+   },
+   {
+    "github": "Eugeny/tabby",
+    "stars": 75097,
+    "star_rank_in_search": 46,
+    "reason": "desktop terminal emulator (Electron), no server side; no Scorecard entry (404)"
+   },
+   {
+    "github": "toeverything/AFFiNE",
+    "stars": 73778,
+    "star_rank_in_search": 47,
+    "reason": "size 454785KB > 400000"
+   },
+   {
+    "github": "strapi/strapi",
+    "stars": 73365,
+    "star_rank_in_search": 48,
+    "reason": "size 717865KB > 400000"
+   },
+   {
+    "github": "Fission-AI/OpenSpec",
+    "stars": 72859,
+    "star_rank_in_search": 49,
+    "reason": "CLI utility for spec-driven development; no Scorecard entry (404)"
+   },
+   {
+    "github": "heygen-com/hyperframes",
+    "stars": 70806,
+    "star_rank_in_search": 50,
+    "reason": "size 511819KB > 400000"
+   },
+   {
+    "github": "cline/cline",
+    "stars": 70786,
+    "star_rank_in_search": 51,
+    "reason": "size 626031KB > 400000"
+   },
+   {
+    "github": "code-yeongyu/oh-my-openagent",
+    "stars": 70292,
+    "star_rank_in_search": 52,
+    "reason": "licence NOASSERTION not OSI"
+   },
+   {
+    "github": "apache/echarts",
+    "stars": 67578,
+    "star_rank_in_search": 53,
+    "reason": "Scorecard 6.2 < 7; charting library"
+   },
+   {
+    "github": "remotion-dev/remotion",
+    "stars": 66722,
+    "star_rank_in_search": 54,
+    "reason": "size 4442283KB > 400000"
+   },
+   {
+    "github": "facebook/docusaurus",
+    "stars": 66577,
+    "star_rank_in_search": 55,
+    "reason": "size 1610079KB > 400000"
+   },
+   {
+    "github": "nocodb/nocodb",
+    "stars": 65333,
+    "star_rank_in_search": 56,
+    "reason": "size 1511568KB > 400000"
+   },
+   {
+    "github": "upstash/context7",
+    "stars": 63554,
+    "star_rank_in_search": 57,
+    "reason": "MCP server + CLI client for the hosted Context7 API; platform backend not in repo; no Scorecard entry (404)"
+   },
+   {
+    "github": "withastro/astro",
+    "stars": 63426,
+    "star_rank_in_search": 58,
+    "reason": "licence NOASSERTION not OSI"
+   },
+   {
+    "github": "socketio/socket.io",
+    "stars": 63223,
+    "star_rank_in_search": 59,
+    "reason": "Scorecard 6.6 < 7; realtime communication library"
+   },
+   {
+    "github": "marktext/marktext",
+    "stars": 63036,
+    "star_rank_in_search": 60,
+    "reason": "Scorecard 3.9 < 7; desktop markdown editor (Electron), no server side"
+   },
+   {
+    "github": "reduxjs/redux",
+    "stars": 61446,
+    "star_rank_in_search": 61,
+    "reason": "Scorecard 6.3 < 7; state-management library"
+   },
+   {
+    "github": "twentyhq/twenty",
+    "stars": 59609,
+    "star_rank_in_search": 64,
+    "reason": "size 2294545KB > 400000"
+   },
+   {
+    "github": "pmndrs/zustand",
+    "stars": 58864,
+    "star_rank_in_search": 65,
+    "reason": "Scorecard 6.6 < 7; state-management library"
+   },
+   {
+    "github": "appwrite/appwrite",
+    "stars": 57759,
+    "star_rank_in_search": 66,
+    "reason": "size 1153441KB > 400000"
+   },
+   {
+    "github": "agalwood/Motrix",
+    "stars": 57293,
+    "star_rank_in_search": 67,
+    "reason": "licence NOASSERTION not OSI"
+   },
+   {
+    "github": "laurent22/joplin",
+    "stars": 56849,
+    "star_rank_in_search": 68,
+    "reason": "size 668416KB > 400000"
+   },
+   {
+    "github": "remix-run/react-router",
+    "stars": 56622,
+    "star_rank_in_search": 69,
+    "reason": "Scorecard 5.9 < 7; routing library/framework"
+   },
+   {
+    "github": "TryGhost/Ghost",
+    "stars": 55598,
+    "star_rank_in_search": 70,
+    "reason": "size 621674KB > 400000"
+   },
+   {
+    "github": "vuejs/core",
+    "stars": 54799,
+    "star_rank_in_search": 71,
+    "reason": "Scorecard 6.4 < 7; UI framework"
+   },
+   {
+    "github": "lyswhut/lx-music-desktop",
+    "stars": 54699,
+    "star_rank_in_search": 72,
+    "reason": "ts 39.3% < 60"
+   },
+   {
+    "github": "ChromeDevTools/chrome-devtools-mcp",
+    "stars": 54045,
+    "star_rank_in_search": 73,
+    "reason": "MCP server/developer tool for coding agents, not a deployed product; no Scorecard entry (404)"
+   },
+   {
+    "github": "expo/expo",
+    "stars": 53037,
+    "star_rank_in_search": 74,
+    "reason": "size 3843982KB > 400000"
+   },
+   {
+    "github": "CherryHQ/cherry-studio",
+    "stars": 52923,
+    "star_rank_in_search": 75,
+    "reason": "size 617864KB > 400000"
+   },
+   {
+    "github": "ionic-team/ionic-framework",
+    "stars": 52716,
+    "star_rank_in_search": 76,
+    "reason": "size 1908586KB > 400000"
+   },
+   {
+    "github": "DefinitelyTyped/DefinitelyTyped",
+    "stars": 51445,
+    "star_rank_in_search": 77,
+    "reason": "size 830391KB > 400000"
+   },
+   {
+    "github": "justjavac/wechat-miniapp-radar",
+    "stars": 51177,
+    "star_rank_in_search": 78,
+    "reason": "static resource radar site generated from an awesome list (curated-list repo); no Scorecard entry (404)"
+   },
+   {
+    "github": "tldraw/tldraw",
+    "stars": 51058,
+    "star_rank_in_search": 79,
+    "reason": "size 1606862KB > 400000"
+   },
+   {
+    "github": "cypress-io/cypress",
+    "stars": 51013,
+    "star_rank_in_search": 80,
+    "reason": "size 583076KB > 400000"
+   },
+   {
+    "github": "upscayl/upscayl",
+    "stars": 50916,
+    "star_rank_in_search": 81,
+    "reason": "size 568363KB > 400000"
+   },
+   {
+    "github": "chenglou/pretext",
+    "stars": 50888,
+    "star_rank_in_search": 82,
+    "reason": "licence NOASSERTION not OSI"
+   },
+   {
+    "github": "moeru-ai/airi",
+    "stars": 50636,
+    "star_rank_in_search": 83,
+    "reason": "size 591123KB > 400000"
+   },
+   {
+    "github": "TanStack/query",
+    "stars": 50467,
+    "star_rank_in_search": 84,
+    "reason": "data-fetching library; no Scorecard entry (404)"
+   },
+   {
+    "github": "KeygraphHQ/shannon",
+    "stars": 49277,
+    "star_rank_in_search": 85,
+    "reason": "AI pentesting agent run locally from the command line (npx), not a deployed service; no Scorecard entry (404)"
+   },
+   {
+    "github": "calcom/cal.diy",
+    "stars": 49259,
+    "star_rank_in_search": 86,
+    "reason": "size 1157399KB > 400000"
+   },
+   {
+    "github": "slidevjs/slidev",
+    "stars": 49181,
+    "star_rank_in_search": 87,
+    "reason": "Scorecard 5.4 < 7; presentation tool/CLI"
+   },
+   {
+    "github": "pixijs/pixijs",
+    "stars": 48443,
+    "star_rank_in_search": 88,
+    "reason": "2D rendering library; no Scorecard entry (404)"
+   },
+   {
+    "github": "abhigyanpatwari/GitNexus",
+    "stars": 48014,
+    "star_rank_in_search": 89,
+    "reason": "licence NOASSERTION not OSI"
+   },
+   {
+    "github": "prisma/orm",
+    "stars": 47661,
+    "star_rank_in_search": 90,
+    "reason": "ORM library/CLI; no Scorecard entry (404)"
+   },
+   {
+    "github": "typescript-cheatsheets/react",
+    "stars": 47086,
+    "star_rank_in_search": 91,
+    "reason": "ts 46.1% < 60"
+   },
+   {
+    "github": "siyuan-note/siyuan",
+    "stars": 46901,
+    "star_rank_in_search": 92,
+    "reason": "already used (exclude list)"
+   },
+   {
+    "github": "DIYgod/RSSHub",
+    "stars": 46629,
+    "star_rank_in_search": 93,
+    "reason": "size 1290505KB > 400000"
+   },
+   {
+    "github": "RocketChat/Rocket.Chat",
+    "stars": 46301,
+    "star_rank_in_search": 94,
+    "reason": "size 2186617KB > 400000"
+   },
+   {
+    "github": "LibreChat-AI/LibreChat",
+    "stars": 46221,
+    "star_rank_in_search": 95,
+    "reason": "would qualify as application but ranks below the 5th application pick (plane, 61346 stars); no Scorecard entry (404)"
+   },
+   {
+    "github": "fastapi/full-stack-fastapi-template",
+    "stars": 46056,
+    "star_rank_in_search": 96,
+    "reason": "template"
+   },
+   {
+    "github": "jestjs/jest",
+    "stars": 45469,
+    "star_rank_in_search": 97,
+    "reason": "testing framework; no Scorecard entry (404)"
+   },
+   {
+    "github": "payloadcms/payload",
+    "stars": 45452,
+    "star_rank_in_search": 98,
+    "reason": "Scorecard 4.6 < 7; CMS framework, ranks below the 5th application pick"
+   },
+   {
+    "github": "mifi/lossless-cut",
+    "stars": 45104,
+    "star_rank_in_search": 99,
+    "reason": "Scorecard 3.7 < 7; desktop video editor (Electron), no server side"
+   },
+   {
+    "github": "react-hook-form/react-hook-form",
+    "stars": 44879,
+    "star_rank_in_search": 100,
+    "reason": "Scorecard 6.2 < 7; form library"
+   },
+   {
+    "github": "reactive-resume/reactive-resume",
+    "stars": 44774,
+    "star_rank_in_search": 101,
+    "reason": "size 488371KB > 400000"
+   },
+   {
+    "github": "AykutSarac/jsoncrack.com",
+    "stars": 44517,
+    "star_rank_in_search": 102,
+    "reason": "client-side JSON visualiser web app, ranks below the 5th application pick; no Scorecard entry (404)"
+   },
+   {
+    "github": "colinhacks/zod",
+    "stars": 44181,
+    "star_rank_in_search": 103,
+    "reason": "already used (exclude list)"
+   }
+  ]
+ }
+}
