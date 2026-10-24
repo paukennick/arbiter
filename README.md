@@ -41,10 +41,11 @@ Arbiter is honest about what it measures, and the measurements are modest:
 
 - **Precision.** Every finding carries a precision tier. A rule becomes
   `verified` only when it is declared verified and the precision ledger has
-  enough labels to admit it. As of 2026-10-23, 2 of the 120 labelled rules
-  meet the admission bar and none is declared verified, so **every finding is
-  `advisory`**. There is no verified-tier precision figure yet, and the 99%
-  target is not reached. Details: [docs/precision.md](docs/precision.md#current-numbers).
+  enough labels to admit it. As of 2026-10-24, 3 rules meet the admission bar
+  and one, `supply.unpinned-action`, is declared verified, so **nearly every
+  finding is `advisory`**: shown, labelled, and unable to block the gate.
+  There is no human-labelled verified-tier precision figure yet. Details:
+  [docs/precision.md](docs/precision.md#current-numbers).
 - **Recall is low.** On 25 AI-written services, after rules were written for
   their defect classes, the native probes catch 33 of 117 labelled code
   defects (28%). On a held-out set of 40 such apps, scored once before those
@@ -80,30 +81,41 @@ arbiter scan fixtures/legacy-platform --no-open
 ```
 
 ```text
-  no verified findings; 23 advisory findings not shown (run with --advisory to include them)
-  tiers: 0 verified · 23 advisory · 0 inferred (tier_mode tiered: gate reads verified)
+  3 critical  3 high  4 medium  8 low  5 info
+  2 verified (can block the gate) · 21 advisory (shown, not gating) · 0 inferred
+  tiers: 2 verified · 21 advisory · 0 inferred (tier_mode tiered: gate reads verified)
   overall 61.0/100   coverage 98%
+  ...
+  FINDINGS (verified) — measured at least 99% precise; can block the gate
+  low      root:.github/workflows/ci.yml:9  Action `actions/checkout` pinned to a mutable ref (`v4`)
+  ...
+  FINDINGS (advisory) — not confirmed; shown, cannot block the gate
+  critical root:app/config.py:4  AWS access key ID committed
+           arbiter/secrets.aws-access-key  f:cf802335c8f2  [advisory] rule on probation: not declared verified
   ...
   gate PASS
 ```
 
-By default Arbiter shows only **verified** findings: those of rules the
-precision ledger has measured to be right at least 99% of the time. No rule
-has reached that bar yet, so the first scan lists nothing and says so in its
-first line; it does not read as clean. `--advisory` shows the other tiers,
-sectioned and labelled:
+Arbiter shows everything it finds, and blocks only on what it has measured.
+Findings come in three tiers, listed in this order, each in its own labelled
+section:
 
-```bash
-arbiter scan fixtures/legacy-platform --no-open --advisory
-```
+- **verified**: rules the precision ledger has measured to be right at least
+  99% of the time. Only these can fail the gate (`gate.tier_mode: tiered`).
+  One rule has reached that bar so far, `supply.unpinned-action`.
+- **advisory**: everything else a rule found. Not confirmed, shown, and
+  unable to block the gate. Most real defects are here today, which is why
+  they are shown.
+- **inferred**: found by a model. Not confirmed, shown, not gating.
+
+The gate above passes because the two verified findings are low and the
+default gate fails on criticals; the three advisory criticals are listed but
+do not block. `--verified-only` (or `report.show: verified`) narrows the
+listing to the verified tier for one run, and then says how many findings it
+left out instead of reading as clean:
 
 ```text
-  3 critical  3 high  4 medium  8 low  5 info
-  all tiers shown: 0 verified · 23 advisory · 0 inferred
-  ...
-  FINDINGS (advisory)
-  critical root:app/config.py:4  AWS access key ID committed
-           arbiter/secrets.aws-access-key  f:cf802335c8f2  [advisory] rule on probation: not declared verified
+  2 verified findings shown; 21 advisory findings not shown (run with --advisory to include them)
 ```
 
 `arbiter-out/report.json` holds every finding either way, each with its
@@ -147,7 +159,9 @@ arbiter gate . --profile ci --baseline .arbiter/baseline.json
 
 With the default policy the gate fails on any **verified** critical finding
 (`gate.tier_mode: tiered`): a build fails on what Arbiter has measured to be
-right, and on nothing else. `gate.tier_mode: legacy` fails on every critical
+right, and on nothing else, while the report still lists every finding.
+Blocking (`gate.tier_mode`) and showing (`report.show`) are separate
+settings. `gate.tier_mode: legacy` fails on every critical
 finding whatever its tier. Add `new: high` (below) so the gate also fails on
 new high findings while the baseline absorbs existing ones. A ready-made GitHub workflow (a fast check on pull
 requests, a full scan nightly) is in `examples/pull-request-gate/`; the
@@ -170,7 +184,7 @@ gate:
     coverage_below: 0.60    # refuse to pass a thin scan
   tier_mode: tiered         # tiered (default): only verified findings fail | legacy: every finding
 report:
-  show: verified            # verified (default) | all: advisory and inferred findings too
+  show: all                 # all (default): every tier, labelled | verified: verified findings only
 suppress:
   - rule: "arbiter/secrets.*"
     path: "tests/fixtures/**"

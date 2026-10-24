@@ -1314,3 +1314,51 @@ findings need a person); `history.jsonl` keeps full severity counts.
 
 **Also fixed.** `docs/precision.md` carried a stale 280-line second copy of
 itself from the round-4 merge (FAIL-070); removed.
+
+## 2026-10-24 — Show everything, block on verified (ARB-103)
+
+**Decision.** The default view goes back to every finding; only the gate
+stays verified-only. `report.show` defaults to `all`, `gate.tier_mode` to
+`tiered`. Renderings list verified, then advisory, then inferred, each
+section saying what the tier means and whether it can block the gate, and
+one line counts the tiers (`2 verified (can block the gate) · 71 advisory
+(shown, not gating) · 0 inferred`). `report.show: verified` and
+`--verified-only` remain as the opt-in; `--advisory` is accepted as a no-op.
+
+**Why ARB-100's default was a regression.** Arbiter exists to catch
+mistakes, especially in AI-written code. ARB-100 tied what is *shown* to the
+99% bar that belongs to what *blocks*. With one verified rule
+(`supply.unpinned-action`), the default scan of the planted corpus listed 0
+of 404 findings and of the AI-written corpus 0 of 127; legacy-platform
+listed its two unpinned-Action lows and hid three criticals. The
+implementation did what the brief asked; the brief was wrong, and no check
+measured what a user sees by default, so every guard stayed green
+(FAIL-071). Blocking and showing are now separate settings, and the
+precision bar governs only blocking. An advisory finding is not confirmed,
+and the labels say so; it is still what a reviewer of AI-written code needs
+to see.
+
+**The guard.** `tools/regression_guard.py check` scans targets marked
+`default_view` (planted, ai-corpus) under the default configuration and
+fails if the default view lists fewer findings than the scan has active
+ones; `test_default_view_hides_no_finding` runs it in the fast suite. It
+measures defaults, not rules, so it has no snapshot.
+
+**SARIF level.** ARB-065 made a result that cannot block a tiered gate a
+`note` ("an `error` the gate ignores teaches people to ignore errors");
+ARB-100's tiered default turned that into every advisory result. That
+reason argues against `error`, not against visibility, so the level is now
+capped at `warning`: an advisory critical or high is a warning, a medium
+stays a warning, a low or info stays a note. Under `legacy` the severity's
+level stands, as before.
+
+**Labels follow the gate.** "can block the gate" is computed from the
+gate block (`precision.gating_tiers`): under `legacy`, or with `advisory`
+in `gate.tiers`, advisory sections say they can block. A finding that
+failed the gate is never labelled "not gating".
+
+**`--advisory`.** Kept because scripts were written against ARB-100. It is
+a no-op under the default but still overrides `report.show: verified` for
+one run, which is what the existing `run with --advisory to include them`
+hint relies on. The two flags are mutually exclusive.
+

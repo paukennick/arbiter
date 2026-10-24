@@ -206,18 +206,25 @@ analyzer that found nothing.
 
 `gate.tier_mode` decides which findings `fail_on` reads. `tiered` (the
 default) reads only findings whose precision tier is in `gate.tiers`
-(default `[verified]`), records what it set aside as `excluded_by_tier`, and
-the SARIF marks the others as `note`. `legacy` reads every active finding.
-Today one rule is declared verified, `supply.unpinned-action` (ARB-101), so a
-tiered gate reads only those findings; with none of them the pull-request
-comment says `no verified findings; N advisory findings not shown`; set `legacy` if you want the severity gate over every finding until
-the rules you care about are admitted
+(default `[verified]`) and records what it set aside as `excluded_by_tier`.
+`legacy` reads every active finding. Today one rule is declared verified,
+`supply.unpinned-action` (ARB-101), so a tiered gate reads only those
+findings; set `legacy` if you want the severity gate over every finding
+until the rules you care about are admitted
 ([configuration.md](configuration.md#precision-tiers),
 [precision.md](precision.md#tiers)).
 
-The comment, the annotations and the SARIF upload list verified findings
-only by default; `--advisory` or `report.show: all` lists every tier,
-sectioned ([configuration.md](configuration.md#what-the-report-shows)).
+What can block and what is shown are separate settings. The comment, the
+annotations and the SARIF upload list **every** finding by default, verified
+first: the comment's summary line reads `2 verified (can block the gate) ·
+71 advisory (shown, not gating) · 0 inferred` and its table marks each
+unverified row `advisory (not gating)`; each annotation of a finding that
+cannot block starts `[advisory: not gating]`; in the SARIF a result that
+cannot block a tiered gate is at most a `warning`, never an `error` the gate
+ignores. `--verified-only` or `report.show: verified` lists the verified
+tier only and then says how many it left out (`no verified findings; N
+advisory findings not shown` when there are none), so an empty comment never
+reads as a clean one ([configuration.md](configuration.md#what-the-report-shows)).
 
 The `assisted` profile is `ci` plus a model check of each finding at or above
 `verify.min_severity` (default `medium`). It needs `ANTHROPIC_API_KEY` as a

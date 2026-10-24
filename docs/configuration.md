@@ -155,21 +155,28 @@ precision:
 
 Today one rule is declared verified, `supply.unpinned-action` (ARB-101), so
 every other deterministic finding is `advisory`: the default `tiered` gate
-reads only unpinned-Action findings, and when there are none the default view
-lists nothing -- and says so. A repository that wants the severity
-gate over every finding meanwhile sets `gate.tier_mode: legacy`
+reads only unpinned-Action findings, while the default view still lists
+every finding, each labelled with whether it can block the gate. A
+repository that wants the severity gate over every finding meanwhile sets
+`gate.tier_mode: legacy`
 ([precision.md](precision.md#current-numbers) has the current state).
 
 ## What the report shows
 
 ```yaml
 report:
-  show: verified          # verified (default) | all
+  show: all               # all (default) | verified
 ```
 
 | Key | Default | Effect |
 |---|---|---|
-| `show` | `verified` | `verified`: the console, markdown, pull-request comment, SARIF, HTML and GitHub annotations list verified findings only (plus any finding that failed the gate), with one line saying how many advisory and inferred findings were left out. `all`: every tier, sectioned and labelled by tier. `--advisory` on the command line is `all` for one run. Any other value is an error |
+| `show` | `all` | `all`: the console, markdown, pull-request comment, SARIF, HTML and GitHub annotations list every active finding, verified first, then advisory, then inferred, each section labelled with what the tier means and whether it can block the gate, under one line such as `2 verified (can block the gate) · 71 advisory (shown, not gating) · 0 inferred`. `verified`: an opt-in that lists verified findings only (plus any finding that failed the gate), with one line saying how many advisory and inferred findings were left out (`no verified findings; N advisory findings not shown` when there are none). `--verified-only` on the command line is `verified` for one run; `--advisory` is `all` for one run, which changes nothing unless this file says `verified`. Any other value is an error |
+
+Showing is not blocking: `report.show` never changes what can fail the gate
+(`gate.tier_mode`, `gate.tiers`), and the gate never changes what is shown.
+ARB-100 briefly made `verified` the default; with one verified rule that
+hid nearly every finding, so ARB-103 made `all` the default again
+([precision.md](precision.md#tiers)).
 
 `report.json` always holds every finding with its `tier` and `tier_reason`,
 plus a top-level `tiers` block (`shown`, `counts`, `shown_count`,

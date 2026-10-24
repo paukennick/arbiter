@@ -2528,6 +2528,68 @@
         "consumers that counted report.json findings as what a person saw must read the tiers block",
         "Hosted API returns report.json as written (recorded tiers block) so arbiter remote scan renders the verified view by default; MCP show=all is the only surface that rewrites tiers.shown"
       ]
+    },
+    {
+      "id": "ARB-103",
+      "category": "capability",
+      "title": "Show every tier by default; block only on verified",
+      "description": "Reverses ARB-100's default view. Arbiter's purpose is to catch mistakes, especially in AI-written code; with one verified rule (supply.unpinned-action) the verified-only default hid nearly every finding. report.show defaults to all: console, markdown, PR comment, HTML, SARIF and GitHub annotations list every active finding, verified first, then advisory, then inferred, each section labelled with what the tier means and whether it can block the gate, under one summary line ('2 verified (can block the gate) · 71 advisory (shown, not gating) · 0 inferred'). gate.tier_mode stays tiered by default, so only verified findings can fail the gate: blocking and showing are separate decisions. report.show: verified and --verified-only are the opt-in verified view, which keeps the 'no verified findings; N advisory findings not shown' line. --advisory stays accepted (a no-op under the default). MCP arbiter_scan show defaults to all. SARIF: a result that cannot block a tiered gate is at most a warning (was note since ARB-065). A regression-guard metric and test fail when the default view of planted or ai-corpus lists fewer findings than the raw scan has active.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "src/arbiter/policy.py",
+        "src/arbiter/precision.py",
+        "src/arbiter/report.py",
+        "src/arbiter/diff.py",
+        "src/arbiter/cli.py",
+        "src/arbiter/service.py",
+        "src/arbiter/mcp.py",
+        "src/arbiter/api.py",
+        "tools/regression_guard.py",
+        "tools/gold/guards.json",
+        "tests/test_verified_view.py",
+        "tests/test_regression_guard.py",
+        "tests/test_precision_tiers.py",
+        "tests/test_annotations.py",
+        "tests/test_report_output.py",
+        "tests/test_service_api.py",
+        "tests/test_verify.py",
+        "tests/test_policy_gate.py",
+        "examples/pull-request-gate/arbiter.yaml"
+      ],
+      "acceptance_criteria": [
+        "report.show defaults to all and the console/markdown/pr-comment/HTML/SARIF/annotations list every active finding verified first then advisory then inferred",
+        "each tier section is labelled with what the tier means and whether it can block the gate and the summary line counts each tier",
+        "gate.tier_mode stays tiered by default and only verified findings can fail it",
+        "report.show: verified and --verified-only list the verified tier and keep the no-verified-findings wording",
+        "--advisory is accepted and documented as a no-op under the default",
+        "MCP arbiter_scan show defaults to all",
+        "SARIF levels for results that cannot block a tiered gate are at most warning",
+        "test_default_view_hides_no_finding and the regression_guard default-view check fail if the default view of planted or ai-corpus hides any active finding"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q",
+        "PYTHONPATH=src python tools/regression_guard.py check --targets planted ai-corpus --no-perf",
+        "PYTHONPATH=src python tools/precision_guard.py check",
+        "./omni gate"
+      ],
+      "documentation_required": [
+        "README.md",
+        "docs/precision.md",
+        "docs/configuration.md",
+        "docs/ci.md",
+        "docs/cli.md",
+        "docs/mcp.md",
+        "docs/reading-a-report.md",
+        "RUNNING-ON-YOUR-OWN-CODE.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "a consumer that relied on the verified-only default (MCP agents",
+        "PR comments) now receives every finding and must read the tier labels",
+        "the PR comment and annotations are longer on repositories with many advisory findings; --sarif-min-severity and report.show: verified are the narrowing tools"
+      ]
     }
   ]
 }

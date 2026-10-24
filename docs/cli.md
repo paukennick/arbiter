@@ -86,7 +86,8 @@ Flags shared by `scan` and `gate`:
 | `--no-cache`, `--cache-path FILE` | bypass or relocate the result cache ([below](#the-result-cache)) |
 | `--github`, `--no-github` | GitHub Actions mode ([below](#output-formats)); on by default when `GITHUB_ACTIONS=true` |
 | `--sarif-min-severity SEV` | drop findings below `SEV` from `report.sarif` only |
-| `--advisory` | list advisory and inferred findings too, sectioned by tier; by default every rendering lists verified findings only, with one line on what was left out (`report.show` in [configuration.md](configuration.md#what-the-report-shows)). `report.json` holds every finding either way |
+| `--verified-only` | list verified findings only, with one line on how many advisory and inferred findings were left out (`report.show: verified` for one run, [configuration.md](configuration.md#what-the-report-shows)). By default every rendering lists every tier, verified first, each section labelled with whether it can block the gate. Does not change what can fail the gate. `report.json` holds every finding either way |
+| `--advisory` | show every tier. A no-op under the default, which already does; kept for scripts written when the verified tier was the default (ARB-100), and overrides `report.show: verified` for one run. Cannot be combined with `--verified-only` |
 | `--no-history` | do not append to `<out>/history.jsonl` |
 | `--out DIR`, `--format LIST` | output directory (default `arbiter-out`) and formats (default `json,console`) |
 
@@ -189,9 +190,10 @@ arbiter ab --spec examples/ab-native-vs-checkov.yaml --out ab-out
 ```
 
 `diff` accepts `--format console,json,markdown,pr-comment` (default
-`console`); `--out DIR` writes the chosen formats to files; `--advisory`
-lists every tier in the pull-request comment instead of the verified tier
-the report recorded.
+`console`); `--out DIR` writes the chosen formats to files. The
+pull-request comment follows the view the later report recorded (every tier,
+by default); `--verified-only` narrows it to the verified tier and
+`--advisory` widens a verified-only report to every tier.
 
 A baseline is what makes "fail on new findings only" usable: findings are
 matched by fingerprint, which deliberately excludes the line number, so

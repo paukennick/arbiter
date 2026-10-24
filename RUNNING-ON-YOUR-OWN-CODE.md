@@ -109,12 +109,14 @@ Open `.arbiter/first-run/report.html`. Read four things, in this order:
    clean report from any tool actually mean here".
 
 Every finding carries a precision tier, and today that is `[advisory]` on
-all of them: no rule is yet declared precise enough to be *verified*. By
-default Arbiter shows and gates on verified findings only, so the first run
-reads `no verified findings; N advisory findings not shown` and the gate
-passes. To see the advisory findings, scan with `--advisory` (or set
-`report.show: all` in `arbiter.yaml`); to make them fail the gate, set
-`gate.tier_mode: legacy`
+nearly all of them: one rule, `supply.unpinned-action`, is declared precise
+enough to be *verified*. Arbiter shows every finding, verified first, each
+section labelled with whether it can block the gate, and gates on verified
+findings only, so the first run may list criticals and still pass: they are
+advisory (`N advisory (shown, not gating)`). Read them as leads to check,
+not confirmed defects. To list only the verified tier, scan with
+`--verified-only` (or set `report.show: verified` in `arbiter.yaml`); to
+make advisory findings fail the gate, set `gate.tier_mode: legacy`
 ([docs/reading-a-report.md](docs/reading-a-report.md#precision-tiers)).
 
 ---

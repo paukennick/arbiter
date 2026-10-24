@@ -1652,6 +1652,38 @@
       "prevention_rules": [],
       "prevention_notes": "After a merge that touched a long document, grep its H2 headings once; a repeated heading is a merge that kept both sides",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-071",
+      "date": "2026-10-24",
+      "title": "default view hid ~all findings (only one verified rule); no check measured what a user sees by default",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "After ARB-100 the default report showed verified findings only. With one verified rule (supply.unpinned-action), a default scan listed 0 of 404 active findings on fixtures/planted and 0 of 127 on fixtures/ai-corpus, and on the AI-written-code corpus showed roughly none of the known mistakes; legacy-platform showed its 2 unpinned-Action lows and hid 71 findings including 3 criticals. Every test, snapshot, precision and perf guard stayed green.",
+      "how_detected": "owner review of PR #17 (round5-integration)",
+      "root_cause": "In the recommendation and the brief, not the implementation. ARB-100 was specified as 'what is shown by default is what is 99% right', which conflated two decisions: what may block a build (where a 99% bar is right) and what a reader is shown (where hiding unconfirmed findings defeats a tool whose purpose is to catch mistakes, especially in AI-written code). Nobody weighed the brief against how few rules were verified (one), so the default view was built correctly to a wrong requirement. And no check measured the default view: the regression guard, the precision guard and the snapshots all read raw findings, which ARB-100 deliberately left untouched, so a change that hid everything from users moved no number.",
+      "requirement": "ARB-103",
+      "affected": [
+        "src/arbiter/policy.py",
+        "src/arbiter/report.py",
+        "src/arbiter/service.py",
+        "src/arbiter/mcp.py",
+        "src/arbiter/cli.py"
+      ],
+      "fix_summary": "ARB-103: report.show defaults to all (verified first, advisory then inferred, each labelled with whether it can block the gate); gate.tier_mode stays tiered so only verified findings block; --verified-only / report.show: verified is the opt-in; MCP show defaults to all; SARIF caps non-gating results at warning instead of note.",
+      "fix_commits": [
+        "e241de4",
+        "e0035da"
+      ],
+      "regression_tests": [
+        "tests/test_regression_guard.py::test_default_view_hides_no_finding",
+        "tests/test_regression_guard.py::test_the_default_view_guard_fails_when_the_default_hides_findings",
+        "tests/test_verified_view.py::test_a_default_scan_shows_every_finding_labelled_by_tier"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "tools/regression_guard.py check now scans targets marked default_view (planted, ai-corpus) under the default configuration and fails if the default view lists fewer findings than the scan has active ones; test_default_view_hides_no_finding runs it in the fast suite. A requirement that changes a default should state what a user sees under it on the in-tree corpora before it is accepted.",
+      "recurrence_of": ""
     }
   ]
 }

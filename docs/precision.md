@@ -66,8 +66,9 @@ The assignment, in order:
    (a private-key header, a provider-issued token prefix) can reach this.
 
 Nothing is re-graded: an advisory critical finding is still a critical
-finding in `report.json`. The tier decides two things: whether the finding
-may block the gate, and whether it is shown by default.
+finding in `report.json`. The tier decides whether the finding may block the
+gate and how it is labelled; it does not decide whether it is shown. Every
+finding is shown by default (ARB-103).
 
 **Gate.** `gate.tier_mode: tiered` (the default since ARB-100) reads only
 the findings whose tier is in `gate.tiers` (default `[verified]`), so a
@@ -79,10 +80,38 @@ repository full of advisory criticals says so rather than reading as clean.
 active finding can fail it. It is an explicit opt-in for a repository that
 wants the louder gate while its rules are still on probation.
 
-**What is shown (ARB-100).** The human-facing renderings -- console,
-markdown, the pull-request comment, SARIF, HTML and the GitHub annotations
--- and the MCP tools' default answers list the **verified** tier only, with
-one line saying what was left out:
+**What is shown (ARB-103).** Blocking and showing are separate decisions.
+The human-facing renderings -- console, markdown, the pull-request
+comment, SARIF, HTML and the GitHub annotations -- and the MCP tools list
+**every** active finding by default (`report.show: all`): verified first,
+then advisory, then inferred, each in a section whose heading says what the
+tier means and whether it can block the gate, under one line of counts:
+
+```text
+2 verified (can block the gate) · 71 advisory (shown, not gating) · 0 inferred
+  FINDINGS (verified) — measured at least 99% precise; can block the gate
+  FINDINGS (advisory) — not confirmed; shown, cannot block the gate
+  FINDINGS (inferred) — found by a model, not confirmed; shown, cannot block the gate
+```
+
+The labels follow the gate: under `legacy`, or with `advisory` in
+`gate.tiers`, the advisory line reads `can block the gate`. The markdown
+headings are `## Findings (advisory, N) — not confirmed; ...`; the
+pull-request comment's table marks an unverified row `advisory (not
+gating)`; a GitHub annotation's message starts `[advisory: not gating]`.
+
+ARB-100 had made the verified tier the default view. With one verified
+rule, that hid nearly every finding: 0 of 404 on the planted corpus and 0 of
+127 on the AI-written corpus. For a tool whose job is to catch mistakes,
+especially in AI-written code, that is a regression however precise the
+remainder (FAIL-071). `tools/regression_guard.py check` now fails when the
+default view of a `default_view` target lists fewer findings than the scan
+has active ones (`test_default_view_hides_no_finding`).
+
+**The verified-only view (opt-in).** `report.show: verified` in
+`arbiter.yaml`, `--verified-only` on `scan`, `gate`, `diff` and `remote
+scan`, or `show: verified` on MCP's `arbiter_scan` lists the verified tier
+only, with one line saying what was left out:
 
 ```text
 12 verified findings shown; 340 advisory and 3 inferred findings not shown (run with --advisory to include them)
@@ -93,28 +122,31 @@ findings not shown (...)`, never a green "no findings": a report that lists
 nothing because nothing passed the bar must not look like a report that
 found nothing. A finding that failed the gate is shown whatever its tier
 (this only matters under `legacy`; a tiered gate fails only on verified
-findings). `--advisory` on `scan`, `gate`, `diff` and `remote scan`, or
-`report.show: all` in `arbiter.yaml`, brings every tier back, sectioned and
-labelled by tier (`FINDINGS (verified)`, `FINDINGS (advisory)`,
-`FINDINGS (inferred)`; `## Findings (advisory, N)` in markdown). Over MCP,
-`arbiter_scan` takes `show: all`.
+findings). `--advisory` is accepted on the same commands; under the default
+it changes nothing, and over `report.show: verified` it shows every tier for
+one run.
 
 `report.json` is complete whatever the view: every finding with its `tier`
 and `tier_reason`, and a top-level `tiers` block recording the view --
-`{"shown": "verified", "counts": {"verified": 12, "advisory": 340,
-"inferred": 3}, "shown_count": 12, "not_shown": {"advisory": 340,
-"inferred": 3}}`. Baselines and `new`/`existing` status are computed over
-the full set. A report written before views has no `tiers` block and
-renders every finding, since no view was decided for it.
+`{"shown": "all", "counts": {"verified": 2, "advisory": 71, "inferred": 0},
+"shown_count": 73, "not_shown": {}}` by default, and under `verified`
+`{"shown": "verified", ..., "shown_count": 2, "not_shown": {"advisory":
+71}}`. Baselines and `new`/`existing` status are computed over the full
+set. A report written before views has no `tiers` block and renders every
+finding, since no view was decided for it.
 
 **Reports.** The console and markdown reports also print a `tiers: N
 verified · M advisory · K inferred` line with the gate's tier mode, and each
-listed finding's tier and reason. SARIF carries `tier`, `tier_reason` and
-`requirements` in each result's properties and, in the invocation, the tier
-counts, `shown`, `not_shown` and the summary line; under a tiered gate an
-advisory or inferred result's level is `note` (an `error` the gate ignores
-teaches people to ignore errors), and under legacy the level stays the
-severity's, because every finding can block.
+listed finding's tier and reason. SARIF lists results verified first and
+carries `tier`, `tier_reason` and `requirements` in each result's
+properties and, in the invocation, the tier counts, `shown`, `not_shown`
+and the summary line. Under a tiered gate a result whose tier cannot block
+is at most a `warning`: an advisory critical or high is a `warning` rather
+than an `error` (an `error` the gate ignores teaches people to ignore
+errors), and a medium, low or info keeps its severity's level. From ARB-065
+to ARB-103 every such result was a `note`, which once ARB-100 made the
+tiered gate the default buried them in code scanning. Under legacy the
+level stays the severity's, because every finding can block.
 
 **Requirements.** Every finding also carries `requirements: [ARB-xxx]`, the
 requirement(s) its rule was built or fixed under, and the JSON report has a
