@@ -1,0 +1,355 @@
+{
+  "manifest_version": 1,
+  "inventory_date": "2026-10-23",
+  "status": "inventory_baseline_not_certification",
+  "purpose": "Versioned inventory of accuracy benchmark sources, evidence roles, known baselines, and mandatory per-run metadata.",
+  "claim_policy": {
+    "target_metrics": [
+      "precision",
+      "recall"
+    ],
+    "confidence_level": 0.95,
+    "lower_bound_threshold": 0.99,
+    "claim_dimensions": [
+      "rule",
+      "weakness",
+      "language_framework",
+      "repository_population",
+      "operating_system",
+      "architecture"
+    ],
+    "allow_universal_claim": false,
+    "unmeasured_state": "unproven",
+    "promotion_state_until_evidence_bar": "advisory_or_not_assessed"
+  },
+  "metric_contract": {
+    "precision": "Independently confirmed true-positive findings divided by all adjudicated in-scope findings, weighted to the declared target population.",
+    "recall": "Independently confirmed in-scope benchmark defects detected by Arbiter divided by all independently confirmed in-scope benchmark defects.",
+    "matching": "Use the evaluator's versioned file, location-tolerance, weakness/category, and duplicate rules; record the evaluator revision with every run.",
+    "uncertainty": "Report a 95% lower confidence bound with a repository-cluster-aware method validated for the sampling design; do not treat findings from one repository as independent observations.",
+    "incomplete_label_or_applicability_coverage": "Report separately and never assume an unlabelled, unrun, or unsupported stratum passed."
+  },
+  "benchmark_inventory": [
+    {
+      "id": "planted-regression",
+      "path": "fixtures/planted",
+      "role": "regression_only",
+      "source_type": "maintainer-authored synthetic fixtures",
+      "languages": [
+        "go",
+        "java",
+        "python",
+        "ruby",
+        "typescript"
+      ],
+      "label_provenance": "Planted positive and safe twin examples authored for regression; not independent population ground truth.",
+      "sealed": false,
+      "human_adjudication": "not_applicable",
+      "license_status": "repository fixture terms; third-party snippet provenance is not separately inventoried here",
+      "accuracy_claim_eligible": false,
+      "limits": [
+        "Measures whether known planted shapes continue to trigger.",
+        "Does not estimate production-distribution precision or recall."
+      ]
+    },
+    {
+      "id": "ai-corpus-development",
+      "path": "fixtures/ai-corpus",
+      "role": "development_and_regression",
+      "source_type": "AI-generated applications",
+      "repository_count": 25,
+      "languages": [
+        "go",
+        "java",
+        "python",
+        "ruby",
+        "typescript"
+      ],
+      "tasks_per_language": 5,
+      "repository_count_by_language": {
+        "go": 5,
+        "java": 5,
+        "python": 5,
+        "ruby": 5,
+        "typescript": 5
+      },
+      "label_provenance": "One independent model reviewer per language, followed by reconciliation after Arbiter findings; labels are development evidence, not human-adjudicated truth.",
+      "sealed": false,
+      "human_adjudication": "not_recorded",
+      "accuracy_claim_eligible": false,
+      "baseline": {
+        "as_of": "2026-10-23",
+        "scanner_scope": "native_probes",
+        "code_defects_detected": 33,
+        "code_defects_labelled": 117,
+        "code_recall": 0.2821,
+        "reported_source": "docs/testing-harness.md"
+      },
+      "limits": [
+        "Rules have been tuned against this population.",
+        "Generated applications do not establish representativeness of production repositories.",
+        "The cited historical result does not record a reproducible run-level environment manifest."
+      ]
+    },
+    {
+      "id": "ai-corpus-sealed-heldout",
+      "path": "fixtures/ai-corpus-heldout",
+      "role": "sealed_evaluation",
+      "source_type": "AI-generated applications from separate generator models",
+      "repository_count": 40,
+      "languages": [
+        "go",
+        "java",
+        "python",
+        "ruby",
+        "typescript"
+      ],
+      "tasks_per_language": 8,
+      "repository_count_by_language": {
+        "go": 8,
+        "java": 8,
+        "python": 8,
+        "ruby": 8,
+        "typescript": 8
+      },
+      "sealed_on": "2026-10-23",
+      "label_provenance": "Independent model labelling per language, committed before Arbiter was run; no reconciliation. Not human-adjudicated.",
+      "access_policy": "Rule authors must not inspect labels, findings, or excerpts. Use only the approved aggregate-only scorer and guard.",
+      "approved_scoring_command": "python tools/ai_corpus_score.py --corpus fixtures/ai-corpus-heldout --aggregate-only",
+      "human_adjudication": "not_recorded",
+      "accuracy_claim_eligible": false,
+      "baseline": {
+        "as_of": "2026-10-23",
+        "scanner_scope": "native_probes",
+        "defects_detected": 6,
+        "defects_labelled": 142,
+        "recall": 0.0423,
+        "reported_source": "docs/testing-harness.md"
+      },
+      "limits": [
+        "Only aggregate scores are allowed; no per-rule or per-example inspection.",
+        "The benchmark is small and AI-generated.",
+        "The cited figure is a historical aggregate, not a cluster-aware confidence estimate."
+      ]
+    },
+    {
+      "id": "gold-public-repositories",
+      "path": "tools/gold/repos.json",
+      "role": "development_and_sealed_repository_split",
+      "source_type": "pinned public open-source repositories",
+      "repository_count": 24,
+      "languages": [
+        "go",
+        "java",
+        "python",
+        "ruby",
+        "typescript"
+      ],
+      "repository_count_by_language": {
+        "go": 5,
+        "java": 5,
+        "python": 5,
+        "ruby": 4,
+        "typescript": 5
+      },
+      "split": {
+        "definition": "tools/gold/heldout.json",
+        "sealed_repository_count": 7,
+        "development_repository_count": 17,
+        "heldout_repository_count_by_language": {
+          "go": 2,
+          "java": 2,
+          "python": 1,
+          "ruby": 1,
+          "typescript": 1
+        },
+        "heldout_fraction": 0.3,
+        "frozen_date": "2026-10-22",
+        "method": "Stratified by language, seeded split; see tools/ground_truth/heldout_split.py."
+      },
+      "label_provenance": "Public repositories with Arbiter-produced findings; precision labels include model-generated labels. A human-labelled sample sheet was documented as unlabelled in the latest harness report.",
+      "human_adjudication": "incomplete",
+      "license_status": {
+        "source": "tools/gold/repos.json",
+        "repositories_with_noassertion_license": 4,
+        "publication_gate": "Resolve each selected repository's license/provenance before redistribution or external benchmark publication."
+      },
+      "accuracy_claim_eligible": false,
+      "limits": [
+        "Public repositories are not a representative random sample of all repositories.",
+        "The sealed repositories and all ground-truth sources must not be opened while authoring rules.",
+        "Existing precision ledger bounds are not repository-cluster-aware."
+      ]
+    },
+    {
+      "id": "owasp-benchmark-java",
+      "path": "tools/gold/benchmarks.json",
+      "role": "sealed_ground_truth_source",
+      "source_type": "OWASP Benchmark Java",
+      "languages": [
+        "java"
+      ],
+      "cases": 2740,
+      "weakness_count": 11,
+      "license_status": "GPL-2.0; fetched at a pinned commit, not redistributed or built per tools/gold/benchmarks.json.",
+      "label_provenance": "Benchmark-provided expected results; this source is listed as held out in tools/gold/heldout.json.",
+      "sealed": true,
+      "human_adjudication": "benchmark_ground_truth_not_independently_audited_here",
+      "accuracy_claim_eligible": false,
+      "limits": [
+        "Synthetic benchmark cases do not represent arbitrary Java repositories.",
+        "Do not inspect its findings, labels, or excerpts while tuning rules."
+      ]
+    },
+    {
+      "id": "owasp-benchmark-python",
+      "path": "tools/gold/benchmarks.json",
+      "role": "sealed_ground_truth_source",
+      "source_type": "OWASP Benchmark Python",
+      "languages": [
+        "python"
+      ],
+      "cases": 1230,
+      "weakness_count": 14,
+      "license_status": "GPL-3.0; fetched at a pinned commit, not redistributed or run per tools/gold/benchmarks.json.",
+      "label_provenance": "Benchmark-provided expected results; this source is listed as held out in tools/gold/heldout.json.",
+      "sealed": true,
+      "human_adjudication": "benchmark_ground_truth_not_independently_audited_here",
+      "accuracy_claim_eligible": false,
+      "limits": [
+        "Synthetic benchmark cases do not represent arbitrary Python repositories.",
+        "Do not inspect its findings, labels, or excerpts while tuning rules."
+      ]
+    },
+    {
+      "id": "cve-fix-pairs",
+      "path": "tools/gold/heldout.json",
+      "role": "sealed_ground_truth_source",
+      "source_type": "CVE-associated before/after fix pairs",
+      "languages": [
+        "not inventoried in this manifest"
+      ],
+      "license_status": "Per-source licensing and redistribution status not inventoried; resolve before external publication.",
+      "label_provenance": "Patch-derived candidate labels; independently human-adjudicated coverage is not recorded here.",
+      "sealed": true,
+      "human_adjudication": "not_recorded",
+      "accuracy_claim_eligible": false,
+      "limits": [
+        "Fix patches can contain unrelated edits and do not necessarily define all vulnerable variants.",
+        "Do not inspect held-out source examples while tuning rules."
+      ]
+    },
+    {
+      "id": "juliet-java",
+      "path": "tools/gold/heldout.json",
+      "role": "sealed_ground_truth_source",
+      "source_type": "Juliet Java test cases",
+      "languages": [
+        "java"
+      ],
+      "license_status": "Not inventoried in this manifest; resolve before external publication.",
+      "label_provenance": "Benchmark-provided labels; human audit status is not recorded here.",
+      "sealed": true,
+      "human_adjudication": "not_recorded",
+      "accuracy_claim_eligible": false,
+      "limits": [
+        "Synthetic benchmark cases do not represent arbitrary Java repositories.",
+        "Do not inspect held-out source examples while tuning rules."
+      ]
+    }
+  ],
+  "candidate_sources": [
+    {
+      "id": "cvefixes-v1.0.8",
+      "source_url": "https://github.com/secureIT-project/CVEfixes",
+      "dataset_doi": "https://doi.org/10.5281/zenodo.13118970",
+      "concept_doi": "https://doi.org/10.5281/zenodo.4476563",
+      "published_version": "v1.0.8",
+      "published_dataset_license": "CC BY 4.0",
+      "reported_coverage": {
+        "cves": 11873,
+        "fixing_commits": 12107,
+        "projects": 4249,
+        "cwe_types": 272
+      },
+      "archive_bytes": 12708711268,
+      "status": "candidate_not_downloaded_or_ingested",
+      "selection_gates": [
+        "Confirm a sufficiently large Python CWE-89 subset using metadata only.",
+        "Review licenses and provenance of every selected source repository and code excerpt.",
+        "Keep development examples separate from the final benchmark population.",
+        "Treat automatically derived patch labels as noisy; report only CVEfixes benchmark conformance, not general detection accuracy."
+      ],
+      "limits": [
+        "The dataset is automatically collected from CVE records and fixes, not independently human-adjudicated.",
+        "A fix may include unrelated changes and does not necessarily identify every vulnerable variant.",
+        "The published dataset archive is large; do not download it before confirming a usable subset and license path."
+      ]
+    }
+  ],
+  "human_review_status": {
+    "workflow": "tools/label_sample.py",
+    "documented_pilot": {
+      "repository_count": 5,
+      "finding_sample_size": 60,
+      "strata": 41,
+      "status_as_documented": "sheet described as unlabelled; no completed human adjudication result recorded"
+    },
+    "required_review": [
+      "Two independent blind reviewers for sampled findings.",
+      "Blind repository audits for false negatives.",
+      "Documented adjudication of disagreements and reviewer abstentions.",
+      "Record reviewer agreement, sampling frame, inclusion probabilities, and repository clusters."
+    ]
+  },
+  "execution_platform_evidence": {
+    "ci_source": ".github/workflows/pr-check.yml",
+    "fast_ci_operating_systems": [
+      "ubuntu-latest",
+      "windows-latest"
+    ],
+    "analyzer_and_self_gate_operating_systems": [
+      "ubuntu-latest"
+    ],
+    "slow_tier_operating_systems": [
+      "ubuntu-latest"
+    ],
+    "macos_status": "planned_in_pending_ARB-063_not_currently_in_pr_check_matrix",
+    "architecture_matrix": "not_declared",
+    "source_language_recall_by_operating_system": "not_measured",
+    "compatibility_note": "Fast CI verifies core test behavior on Ubuntu and Windows; it does not establish analyzer coverage or equivalent detection accuracy on both hosts."
+  },
+  "run_record_template": {
+    "arbiter_commit": null,
+    "arbiter_worktree_clean": null,
+    "benchmark_manifest_digest": null,
+    "benchmark_snapshot_or_pin": null,
+    "evaluator_commit": null,
+    "configuration_digest": null,
+    "analyzer_and_ruleset_versions": null,
+    "vulnerability_database_snapshot": null,
+    "operating_system_image": null,
+    "architecture": null,
+    "python_version": null,
+    "profile": null,
+    "cache_policy": null,
+    "started_at_utc": null,
+    "completed_at_utc": null,
+    "counts": {
+      "repositories": null,
+      "clusters": null,
+      "labelled_findings": null,
+      "unlabelled_findings": null,
+      "known_defects": null,
+      "not_assessed_strata": null
+    },
+    "metrics": {
+      "precision": null,
+      "precision_lower_95": null,
+      "recall": null,
+      "recall_lower_95": null,
+      "effective_sample_size": null,
+      "method_and_version": null
+    }
+  }
+}

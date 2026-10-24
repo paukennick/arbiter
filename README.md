@@ -18,8 +18,8 @@ the overall grade when that coverage is too low.
 
 It never executes the code it scans. It runs 21 native probes (263 rules,
 176 of them in tree-sitter packs for Python, TypeScript/JavaScript, Go, Java
-and Ruby), wraps five external analyzers (ruff, bandit, semgrep, checkov,
-gitleaks) when they are installed, and maps findings to ten control
+and Ruby), wraps six external analyzers (ruff, bandit, semgrep, checkov,
+gitleaks, Trivy) when they are installed, and maps findings to ten control
 frameworks, including the 2024 CWE Top 25 per language.
 
 ## Contents
@@ -52,6 +52,11 @@ Arbiter is honest about what it measures, and the measurements are modest:
   [docs/testing-harness.md](docs/testing-harness.md#what-the-numbers-say).
   A clean report means the checks that ran found nothing, not that the code
   is safe.
+- **The 99% goal is not achieved.** Arbiter is working toward separate,
+  benchmark-scoped precision and recall claims with confidence bounds; it
+  will not infer accuracy for unmeasured languages, repositories, or
+  platforms. See the [accuracy roadmap](docs/accuracy-roadmap.md) and the
+  [current benchmark baseline](docs/accuracy-baseline.md).
 
 ## Install
 
@@ -59,7 +64,7 @@ Arbiter is honest about what it measures, and the measurements are modest:
 git clone https://github.com/paukennick/arbiter && cd arbiter
 python -m venv .venv && . .venv/bin/activate     # Windows: .venv\Scripts\activate
 pip install -e ".[ast]"                            # the ast extra runs the language packs
-./tools/install_tools.sh                           # optional: the five analyzers and the grammars (bash)
+./tools/install_tools.sh                           # optional: the six analyzers and the grammars (bash)
 ```
 
 Without the `ast` extra, or without the analyzers, Arbiter still runs; what

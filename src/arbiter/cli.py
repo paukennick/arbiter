@@ -12,7 +12,7 @@ import sys
 import webbrowser
 from pathlib import Path
 
-from . import __version__, client, history
+from . import __version__, client, history, tooling
 from .ab import (
     Arm,
     arm_from_dict,
@@ -60,6 +60,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_scan_commands(sub)
     _add_report_commands(sub)
     _add_service_commands(sub)
+    _add_tool_commands(sub)
     return p
 
 
@@ -238,6 +239,27 @@ def _add_report_commands(sub) -> None:
     ex.add_argument("finding_id", help="the full finding id, e.g. f:8c41d2ae9b07")
     ex.add_argument("--report", default="arbiter-out/report.json",
                     help="report to read (default arbiter-out/report.json)")
+
+
+def _add_tool_commands(sub) -> None:
+    tools = sub.add_parser("tools", help="plan, install, and verify optional analyzer tooling")
+    tool_sub = tools.add_subparsers(dest="tools_cmd", required=True)
+
+    plan = tool_sub.add_parser("plan", help="show applicable tools and their installed status")
+    plan.add_argument("target", nargs="?", default=".", help="repository directory (default: .)")
+    plan.add_argument("--write-lock", nargs="?", const="",
+                      metavar="FILE",
+                      help="write a tooling lock (default TARGET/.arbiter/tooling.lock.json)")
+    plan.add_argument("--cache-dir", help="Arbiter cache directory (default ~/.cache/arbiter)")
+
+    install = tool_sub.add_parser("install", help="install locked tools into the user cache")
+    install.add_argument("target", nargs="?", default=".", help="repository directory (default: .)")
+    install.add_argument("--lock", help="tooling lock file (default TARGET/.arbiter/tooling.lock.json)")
+
+    verify = tool_sub.add_parser("verify", help="check installed tools against a tooling lock")
+    verify.add_argument("lock", nargs="?", default=".arbiter/tooling.lock.json",
+                        help="tooling lock file (default .arbiter/tooling.lock.json)")
+    verify.add_argument("--cache-dir", help="Arbiter cache directory (default ~/.cache/arbiter)")
 
 
 def _add_service_commands(sub) -> None:
@@ -593,9 +615,13 @@ def cmd_probes(args) -> int:
         print(f"\n  stacks detected: {', '.join(sorted(inv.stacks)) or 'none'}\n")
         print(f"  {'PROBE':<18} {'CHECKS':>6}  {'DIMENSIONS':<28} STATUS")
         for probe in REGISTRY:
+            blocked, reason = probe.prevented(ctx)
             ok, why = probe.applicable(ctx)
-            missing = [b for b in probe.binaries if _sh.which(b) is None]
-            if missing:
+            missing = (probe.binary_checker(ctx) if probe.binary_checker is not None
+                       else [binary for binary in probe.binaries if _sh.which(binary) is None])
+            if blocked:
+                status = f"skip — {reason}"
+            elif missing:
                 status = f"skip — missing binary: {', '.join(missing)}"
             elif not ok:
                 status = f"skip — {why}"
@@ -608,6 +634,81 @@ def cmd_probes(args) -> int:
     finally:
         for d in tmps:
             _sh.rmtree(d, ignore_errors=True)
+    return EXIT_OK
+
+
+def _print_tool_status(result: dict) -> None:
+    status = result["status"]
+    required = "required" in result and result["required"]
+    qualifier = "required; " if required else ""
+    print(
+        f"  {result['name']:<16} {qualifier}{status}: {result['detail']}"
+    )
+
+
+def cmd_tools_plan(args) -> int:
+    plan = tooling.build_plan(args.target, cache_dir=args.cache_dir)
+    print(f"Tool plan for {plan['target']}")
+    print(f"Detected languages: {', '.join(plan['languages']) or 'none'}")
+    print("Analyzers:")
+    if plan["analyzers"]:
+        for result in plan["analyzers"]:
+            _print_tool_status(result)
+    else:
+        print("  none applicable")
+    if plan["semgrep_rules"] is not None:
+        _print_tool_status(plan["semgrep_rules"])
+    print("Tree-sitter grammars:")
+    if plan["grammars"]:
+        for result in plan["grammars"]:
+            _print_tool_status(result)
+    else:
+        print("  none applicable")
+    if args.write_lock is not None:
+        destination = args.write_lock or str(Path(plan["target"]) / ".arbiter" / "tooling.lock.json")
+        path = tooling.write_lock(plan["lock"], destination)
+        print(f"Wrote tooling lock: {path}")
+    else:
+        print("No lock written. Use --write-lock to create one.")
+    return EXIT_OK
+
+
+def cmd_tools_verify(args) -> int:
+    lock_path = Path(args.lock).expanduser()
+    lock = tooling.load_lock(lock_path)
+    tool_root = None
+    if lock_path.is_file():
+        target = lock_path.resolve().parent.parent if lock_path.parent.name == ".arbiter" else lock_path.resolve().parent
+        cache_root = tooling.tool_cache_root(target, lock_path)
+        tool_root = cache_root if cache_root.is_dir() else None
+    results = tooling.verify_lock(lock, cache_dir=args.cache_dir, tool_root=tool_root)
+    print(f"Tooling lock: {args.lock}")
+    if tool_root is not None:
+        print(f"Using isolated tool cache: {tool_root}")
+    for result in results:
+        if "required" not in result:
+            result["required"] = True
+        _print_tool_status(result)
+    if tooling.has_required_failures(results):
+        print("Tool verification failed: required capabilities are missing or mismatched.")
+        return EXIT_GATE_FAIL
+    print("Tool verification passed.")
+    return EXIT_OK
+
+
+
+def cmd_tools_install(args) -> int:
+    results = tooling.install_lock(args.target, lock_path=args.lock)
+    lock_path = args.lock or str(Path(args.target).expanduser() / ".arbiter" / "tooling.lock.json")
+    print(f"Tooling lock: {lock_path}")
+    for result in results:
+        if "required" not in result:
+            result["required"] = True
+        _print_tool_status(result)
+    if tooling.has_required_failures(results):
+        print("Tool installation failed: required capabilities are missing or mismatched.")
+        return EXIT_GATE_FAIL
+    print("Tool installation verified in the user cache.")
     return EXIT_OK
 
 
@@ -1183,6 +1284,13 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_ab(args)
         if args.cmd == "probes":
             return cmd_probes(args)
+        if args.cmd == "tools":
+            if args.tools_cmd == "plan":
+                return cmd_tools_plan(args)
+            if args.tools_cmd == "install":
+                return cmd_tools_install(args)
+            if args.tools_cmd == "verify":
+                return cmd_tools_verify(args)
         if args.cmd == "baseline":
             return cmd_baseline(args)
         if args.cmd == "diff":

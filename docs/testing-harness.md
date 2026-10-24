@@ -3,6 +3,13 @@
 Five instruments that measure Arbiter beyond the planted corpus, the gold
 benchmark and OWASP Benchmark:
 
+The long-term precision-and-recall target and the evidence required to claim
+99% are defined in [accuracy-roadmap.md](accuracy-roadmap.md); the instruments
+below are evidence sources, not by themselves a 99% certification. The
+current source inventory and gaps are in [accuracy-baseline.md](accuracy-baseline.md),
+with the machine-readable manifest in
+[accuracy-benchmark-manifest.json](accuracy-benchmark-manifest.json).
+
 | # | Instrument | Question | Tool | Runs in CI |
 |---|---|---|---|---|
 | 1 | [AI-written corpus](#1-the-ai-written-corpus) | On code a model wrote, how much of what is wrong does Arbiter report, and how much of what it reports is right? | `tools/ai_corpus_score.py` | labels validated (fast tier); snapshot (fast tier) |

@@ -217,20 +217,28 @@ def run_arm(arm: Arm, targets: list[str], system_path: str | None, base_config: 
 
             from .adapters import load_all
             from .engine import resolve_targets
+            from .inventory import build_inventory
             from .probes import ProbeContext
             adapters = {a.name: a for a in load_all()}
             ad = adapters.get(arm.tool or "")
             if ad is None:
                 res.error = f"no adapter named '{arm.tool}'"
-            elif ad.missing_binaries():
-                res.error = f"missing binary: {', '.join(ad.missing_binaries())}"
             else:
                 name, repos, tmps, manifest = resolve_targets(targets, system_path)
                 try:
-                    ctx = ProbeContext(repos=repos, config=base_config, system=manifest)
-                    res.findings = ad.run(ctx)
-                    res.probes_ran = 1
-                    res.coverage = 1.0
+                    inventory = build_inventory(repos)
+                    ctx = ProbeContext(repos=repos, inventory=inventory,
+                                       config=base_config, system=manifest)
+                    missing = ad.missing_binaries(ctx)
+                    blocked, why = ad.missing_files(ctx)
+                    if missing:
+                        res.error = f"missing binary: {', '.join(missing)}"
+                    elif blocked:
+                        res.error = why
+                    else:
+                        res.findings = ad.run(ctx)
+                        res.probes_ran = 1
+                        res.coverage = 1.0
                 finally:
                     for d in tmps:
                         _sh.rmtree(d, ignore_errors=True)

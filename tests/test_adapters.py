@@ -50,6 +50,60 @@ def test_adapter_findings_outside_the_inventory_are_dropped():
     assert out == [kept, tool_level]
 
 
+def test_trivy_output_normalizes_vulnerabilities_and_failed_misconfigurations():
+    import json
+    from pathlib import Path
+
+    from arbiter.adapters import load_adapter
+
+    adapter = load_adapter(
+        Path(__file__).parents[1] / "src" / "arbiter" / "packs" / "adapters" / "trivy.adapter.toml"
+    )
+    output = json.dumps({
+        "Results": [
+            {
+                "Target": "requirements.txt",
+                "Vulnerabilities": [{
+                    "VulnerabilityID": "CVE-2025-0001",
+                    "PkgName": "demo",
+                    "InstalledVersion": "1.0",
+                    "FixedVersion": "1.2",
+                    "Severity": "HIGH",
+                    "Title": "Demo vulnerability",
+                    "Description": "A vulnerable package.",
+                }],
+                "Misconfigurations": [{
+                    "ID": "AVD-AWS-0001",
+                    "Status": "FAIL",
+                    "Title": "Bucket encryption disabled",
+                    "Severity": "CRITICAL",
+                    "Message": "Encryption is disabled.",
+                    "Resolution": "Enable server-side encryption.",
+                    "Resource": "aws_s3_bucket.private",
+                    "CauseMetadata": {"StartLine": 12},
+                }, {
+                    "ID": "AVD-AWS-0002",
+                    "Status": "PASS",
+                    "Title": "Passing check",
+                }],
+            }
+        ]
+    })
+
+    rows = adapter.parse_output(output)
+    findings = adapter.to_findings(rows, "repo", "/work/repo")
+
+    assert len(findings) == 2
+    assert findings[0].rule_id == "trivy/vulnerability:CVE-2025-0001"
+    assert findings[0].severity == "high"
+    assert findings[0].location.path == "requirements.txt"
+    assert findings[0].remediation == "Upgrade demo to 1.2."
+    assert findings[1].rule_id == "trivy/misconfiguration:AVD-AWS-0001"
+    assert findings[1].severity == "critical"
+    assert findings[1].location.start_line == 12
+    assert findings[1].remediation == "Enable server-side encryption."
+
+
 def test_adapter_still_returns_output_normally(tmp_path):
     from arbiter.adapters import Adapter
     a = Adapter(name="t", argv=["sh", "-c", "echo '{\"x\":1}'"], timeout=10)

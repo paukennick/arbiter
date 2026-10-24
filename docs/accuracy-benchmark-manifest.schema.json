@@ -1,0 +1,383 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:arbiter:accuracy-benchmark-manifest-v1",
+  "title": "Arbiter accuracy benchmark manifest",
+  "type": "object",
+  "required": [
+    "manifest_version",
+    "inventory_date",
+    "status",
+    "claim_policy",
+    "metric_contract",
+    "benchmark_inventory",
+    "candidate_sources",
+    "human_review_status",
+    "execution_platform_evidence",
+    "run_record_template"
+  ],
+  "properties": {
+    "manifest_version": {
+      "const": 1
+    },
+    "inventory_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "inventory_baseline_not_certification"
+      ]
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1
+    },
+    "claim_policy": {
+      "type": "object",
+      "required": [
+        "target_metrics",
+        "confidence_level",
+        "lower_bound_threshold",
+        "claim_dimensions",
+        "allow_universal_claim",
+        "unmeasured_state",
+        "promotion_state_until_evidence_bar"
+      ],
+      "properties": {
+        "target_metrics": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "precision",
+              "recall"
+            ]
+          },
+          "minItems": 2,
+          "uniqueItems": true
+        },
+        "confidence_level": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "lower_bound_threshold": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "claim_dimensions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "allow_universal_claim": {
+          "const": false
+        },
+        "unmeasured_state": {
+          "type": "string",
+          "minLength": 1
+        },
+        "promotion_state_until_evidence_bar": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "metric_contract": {
+      "type": "object",
+      "required": [
+        "precision",
+        "recall",
+        "matching",
+        "uncertainty",
+        "incomplete_label_or_applicability_coverage"
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "benchmark_inventory": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "path",
+          "role",
+          "source_type",
+          "accuracy_claim_eligible"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "accuracy_claim_eligible": {
+            "type": "boolean"
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        },
+        "candidate_sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "source_url",
+              "published_version",
+              "published_dataset_license",
+              "status",
+              "selection_gates",
+              "limits"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]*$"
+              },
+              "source_url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "dataset_doi": {
+                "type": "string",
+                "format": "uri"
+              },
+              "concept_doi": {
+                "type": "string",
+                "format": "uri"
+              },
+              "published_version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "published_dataset_license": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "type": "string",
+                "minLength": 1
+              },
+              "selection_gates": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "limits": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "human_review_status": {
+      "type": "object"
+    },
+    "execution_platform_evidence": {
+      "type": "object"
+    },
+    "run_record_template": {
+      "type": "object",
+      "required": [
+        "arbiter_commit",
+        "arbiter_worktree_clean",
+        "benchmark_manifest_digest",
+        "benchmark_snapshot_or_pin",
+        "evaluator_commit",
+        "configuration_digest",
+        "analyzer_and_ruleset_versions",
+        "vulnerability_database_snapshot",
+        "operating_system_image",
+        "architecture",
+        "python_version",
+        "profile",
+        "cache_policy",
+        "started_at_utc",
+        "completed_at_utc",
+        "counts",
+        "metrics"
+      ],
+      "properties": {
+        "arbiter_commit": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "arbiter_worktree_clean": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "benchmark_manifest_digest": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "benchmark_snapshot_or_pin": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "evaluator_commit": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "configuration_digest": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "analyzer_and_ruleset_versions": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "vulnerability_database_snapshot": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "operating_system_image": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "architecture": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "python_version": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "profile": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "cache_policy": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "started_at_utc": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "completed_at_utc": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "counts": {
+          "type": "object",
+          "required": [
+            "repositories",
+            "clusters",
+            "labelled_findings",
+            "unlabelled_findings",
+            "known_defects",
+            "not_assessed_strata"
+          ],
+          "properties": {
+            "repositories": {
+              "$ref": "#/$defs/nullableNonNegativeInteger"
+            },
+            "clusters": {
+              "$ref": "#/$defs/nullableNonNegativeInteger"
+            },
+            "labelled_findings": {
+              "$ref": "#/$defs/nullableNonNegativeInteger"
+            },
+            "unlabelled_findings": {
+              "$ref": "#/$defs/nullableNonNegativeInteger"
+            },
+            "known_defects": {
+              "$ref": "#/$defs/nullableNonNegativeInteger"
+            },
+            "not_assessed_strata": {
+              "$ref": "#/$defs/nullableNonNegativeInteger"
+            }
+          },
+          "additionalProperties": false
+        },
+        "metrics": {
+          "type": "object",
+          "required": [
+            "precision",
+            "precision_lower_95",
+            "recall",
+            "recall_lower_95",
+            "effective_sample_size",
+            "method_and_version"
+          ],
+          "properties": {
+            "precision": {
+              "$ref": "#/$defs/nullableRate"
+            },
+            "precision_lower_95": {
+              "$ref": "#/$defs/nullableRate"
+            },
+            "recall": {
+              "$ref": "#/$defs/nullableRate"
+            },
+            "recall_lower_95": {
+              "$ref": "#/$defs/nullableRate"
+            },
+            "effective_sample_size": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "method_and_version": {
+              "$ref": "#/$defs/nullableString"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "nullableString": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "nullableNonNegativeInteger": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "nullableRate": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    }
+  },
+  "additionalProperties": true
+}

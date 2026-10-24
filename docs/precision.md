@@ -6,6 +6,10 @@ the per-rule ledger (which findings may block a gate, and on what evidence),
 and the model verification pass (`## Model verification`), which supplies
 the per-finding verdict the tiers read.
 
+This document defines the precision evidence only. Arbiter's separate
+precision-and-recall target, benchmark safeguards, and phased implementation
+are in [accuracy-roadmap.md](accuracy-roadmap.md).
+
 ## Definition
 
 **Precision** of a set of findings is the share of them that are true

@@ -122,13 +122,11 @@ class Probe:
     # applicable, which leaves the coverage denominator; it must never be
     # used for a dependency this machine lacks (that is `prevented`).
     applies: Callable[[ProbeContext], tuple[bool, str]] | None = None
+    binary_checker: Callable[[ProbeContext], list[str]] | None = None
+    dependency_checker: Callable[[ProbeContext], tuple[bool, str]] | None = None
 
-    def prevented(self) -> tuple[bool, str]:
-        """A dependency this machine lacks. Different fact from `applicable`:
-        the probe had a question to answer here and could not. It stays in
-        the coverage denominator, like a missing binary. The Windows job
-        found the two conflated: tree-sitter absent read as "not applicable"
-        and the AST probes left coverage instead of lowering it."""
+    def prevented(self, ctx: ProbeContext | None = None) -> tuple[bool, str]:
+        """A dependency this machine lacks, never a reason to call a probe inapplicable."""
         for mod in self.modules:
             import importlib.util
             if importlib.util.find_spec(mod) is None:
@@ -139,6 +137,8 @@ class Probe:
             if missing:
                 return True, (f"missing tree-sitter grammar: {', '.join(missing)} "
                               "(run tools/install_tools.sh)")
+        if self.dependency_checker is not None and ctx is not None:
+            return self.dependency_checker(ctx)
         if self.files:
             from .adapters import cache_dir
             for spec in self.files:

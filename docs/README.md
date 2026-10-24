@@ -23,6 +23,9 @@ first scan, and gating. Then pick what you need below.
 
 | Document | Contents |
 |---|---|
+| [accuracy-roadmap.md](accuracy-roadmap.md) | The 99% precision and recall target, evidence rules, phased implementation, and claim boundaries |
+| [accuracy-baseline.md](accuracy-baseline.md) | Current benchmark inventory, historical baseline, platform evidence, and prioritized evidence gaps |
+| [accuracy-benchmark-manifest.json](accuracy-benchmark-manifest.json) and [schema](accuracy-benchmark-manifest.schema.json) | Versioned benchmark inventory, claim policy, and per-run metadata contract |
 | [precision.md](precision.md) | Precision tiers, the per-rule ledger and its CI guard, the label format, the model verification pass, and the current numbers |
 | [testing-harness.md](testing-harness.md) | The AI-written corpora (and the held-out one), human-label sampling, regression guards, mutation variants, ground truth and model labels |
 | [evidence.md](evidence.md) | Claim integrity, injection training, corpus tuning |
