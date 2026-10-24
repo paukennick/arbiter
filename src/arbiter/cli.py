@@ -108,6 +108,11 @@ def _add_scan_commands(sub) -> None:
                         help="ask a model to confirm or reject each finding at or above "
                              "verify.min_severity (default: on for --profile assisted; "
                              "never under offline or ci)")
+        sp.add_argument("--advisory", dest="show_all", action="store_true",
+                        help="show advisory and inferred findings too, sectioned by tier "
+                             "(default: verified findings only, with one line on what was "
+                             "left out; same as report.show: all). report.json always "
+                             "holds every finding")
         return sp
 
     sc = common(sub.add_parser("scan", help="analyze and report"))
@@ -170,6 +175,9 @@ def _add_report_commands(sub) -> None:
     df.add_argument("after", help="later report.json")
     df.add_argument("--format", default="console", help="console,json,markdown,pr-comment")
     df.add_argument("--out", default="", help="write the chosen formats into this directory")
+    df.add_argument("--advisory", dest="show_all", action="store_true",
+                    help="list advisory and inferred findings in the pr-comment too "
+                         "(default: the verified tier, as recorded in the report)")
 
     fb = sub.add_parser("feedback", help="adjudicate findings so the tool calibrates")
     fb.add_argument("finding_ids", nargs="+", help="finding ids from a report; the end of an id is enough")
@@ -373,6 +381,8 @@ def _add_service_commands(sub) -> None:
     rs.add_argument("--format", default="json,console",
                     help="json,sarif,html,markdown,console")
     rs.add_argument("--limit", type=int, default=40, help="findings shown on the console")
+    rs.add_argument("--advisory", dest="show_all", action="store_true",
+                    help="show advisory and inferred findings too (default: verified only)")
 
     # No --out or --format here, unlike the local gate: /v1/gate answers with the
     # verdict and the claim ledger, not a report, so those flags would take a
@@ -478,6 +488,8 @@ def cmd_scan(args, gate_mode: bool = False) -> int:
     _load_adapters(args.no_adapters)
     root = args.targets[0] if args.targets else None
     config = load_config(args.config, root if root and not root.startswith("http") else None)
+    if getattr(args, "show_all", False):
+        config = {**config, "report": {**(config.get("report") or {}), "show": "all"}}
 
     report = run_scan(
         targets=args.targets,
@@ -729,6 +741,9 @@ def cmd_diff(args) -> int:
     from .diff import diff_reports, render_diff_console, render_pr_comment
     before = Report.from_dict(json.loads(Path(args.before).read_text(encoding="utf-8")))
     after = Report.from_dict(json.loads(Path(args.after).read_text(encoding="utf-8")))
+    if getattr(args, "show_all", False):
+        from .precision import set_view
+        set_view(after, "all")
     d = diff_reports(before, after)
     formats = _formats(args.format)
 
@@ -1258,6 +1273,9 @@ def cmd_remote(args) -> int:
         return EXIT_OK if passed else EXIT_GATE_FAIL
 
     report = client.report_from(answer)
+    if getattr(args, "show_all", False):
+        from .precision import set_view
+        set_view(report, "all")
     formats = _formats(args.format)
     written = write_all(report, args.out, [f for f in formats if f != "console"],
                         sarif_min_severity=getattr(args, "sarif_min_severity", None))

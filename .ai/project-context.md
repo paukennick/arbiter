@@ -1259,3 +1259,58 @@ because the observed rate was about 0.4 MB/s (estimated transfer time over
 eight hours); the partial file was removed. No archive or source data was
 retained. A smaller or pre-aggregated metadata source is needed before the
 candidate can be accepted or rejected.
+## 2026-10-23 — What is shown by default is what is 99% right (ARB-100)
+
+**Decision.** The owner wants the findings Arbiter shows by default to be
+at least 99% correct. Every finding already carried a tier (ARB-065); what
+changed is that the tier now decides visibility and the gate by default,
+not only the gate on opt-in. `report.show` (default `verified`) and
+`--advisory` select the view; `gate.tier_mode` defaults to `tiered`.
+
+**The view lives in the renderers, not the writer.** `report.json` is the
+canonical record and stays complete, with one additive key (top-level
+`tiers: {shown, counts, shown_count, not_shown}`); schema stays 1.0 because
+nothing a consumer already read changed meaning. OmniEngineering's
+`make_ai.py` reads `findings[]` (`severity`, `status`, `suppressed`) and
+`gate.passed/reasons` from `report.json`, and sees the whole set as before.
+The baseline and the diff run over every finding too; only what is listed
+narrows. Doing it this way means a hidden finding is one `--advisory` away,
+never lost, and the regression guard (raw findings) did not move.
+
+**Nothing verified must not look clean.** The console's first line under
+the header is the view line; when nothing is verified it replaces the
+severity counts (`no verified findings; 23 advisory findings not shown`)
+and is never green. The same line is in the markdown "Read first" block,
+the PR comment, the HTML, the SARIF invocation, the MCP `summary`, and the
+gate block carries `excluded_by_tier` so a passing tiered gate explains
+itself. The alternative -- keep the severity counts of the full set above
+an empty list -- was rejected: "3 critical" over no findings is a different
+kind of misleading.
+
+**Gate failures are always shown.** Under `legacy`, an advisory finding can
+fail the gate. A FAIL whose cause the reader cannot see is worse than an
+advisory line, so `shown_findings` is the verified tier plus
+`gate.failing_ids`, and the view block counts those as shown. Under the
+default tiered gate this adds nothing.
+
+**A report with no recorded view renders everything.** `Report()` built in
+memory, and reports written before this change, have no `tiers` block;
+renderers list every finding for them rather than invent a filter for a
+file that never said to. Every scan records a view, so the default a person
+meets is `verified`. This also kept the unit tests that build `Report()` by
+hand honest without rewriting them; the tests that exercised severity
+gating over unverified findings now say `tier_mode: legacy`.
+
+**MCP.** `arbiter_scan` returns the view (`show`, default `verified`) with
+`finding_count` meaning what was returned and `findings_total` the whole;
+the complete report is at `report_path`. The hosted API keeps returning the
+whole report: it is a machine surface and `arbiter remote scan` renders the
+view locally.
+
+**Left as it was.** Scoring and the dimension table count every active
+finding (the scorecard is about the repository, not the view); the review
+queue reads the complete report (adjudication is exactly where advisory
+findings need a person); `history.jsonl` keeps full severity counts.
+
+**Also fixed.** `docs/precision.md` carried a stale 280-line second copy of
+itself from the round-4 merge (FAIL-070); removed.

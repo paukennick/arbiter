@@ -80,15 +80,34 @@ arbiter scan fixtures/legacy-platform --no-open
 ```
 
 ```text
-  3 critical  3 high  4 medium  8 low  5 info
-  tiers: 0 verified · 23 advisory · 0 inferred (tier_mode legacy: gate reads every tier)
+  no verified findings; 23 advisory findings not shown (run with --advisory to include them)
+  tiers: 0 verified · 23 advisory · 0 inferred (tier_mode tiered: gate reads verified)
   overall 61.0/100   coverage 98%
   ...
+  gate PASS
+```
+
+By default Arbiter shows only **verified** findings: those of rules the
+precision ledger has measured to be right at least 99% of the time. No rule
+has reached that bar yet, so the first scan lists nothing and says so in its
+first line; it does not read as clean. `--advisory` shows the other tiers,
+sectioned and labelled:
+
+```bash
+arbiter scan fixtures/legacy-platform --no-open --advisory
+```
+
+```text
+  3 critical  3 high  4 medium  8 low  5 info
+  all tiers shown: 0 verified · 23 advisory · 0 inferred
+  ...
+  FINDINGS (advisory)
   critical root:app/config.py:4  AWS access key ID committed
            arbiter/secrets.aws-access-key  f:cf802335c8f2  [advisory] rule on probation: not declared verified
 ```
 
-That writes `arbiter-out/report.json`. Then:
+`arbiter-out/report.json` holds every finding either way, each with its
+`tier`. Then:
 
 ```bash
 arbiter explain f:cf802335c8f2      # one finding in full
@@ -126,9 +145,11 @@ arbiter baseline arbiter-out/report.json             # accept today's findings i
 arbiter gate . --profile ci --baseline .arbiter/baseline.json
 ```
 
-With the default policy the gate fails on any critical finding. Add
-`new: high` (below) so it also fails on new high findings while the baseline
-absorbs existing ones. A ready-made GitHub workflow (a fast check on pull
+With the default policy the gate fails on any **verified** critical finding
+(`gate.tier_mode: tiered`): a build fails on what Arbiter has measured to be
+right, and on nothing else. `gate.tier_mode: legacy` fails on every critical
+finding whatever its tier. Add `new: high` (below) so the gate also fails on
+new high findings while the baseline absorbs existing ones. A ready-made GitHub workflow (a fast check on pull
 requests, a full scan nightly) is in `examples/pull-request-gate/`; the
 composite action, SARIF upload, annotations and GitLab are in
 [docs/ci.md](docs/ci.md). `arbiter gate . --changed origin/main` reads only
@@ -144,9 +165,12 @@ version: 1
 profile: ci                 # offline (default) | ci | assisted | connected | audit
 gate:
   fail_on:
-    severity: critical      # any critical fails
-    new: high               # new highs fail; ones in the baseline don't
+    severity: critical      # any verified critical fails
+    new: high               # new verified highs fail; ones in the baseline don't
     coverage_below: 0.60    # refuse to pass a thin scan
+  tier_mode: tiered         # tiered (default): only verified findings fail | legacy: every finding
+report:
+  show: verified            # verified (default) | all: advisory and inferred findings too
 suppress:
   - rule: "arbiter/secrets.*"
     path: "tests/fixtures/**"

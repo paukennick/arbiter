@@ -31,13 +31,26 @@ HTML page, Markdown and SARIF are renderings of it
   1 repo(s): root(168 loc)
   stacks: github_actions, python, terraform
 
-  3 critical  3 high  4 medium  8 low  5 info
-  tiers: 0 verified · 23 advisory · 0 inferred (tier_mode legacy: gate reads every tier)
+  no verified findings; 23 advisory findings not shown (run with --advisory to include them)
+  tiers: 0 verified · 23 advisory · 0 inferred (tier_mode tiered: gate reads verified)
   overall 61.0/100   coverage 98%
 
   DIMENSION        SCORE   COVERAGE   FINDINGS
   ...
-  FINDINGS
+  gate PASS
+```
+
+The first line after the header is the view line: by default only
+**verified** findings are listed (the rule has a measured precision of at
+least 99%), and the line says how many advisory and inferred findings were
+left out. With `--advisory` (or `report.show: all` in `arbiter.yaml`) every
+tier is listed, in sections:
+
+```text
+  3 critical  3 high  4 medium  8 low  5 info
+  all tiers shown: 0 verified · 23 advisory · 0 inferred
+  ...
+  FINDINGS (advisory)
   critical root:app/config.py:4  AWS access key ID committed
            arbiter/secrets.aws-access-key  f:cf802335c8f2  [advisory] rule on probation: not declared verified
 ```
@@ -128,11 +141,18 @@ Every finding has a tier:
   because no rule is declared verified yet.
 - `inferred`: found by a model.
 
-The tier never hides or re-grades a finding: an advisory critical is still
-critical. It decides only what a `tier_mode: tiered` gate reads. The default
-gate (`legacy`) reads every tier. Details:
+The tier never re-grades a finding: an advisory critical is still critical
+in `report.json`. It decides what the default `tier_mode: tiered` gate reads
+(`legacy` reads every tier) and what the renderings show by default (the
+verified tier; `--advisory` or `report.show: all` for everything). Details:
 [precision.md](precision.md#tiers). `scan_scope.tiers` holds the counts and
-how many ledger rules are admitted.
+how many ledger rules are admitted; the top-level `tiers` block records the
+view:
+
+```json
+"tiers": {"shown": "verified", "counts": {"verified": 0, "advisory": 23, "inferred": 0},
+          "shown_count": 0, "not_shown": {"advisory": 23}}
+```
 
 ## Model verdicts
 
@@ -147,15 +167,19 @@ call. `scan_scope.verification` holds the counts. Details:
 ## The gate block
 
 ```json
-"gate": {"passed": false, "reasons": ["3 finding(s) at or above critical"],
-         "considered": 23, "gate_on_inferred": false, "tier_mode": "legacy",
-         "failing_ids": ["f:4fc72a8cdfaa", "f:904314e96155", "f:cf802335c8f2"]}
+"gate": {"passed": true, "reasons": [], "considered": 0, "gate_on_inferred": false,
+         "tier_mode": "tiered", "tiers": ["verified"], "excluded_by_tier": {"advisory": 23},
+         "failing_ids": []}
 ```
 
 `reasons` says what failed; `failing_ids` names the findings behind the
 severity and new-finding reasons; `considered` is how many findings the gate
-read after suppressions, provenance and tiers. `arbiter gate` exits 1 when
-`passed` is false.
+read after suppressions, provenance and tiers, and under `tiered`
+`excluded_by_tier` counts the active findings it set aside by tier, so the
+pass above is readable for what it is: 23 advisory findings, none verified.
+Under `tier_mode: legacy` the same fixture fails with `"reasons": ["3
+finding(s) at or above critical"]` and three `failing_ids`. `arbiter gate`
+exits 1 when `passed` is false.
 
 ## Other top-level keys
 
@@ -167,5 +191,6 @@ read after suppressions, provenance and tiers. `arbiter gate` exits 1 when
 | `controls` | per-framework control coverage summary; `arbiter controls` shows the detail |
 | `learning` | the knowledge version and what calibration changed ([calibration.md](calibration.md)) |
 | `rules` | every rule that fired, with its requirements and tier |
+| `tiers` | the view the renderings used (`shown`), the active count per tier, and `not_shown` ([above](#precision-tiers)) |
 | `stacks`, `loc_by_language`, `loc_by_role`, `repos` | what was scanned |
 | `fingerprint` | the finding-id scheme in use (`occurrence-v1`); a baseline cut under an older scheme needs `arbiter baseline --migrate` |

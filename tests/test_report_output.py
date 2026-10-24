@@ -19,8 +19,14 @@ from arbiter.report import render_html, render_markdown, write_sarif
 # --------------------------------------------------------------------------
 
 def test_sarif_is_wellformed(legacy_report, tmp_path):
+    from arbiter.precision import set_view
     p = tmp_path / "r.sarif"
-    write_sarif(legacy_report, str(p))
+    # Every tier, so there is something to check the shape of; the default
+    # (verified) view of this fixture is empty and is tested in
+    # tests/test_verified_view.py.
+    rep = Report.from_dict(json.loads(json.dumps(legacy_report.to_dict())))
+    set_view(rep, "all")
+    write_sarif(rep, str(p))
     doc = json.loads(p.read_text())
     assert doc["version"] == "2.1.0"
     run = doc["runs"][0]

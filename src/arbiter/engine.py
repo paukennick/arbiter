@@ -672,12 +672,16 @@ def run_scan(
     # that can change a finding -- the model verification pass included --
     # and before the gate, which in tier_mode: tiered reads only the tiers
     # it is told to.
+    from .policy import show_mode
     from .precision import annotate as annotate_tiers
-    from .precision import rules_block
+    from .precision import rules_block, set_view
     report.scan_scope["tiers"] = annotate_tiers(report.findings, config, profile_name)
     report.rules = rules_block(report.findings)
 
     report.gate = evaluate_gate(report, config)
+    # The view (ARB-100) is recorded after the gate: what the renderings show
+    # is the verified tier plus whatever failed the gate.
+    set_view(report, show_mode(config))
 
     # Record every assertion this report makes, then check that none of them
     # outruns its basis. A report that fails its own integrity check is a bug

@@ -366,6 +366,12 @@ class Report:
     # One row per rule that fired: {id, requirements, tier}. The OmniGraph
     # reads it to trace a rule to its requirements without loading packs.
     rules: list[dict] = field(default_factory=list)
+    # Which tiers the human-facing renderings show and the active count per
+    # tier (precision.view_block, ARB-100): {shown, counts, shown_count,
+    # not_shown}. `findings` below always holds every finding; this block is
+    # how a reader of the JSON learns the console or PR comment showed fewer.
+    # Empty on a report from before views, which then renders every finding.
+    tiers: dict = field(default_factory=dict)
 
     def active(self) -> list[Finding]:
         return [f for f in self.findings if not f.suppressed]
@@ -392,6 +398,7 @@ class Report:
             "learning": self.learning,
             "fingerprint": self.fingerprint,
             "rules": self.rules,
+            "tiers": self.tiers,
             "findings": [f.to_dict() for f in self.findings],
         }
 
@@ -415,6 +422,7 @@ class Report:
         r.learning = d.get("learning", {})
         r.fingerprint = d.get("fingerprint", "")
         r.rules = d.get("rules", [])
+        r.tiers = d.get("tiers") or {}
         sc = d.get("scorecard") or {}
         card = Scorecard(
             overall=sc.get("overall"),

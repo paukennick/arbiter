@@ -226,7 +226,9 @@ def test_a_diff_from_a_legacy_report_does_not_call_the_repeats_new():
 
 def _new_fails(tmp_path) -> str:
     cfg = tmp_path / "arbiter.yaml"
-    cfg.write_text("gate:\n  fail_on:\n    severity: null\n    new: low\n")
+    # The legacy gate: the Ruby rule is advisory and a tiered gate would
+    # never fail on a new repeat, which is what this test is about.
+    cfg.write_text("gate:\n  fail_on:\n    severity: null\n    new: low\n  tier_mode: legacy\n")
     return str(cfg)
 
 

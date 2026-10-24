@@ -1629,6 +1629,29 @@
       "prevention_rules": [],
       "prevention_notes": "Tooling tests must identify catalog items by stable names rather than array positions.",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-070",
+      "date": "2026-10-23",
+      "title": "docs/precision.md carried a stale second copy of itself after the round-4 merge",
+      "status": "fixed",
+      "severity": "low",
+      "symptom": "docs/precision.md was 825 lines: after 'Current numbers' a line read '## Model verification`), which supplies' followed by a 280-line older copy of Definition, Tiers, Ledger, Label format and Current numbers (the pre-ARB-065 wording, without the population-weighted claim), and only then the real Model verification section",
+      "how_detected": "review while updating the Tiers section for ARB-100 (grep '^## ' showed every heading twice)",
+      "root_cause": "The round-4 branch merge (r4-weights into round4-integration, c70c113) resolved a conflict in the document's intro paragraph by keeping both sides' bodies: one side's tail was spliced into the other's heading, and nothing checks a document for duplicated headings",
+      "requirement": "ARB-100",
+      "affected": [
+        "docs/precision.md"
+      ],
+      "fix_summary": "Lines 405-684 (the garbled heading through the line before the real '## Model verification') removed; the newer first half is the one kept",
+      "fix_commits": [
+        "r5-verified-output"
+      ],
+      "regression_tests": [],
+      "no_test_reason": "a documentation merge artefact; tests/test_docs.py checks links and anchors, not duplicate headings, and a one-off doc check is not worth a permanent test",
+      "prevention_rules": [],
+      "prevention_notes": "After a merge that touched a long document, grep its H2 headings once; a repeated heading is a merge that kept both sides",
+      "recurrence_of": ""
     }
   ]
 }

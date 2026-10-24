@@ -51,8 +51,25 @@ def test_live_suppressions_apply():
 
 
 def test_gate_fails_on_critical(legacy_report):
-    assert legacy_report.gate["passed"] is False
-    assert any("critical" in r for r in legacy_report.gate["reasons"])
+    """The severity gate, in `legacy` mode, fails on the planted criticals."""
+    from arbiter.policy import DEFAULTS, evaluate_gate
+    import copy
+    cfg = copy.deepcopy(DEFAULTS)
+    cfg["gate"]["tier_mode"] = "legacy"
+    gate = evaluate_gate(legacy_report, cfg)
+    assert gate["passed"] is False
+    assert any("critical" in r for r in gate["reasons"])
+
+
+def test_the_default_gate_passes_the_fixture_and_says_why(legacy_report):
+    """Under the default tiered gate (ARB-100) no planted finding is verified
+    (no rule is declared verified yet), so the gate passes; its block must
+    say that every finding was excluded by tier, not read as clean."""
+    gate = legacy_report.gate
+    assert gate["passed"] is True and gate["tier_mode"] == "tiered"
+    assert gate["considered"] == 0
+    assert sum(gate["excluded_by_tier"].values()) == len(legacy_report.active())
+    assert any(f.severity == "critical" for f in legacy_report.active())
 
 
 # --------------------------------------------------------------------------

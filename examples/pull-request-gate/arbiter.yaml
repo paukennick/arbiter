@@ -29,11 +29,25 @@ gate:
   # do not block a merge, because a human has not adjudicated them yet.
   gate_on_inferred: false
 
+  # Which findings fail_on reads. `tiered` (the default) reads only the
+  # verified tier: rules the precision ledger has measured to be right at
+  # least 99% of the time. `legacy` reads every finding, whatever its tier,
+  # which is louder and is the right choice only while no rule you care
+  # about is verified yet.
+  tier_mode: tiered
+
   # A probe that crashed is a bug in Arbiter, not a defect in your code.
   # It shows as not-assessed either way.
   fail_on_probe_error: false
 
 quality:
   adaptive: true        # thresholds drawn from this repository's own profile
+
+report:
+  # What the pull-request comment, the annotations and the SARIF list.
+  # `verified` (the default) is the verified tier plus one line on how many
+  # advisory and inferred findings were left out; `all` lists every tier,
+  # sectioned. report.json holds every finding either way.
+  show: verified
 
 suppress: []
