@@ -250,10 +250,23 @@ identified gaps in human adjudication, cluster-aware uncertainty, benchmark
 representativeness, and platform coverage. No detection rules were changed,
 and sealed labels/findings/excerpts were not opened.
 
-The next implementation milestone should create a new, non-sealed
-development/validation sample for one narrowly scoped weakness and language
-slice, complete blind human adjudication, and validate the cluster-aware
-estimator before changing rules. Keep the existing sealed AI and gold sources
-closed. Expand rule coverage only after this measurement pilot is reviewed.
+ARB-097 completed an aggregate-only RealVuln 3.1.0 Python CWE-89 pilot on 11
+pinned MIT/Unlicense repositories: 21/27 labelled-case precision (77.8%),
+21/26 labelled-case recall (80.8%), and 6/34 safe-trap false positives.
+One unmatched CWE-89 finding remains unassessed. The descriptive
+repository-cluster bootstrap intervals are 64.3%–90.9% for precision and
+50.0%–100.0% for recall. All 11 overall scorecards were withheld because only
+the Python probe ran; the selected probe was assessed on all 11 repositories.
+This is benchmark-specific conformance against maintainer-authored labels,
+only five of which are explicitly marked manually verified. It does not
+certify production accuracy or the 99% target, and no detection rules were
+changed or tuned on the benchmark.
+
+The next milestone is to secure independent reviewers or an explicitly
+approved larger source with defensible labels, then conduct blind finding
+adjudication and repository-level miss audits. Validate the sampling design
+and cluster-aware uncertainty before rule tuning. Keep the existing sealed AI
+and gold sources closed; do not expand the claim beyond the measured
+language/weakness slice.
 
 This roadmap is a program, not a result: it does not certify Arbiter at 99%.

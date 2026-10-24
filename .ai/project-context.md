@@ -1362,3 +1362,42 @@ a no-op under the default but still overrides `report.show: verified` for
 one run, which is what the existing `run with --advisory to include them`
 hint relies on. The two flags are mutually exclusive.
 
+
+## 2026-10-24 — RealVuln Python CWE-89 pilot completed (ARB-097)
+
+The owner-approved RealVuln 3.1.0 subset was evaluated in aggregate-only mode:
+11 pinned MIT/Unlicense Python repositories, 26 vulnerable labels, and 34 safe
+traps. The pinned ground-truth records use internal repository IDs distinct
+from their benchmark directory keys; both identities and the ground-truth
+version were validated separately. All source archives and labels were kept
+outside the checkout, source code was not executed, and the scan used the
+offline `lang_python` probe with adapters, cache, and history disabled.
+
+Aggregate case-level results were TP 21, FN 5, FP 6, TN 28: precision 21/27
+(77.8%), recall 21/26 (80.8%), and safe-trap false-positive rate 6/34 (17.6%).
+One unmatched CWE-89 finding remains unassessed. The 95% seeded
+repository-cluster bootstrap intervals (10,000 replicates) are 64.3%–90.9%
+for precision and 50.0%–100.0% for recall; they describe this curated
+11-repository subset only. All labels have `manual_review` provenance, but
+only five are explicitly marked `manually_verified`; no independent
+multi-reviewer audit is documented. All 11 overall scorecards were withheld
+because only the Python probe ran, although that probe was assessed on all 11.
+
+This result is RealVuln case-level conformance, not Arbiter finding precision,
+production-population accuracy, or evidence for the general 99% target. No
+detection rules were changed or tuned. Aggregate results and run provenance
+are recorded in `docs/accuracy-benchmark-manifest.json`; raw source, labels,
+reports, and per-repository logs were temporary and are removed after
+validation. Follow-up requires independent reviewers or an approved larger
+source with defensible labels, plus blind repository miss audits and
+representative language/platform coverage. FAIL-063 through FAIL-069 and
+FAIL-080 through FAIL-084 record the validation and acquisition issues
+encountered and their regression or prevention evidence. The testing playbook
+now requires aggregate assertions
+to account for all included fixture records.
+
+Separately, the maintainer-authored Python planted regression corpus passed
+73/73, including 8/8 planted SQL-injection cases, with no reported misses,
+unexpected findings, or safe-twin false positives. That run used Python
+3.14.4 on Linux/WSL2 with `tree-sitter-language-pack` 1.22.1 and is regression
+evidence only, not independent accuracy evidence.

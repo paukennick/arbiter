@@ -2401,9 +2401,9 @@
       "id": "ARB-097",
       "category": "measurement",
       "title": "Build a Python SQL injection oracle-conformance pilot",
-      "description": "Evaluate Arbiter's Python CWE-89 detection against an independent machine-labelled benchmark only after its license, source provenance, and holdout use are cleared. Use locally generated vulnerable/safe pairs for regression conformance, not population accuracy. Do not fabricate human labels, inspect sealed data, tune on the sealed evaluation source, or claim general 99 percent accuracy. If no external dataset clears approval, report the blocker and do not run it.",
+      "description": "Evaluate Arbiter's Python CWE-89 probe against the owner-approved, license-cleared RealVuln 3.1.0 subset (MIT/Unlicense sources only, pinned commits) using aggregate-only case-level conformance metrics. Treat benchmark-maintainer manual-review labels as not independently audited; keep unmatched findings unassessed, do not tune rules on this public dataset, and make no production-population or general 99% claim.",
       "priority": "high",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "docs/accuracy-roadmap.md",
         "docs/accuracy-baseline.md",
@@ -2440,7 +2440,9 @@
         "Independent scanners and model judges are not ground truth",
         "Dataset license and current held-out restrictions may prevent use",
         "Small or synthetic samples cannot support a general 99 percent claim",
-        "The owner approved metadata-only retrieval; the 12.7 GB CVEfixes transfer was stopped after 105 MB at about 0.4 MB/s and the partial archive was removed. Find a smaller/pre-aggregated metadata source or obtain an explicitly approved alternative before ingestion."
+        "The owner approved metadata-only retrieval; the 12.7 GB CVEfixes transfer was stopped after 105 MB at about 0.4 MB/s and the partial archive was removed. Find a smaller/pre-aggregated metadata source or obtain an explicitly approved alternative before ingestion.",
+        "Owner approved a narrow RealVuln 3.1.0 Python CWE-89 conformance subset only: 10 MIT + 1 Unlicense source repos at pinned commits (26 vulnerable labels, 34 safe traps). Exclude 35 NOASSERTION and 3 GPL-3.0 repos. Benchmark metadata says all 130 CWE-89 entries have evidence.source=manual_review, but only 5 have manually_verified=true; describe labels as maintainer-authored evidence, not independently audited. Use case-level aggregate-only matching; unmatched alerts remain unassessed; no general 99% claim. Source acquisition/scanning limited to the approved 11 repos.",
+        "Completed aggregate-only RealVuln 3.1.0 Python CWE-89 conformance on the approved MIT/Unlicense subset: 21/27 labelled-case precision, 21/26 recall, 6/34 safe-trap false-positive rate, one unmatched finding unassessed. Benchmark labels are not independently audited; no general 99% or production-accuracy claim is supported."
       ]
     },
     {

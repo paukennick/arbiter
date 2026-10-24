@@ -143,66 +143,465 @@
             "uniqueItems": true
           }
         },
-        "candidate_sources": {
-          "type": "array",
-          "items": {
+        "additionalProperties": true
+      }
+    },
+    "candidate_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "source_url",
+          "published_version",
+          "published_dataset_license",
+          "status",
+          "selection_gates",
+          "limits"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$"
+          },
+          "source_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "dataset_doi": {
+            "type": "string",
+            "format": "uri"
+          },
+          "concept_doi": {
+            "type": "string",
+            "format": "uri"
+          },
+          "published_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "published_dataset_license": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "minLength": 1
+          },
+          "accuracy_claim_eligible": {
+            "type": "boolean"
+          },
+          "benchmark_commit": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{40}$"
+          },
+          "ground_truth_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "license_method": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label_provenance": {
+            "type": "string",
+            "minLength": 1
+          },
+          "matching_contract": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uncertainty_method": {
+            "type": "string",
+            "minLength": 1
+          },
+          "aggregate_metadata": {
+            "type": "object",
+            "properties": {
+              "screened_python_cwe89_repositories": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "screened_vulnerable_cases": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "screened_safe_traps": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "excluded_gpl3_repositories": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "excluded_noassertion_repositories": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "selected_repositories": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "selected_vulnerable_cases": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "selected_safe_trap_cases": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "selected_entries_manual_review": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "selected_entries_explicitly_manually_verified": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          },
+          "selected_repositories": {
+            "type": "array",
+            "minItems": 11,
+            "maxItems": 11,
+            "items": {
+              "type": "object",
+              "required": [
+                "repo_id",
+                "ground_truth_repo_id",
+                "source_url",
+                "source_commit",
+                "source_license",
+                "vulnerable_cases",
+                "safe_trap_cases"
+              ],
+              "properties": {
+                "repo_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "ground_truth_repo_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source_url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "source_commit": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{40}$"
+                },
+                "source_license": {
+                  "enum": [
+                    "MIT",
+                    "Unlicense"
+                  ]
+                },
+                "vulnerable_cases": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "safe_trap_cases": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "evaluation_run": {
             "type": "object",
             "required": [
-              "id",
-              "source_url",
-              "published_version",
-              "published_dataset_license",
               "status",
-              "selection_gates",
-              "limits"
+              "recorded_at_utc",
+              "arbiter_commit",
+              "arbiter_worktree_clean",
+              "scanner_sources_match_commit",
+              "input_manifest_sha256",
+              "evaluator_path",
+              "evaluator_sha256",
+              "configuration_sha256",
+              "scan_command_template",
+              "arbiter_version",
+              "python_version",
+              "operating_system",
+              "architecture",
+              "runtime_packages",
+              "source_archive_bytes",
+              "probe",
+              "profile",
+              "adapters_enabled",
+              "cache_enabled",
+              "history_enabled",
+              "source_code_executed",
+              "repositories_scanned",
+              "python_probe_assessed_repositories",
+              "scorecards_withheld",
+              "labelled_cases",
+              "label_provenance_counts",
+              "case_level_confusion",
+              "metrics",
+              "unmatched_cwe89_findings_unassessed",
+              "claim_scope",
+              "general_99_percent_claim"
             ],
             "properties": {
-              "id": {
-                "type": "string",
-                "pattern": "^[a-z0-9][a-z0-9-]*$"
-              },
-              "source_url": {
-                "type": "string",
-                "format": "uri"
-              },
-              "dataset_doi": {
-                "type": "string",
-                "format": "uri"
-              },
-              "concept_doi": {
-                "type": "string",
-                "format": "uri"
-              },
-              "published_version": {
-                "type": "string",
-                "minLength": 1
-              },
-              "published_dataset_license": {
-                "type": "string",
-                "minLength": 1
-              },
               "status": {
+                "const": "completed_aggregate_only"
+              },
+              "recorded_at_utc": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "arbiter_commit": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{40}$"
+              },
+              "arbiter_worktree_clean": {
+                "type": "boolean"
+              },
+              "scanner_sources_match_commit": {
+                "type": "boolean"
+              },
+              "input_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "evaluator_path": {
                 "type": "string",
                 "minLength": 1
               },
-              "selection_gates": {
-                "type": "array",
-                "minItems": 1,
-                "items": {
+              "evaluator_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "configuration_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "scan_command_template": {
+                "type": "string",
+                "minLength": 1
+              },
+              "arbiter_version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "python_version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "operating_system": {
+                "type": "string",
+                "minLength": 1
+              },
+              "architecture": {
+                "type": "string",
+                "minLength": 1
+              },
+              "runtime_packages": {
+                "type": "object",
+                "additionalProperties": {
                   "type": "string",
                   "minLength": 1
                 }
               },
-              "limits": {
-                "type": "array",
-                "minItems": 1,
-                "items": {
-                  "type": "string",
-                  "minLength": 1
-                }
+              "source_archive_bytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "probe": {
+                "const": "lang_python"
+              },
+              "profile": {
+                "const": "offline"
+              },
+              "adapters_enabled": {
+                "const": false
+              },
+              "cache_enabled": {
+                "const": false
+              },
+              "history_enabled": {
+                "const": false
+              },
+              "source_code_executed": {
+                "const": false
+              },
+              "repositories_scanned": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "python_probe_assessed_repositories": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "scorecards_withheld": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "labelled_cases": {
+                "type": "object",
+                "required": [
+                  "positive",
+                  "safe_traps",
+                  "total"
+                ],
+                "properties": {
+                  "positive": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "safe_traps": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "total": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "additionalProperties": false
+              },
+              "label_provenance_counts": {
+                "type": "object",
+                "required": [
+                  "manual_review",
+                  "manually_verified"
+                ],
+                "properties": {
+                  "manual_review": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "manually_verified": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "additionalProperties": false
+              },
+              "case_level_confusion": {
+                "type": "object",
+                "required": [
+                  "tp",
+                  "fn",
+                  "fp",
+                  "tn"
+                ],
+                "properties": {
+                  "tp": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "fn": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "fp": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "tn": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "additionalProperties": false
+              },
+              "metrics": {
+                "type": "object",
+                "required": [
+                  "labelled_case_precision",
+                  "labelled_case_recall",
+                  "safe_trap_false_positive_rate",
+                  "cluster_bootstrap"
+                ],
+                "properties": {
+                  "labelled_case_precision": {
+                    "$ref": "#/$defs/aggregateMetric"
+                  },
+                  "labelled_case_recall": {
+                    "$ref": "#/$defs/aggregateMetric"
+                  },
+                  "safe_trap_false_positive_rate": {
+                    "$ref": "#/$defs/aggregateMetric"
+                  },
+                  "cluster_bootstrap": {
+                    "type": "object",
+                    "required": [
+                      "confidence_level",
+                      "method",
+                      "replicates",
+                      "seed",
+                      "precision_interval",
+                      "recall_interval",
+                      "interpretation"
+                    ],
+                    "properties": {
+                      "confidence_level": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "exclusiveMaximum": 1
+                      },
+                      "method": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "replicates": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "seed": {
+                        "type": "integer"
+                      },
+                      "precision_interval": {
+                        "$ref": "#/$defs/rateInterval"
+                      },
+                      "recall_interval": {
+                        "$ref": "#/$defs/rateInterval"
+                      },
+                      "interpretation": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "additionalProperties": true
+                  }
+                },
+                "additionalProperties": true
+              },
+              "unmatched_cwe89_findings_unassessed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "claim_scope": {
+                "type": "string",
+                "minLength": 1
+              },
+              "general_99_percent_claim": {
+                "const": false
               }
             },
             "additionalProperties": true
+          },
+          "selection_gates": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "limits": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
         "additionalProperties": true
@@ -377,6 +776,38 @@
       ],
       "minimum": 0,
       "maximum": 1
+    },
+    "aggregateMetric": {
+      "type": "object",
+      "required": [
+        "numerator",
+        "denominator",
+        "value"
+      ],
+      "properties": {
+        "numerator": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "denominator": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "value": {
+          "$ref": "#/$defs/nullableRate"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rateInterval": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "minItems": 2,
+      "maxItems": 2
     }
   },
   "additionalProperties": true

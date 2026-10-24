@@ -169,7 +169,7 @@
       "title": "Scanned files decoded under the platform default codec",
       "status": "fixed",
       "severity": "medium",
-      "symptom": "An em dash in a scanned file reached a generated review queue as `â€”`.",
+      "symptom": "An em dash in a scanned file reached a generated review queue as `\u00e2\u20ac\u201d`.",
       "how_detected": "reading the first adjudication queue closely",
       "root_cause": "Nine target-file read sites used `read_text(errors=\"replace\")` with no encoding, so the codec was the platform default (cp1252 on Windows), which decodes nearly every byte without raising. ARB-009 had excluded these sites on the stated reasoning that errors='replace' was the design intent; the intent was never crashing on a target file, which encoding='utf-8' preserves.",
       "requirement": "ARB-012",
@@ -1631,6 +1631,188 @@
       "recurrence_of": ""
     },
     {
+      "id": "FAIL-063",
+      "date": "2026-10-24",
+      "title": "Path traversal assertion message mismatch",
+      "status": "fixed",
+      "severity": "low",
+      "symptom": "The focused evaluator test failed because the path-traversal guard raised 'must stay within its repository' while the test expected 'relative path'.",
+      "how_detected": "python -m pytest -q tests/test_realvuln_conformance.py",
+      "root_cause": "The new test asserted a wording fragment that did not match the evaluator's intentional, more specific rejection message; the implementation behavior was correct.",
+      "requirement": "ARB-097",
+      "affected": [
+        "tests/test_realvuln_conformance.py::test_evaluate_rejects_non_offline_reports_and_path_traversal"
+      ],
+      "fix_summary": "Updated the assertion to match the explicit repository-boundary error contract; the focused suite now passes.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_realvuln_conformance.py::test_evaluate_rejects_non_offline_reports_and_path_traversal"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        ".ai/playbooks/testing.md"
+      ],
+      "prevention_notes": "Check expected failure messages against the validated input-boundary contract, not an assumed generic phrase.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-064",
+      "date": "2026-10-24",
+      "title": "Label-count test bypassed manifest consistency check",
+      "status": "fixed",
+      "severity": "low",
+      "symptom": "The focused evaluator test received 'manifest aggregate_metadata mismatch' before reaching the intended ground-truth label-count mismatch assertion.",
+      "how_detected": "python -m pytest -q tests/test_realvuln_conformance.py",
+      "root_cause": "The test changed one repository's expected positive count but did not update the manifest aggregate, so the evaluator correctly rejected the internally inconsistent manifest first.",
+      "requirement": "ARB-097",
+      "affected": [
+        "tests/test_realvuln_conformance.py::test_evaluate_rejects_unlicensed_selected_sources_and_label_count_drift"
+      ],
+      "fix_summary": "Updated the test to keep candidate aggregate metadata internally consistent while deliberately mismatching the loaded ground-truth count.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_realvuln_conformance.py::test_evaluate_rejects_unlicensed_selected_sources_and_label_count_drift"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        ".ai/playbooks/testing.md"
+      ],
+      "prevention_notes": "When testing layered validation, keep earlier-layer inputs valid so the test reaches the intended rejection boundary.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-065",
+      "date": "2026-10-24",
+      "title": "Benchmark manifest candidate schema mismatch",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "Draft 2020-12 validation rejected the approved RealVuln manifest: candidate_sources was not a root property, dotted candidate IDs were disallowed, and the safe-trap aggregate key did not match the schema.",
+      "how_detected": "Draft202012Validator.check_schema and manifest validation during ARB-097",
+      "root_cause": "The existing schema placed candidate_sources at the benchmark-inventory item level instead of the manifest root; the new versioned candidate also exposed an overly narrow identifier pattern and a metadata key inconsistency.",
+      "requirement": "ARB-097",
+      "affected": [
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "docs/accuracy-benchmark-manifest.json"
+      ],
+      "fix_summary": "Moved candidate_sources to the manifest root, expanded its schema for pinned repository/license metadata, corrected candidate ID syntax and the aggregate key, and added a regression test for the approved subset.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_realvuln_conformance.py::test_committed_manifest_registers_the_pinned_licensed_subset"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        ".ai/rules/data-governance.json",
+        ".ai/playbooks/testing.md"
+      ],
+      "prevention_notes": "Validate both JSON schema structure and manifest instances whenever adding a candidate source; exercise the checked-in candidate through the evaluator contract.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-066",
+      "date": "2026-10-24",
+      "title": "Map benchmark ground-truth identifiers explicitly",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "Retrieval stopped because the selected manifest key did not equal the internal repo_id in pinned ground-truth metadata.",
+      "how_detected": "Metadata-only lookup of the pinned GitHub ground-truth records.",
+      "root_cause": "The evaluator and retrieval path treated the manifest's benchmark directory slug as the ground-truth record identity, but RealVuln uses separate identifiers for those two namespaces.",
+      "requirement": "ARB-097",
+      "affected": [
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "tools/ground_truth/realvuln_conformance.py",
+        "tests/test_realvuln_conformance.py"
+      ],
+      "fix_summary": "Added an explicit ground_truth_repo_id mapping to each selected source and validate the mapping independently from the local source key.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_realvuln_conformance.py::test_evaluate_maps_ground_truth_id_and_reports_case_metrics"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        "data.boundary_validation",
+        ".ai/playbooks/implementation.md"
+      ],
+      "prevention_notes": "Keep external directory keys and embedded record IDs as separate validated fields; exercise a case where their values differ.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-067",
+      "date": "2026-10-24",
+      "title": "Assert the evaluator's aggregate output contract",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "Focused evaluator test failed with KeyError for an assumed confusion_matrix output key.",
+      "how_detected": "Focused pytest run for tests/test_realvuln_conformance.py.",
+      "root_cause": "The test assertion was rewritten without retrieving the evaluator's existing output contract, so its expected key names were guessed rather than grounded in the implementation.",
+      "requirement": "ARB-097",
+      "affected": [
+        "tests/test_realvuln_conformance.py"
+      ],
+      "fix_summary": "Changed the assertion to use the existing case_level_confusion, metrics and run fields, while retaining the distinct ground-truth ID regression case.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_realvuln_conformance.py::test_evaluate_maps_ground_truth_id_and_reports_case_metrics"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        ".ai/playbooks/implementation.md",
+        ".ai/playbooks/testing.md"
+      ],
+      "prevention_notes": "Inspect the current producer output contract before changing assertions and reconcile aggregate counts against every included fixture record.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-068",
+      "date": "2026-10-24",
+      "title": "Use the benchmark directory key for metadata retrieval",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "The GitHub content API request for a ground-truth record failed when the embedded record ID was used in the directory path.",
+      "how_detected": "Pinned metadata retrieval from the approved GitHub benchmark commit.",
+      "root_cause": "The archive folder is keyed by the manifest repo_id slug, while the JSON body carries a different ground_truth_repo_id; the path and embedded identity are separate namespaces.",
+      "requirement": "ARB-097",
+      "affected": [
+        "docs/accuracy-benchmark-manifest.json",
+        "tests/test_realvuln_conformance.py"
+      ],
+      "fix_summary": "Retrieved metadata under the manifest repo_id path and separately validated the embedded ground_truth_repo_id.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_realvuln_conformance.py::test_evaluate_maps_ground_truth_id_and_reports_case_metrics"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        "data.boundary_validation",
+        ".ai/playbooks/implementation.md"
+      ],
+      "prevention_notes": "Use the manifest directory key to locate records; use the explicit internal-ID mapping only to validate record identity.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-069",
+      "date": "2026-10-24",
+      "title": "Normalize wrapped base64 API content before decoding",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "Pinned GitHub contents metadata failed strict base64 decoding because the API content string contained line breaks.",
+      "how_detected": "Approved metadata retrieval from GitHub API.",
+      "root_cause": "The retrieval path enabled strict base64 validation without normalizing the whitespace GitHub wraps into content responses.",
+      "requirement": "ARB-097",
+      "affected": [
+        "temporary RealVuln pilot retrieval procedure"
+      ],
+      "fix_summary": "Removed whitespace from the base64 content field before strict decoding; all 11 records then passed pin validation.",
+      "fix_commits": [],
+      "regression_tests": [],
+      "no_test_reason": "The retrieval procedure was a one-off aggregate-only acquisition command, not retained as product code; a network integration test would add unnecessary live API dependence. All 11 retrieved records were directly validated against the pinned IDs, versions, languages, and source commits.",
+      "prevention_rules": [
+        ".ai/playbooks/implementation.md"
+      ],
+      "prevention_notes": "Normalize documented API transport whitespace before strict decoding and validate the decoded record metadata.",
+      "recurrence_of": ""
+    },
+    {
       "id": "FAIL-070",
       "date": "2026-10-23",
       "title": "docs/precision.md carried a stale second copy of itself after the round-4 merge",
@@ -1684,6 +1866,132 @@
       "prevention_rules": [],
       "prevention_notes": "tools/regression_guard.py check now scans targets marked default_view (planted, ai-corpus) under the default configuration and fails if the default view lists fewer findings than the scan has active ones; test_default_view_hides_no_finding runs it in the fast suite. A requirement that changes a default should state what a user sees under it on the in-tree corpora before it is accepted.",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-080",
+      "date": "2026-10-24",
+      "title": "Validate ground-truth and published benchmark versions separately",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "Acquisition validation rejected the pinned ground-truth record because its benchmark_version is 3.0.0 while the published RealVuln release is 3.1.0.",
+      "how_detected": "Pinned ground-truth metadata validation before scanning.",
+      "root_cause": "The evaluator compared the ground-truth record's benchmark_version against the published dataset release version, conflating distinct version fields.",
+      "requirement": "ARB-097",
+      "affected": [
+        "tools/ground_truth/realvuln_conformance.py",
+        "tests/test_realvuln_conformance.py"
+      ],
+      "fix_summary": "Validated the record benchmark_version and ground_truth_version against the manifest's ground_truth_version, while retaining 3.1.0 as the published benchmark version.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_realvuln_conformance.py::test_evaluate_rejects_ground_truth_benchmark_version_mismatch",
+        "tests/test_realvuln_conformance.py::test_evaluate_maps_ground_truth_id_and_reports_case_metrics"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        "data.boundary_validation",
+        ".ai/playbooks/implementation.md"
+      ],
+      "prevention_notes": "Keep publication-release and embedded ground-truth version contracts distinct and test the pinned metadata combination.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-081",
+      "date": "2026-10-24",
+      "title": "Keep schema references within definition scope",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "The manifest schema validation failed because evaluation_run referenced aggregateMetric and rateInterval definitions placed outside the JSON Schema $defs object.",
+      "how_detected": "Draft 2020-12 validation of docs/accuracy-benchmark-manifest.json against docs/accuracy-benchmark-manifest.schema.json.",
+      "root_cause": "The schema edit closed the $defs object before adding new reusable definitions, leaving valid JSON with unresolved JSON Schema references.",
+      "requirement": "ARB-097",
+      "affected": [
+        "docs/accuracy-benchmark-manifest.schema.json"
+      ],
+      "fix_summary": "Moved aggregateMetric and rateInterval into the existing $defs object; the manifest validates successfully.",
+      "fix_commits": [],
+      "regression_tests": [],
+      "no_test_reason": "The schema and manifest are validated directly with Draft202012Validator; adding jsonschema as a runtime test dependency is not justified for this documentation-only contract.",
+      "prevention_rules": [
+        ".ai/playbooks/implementation.md"
+      ],
+      "prevention_notes": "Validate schema references against the actual JSON Schema $defs structure after changing reusable definitions.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-082",
+      "date": "2026-10-24",
+      "title": "Run completion tests in an environment with pytest installed",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "The first omni gate attempt failed its impacted test suite because the default interpreter had no pytest module.",
+      "how_detected": "python omni gate before retrying with the isolated uv test environment.",
+      "root_cause": "The workspace interpreter had not been provisioned with the project development test dependencies, so the gate could not invoke pytest even though the code and tests were valid.",
+      "requirement": "ARB-097",
+      "affected": [
+        "validation environment for ARB-097"
+      ],
+      "fix_summary": "Reran the gate through uv with the project test and runtime dependencies available; the impacted completion suite passed.",
+      "fix_commits": [],
+      "regression_tests": [],
+      "no_test_reason": "This was an environment provisioning issue rather than a product defect; the full fast test tier and the repeated Omni gate are the validation evidence.",
+      "prevention_rules": [
+        ".ai/playbooks/testing.md"
+      ],
+      "prevention_notes": "Run Omni completion gates using an interpreter provisioned with the registered test-suite dependencies.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-083",
+      "date": "2026-10-24",
+      "title": "Reject zero end lines when matching findings",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "A finding location with end_line=0 was treated as if end_line were omitted and could match a labelled case.",
+      "how_detected": "Focused evaluator regression test added during code review.",
+      "root_cause": "The matcher used a truthiness fallback for end_line, conflating the malformed numeric value zero with a missing or null value.",
+      "requirement": "ARB-097",
+      "affected": [
+        "tools/ground_truth/realvuln_conformance.py",
+        "tests/test_realvuln_conformance.py"
+      ],
+      "fix_summary": "The matcher now falls back only when end_line is absent or null; zero remains invalid and cannot match.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_realvuln_conformance.py::test_evaluate_does_not_match_a_zero_end_line"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        "data.boundary_validation",
+        ".ai/playbooks/testing.md"
+      ],
+      "prevention_notes": "Validate malformed numeric spans explicitly and cover boundary values in case-matching tests.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-084",
+      "date": "2026-10-24",
+      "title": "Count all unassessed findings in the shared fixture",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "The new zero-end-line regression test expected one unmatched finding but the evaluator correctly reported two.",
+      "how_detected": "Focused evaluator regression test run.",
+      "root_cause": "The test expectation counted the malformed finding but overlooked that the helper fixture already contained another unmatched CWE-89 finding.",
+      "requirement": "ARB-097",
+      "affected": [
+        "tests/test_realvuln_conformance.py::test_evaluate_does_not_match_a_zero_end_line"
+      ],
+      "fix_summary": "Updated the expected unassessed count to include both the invalid-span finding and the existing unmatched CWE-89 finding.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_realvuln_conformance.py::test_evaluate_does_not_match_a_zero_end_line"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [
+        ".ai/playbooks/testing.md"
+      ],
+      "prevention_notes": "Compute expected aggregate counts from every finding in the shared fixture, including pre-existing unmatched cases.",
+      "recurrence_of": "FAIL-067"
     }
   ]
 }

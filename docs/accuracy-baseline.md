@@ -1,16 +1,16 @@
 # Accuracy Baseline and Evidence Gaps
 
-Inventory date: 2026-10-23. This is an inventory of existing evidence, not a
-new benchmark run or a 99% certification. Machine-readable source inventory
-and the per-run record contract are in
+Inventory date: 2026-10-24. This records the existing evidence and one narrow
+benchmark-conformance run; it is not a 99% certification. Machine-readable
+source inventory and run metadata are in
 [accuracy-benchmark-manifest.json](accuracy-benchmark-manifest.json), validated
 by [accuracy-benchmark-manifest.schema.json](accuracy-benchmark-manifest.schema.json).
 
-No rule was changed and no held-out labels, findings, or excerpts were opened
-for this inventory. The sealed AI corpus remains aggregate-only. The
-historical figures below are quoted from the dated harness and precision
-documentation; where the original run commit or host environment was not
-recorded there, that reproducibility gap is stated rather than guessed.
+No detection rules were changed. The sealed AI and OWASP sources remain
+untouched; the approved RealVuln subset was evaluated through the aggregate-only
+workflow below, without publishing per-case reports. Historical figures below
+are quoted from their dated harness and precision documentation; missing run
+metadata is stated rather than guessed.
 
 ## Existing benchmark inventory
 
@@ -22,6 +22,7 @@ recorded there, that reproducibility gap is stated rather than guessed.
 | Pinned public gold repositories | Development and repository-level holdout | 24 repos across Go, Java, Python, Ruby, TypeScript; 17 development and 7 held out | Arbiter finding labels include model labels; the harness describes a 60-row human sheet from 5 repos/41 strata as not yet labelled | Public projects are not a random sample of all repositories. Four repositories report `NOASSERTION` license metadata; resolve license/provenance before external publication. |
 | OWASP Benchmark Java/Python | Sealed ground-truth sources | Java: 2,740 cases/11 CWEs; Python: 1,230 cases/14 CWEs | Benchmark expected results; human audit status not recorded | Java source is GPL-2.0; Python is GPL-3.0. Both are fetched at pins and have restrictions recorded in `tools/gold/benchmarks.json`. Synthetic benchmark scope is not production-repository scope. |
 | CVE fix pairs and Juliet Java | Sealed ground-truth sources | CVE language mix and Juliet license status not inventoried here; Juliet is Java | Patch-derived or benchmark-provided labels; independent human audit not recorded | License/provenance and label audit are gaps. These sources are held out; do not inspect them while tuning. |
+| RealVuln 3.1.0 Python CWE-89 subset | Aggregate-only external conformance pilot | 11 pinned repositories; 26 vulnerable labels and 34 safe traps | Benchmark-maintainer `manual_review`; only 5/60 explicitly set `manually_verified` | Completed at pinned source and benchmark commits using MIT/Unlicense sources only. Curated vulnerable applications; not representative production repositories or independently audited ground truth. Aggregate result and run metadata follow. |
 
 The existing precision ledger reports labels for 120 rules and three admitted
 rules. One rule, `supply.unpinned-action`, is declared verified (ARB-101: 690
@@ -59,13 +60,50 @@ different, narrower evidential strength:
    prioritize cases. Agreement is not a truth oracle; model judges need
    calibration against independent truth and cannot substitute for it.
 
-For the chosen Python SQL-injection slice, the recommended no-human path is
-to screen CVEfixes metadata for a sufficiently large CWE-89/Python subset
-without opening code or labels; verify selected source licenses; then create
-an aggregate-only benchmark evaluator. If those gates fail, stop rather than
-quietly switching to synthetic examples and calling that accuracy. Any
-result must be named **CVEfixes benchmark conformance** and scoped to its
-data and label-generation method. It cannot support a general 99% claim.
+## Completed Python CWE-89 conformance pilot
+
+The owner-approved RealVuln 3.1.0 subset contains 11 pinned Python repositories
+whose source licenses are MIT or Unlicense. Only the `lang_python` probe ran,
+with the offline profile, adapters disabled, and cache and history disabled.
+All 11 Python probes were assessed; all 11 overall scorecards were withheld
+because this deliberately narrow run did not assess the other applicable
+probes. A withheld scorecard is not a low grade and was not used as a result.
+The source code was statically scanned, not executed.
+
+| Measure | Aggregate result |
+|---|---:|
+| Labelled cases | 60 (26 vulnerable, 34 safe traps) |
+| Case-level confusion | TP 21, FN 5, FP 6, TN 28 |
+| Labelled-case precision | 21/27 = 77.8% |
+| Labelled-case recall | 21/26 = 80.8% |
+| Safe-trap false-positive rate | 6/34 = 17.6% |
+| Unmatched CWE-89 findings | 1, left unassessed |
+| 95% repository-cluster bootstrap interval, precision | 64.3%–90.9% |
+| 95% repository-cluster bootstrap interval, recall | 50.0%–100.0% |
+
+The intervals use 10,000 seeded repository-cluster bootstrap replicates and
+describe stability only within this curated 11-repository subset. The 60
+labels are benchmark-maintainer evidence marked `manual_review`; five
+explicitly set `manually_verified=true`, and no independent multi-reviewer
+audit is documented. The reported precision is labelled-case conformance,
+not Arbiter finding-level precision: the unmatched finding remains
+unassessed. These measurements are well below the 99% target and cannot
+support a production-population, cross-language, cross-platform, or general
+accuracy claim. The machine-readable run record retains the commit, dirty
+worktree state, evaluator and configuration digests, runtime, matching
+tolerance, denominators, uncertainty method, and scope limits.
+
+A separate maintainer-authored Python planted-corpus regression run scored
+73/73, including all 8 planted SQL-injection cases, with no reported misses,
+unexpected findings, or safe-twin false positives. It ran on Python 3.14.4
+under Linux/WSL2 with `tree-sitter-language-pack` 1.22.1. This is regression
+evidence only; it does not contradict or replace the RealVuln conformance
+result and is not independent accuracy evidence.
+
+CVEfixes remains an unapproved candidate: its large archive was not
+downloaded or ingested, and neither source-code licensing nor label quality
+has been resolved. Do not silently substitute synthetic fixtures or another
+scanner's output for independent ground truth.
 
 ## Execution-platform evidence
 
@@ -110,13 +148,15 @@ the CI setup does not establish equivalent analyzer coverage on Windows.
 
 ## Baseline decision
 
-The present data is suitable for regression, gap discovery, and planning a
-narrow pilot. It is not sufficient for a 99% precision-and-recall claim:
-the AI-heldout recall is 4%, the AI development recall is 28%, human
-adjudication is incomplete, confidence bounds are not cluster-aware, and
-platform/segment coverage is incomplete.
+The evidence is not sufficient for a 99% precision-and-recall claim. The
+AI-heldout recall is 4%, AI-development recall is 28%, and this narrow
+RealVuln pilot measured 77.8% labelled-case precision and 80.8% labelled-case
+recall with wide, benchmark-specific cluster intervals. Human adjudication,
+representative populations, blind miss audits, and platform/segment coverage
+remain incomplete.
 
-**Next milestone:** create a new, non-sealed development/validation sample for
-one narrowly scoped weakness and language slice, obtain blind human
-adjudication, and validate the cluster-aware estimator before changing rules.
-Keep the existing sealed AI and gold sources closed.
+**Next milestone:** obtain independent reviewers or an explicitly approved,
+larger source with defensible labels; conduct blind finding adjudication and
+repository miss audits; then validate the sampling design and uncertainty
+estimator before any rule tuning. Keep the existing sealed AI and gold sources
+closed.

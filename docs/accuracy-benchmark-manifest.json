@@ -1,6 +1,6 @@
 {
   "manifest_version": 1,
-  "inventory_date": "2026-10-23",
+  "inventory_date": "2026-10-24",
   "status": "inventory_baseline_not_certification",
   "purpose": "Versioned inventory of accuracy benchmark sources, evidence roles, known baselines, and mandatory per-run metadata.",
   "claim_policy": {
@@ -284,6 +284,227 @@
         "The dataset is automatically collected from CVE records and fixes, not independently human-adjudicated.",
         "A fix may include unrelated changes and does not necessarily identify every vulnerable variant.",
         "The published dataset archive is large; do not download it before confirming a usable subset and license path."
+      ]
+    },
+    {
+      "id": "realvuln-3.1.0-python-cwe89-licensed-subset",
+      "source_url": "https://github.com/kolega-ai/Real-Vuln-Benchmark",
+      "published_version": "3.1.0",
+      "ground_truth_version": "3.0.0",
+      "benchmark_commit": "7a710251f55c17d32d3adcb13d37468e2e3b9e4a",
+      "published_dataset_license": "Apache-2.0",
+      "status": "approved_for_aggregate_only_pilot",
+      "accuracy_claim_eligible": false,
+      "license_method": "GitHub license metadata queried at each selected source commit; only MIT and Unlicense source repositories are included.",
+      "label_provenance": "All 60 selected CWE-89 entries have evidence.source=manual_review; 5 explicitly set manually_verified=true and 55 omit that flag. The labels are benchmark-maintainer evidence, not an independently audited or multi-reviewer ground truth.",
+      "matching_contract": "Case-level classification by repository-relative file, acceptable CWE (including CWE-89), and line-span overlap within the benchmark's +/-10-line tolerance. Unmatched CWE-89 findings remain unassessed and are excluded from labelled-case precision.",
+      "uncertainty_method": "Seeded repository-cluster bootstrap percentile intervals; descriptive stability within this curated subset only, not production-population confidence bounds.",
+      "aggregate_metadata": {
+        "screened_python_cwe89_repositories": 49,
+        "screened_vulnerable_cases": 46,
+        "screened_safe_traps": 84,
+        "excluded_gpl3_repositories": 3,
+        "excluded_noassertion_repositories": 35,
+        "selected_repositories": 11,
+        "selected_vulnerable_cases": 26,
+        "selected_safe_trap_cases": 34,
+        "selected_entries_manual_review": 60,
+        "selected_entries_explicitly_manually_verified": 5
+      },
+      "selected_repositories": [
+        {
+          "repo_id": "realvuln-damn-vulnerable-graphql-application",
+          "ground_truth_repo_id": "dvga",
+          "source_url": "https://github.com/dolevf/Damn-Vulnerable-GraphQL-Application",
+          "source_commit": "a961308c02d1fb462b192681c336b0739e432da7",
+          "source_license": "MIT",
+          "vulnerable_cases": 1,
+          "safe_trap_cases": 2
+        },
+        {
+          "repo_id": "realvuln-djangoat",
+          "ground_truth_repo_id": "djangoat",
+          "source_url": "https://github.com/Contrast-Security-OSS/DjanGoat",
+          "source_commit": "082c88bfefced508ae083b92b459c808f95e905e",
+          "source_license": "MIT",
+          "vulnerable_cases": 2,
+          "safe_trap_cases": 3
+        },
+        {
+          "repo_id": "realvuln-dsvpwa",
+          "ground_truth_repo_id": "dsvpwa",
+          "source_url": "https://github.com/sgabe/DSVPWA",
+          "source_commit": "a06abb306ed3699bb2f073e3f41d3d9c57012819",
+          "source_license": "MIT",
+          "vulnerable_cases": 2,
+          "safe_trap_cases": 6
+        },
+        {
+          "repo_id": "realvuln-dsvw",
+          "ground_truth_repo_id": "dsvw",
+          "source_url": "https://github.com/stamparm/DSVW",
+          "source_commit": "7d40f4b7939c901610ed9b85724552d60e7d63fa",
+          "source_license": "Unlicense",
+          "vulnerable_cases": 3,
+          "safe_trap_cases": 3
+        },
+        {
+          "repo_id": "realvuln-dvpwa",
+          "ground_truth_repo_id": "dvpwa",
+          "source_url": "https://github.com/anxolerd/dvpwa",
+          "source_commit": "a1d8f89fac2e57093189853c6527c2b01fc1d9c1",
+          "source_license": "MIT",
+          "vulnerable_cases": 1,
+          "safe_trap_cases": 3
+        },
+        {
+          "repo_id": "realvuln-pygoat",
+          "ground_truth_repo_id": "pygoat",
+          "source_url": "https://github.com/kolega-ai-dev/realvuln-pygoat",
+          "source_commit": "2fb0c600245f50670e8b9233c784afe61e8b340b",
+          "source_license": "MIT",
+          "vulnerable_cases": 2,
+          "safe_trap_cases": 2
+        },
+        {
+          "repo_id": "realvuln-threatbyte",
+          "ground_truth_repo_id": "threatbyte",
+          "source_url": "https://github.com/anotherik/ThreatByte",
+          "source_commit": "c4db46f72586c4ecb65859051ea037018dbf0e5e",
+          "source_license": "MIT",
+          "vulnerable_cases": 1,
+          "safe_trap_cases": 4
+        },
+        {
+          "repo_id": "realvuln-vampi",
+          "ground_truth_repo_id": "vampi",
+          "source_url": "https://github.com/erev0s/VAmPI",
+          "source_commit": "1713b54b601ad29582581eeda4b31fceb1319874",
+          "source_license": "MIT",
+          "vulnerable_cases": 1,
+          "safe_trap_cases": 2
+        },
+        {
+          "repo_id": "realvuln-vfapi",
+          "ground_truth_repo_id": "vfapi",
+          "source_url": "https://github.com/naryal2580/vfapi",
+          "source_commit": "f36f177e1a32aa49272f4eb52f8be0af3e8f6bc3",
+          "source_license": "MIT",
+          "vulnerable_cases": 4,
+          "safe_trap_cases": 1
+        },
+        {
+          "repo_id": "realvuln-vulnpy",
+          "ground_truth_repo_id": "vulnpy",
+          "source_url": "https://github.com/Contrast-Security-OSS/vulnpy",
+          "source_commit": "d1d0f64c06f038fe59a049e0e6001bfaf9839697",
+          "source_license": "MIT",
+          "vulnerable_cases": 3,
+          "safe_trap_cases": 3
+        },
+        {
+          "repo_id": "realvuln-vulpy",
+          "ground_truth_repo_id": "vulpy",
+          "source_url": "https://github.com/fportantier/vulpy",
+          "source_commit": "5249cc8b05a1c37f6b2f757b1cf16a509c327122",
+          "source_license": "MIT",
+          "vulnerable_cases": 6,
+          "safe_trap_cases": 5
+        }
+      ],
+      "evaluation_run": {
+        "status": "completed_aggregate_only",
+        "recorded_at_utc": "2026-10-24T20:05:37Z",
+        "arbiter_commit": "b227c38741b5eafc8672aee1ad679795aa7cce1b",
+        "arbiter_worktree_clean": false,
+        "scanner_sources_match_commit": true,
+        "input_manifest_sha256": "fce317a3048e2aea43a3aa9f371a1f6eb545e48aa2136f88599e9377346d25ac",
+        "evaluator_path": "tools/ground_truth/realvuln_conformance.py",
+        "evaluator_sha256": "e1da0dc8914687f272fb49cc55d8268d6c71f07847388ee1f47bb0434f75a3b8",
+        "configuration_sha256": "f9389dfcbe564569f5989c5d1e5cc540ffbb4b205edfc62b79411e5a196aedb9",
+        "scan_command_template": "PYTHONPATH=src uv run --no-project --with PyYAML --with tree-sitter-language-pack==1.22.1 python -c 'from arbiter.cli import main; main()' scan <source> --config <offline-config> --profile offline --only lang_python --no-adapters --no-cache --no-history --no-open --format json --out <reports>/<repo-id>",
+        "arbiter_version": "0.1.0",
+        "python_version": "3.13.15",
+        "operating_system": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "architecture": "x86_64",
+        "runtime_packages": {
+          "PyYAML": "6.0.3",
+          "tree-sitter-language-pack": "1.22.1",
+          "tree-sitter": "0.26.0"
+        },
+        "source_archive_bytes": 18466994,
+        "probe": "lang_python",
+        "profile": "offline",
+        "adapters_enabled": false,
+        "cache_enabled": false,
+        "history_enabled": false,
+        "source_code_executed": false,
+        "repositories_scanned": 11,
+        "python_probe_assessed_repositories": 11,
+        "scorecards_withheld": 11,
+        "labelled_cases": {
+          "positive": 26,
+          "safe_traps": 34,
+          "total": 60
+        },
+        "label_provenance_counts": {
+          "manual_review": 60,
+          "manually_verified": 5
+        },
+        "case_level_confusion": {
+          "tp": 21,
+          "fn": 5,
+          "fp": 6,
+          "tn": 28
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "numerator": 21,
+            "denominator": 27,
+            "value": 0.7777777777777778
+          },
+          "labelled_case_recall": {
+            "numerator": 21,
+            "denominator": 26,
+            "value": 0.8076923076923077
+          },
+          "safe_trap_false_positive_rate": {
+            "numerator": 6,
+            "denominator": 34,
+            "value": 0.17647058823529413
+          },
+          "cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "method": "repository-cluster bootstrap; percentile interval",
+            "replicates": 10000,
+            "seed": 0,
+            "precision_interval": [
+              0.6428571428571429,
+              0.9090909090909091
+            ],
+            "recall_interval": [
+              0.5,
+              1.0
+            ],
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification."
+          }
+        },
+        "unmatched_cwe89_findings_unassessed": 1,
+        "claim_scope": "RealVuln 3.1.0 approved Python CWE-89 case-level conformance only; not Arbiter finding precision or production-population accuracy.",
+        "general_99_percent_claim": false
+      },
+      "selection_gates": [
+        "Use only the 11 selected Python source repositories whose license metadata is MIT or Unlicense at the exact pinned source commit; exclude GPL-3.0 and NOASSERTION repositories.",
+        "The benchmark manifest and ground-truth metadata are pinned to commit 7a710251f55c17d32d3adcb13d37468e2e3b9e4a.",
+        "Run only offline lang_python scans with adapters, network, cache, and history disabled; retain no source code or per-example report in the repository.",
+        "Emit aggregate-only case-level metrics; do not tune rules on this public benchmark or claim production-population accuracy."
+      ],
+      "limits": [
+        "All targets are intentionally vulnerable applications, not a representative production-repository sample.",
+        "The selected subset has only 11 repository clusters and 60 labels; it cannot establish a general 99 percent precision or recall claim.",
+        "Labels use manual_review evidence, but only 5 of 60 selected entries are explicitly flagged manually_verified; independent multi-reviewer audit is not documented.",
+        "Only labelled cases contribute to case-level precision; unmatched CWE-89 alerts are reported as unassessed, not assumed false positives.",
+        "The 35 NOASSERTION and 3 GPL-3.0 source repositories are excluded."
       ]
     }
   ],
