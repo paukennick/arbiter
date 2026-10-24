@@ -1,0 +1,9 @@
+# Tooling bundle for release scripts; Gemfile.lock is committed beside it.
+source "https://rubygems.org"
+
+gem "rake"
+gem "octokit", ">= 9.0"
+gem "rubocop", "~> 1.66", require: false
+gem "release-notes", git: "https://github.com/example/release-notes"
+gem "changelog", github: "example/changelog", ref: "8e5e7e5ab8b370d6c329ec480221332ada57f0ab"
+gem "local_helpers", path: "../helpers"

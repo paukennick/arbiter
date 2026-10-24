@@ -1,0 +1,24 @@
+GIT
+  remote: https://github.com/example/release-notes
+  revision: 8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+  specs:
+    release-notes (0.3.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    octokit (9.2.0)
+    rake (13.2.1)
+    rubocop (1.66.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  octokit (>= 9.0)
+  rake
+  release-notes!
+  rubocop (~> 1.66)
+
+BUNDLED WITH
+   2.5.22

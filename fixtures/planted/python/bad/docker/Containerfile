@@ -1,0 +1,6 @@
+FROM python:3.12-slim # expect: arbiter/supply.unpinned-container-image
+RUN pip install --no-cache-dir gunicorn # expect: arbiter/supply.unpinned-install-in-build
+RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN python -m pip install --upgrade pip
+COPY . /app
+CMD ["gunicorn", "app:app"]

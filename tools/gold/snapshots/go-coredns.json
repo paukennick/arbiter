@@ -1,8 +1,9 @@
 {
  "target": "go-coredns",
  "pinned_sha": "3cbe6b5269be2eae6d4d2404d7371c9a24660f85",
- "arbiter_commit": "53586a6d4aa5f3f9359a2d869de75eb43f2e2b27",
- "count": 305,
+ "arbiter_commit": "8a1292690cb29a20406a0c496c388ee9cd9f67a7",
+ "recorded": "2026-10-24",
+ "count": 307,
  "by_rule": {
   "arbiter/assurance.analysis-excluded": 1,
   "arbiter/assurance.suppression-census": 1,
@@ -16,7 +17,8 @@
   "arbiter/quality.file-too-long": 1,
   "arbiter/secrets.assigned-credential": 12,
   "arbiter/secrets.private-key": 2,
-  "arbiter/supply.unpinned-action": 2
+  "arbiter/supply.unpinned-action": 2,
+  "arbiter/supply.unpinned-container-image": 2
  },
  "findings": [
   "arbiter/assurance.analysis-excluded\t.golangci.yml\t1",
@@ -323,6 +325,8 @@
   "arbiter/secrets.private-key\tplugin/test/file.go\t75",
   "arbiter/secrets.private-key\tplugin/tls/test_key.pem\t1",
   "arbiter/supply.unpinned-action\t.github/workflows/cifuzz.yml\t17",
-  "arbiter/supply.unpinned-action\t.github/workflows/cifuzz.yml\t22"
+  "arbiter/supply.unpinned-action\t.github/workflows/cifuzz.yml\t22",
+  "arbiter/supply.unpinned-container-image\tDockerfile\t11",
+  "arbiter/supply.unpinned-container-image\tDockerfile\t4"
  ]
 }

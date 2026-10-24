@@ -1,0 +1,14 @@
+plugins {
+    id 'java'
+    id 'com.diffplug.spotless' version '6.+' // expect: arbiter/supply.unpinned-java-dep
+}
+
+version = '1.4.0'
+
+dependencies {
+    implementation 'com.squareup.okhttp3:okhttp:4.+' // expect: arbiter/supply.unpinned-java-dep
+    implementation "com.fasterxml.jackson.core:jackson-databind:latest.release" // expect: arbiter/supply.unpinned-java-dep
+    implementation group: 'org.apache.commons', name: 'commons-text', version: '+' // expect: arbiter/supply.unpinned-java-dep
+    implementation libs.commons.io
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
+}
