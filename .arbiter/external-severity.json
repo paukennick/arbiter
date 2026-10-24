@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0",
-  "generated": "2026-10-23T14:31:46Z",
+  "generated": "2026-10-24T13:34:55Z",
   "repos_scanned": 41,
   "repos_timed_out": [],
   "repos_failed": [],
   "lines_by_population": {
     "vulnerable": 727939,
-    "clean": 2516085,
+    "clean": 2516109,
     "examples": 600302
   },
   "bands": [
@@ -27,21 +27,21 @@
   "min_repos_to_promote": 2,
   "lines_by_population_language": {
     "clean": {
-      "terraform": 28584,
-      "markdown": 224374,
-      "unknown": 130913,
-      "json": 45741,
+      "unknown": 130937,
       "yaml": 297288,
-      "go": 850737,
+      "json": 45741,
+      "markdown": 224374,
+      "terraform": 28584,
       "hcl": 163,
+      "go": 850737,
       "shell": 10840,
-      "ini": 18,
-      "python": 71134,
-      "toml": 10332,
-      "makefile": 2505,
       "rst": 23759,
-      "html": 190629,
+      "makefile": 2505,
+      "toml": 10332,
+      "python": 71134,
+      "ini": 18,
       "css": 7029,
+      "html": 190629,
       "sql": 28,
       "javascript": 23211,
       "typescript": 159592,
@@ -50,57 +50,57 @@
       "cpp": 222982,
       "c": 7186,
       "java": 57131,
-      "dockerfile": 676,
       "php": 65098,
+      "dockerfile": 676,
       "r": 5616
     },
     "vulnerable": {
-      "json": 141065,
-      "markdown": 66969,
       "unknown": 116052,
+      "markdown": 66969,
+      "json": 141065,
+      "yaml": 18466,
       "terraform": 7505,
       "dockerfile": 8197,
-      "yaml": 18466,
       "javascript": 112945,
       "html": 41451,
-      "css": 36734,
       "shell": 3385,
+      "css": 36734,
       "powershell": 166,
-      "python": 20149,
-      "go": 15256,
-      "toml": 2699,
       "typescript": 64869,
+      "toml": 2699,
+      "go": 15256,
+      "python": 20149,
       "java": 38415,
       "sql": 15546,
       "ruby": 3589,
       "php": 14230,
       "ini": 188,
-      "dotenv": 56,
-      "c": 7
+      "c": 7,
+      "dotenv": 56
     },
     "examples": {
-      "markdown": 40553,
       "unknown": 48427,
-      "shell": 4154,
+      "markdown": 40553,
       "yaml": 256735,
       "json": 152809,
       "python": 27114,
-      "javascript": 20674,
       "ini": 19,
-      "typescript": 19712,
+      "shell": 4154,
+      "javascript": 20674,
+      "csharp": 3341,
       "html": 2781,
       "dockerfile": 1890,
-      "css": 7876,
-      "cpp": 972,
-      "makefile": 410,
       "go": 5560,
-      "toml": 92,
+      "css": 7876,
       "java": 6620,
-      "csharp": 3341,
-      "php": 44,
-      "c": 79,
-      "sql": 24,
+      "toml": 92,
+      "typescript": 19712,
+      "makefile": 410,
+      "cpp": 972,
       "dotenv": 11,
+      "sql": 24,
+      "c": 79,
+      "php": 44,
       "rust": 405
     }
   },
@@ -1470,7 +1470,7 @@
       "title": "No ServiceAccount/Node should be able to read all secrets",
       "clean_hits": 0,
       "vulnerable_hits": 3,
-      "example_hits": 2,
+      "example_hits": 3,
       "languages": [
         "yaml"
       ],
@@ -1486,7 +1486,7 @@
       "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
       "clean_hits": 21,
       "vulnerable_hits": 22,
-      "example_hits": 176,
+      "example_hits": 180,
       "languages": [
         "json",
         "yaml"
@@ -5296,7 +5296,7 @@
       "repos_seen": 19,
       "clean_kloc": 131.6,
       "vulnerable_kloc": 124.2,
-      "ratio": 66.27,
+      "ratio": 66.28,
       "severity": "medium",
       "basis": "measured"
     },
@@ -5313,7 +5313,7 @@
       "repos_seen": 15,
       "clean_kloc": 131.6,
       "vulnerable_kloc": 124.2,
-      "ratio": 89.17,
+      "ratio": 89.19,
       "severity": "medium",
       "basis": "measured"
     },
@@ -6266,7 +6266,7 @@
       "title": "CPU requests should be set",
       "clean_hits": 9,
       "vulnerable_hits": 15,
-      "example_hits": 106,
+      "example_hits": 107,
       "languages": [
         "json",
         "yaml"
@@ -6283,7 +6283,7 @@
       "title": "CPU limits should be set",
       "clean_hits": 18,
       "vulnerable_hits": 16,
-      "example_hits": 150,
+      "example_hits": 154,
       "languages": [
         "json",
         "yaml"
@@ -6300,7 +6300,7 @@
       "title": "Memory requests should be set",
       "clean_hits": 9,
       "vulnerable_hits": 15,
-      "example_hits": 115,
+      "example_hits": 116,
       "languages": [
         "json",
         "yaml"
@@ -6317,7 +6317,7 @@
       "title": "Memory limits should be set",
       "clean_hits": 18,
       "vulnerable_hits": 16,
-      "example_hits": 160,
+      "example_hits": 164,
       "languages": [
         "json",
         "yaml"
@@ -6351,7 +6351,7 @@
       "title": "Image Pull Policy should be Always",
       "clean_hits": 15,
       "vulnerable_hits": 4,
-      "example_hits": 96,
+      "example_hits": 100,
       "languages": [
         "yaml"
       ],
@@ -6383,7 +6383,7 @@
       "title": "Minimize ClusterRoles that grant control over validating or mutating admission webhook configurations",
       "clean_hits": 1,
       "vulnerable_hits": 3,
-      "example_hits": 1,
+      "example_hits": 2,
       "languages": [
         "yaml"
       ],
@@ -6511,7 +6511,7 @@
       "title": "Containers should not run with allowPrivilegeEscalation",
       "clean_hits": 10,
       "vulnerable_hits": 20,
-      "example_hits": 164,
+      "example_hits": 165,
       "languages": [
         "json",
         "yaml"
@@ -6528,7 +6528,7 @@
       "title": "The default namespace should not be used",
       "clean_hits": 452,
       "vulnerable_hits": 25,
-      "example_hits": 352,
+      "example_hits": 400,
       "languages": [
         "json",
         "yaml"
@@ -6545,7 +6545,7 @@
       "title": "Use read-only filesystem for containers where possible",
       "clean_hits": 10,
       "vulnerable_hits": 21,
-      "example_hits": 157,
+      "example_hits": 158,
       "languages": [
         "json",
         "yaml"
@@ -6611,7 +6611,7 @@
       "title": "Minimize the admission of containers with the NET_RAW capability",
       "clean_hits": 10,
       "vulnerable_hits": 20,
-      "example_hits": 161,
+      "example_hits": 162,
       "languages": [
         "json",
         "yaml"
@@ -6645,7 +6645,7 @@
       "title": "Apply security context to your containers",
       "clean_hits": 10,
       "vulnerable_hits": 16,
-      "example_hits": 137,
+      "example_hits": 138,
       "languages": [
         "json",
         "yaml"
@@ -6662,7 +6662,7 @@
       "title": "Ensure that the seccomp profile is set to docker/default or runtime/default",
       "clean_hits": 12,
       "vulnerable_hits": 19,
-      "example_hits": 164,
+      "example_hits": 165,
       "languages": [
         "json",
         "yaml"
@@ -6695,7 +6695,7 @@
       "title": "Minimize the admission of containers with capabilities assigned",
       "clean_hits": 10,
       "vulnerable_hits": 20,
-      "example_hits": 161,
+      "example_hits": 162,
       "languages": [
         "json",
         "yaml"
@@ -6712,7 +6712,7 @@
       "title": "Ensure that Service Account Tokens are only mounted where necessary",
       "clean_hits": 24,
       "vulnerable_hits": 24,
-      "example_hits": 172,
+      "example_hits": 176,
       "languages": [
         "json",
         "yaml"
@@ -6729,7 +6729,7 @@
       "title": "Containers should run as a high UID to avoid host conflict",
       "clean_hits": 24,
       "vulnerable_hits": 22,
-      "example_hits": 165,
+      "example_hits": 167,
       "languages": [
         "json",
         "yaml"
@@ -6762,7 +6762,7 @@
       "title": "Image should use digest",
       "clean_hits": 19,
       "vulnerable_hits": 20,
-      "example_hits": 177,
+      "example_hits": 181,
       "languages": [
         "json",
         "yaml"
@@ -7162,7 +7162,7 @@
         "unknown"
       ],
       "repos_seen": 6,
-      "clean_kloc": 1422.7,
+      "clean_kloc": 1422.8,
       "vulnerable_kloc": 301.6,
       "ratio": 8.76,
       "severity": "low",
@@ -7331,7 +7331,7 @@
         "unknown"
       ],
       "repos_seen": 3,
-      "clean_kloc": 202.0,
+      "clean_kloc": 202.1,
       "vulnerable_kloc": 136.2,
       "ratio": 1.48,
       "severity": null,
@@ -7380,7 +7380,7 @@
         "unknown"
       ],
       "repos_seen": 6,
-      "clean_kloc": 202.0,
+      "clean_kloc": 202.1,
       "vulnerable_kloc": 136.2,
       "ratio": "inf",
       "severity": "medium",
@@ -7495,7 +7495,7 @@
       "repos_seen": 6,
       "clean_kloc": 141.8,
       "vulnerable_kloc": 119.4,
-      "ratio": 5.93,
+      "ratio": 5.94,
       "severity": "low",
       "basis": "measured"
     },
@@ -7512,7 +7512,7 @@
       "repos_seen": 14,
       "clean_kloc": 141.8,
       "vulnerable_kloc": 119.4,
-      "ratio": 3.0,
+      "ratio": 3.01,
       "severity": "low",
       "basis": "measured"
     },
@@ -7561,7 +7561,7 @@
       "repos_seen": 20,
       "clean_kloc": 131.6,
       "vulnerable_kloc": 124.2,
-      "ratio": 56.6,
+      "ratio": 56.61,
       "severity": "medium",
       "basis": "measured"
     },
@@ -7867,7 +7867,7 @@
       "repos_seen": 8,
       "clean_kloc": 131.6,
       "vulnerable_kloc": 124.2,
-      "ratio": 31.77,
+      "ratio": 31.78,
       "severity": "medium",
       "basis": "measured"
     },
@@ -8176,7 +8176,7 @@
         "unknown"
       ],
       "repos_seen": 5,
-      "clean_kloc": 762.6,
+      "clean_kloc": 762.7,
       "vulnerable_kloc": 327.8,
       "ratio": 30.25,
       "severity": "medium",
@@ -9655,7 +9655,7 @@
         "unknown"
       ],
       "repos_seen": 2,
-      "clean_kloc": 321.5,
+      "clean_kloc": 321.6,
       "vulnerable_kloc": 157.5,
       "ratio": "inf",
       "severity": null,
@@ -10968,7 +10968,7 @@
         "unknown"
       ],
       "repos_seen": 2,
-      "clean_kloc": 202.0,
+      "clean_kloc": 202.1,
       "vulnerable_kloc": 136.2,
       "ratio": null,
       "severity": null,
@@ -11017,7 +11017,7 @@
         "unknown"
       ],
       "repos_seen": 9,
-      "clean_kloc": 202.0,
+      "clean_kloc": 202.1,
       "vulnerable_kloc": 136.2,
       "ratio": 1.81,
       "severity": "info",
@@ -11290,7 +11290,7 @@
         "unknown"
       ],
       "repos_seen": 6,
-      "clean_kloc": 202.0,
+      "clean_kloc": 202.1,
       "vulnerable_kloc": 136.2,
       "ratio": 0.37,
       "severity": "info",
