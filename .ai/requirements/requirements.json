@@ -2598,7 +2598,7 @@
       "title": "Supply-chain pinning covers the main pinning methods",
       "description": "Arbiter's pinning checks cover how software is actually pinned, not only requirements.txt, package.json carets and workflow uses:. Fixes supply.unpinned-action (quoted SHA pins and docker:// digests reported unpinned; docker:// tags never checked; composite action.yml unchecked) and adds supply.unpinned-container-image (Dockerfile FROM / COPY --from, compose, Kubernetes, GitLab CI image/services, workflow container/services, docker:// uses; digest = pinned), supply.unpinned-precommit (rev not a 40-hex SHA), supply.unpinned-ci-include (GitLab include remote/project/component without a SHA), supply.remote-script-piped (curl|wget piped or substituted into an interpreter, PowerShell iex of a download) and supply.unpinned-install-in-build (pip/npm -g/gem/go install without a version in Dockerfile RUN and CI steps). Structured files are read with parsers (PyYAML nodes, json, tomllib, expat, graph.py HCL reader), not regex. Every new rule starts advisory; severity is set from measured fire rates on the dev tuning corpora.",
       "priority": "high",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "src/arbiter/supply.py",
         "src/arbiter/probes.py",
@@ -2630,7 +2630,9 @@
         "docs/precision.md",
         "CHANGELOG.md"
       ],
-      "risk_notes": []
+      "risk_notes": [
+        "Completed 2026-10-24 (15013c5, 68cf62c): unpinned-action parses uses: (FAIL-100; dev-corpora delta 5 quote-free evidence strings + 1 composite action, planted/ai-corpus 0); 5 new advisory rules; container-image low (3.95x), others info; planted 42 new markers 100% caught 0 on good twins; omni gate PASS with PYTHONPATH=src (the shared install lacks supply.py until synced)."
+      ]
     },
     {
       "id": "ARB-131",
@@ -2638,7 +2640,7 @@
       "title": "Python and npm pinning breadth",
       "description": "supply.unpinned-python-dep reads any requirements*.txt, requirements/*.txt and constraints*.txt that holds pip requirements (a prose file of that name is skipped), credits ==/=== exact pins, --hash lines and VCS references at a 40-hex commit, handles -e/--editable (local paths skipped, VCS refs judged) and is silent when poetry.lock, uv.lock, Pipfile.lock or pdm.lock sits beside it. pyproject/Pipfile/setup.cfg ranges stay unflagged (libraries declare ranges). supply.unpinned-npm-dep adds >=, >, x/X/* wildcards, bare majors/minors, || and hyphen ranges, dist-tags and git/github refs without a commit SHA (dependencies, devDependencies, optionalDependencies), and is silent when package-lock.json, npm-shrinkwrap.json, yarn.lock, pnpm-lock.yaml or bun.lock(b) sits beside or above the manifest -- the shape of all six FP labels this rule had.",
       "priority": "medium",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "src/arbiter/supply.py",
         "tests/test_supply_pinning.py"
@@ -2658,7 +2660,9 @@
       "documentation_required": [
         "changelog"
       ],
-      "risk_notes": []
+      "risk_notes": [
+        "Completed 2026-10-24: python-dep 15 -> 103 dev-corpora findings (maintained only), npm-dep 953 -> 308 (maintained 735 -> 138, vulnerable 218 -> 170; lockfile credit); ai-corpus counts unchanged (18, 47)."
+      ]
     },
     {
       "id": "ARB-132",
@@ -2666,7 +2670,7 @@
       "title": "Java, Ruby and Terraform pinning rules",
       "description": "supply.unpinned-java-dep: Maven LATEST/RELEASE/version ranges, SNAPSHOT dependencies in a non-SNAPSHOT build (not the project's own group: sibling modules build from the same tree), properties resolved within the POM; Gradle +, latest.release, latest.integration and ranges in build.gradle(.kts) and *.versions.toml, credited by dependencyLocking or a gradle.lockfile. supply.unpinned-ruby-dep: with no Gemfile.lock beside the Gemfile, gems with no requirement or only open ones (>=, >), and git gems with no ref:; a gem's own Gemfile (gemspec) is a library and is skipped. supply.unpinned-terraform: module sources from a registry without an exact version or from git without ?ref=<sha or x.y.z>; required_providers entries with no version unless .terraform.lock.hcl sits beside them. Go needs no rule: go.sum hashes every module.",
       "priority": "medium",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "src/arbiter/supply.py",
         "tests/test_supply_pinning.py",
@@ -2685,7 +2689,9 @@
       "documentation_required": [
         "changelog"
       ],
-      "risk_notes": []
+      "risk_notes": [
+        "Completed 2026-10-24: java-dep 0, ruby-dep 14, terraform 0 findings on the dev corpora; all info, advisory."
+      ]
     }
   ]
 }
