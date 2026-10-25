@@ -32,6 +32,7 @@ from arbiter.inventory import (
 from arbiter.lang_rules import FILES_NOT_READ_PROBE
 from arbiter.policy import load_config
 from arbiter.report import render_console, render_markdown
+from arbiter import ast as _ts
 
 LEAKY_WITH_NUL = b'import os\nKEY = "AKIAIOSFODNN7EXAMPLQ"\n# \x00\nos.system(input())\n'
 LEAKY_UTF16 = 'import os\nKEY = "AKIAIOSFODNN7EXAMPLQ"\nos.system(input())\n'.encode("utf-16-le")
@@ -143,6 +144,7 @@ def test_a_file_symlink_leaving_the_tree_is_not_read(tmp_path):
 # the scan says so, and the gap counts
 # ---------------------------------------------------------------------------
 
+@pytest.mark.skipif(not _ts.available(), reason="tree-sitter not installed: rule packs cannot run, so the grade is withheld")
 def test_skipped_files_reach_scan_scope_the_denominator_and_the_renderings(tmp_path):
     (tmp_path / "a.py").write_bytes(LEAKY_WITH_NUL)
     for i in range(3):

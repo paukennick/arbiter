@@ -223,6 +223,13 @@ def test_a_usd_budget_stops_claude(tmp_path):
 
 # --- the CLIs, through fake runners ---------------------------------------------
 
+@pytest.fixture(autouse=True)
+def _clis_on_path(monkeypatch):
+    """Every provider is driven by a fake runner, so the real CLIs need not
+    be installed (CI has none of them)."""
+    monkeypatch.setattr(pv.shutil, "which", lambda name: f"/usr/bin/{name}")
+
+
 def _proc(stdout="", stderr="", rc=0):
     return subprocess.CompletedProcess([], rc, stdout, stderr)
 

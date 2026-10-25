@@ -14,6 +14,7 @@ from helpers import CLEAN_PY
 from arbiter.engine import run_scan
 from arbiter.policy import load_config
 from arbiter.report import render_console, render_markdown
+from arbiter import ast as _ts
 
 
 def _scan(root):
@@ -42,6 +43,7 @@ def test_a_scan_of_nothing_assessable_withholds_the_grade_and_fails_the_gate(tmp
     assert "Grade withheld" in render_markdown(rep)
 
 
+@pytest.mark.skipif(not _ts.available(), reason="tree-sitter not installed: rule packs cannot run, so the grade is withheld")
 def test_one_source_file_is_enough_to_grade(tmp_path):
     (tmp_path / "a.py").write_text(CLEAN_PY, encoding="utf-8")
     rep = _scan(tmp_path)
