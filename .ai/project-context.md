@@ -1554,3 +1554,5 @@ The sealed held-out aggregate guard moved as a side effect (146 -> 151 findings;
 Next families by defect count: unhandled-input-error, path-traversal, swallowed-exception, ssrf, unbounded-memory. Model-labelled conformance on development data only; no 99% claim.
 
 2026-10-26 ARB-110 second batch: five swallowed-exception rules (Java x2, Ruby x2, TypeScript x1), dev-corpus code recall 37 -> 41 of 117, 0 new false alarms, real-repo guard and held-out aggregate unchanged; packs 182 rules (269 in all). Remaining: path-traversal (optional-root shape), ssrf, unbounded-memory, unhandled-input-error. Model-labelled conformance on development data only; no 99% claim.
+
+2026-10-26 ARB-110 third batch: path-confinement-optional (py/ts/ruby/java) and ssrf-check-then-connect (py/ts/java), dev-corpus code recall 41 -> 48 of 117, 0 new false alarms, real-repo guard and held-out aggregate unchanged; packs 189 rules (276 in all). Remaining: unbounded-memory, unhandled-input-error, Go symlink path-traversal, Ruby SSRF blocklist gaps. Model-labelled conformance on development data only; no 99% claim.

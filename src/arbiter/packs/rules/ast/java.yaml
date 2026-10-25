@@ -1710,3 +1710,50 @@ rules:
       going until the output ends, so a 1 MB upload can become gigabytes of
       heap.
     remediation: "Read at most `max + 1` bytes (`in.readNBytes(max + 1)`) and refuse output longer than `max`; for zip entries check the running total, not the declared size."
+
+  - id: path-confinement-optional
+    requirements: [ARB-110]
+    title: "Path confinement only runs when the base directory is set: `{text}`"
+    severity: medium
+    confidence: low
+    dimension: security
+    cwe: [CWE-22, CWE-73]
+    controls: [NIST-800-218:PW.5]
+    tags: [path-traversal]
+    query: |
+      ((if_statement condition: (parenthesized_expression) @c consequence: (_) @b) @hit
+        (#match? @c "(?i)^\\(\\s*(this\\.)?\\w*(root|base|jail|sandbox|dir)\\w*\\s*!=\\s*null\\s*&&.*(startsWith|relativize|contains)")
+        (#match? @b "throw"))
+    description: >
+      The containment check is guarded by `base != null`, and the base comes
+      from an optional setting. When it is unset nothing confines the caller's
+      path, so an absolute or `../` path reaches any file the process can read
+      or write. The default deployment is the unconfined one.
+    remediation: "Make the base directory required (fail at start-up when it is unset) or default it to a fixed directory, and run the containment check on every call."
+
+  - id: ssrf-check-then-connect
+    requirements: [ARB-110]
+    title: "Host is resolved for an SSRF check, then resolved again to connect: `{text}`"
+    severity: medium
+    confidence: low
+    dimension: security
+    cwe: [CWE-918, CWE-367]
+    controls: [NIST-800-218:PW.5]
+    tags: [ssrf]
+    query: |
+      ((method_invocation name: (identifier) @g) @hit
+        (#match? @g "(?i)^(is|assert|check|ensure|validate|verify)(public|safe|external|global|allowed)\\w*(host|url|addr|ip)\\w*$"))
+    requires_in_scope: |
+      ((method_declaration) @f (#match? @f "\\.send\\(|\\.sendAsync\\(|openConnection\\(|openStream\\(|RestTemplate|WebClient"))
+    requires_file: |
+      ((method_invocation name: (identifier) @r) (#match? @r "^(getAllByName|getByName)$"))
+    # Connecting to the address that was checked closes the gap.
+    unless_in_scope: |
+      ((identifier) @i (#match? @i "(?i)^(DnsResolver|InetSocketAddress|ProxySelector|pinned\\w*)$"))
+      ((type_identifier) @t (#match? @t "^(DnsResolver|InetSocketAddress|ProxySelector)$"))
+    description: >
+      The host is resolved once to decide it is public and again by the HTTP
+      client to connect. A DNS server that answers with a public address for
+      the check and a private one for the connection (DNS rebinding) reaches
+      internal services through the guard.
+    remediation: "Resolve once and connect to that address (a custom resolver or socket factory that returns the validated `InetAddress`), or route fetches through an egress proxy that blocks internal ranges."

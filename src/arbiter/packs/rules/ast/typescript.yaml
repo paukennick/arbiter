@@ -1493,3 +1493,58 @@ rules:
       until `end` holds the whole body in memory, however large the client
       makes it.
     remediation: "Count bytes in the handler and `req.destroy()` with 413 past a limit, or use a body parser with `limit` (express.json, raw-body)."
+
+  - id: path-confinement-optional
+    requirements: [ARB-110]
+    title: "Path confinement only runs when the root variable is set: `{text}`"
+    severity: medium
+    confidence: low
+    dimension: security
+    cwe: [CWE-22, CWE-73]
+    controls: [NIST-800-218:PW.5]
+    tags: [path-traversal]
+    query: |
+      ((if_statement condition: (parenthesized_expression (identifier) @v)
+         consequence: (statement_block) @b) @hit
+        (#match? @v "(?i)(root|base|jail|sandbox|dir$)")
+        (#match? @b "throw")
+        (#match? @b "relative\\(|startsWith\\(|isAbsolute\\(|includes\\("))
+    requires_in_scope: |
+      ((function_declaration) @f (#match? @f "process\\.env\\."))
+      ((arrow_function) @f (#match? @f "process\\.env\\."))
+      ((method_definition) @f (#match? @f "process\\.env\\."))
+    description: >
+      The containment check is nested under `if (root)`, and the root comes
+      from an optional environment variable. When it is unset nothing confines
+      the caller's path, so an absolute or `../` path reaches any file the
+      process can read or write. The default deployment is the unconfined one.
+    remediation: "Make the root required (throw at start-up when it is unset) or default it to a fixed directory, and run the containment check on every call."
+
+  - id: ssrf-check-then-connect
+    requirements: [ARB-110]
+    title: "Host is resolved for an SSRF check, then resolved again to connect: `{text}`"
+    severity: medium
+    confidence: low
+    dimension: security
+    cwe: [CWE-918, CWE-367]
+    controls: [NIST-800-218:PW.5]
+    tags: [ssrf]
+    query: |
+      ((call_expression function: (identifier) @g) @hit
+        (#match? @g "(?i)^(is|assert|check|ensure|validate|verify)(public|safe|external|global|allowed)\\w*(host|url|addr|ip)\\w*$"))
+    requires_in_scope: |
+      ((function_declaration) @f (#match? @f "\\bfetch\\(|\\baxios\\b|\\bhttps?\\.(get|request)\\(|\\bgot\\(|\\bundici\\b"))
+      ((arrow_function) @f (#match? @f "\\bfetch\\(|\\baxios\\b|\\bhttps?\\.(get|request)\\(|\\bgot\\(|\\bundici\\b"))
+      ((method_definition) @f (#match? @f "\\bfetch\\(|\\baxios\\b|\\bhttps?\\.(get|request)\\(|\\bgot\\(|\\bundici\\b"))
+    requires_file: |
+      ((member_expression property: (property_identifier) @r) (#match? @r "^(lookup|resolve4|resolve6)$"))
+    # Connecting to the address that was checked closes the gap.
+    unless_in_scope: |
+      ((property_identifier) @p (#match? @p "^(lookup|agent|dispatcher|connect)$"))
+      ((identifier) @i (#match? @i "(?i)^(\\w*agent|dispatcher|pinned\\w*)$"))
+    description: >
+      The host is resolved once to decide it is public and again by `fetch` (or
+      the HTTP client) to connect. A DNS server that answers with a public
+      address for the check and a private one for the connection (DNS
+      rebinding) reaches internal services through the guard.
+    remediation: "Resolve once and connect to that address (a custom `lookup` on the agent or an undici `connect` hook that returns the validated IP), or route fetches through an egress proxy that blocks internal ranges."

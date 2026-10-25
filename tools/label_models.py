@@ -100,6 +100,7 @@ CLAIMS: list[tuple[str, str, str]] = [
     ("*.command-injection", "injection", f"{_OUTSIDE} reaches an operating-system command or shell in a way that lets it change which command runs or what its arguments are."),
     ("*.shell-*", "injection", f"{_OUTSIDE} reaches an operating-system command or shell in a way that lets it change which command runs or what its arguments are."),
     ("*.path-traversal*", "injection", f"a file path built from {_OUTSIDE} could reach files outside the intended directory (for example with '../' or an absolute path)."),
+    ("*.path-confinement-*", "injection", f"a file path built from {_OUTSIDE} is only confined to a directory when an optional setting is present, so otherwise it could reach files outside the intended directory (for example with '../' or an absolute path)."),
     ("*.upload-client-filename", "injection", "an uploaded file is stored under the name the client supplied, so the client controls where it is written or what type it gets."),
     ("*.xss-*", "injection", f"{_OUTSIDE} is written into an HTML response or page without escaping, so it could inject script."),
     ("*.html-from-request", "injection", f"{_OUTSIDE} is written into an HTML response or page without escaping, so it could inject script."),

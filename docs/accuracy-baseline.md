@@ -278,6 +278,13 @@ are now exempt, and the real-repository guard (python, TypeScript, Ruby, Go)
 is unchanged. Java has no real-repository guard, so its precision is
 unmeasured. The held-out aggregate did not move. Not a 99% claim.
 
+Third batch, path-confinement and SSRF (seven rules): code recall 41/117 to
+48/117 (41.0%), no new false alarms or unreviewed findings. The real-repository
+guard (python, TypeScript, Ruby, Go) and the held-out aggregate did not move;
+Java precision on real code is unmeasured. The rules are shape- and
+name-based, so they will miss renamed variables, and only the "optional root"
+and "resolve, then connect" shapes are covered. Not a 99% claim.
+
 ## Baseline decision
 
 The evidence is not sufficient for a 99% precision-and-recall claim. The

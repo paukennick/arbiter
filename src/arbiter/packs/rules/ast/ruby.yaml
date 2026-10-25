@@ -1619,3 +1619,26 @@ rules:
       whole puts whatever the client sends into one string, so a few
       concurrent multi-gigabyte requests exhaust the process.
     remediation: "Refuse on `request.content_length` above a limit and read at most `request.body.read(MAX + 1)`, or cap the body at the proxy."
+
+  - id: path-confinement-optional
+    requirements: [ARB-110]
+    title: "Path confinement only runs when the root is set: `{text}`"
+    severity: medium
+    confidence: low
+    dimension: security
+    cwe: [CWE-22, CWE-73]
+    controls: [NIST-800-218:PW.5]
+    tags: [path-traversal]
+    query: |
+      ((if condition: [(instance_variable) (identifier)] @v consequence: (then) @b) @hit
+        (#match? @v "(?i)(root|base|jail|sandbox|dir$)")
+        (#match? @b "\\braise\\b")
+        (#match? @b "start_with\\?|relative_path_from|include\\?"))
+    requires_file: |
+      ((constant) @e (#eq? @e "ENV"))
+    description: >
+      The containment check is nested under `if @root`, and the root comes
+      from an optional environment variable. When it is unset nothing confines
+      the caller's path, so an absolute or `../` path reaches any file the
+      process can read or write. The default deployment is the unconfined one.
+    remediation: "Make the root required (raise at start-up when it is unset) or default it to a fixed directory, and run the containment check on every call."

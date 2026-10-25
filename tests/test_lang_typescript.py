@@ -591,3 +591,29 @@ def test_binding_less_catch_answering_500_is_reported(tmp_path):
         "export function c(res: any) { try { run(); } catch (err) { res.status(500).end(); } }\n"
     )
     assert _lines(_scan(tmp_path, {"a.ts": code}, "swallowed-catch-to-500")) == [1]
+
+
+def test_optional_root_confinement_and_resolve_then_fetch_are_reported(tmp_path):
+    optional = (
+        "import path from 'node:path';\n"
+        "export function a(i: string) { const root = process.env.IMAGE_ROOT;\n"
+        "  if (root) { if (path.relative(root, i).startsWith('..')) { throw new Error('x'); } }\n"
+        "  return i; }\n"
+    )
+    required = (
+        "import path from 'node:path';\n"
+        "const ROOT = process.env.IMAGE_ROOT ?? '/srv';\n"
+        "export function a(i: string) {\n"
+        "  if (path.relative(ROOT, i).startsWith('..')) { throw new Error('x'); }\n"
+        "  return i; }\n"
+    )
+    assert _lines(_scan(tmp_path, {"a.ts": optional}, "path-confinement-optional")) == [3]
+    assert not _scan(tmp_path, {"a.ts": required}, "path-confinement-optional")
+    plain = (
+        "import dns from 'node:dns/promises';\n"
+        "async function assertPublicHost(u: URL) { await dns.lookup(u.hostname); }\n"
+        "export async function f(u: URL) { await assertPublicHost(u); return fetch(u); }\n"
+    )
+    pinned = plain.replace("return fetch(u);", "return fetch(u, { dispatcher: new Agent({ connect: { lookup } }) });")
+    assert _lines(_scan(tmp_path, {"b.ts": plain}, "ssrf-check-then-connect")) == [3]
+    assert not _scan(tmp_path, {"b.ts": pinned}, "ssrf-check-then-connect")

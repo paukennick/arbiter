@@ -104,10 +104,10 @@ controls:
     cwe: [CWE-22]
     satisfied_by: []
     languages:
-      python: {status: applies, measured: "S"}
-      typescript: {status: applies, measured: "S"}
+      python: {status: applies, measured: "N+S"}
+      typescript: {status: applies, measured: "N+S"}
       go: {status: applies, measured: "N"}
-      java: {status: applies, measured: "S"}
+      java: {status: applies, measured: "N+S"}
       ruby: {status: applies, measured: "N"}
 
   - id: CWE-125
