@@ -2810,6 +2810,54 @@
         "A convenience sample cannot estimate representative production accuracy; no independent reviewers/coordinator are currently available; avoid all sealed or previously tuned repositories; license metadata must be verified at the exact frozen snapshot.",
         "Frozen pre-scan metadata-only cohort with 11 verified MIT pins; scanning and independent blinded review remain separate follow-ups."
       ]
+    },
+    {
+      "id": "ARB-109",
+      "category": "accuracy",
+      "title": "Scan frozen ordinary Python pilot cohort",
+      "description": "Acquire only the 11 exact source commits frozen under the ARB-108 ordinary Python feasibility cohort and run the pre-registered static-analysis measurement without building or executing target code. Record aggregate-only results, tool and environment provenance, and per-repository assessment coverage; retain no case-level findings in the repository. Treat analyzer overlap as differential coverage only and do not claim precision, recall, or 99 percent accuracy without independent blinded review.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md",
+        "tools/install_tools.sh",
+        "arbiter.yaml"
+      ],
+      "acceptance_criteria": [
+        "Acquire and verify only the frozen commit pins and MIT license digests",
+        "No build test setup or target execution is performed",
+        "Run Arbiter and available pinned static analyzers with reproducible configuration and provenance",
+        "Publish aggregate-only counts and coverage without case-level finding details",
+        "Unavailable analyzers and unsupported scan strata are reported as not assessed",
+        "No precision recall or 99 percent claim is made from analyzer counts or overlap"
+      ],
+      "validation_required": [
+        "manifest validates against Draft 2020-12 schema",
+        "scan provenance and source pins are verified",
+        "focused conformance tests",
+        "python omni doctor",
+        "python omni gate",
+        "Arbiter repository self-gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "The cohort is a small popularity-biased convenience sample",
+        "Independent coordinator and human reviewers remain unavailable",
+        "Analyzer agreement is not ground truth; model-labelled conformance only if separately authorized",
+        "Aggregate-only differential completed on the frozen 11-repository cohort; no case-level findings, labels, independent review, precision/recall estimate, or 99% claim. Blinded finding review and a separate repository miss audit remain follow-up work."
+      ]
     }
   ]
 }

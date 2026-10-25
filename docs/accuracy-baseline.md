@@ -1,8 +1,8 @@
 # Accuracy Baseline and Evidence Gaps
 
-Inventory date: 2026-10-24. This records the existing evidence, two
-benchmark-conformance runs, and one analyzer-differential rehearsal; it is not
-a 99% certification. Machine-readable
+Inventory date: 2026-10-25. This records the existing evidence, two
+benchmark-conformance runs, and two analyzer-differential scans; it is not a
+99% certification. Machine-readable
 source inventory and run metadata are in
 [accuracy-benchmark-manifest.json](accuracy-benchmark-manifest.json), validated
 by [accuracy-benchmark-manifest.schema.json](accuracy-benchmark-manifest.schema.json).
@@ -179,11 +179,38 @@ under Linux/WSL2 with `tree-sitter-language-pack` 1.22.1. This is regression
 evidence only; it does not contradict or replace the RealVuln conformance
 result and is not independent accuracy evidence.
 
-The separate ordinary-Python feasibility cohort is now frozen pre-scan in
-`docs/accuracy-benchmark-manifest.json`. It contains 11 MIT-licensed pinned
-repositories selected from a popularity-sorted GitHub metadata frame. The
-cohort is not probability-sampled or representative, no source snapshots have
-been acquired, and it contributes no precision or accuracy evidence yet.
+## ARB-109: ordinary-Python cohort differential scan
+
+The frozen ordinary-Python feasibility cohort contains 11 MIT-licensed pinned
+repositories selected from a popularity-sorted GitHub metadata frame. Only
+those exact snapshots were acquired. Arbiter's scanner sources matched commit
+`82ca64b5fc1c4fc8234daea1e8cd1b75051831b7`; Arbiter ran offline with only the
+native `lang_python` probe, and its configuration digest is in the manifest.
+Semgrep 1.177.0 used rules commit
+`40b8c63f75dc7c22c8a77482d73bfb864b146f7e`. CodeQL 2.27.3 used
+`codeql/python-queries@1.8.13` with `--build-mode none`. No project build,
+test, setup, or application command ran, and no target code was executed.
+
+| Analyzer | Findings | Relevant file coverage | Execution notes |
+|---|---:|---:|---|
+| Arbiter native `lang_python` | 105 | Probe ran on 11/11 repositories; overall coverage was 8.1% | All 11 overall scorecards were withheld because only one probe was selected. This is not a low grade. |
+| Semgrep 1.177.0 | 2,663 | 2,146/3,662 Python files; 4,040 files total | 8 scan errors: 7 timeouts and 1 syntax error. Repository ignore behavior narrows its file set. |
+| CodeQL 2.27.3 | 16 | 3,661/3,662 Python files | 11/11 invocations succeeded; 189 extractor warning lines (187 dynamic-library path warnings and 2 module-context warnings). |
+
+Location-span comparison found 39 Arbiter/Semgrep finding pairs: 31 shared a
+CWE tag and 8 did not. No location-overlapping pairs were found for
+Arbiter/CodeQL or CodeQL/Semgrep. A location match or CWE-tag intersection is
+not adjudication; no overlap does not prove a miss or false positive.
+Differences in rules, language coverage, ignore behavior, and extraction also
+make raw finding totals non-comparable as correctness scores.
+
+This small, popularity-biased convenience cohort is not probability-sampled or
+representative. It contributes no precision, recall, false-positive-rate, or
+population estimate. There were no labels, independent human review, or rule
+tuning, and this result is not eligible for a general 99% claim. The manifest
+records tool and environment provenance, archive hashes, per-repository
+aggregates, and limitations; raw archives, reports, databases, and
+case-level findings remain temporary.
 
 CVEfixes remains an unapproved candidate: its large archive was not
 downloaded or ingested, and neither source-code licensing nor label quality
@@ -237,8 +264,8 @@ The evidence is not sufficient for a 99% precision-and-recall claim. The
 AI-heldout recall is 4%, AI-development recall is 28%, and the RealVuln
 multi-CWE manual-review slice measured 89.9% labelled-case precision and
 18.2% labelled-case recall with benchmark-specific cluster intervals. The
-narrow CWE-89 slice remains at 77.8% precision and 80.8% recall. The
-ARB-107 analyzer differential does not add accuracy evidence. Human
+narrow CWE-89 slice remains at 77.8% precision and 80.8% recall. The ARB-107
+and ARB-109 analyzer differentials do not add accuracy evidence. Human
 adjudication, representative populations, blind miss audits, and
 platform/segment coverage remain incomplete.
 

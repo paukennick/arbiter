@@ -16,11 +16,9 @@ measurement beyond Python CWE-89.
   11 snapshots. It reports analyzer coverage and location overlap only; it is
   not the ordinary-repository precision study.
 - ARB-108 froze an 11-repository ordinary Python feasibility cohort before
-  scanning. Exact pins and MIT license-file digests are recorded in the
-  benchmark manifest; no project source snapshots have been acquired and the
-  cohort has not been scanned.
-- No benchmark target code was executed. The committed output contains
-  aggregate labels and differential counts only.
+  scanning. ARB-109 acquired only the frozen pins, verified archive hashes,
+  and completed an aggregate-only Arbiter/Semgrep/CodeQL scan. No benchmark
+  target code was executed; only aggregate counts and provenance are retained.
 - Semgrep 1.177.0 and its locked rules were used. CodeQL 2.27.3 and the pinned
   `codeql/python-queries@1.8.13` pack were provisioned for the rehearsal.
 - Semgrep/CodeQL agreement is **not ground truth**. Each tool has its own
@@ -212,6 +210,41 @@ finding labels or target source were accessed during this screening.
 
 This is a popularity-biased feasibility sample, not a probability sample or
 representative production-repository population. It is not accuracy evidence.
-The cohort is frozen but unscanned; acquire and scan only these exact snapshots
-in the next measurement stage. A separate independent coordinator/reviewer is
-still required before blinded human labels or a human-grounded accuracy claim.
+ARB-109 scanned only these frozen snapshots and did not produce labels or
+accuracy estimates. A separate independent coordinator/reviewer is still
+required before blinded human labels or a human-grounded accuracy claim.
+
+## ARB-109: aggregate scan of frozen ordinary-Python cohort
+
+The 11 frozen source archives were checksum-verified and scanned at their
+recorded commits with Arbiter's offline `lang_python` probe, Semgrep 1.177.0,
+and CodeQL 2.27.3 with `codeql/python-queries@1.8.13`. Arbiter's scanner
+sources matched commit `82ca64b5fc1c4fc8234daea1e8cd1b75051831b7`; its
+configuration digest and the source archive hashes are in the benchmark
+manifest. Semgrep used rules commit
+`40b8c63f75dc7c22c8a77482d73bfb864b146f7e`. CodeQL ran with
+`--build-mode none`. No project build, test, setup, or application command ran,
+and target code was not executed.
+
+| Analyzer | Findings | Relevant file coverage | Execution notes |
+|---|---:|---:|---|
+| Arbiter native `lang_python` | 105 | Probe ran on 11/11 repositories; overall coverage 8.1% | All 11 overall scorecards were withheld because only one probe was selected; this is not a low grade. |
+| Semgrep 1.177.0 | 2,663 | 2,146/3,662 Python files; 4,040 files total | 8 scan errors: 7 timeouts and 1 syntax error. Repository ignore rules make its effective file set narrower. |
+| CodeQL 2.27.3 | 16 | 3,661/3,662 Python files | 11/11 invocations succeeded; 189 extractor warning lines (187 dynamic-library path warnings and 2 module-context warnings). |
+
+The location-span matcher found 39 Arbiter/Semgrep finding pairs (31 with a
+shared CWE tag and 8 without); it found no location-overlapping pairs for
+Arbiter/CodeQL or CodeQL/Semgrep. These are location and tag comparisons only:
+overlap does not establish a true positive, and non-overlap does not establish
+a miss or false positive. Analyzer totals are not comparable correctness
+scores because tool semantics, rule coverage, ignore behavior, and extraction
+differ.
+
+This small, popularity-biased convenience cohort produced no precision,
+recall, false-positive-rate, or population estimate. No labels or independent
+human review were produced, no rules were tuned, and no general 99% claim is
+eligible. Raw source archives, reports, databases, and case-level findings
+remain temporary; the committed record contains only aggregate results,
+environment/tool provenance, source hashes, and limitations. The next
+measurement gate is a preregistered blinded review sample and a separate blind
+repository miss audit, with an independent coordinator and reviewers.

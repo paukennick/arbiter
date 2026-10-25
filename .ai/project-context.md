@@ -1494,3 +1494,35 @@ identifier-only overlap checks against Arbiter gold and RealVuln. The cohort
 is convenience-sampled and unscanned; it provides no accuracy evidence. The
 next stage must scan only the frozen pins, with blinded review coordinated
 independently and model labels described only as model-labelled conformance.
+
+## 2026-10-25 — Ordinary Python cohort differential scan (ARB-109)
+
+Scanned only the 11 exact MIT-licensed pins frozen under ARB-108. Arbiter's
+scanner sources matched commit `82ca64b5fc1c4fc8234daea1e8cd1b75051831b7`;
+the scan used its offline `lang_python` probe with adapters, cache, and history
+disabled. Semgrep 1.177.0 used rules commit
+`40b8c63f75dc7c22c8a77482d73bfb864b146f7e`; CodeQL 2.27.3 used
+`codeql/python-queries@1.8.13` and no-build extraction. No target source was
+executed and no project build, test, or setup command ran.
+
+The aggregate counts were Arbiter 105, Semgrep 2,663, and CodeQL 16. Semgrep
+scanned 2,146/3,662 Python files and reported eight errors (seven timeouts,
+one syntax error). CodeQL scanned 3,661/3,662 files, completed all 11
+invocations, and emitted 189 extractor warning lines. Arbiter ran its Python
+probe on all repositories, but all 11 overall scorecards were withheld at
+8.1% overall coverage because other probes were not selected. Location-span
+comparison found 39 Arbiter/Semgrep pairs (31 with shared CWE tags, 8 without)
+and no location-overlapping pairs involving CodeQL.
+
+These are aggregate differential-coverage observations only. The
+popularity-biased 11-repository cohort is not representative; analyzer
+agreement is not ground truth. No labels, independent human review, miss
+audit, or rule tuning were performed, so this adds no precision/recall estimate
+and no basis for a general 99% claim. The manifest retains tool/environment
+provenance, source archive hashes, per-repository aggregates, and limits;
+raw snapshots and case-level reports remain temporary.
+
+Next: preregister a blinded finding review sample and separate blind
+repository miss audit, with an independent coordinator and human reviewers.
+Model labels, if approved in place of unavailable human review, remain
+model-labelled conformance and cannot be reported as certified accuracy.

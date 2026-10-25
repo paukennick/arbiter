@@ -125,7 +125,10 @@
           "minLength": 1
         },
         "status": {
-          "const": "cohort_frozen_pre_scan"
+          "enum": [
+            "cohort_frozen_pre_scan",
+            "scanned_aggregate_only"
+          ]
         },
         "accuracy_claim_eligible": {
           "const": false
@@ -319,7 +322,474 @@
           }
         },
         "scan_status": {
-          "const": "not_scanned"
+          "enum": [
+            "not_scanned",
+            "completed_aggregate_only"
+          ]
+        },
+        "scan_run": {
+          "type": "object",
+          "required": [
+            "status",
+            "requirement_id",
+            "recorded_at_utc",
+            "accuracy_claim_eligible",
+            "general_99_percent_claim",
+            "source_code_executed",
+            "project_builds_run",
+            "arbiter",
+            "semgrep",
+            "codeql",
+            "platform",
+            "results",
+            "per_repository",
+            "matching_contract",
+            "limits"
+          ],
+          "properties": {
+            "status": {
+              "const": "completed_aggregate_only"
+            },
+            "requirement_id": {
+              "const": "ARB-109"
+            },
+            "recorded_at_utc": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "accuracy_claim_eligible": {
+              "const": false
+            },
+            "general_99_percent_claim": {
+              "const": false
+            },
+            "source_code_executed": {
+              "const": false
+            },
+            "project_builds_run": {
+              "const": false
+            },
+            "arbiter": {
+              "type": "object",
+              "required": [
+                "version",
+                "commit",
+                "worktree_clean",
+                "scanner_sources_match_commit",
+                "configuration_sha256",
+                "profile",
+                "probe",
+                "adapters_enabled",
+                "cache_enabled",
+                "history_enabled",
+                "successful_invocations",
+                "python_probe_assessed_repositories",
+                "python_findings",
+                "overall_coverage",
+                "scorecards_withheld"
+              ],
+              "properties": {
+                "version": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "commit": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{40}$"
+                },
+                "worktree_clean": {
+                  "type": "boolean"
+                },
+                "scanner_sources_match_commit": {
+                  "type": "boolean"
+                },
+                "configuration_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "profile": {
+                  "const": "offline"
+                },
+                "probe": {
+                  "const": "lang_python"
+                },
+                "adapters_enabled": {
+                  "const": false
+                },
+                "cache_enabled": {
+                  "const": false
+                },
+                "history_enabled": {
+                  "const": false
+                },
+                "successful_invocations": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "python_probe_assessed_repositories": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "python_findings": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "overall_coverage": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "scorecards_withheld": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "additionalProperties": false
+            },
+            "semgrep": {
+              "type": "object",
+              "required": [
+                "version",
+                "rules_repository",
+                "rules_commit",
+                "configuration_subtree",
+                "telemetry_enabled",
+                "python_files_in_snapshots",
+                "python_files_scanned",
+                "all_files_scanned",
+                "findings",
+                "scan_errors",
+                "scan_error_types"
+              ],
+              "properties": {
+                "version": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "rules_repository": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "rules_commit": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{40}$"
+                },
+                "configuration_subtree": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "telemetry_enabled": {
+                  "const": false
+                },
+                "python_files_in_snapshots": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "python_files_scanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "all_files_scanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "findings": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "scan_errors": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "scan_error_types": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "codeql": {
+              "type": "object",
+              "required": [
+                "cli_version",
+                "cli_archive_sha256",
+                "query_pack",
+                "query_pack_build_sha",
+                "query_pack_lock_sha256",
+                "build_mode",
+                "python_files_in_snapshots",
+                "python_files_scanned",
+                "findings",
+                "successful_invocations",
+                "failed_invocations",
+                "extractor_warning_lines",
+                "extractor_warning_categories"
+              ],
+              "properties": {
+                "cli_version": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "cli_archive_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "query_pack": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "query_pack_build_sha": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{40}$"
+                },
+                "query_pack_lock_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "build_mode": {
+                  "const": "none"
+                },
+                "python_files_in_snapshots": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "python_files_scanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "findings": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "successful_invocations": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "failed_invocations": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "extractor_warning_lines": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "extractor_warning_categories": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "platform": {
+              "type": "object",
+              "required": [
+                "operating_system",
+                "architecture",
+                "python_version"
+              ],
+              "properties": {
+                "operating_system": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "architecture": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "python_version": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            "results": {
+              "type": "object",
+              "required": [
+                "findings_by_analyzer",
+                "pairwise_location_differential"
+              ],
+              "properties": {
+                "findings_by_analyzer": {
+                  "type": "object",
+                  "required": [
+                    "arbiter_native",
+                    "semgrep",
+                    "codeql"
+                  ],
+                  "properties": {
+                    "arbiter_native": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "semgrep": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "codeql": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "pairwise_location_differential": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "pair",
+                      "left_findings",
+                      "right_findings",
+                      "location_overlapping_pairs",
+                      "left_findings_with_counterpart",
+                      "right_findings_with_counterpart",
+                      "pairs_with_shared_cwe_tag",
+                      "pairs_without_shared_cwe_tag"
+                    ],
+                    "properties": {
+                      "pair": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "left_findings": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "right_findings": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "location_overlapping_pairs": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "left_findings_with_counterpart": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "right_findings_with_counterpart": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "pairs_with_shared_cwe_tag": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "pairs_without_shared_cwe_tag": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "per_repository": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": [
+                  "repository",
+                  "source_commit",
+                  "source_archive_sha256",
+                  "python_files_in_snapshot",
+                  "arbiter_findings",
+                  "arbiter_probe_status",
+                  "arbiter_overall_coverage",
+                  "arbiter_scorecard_withheld",
+                  "semgrep_findings",
+                  "semgrep_python_files_scanned",
+                  "semgrep_scan_errors",
+                  "codeql_findings",
+                  "codeql_python_files_scanned",
+                  "codeql_extractor_warning_lines"
+                ],
+                "properties": {
+                  "repository": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+                  },
+                  "source_commit": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{40}$"
+                  },
+                  "source_archive_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "python_files_in_snapshot": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "arbiter_findings": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "arbiter_probe_status": {
+                    "const": "ran"
+                  },
+                  "arbiter_overall_coverage": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "arbiter_scorecard_withheld": {
+                    "type": "boolean"
+                  },
+                  "semgrep_findings": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "semgrep_python_files_scanned": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "semgrep_scan_errors": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "codeql_findings": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "codeql_python_files_scanned": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "codeql_extractor_warning_lines": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "matching_contract": {
+              "type": "string",
+              "minLength": 1
+            },
+            "limits": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "additionalProperties": false
         },
         "review_prerequisites": {
           "type": "array",
@@ -338,6 +808,49 @@
           }
         }
       },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "scanned_aggregate_only"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "scan_run"
+            ],
+            "properties": {
+              "scan_status": {
+                "const": "completed_aggregate_only"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "cohort_frozen_pre_scan"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "scan_status": {
+                "const": "not_scanned"
+              }
+            }
+          }
+        }
+      ],
       "additionalProperties": false
     },
     "benchmark_inventory": {

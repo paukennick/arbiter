@@ -31,7 +31,7 @@
   },
   "ordinary_repository_precision_pilot": {
     "cohort_id": "ordinary-python-precision-feasibility-2026-10",
-    "status": "cohort_frozen_pre_scan",
+    "status": "scanned_aggregate_only",
     "accuracy_claim_eligible": false,
     "sampling_frame": {
       "source": "GitHub repository search metadata via gh search repos",
@@ -252,7 +252,299 @@
         "license_sha256": "35ed0eb40a2f7c262156ccab94b731a697808fcdc1c69f9491c991af204c2eb6"
       }
     ],
-    "scan_status": "not_scanned",
+    "scan_status": "completed_aggregate_only",
+    "scan_run": {
+      "status": "completed_aggregate_only",
+      "requirement_id": "ARB-109",
+      "recorded_at_utc": "2026-10-25T06:06:58Z",
+      "accuracy_claim_eligible": false,
+      "general_99_percent_claim": false,
+      "source_code_executed": false,
+      "project_builds_run": false,
+      "arbiter": {
+        "version": "0.1.0",
+        "commit": "82ca64b5fc1c4fc8234daea1e8cd1b75051831b7",
+        "worktree_clean": false,
+        "scanner_sources_match_commit": true,
+        "configuration_sha256": "e001cd6a3677c208d28c85a4cd6364b25a467e23405e59d0f7de7b9ab95d34ea",
+        "profile": "offline",
+        "probe": "lang_python",
+        "adapters_enabled": false,
+        "cache_enabled": false,
+        "history_enabled": false,
+        "successful_invocations": 11,
+        "python_probe_assessed_repositories": 11,
+        "python_findings": 105,
+        "overall_coverage": 0.081,
+        "scorecards_withheld": 11
+      },
+      "semgrep": {
+        "version": "1.177.0",
+        "rules_repository": "https://github.com/semgrep/semgrep-rules",
+        "rules_commit": "40b8c63f75dc7c22c8a77482d73bfb864b146f7e",
+        "configuration_subtree": "python",
+        "telemetry_enabled": false,
+        "python_files_in_snapshots": 3662,
+        "python_files_scanned": 2146,
+        "all_files_scanned": 4040,
+        "findings": 2663,
+        "scan_errors": 8,
+        "scan_error_types": {
+          "Syntax error": 1,
+          "Timeout": 7
+        }
+      },
+      "codeql": {
+        "cli_version": "2.27.3",
+        "cli_archive_sha256": "845075a2fa2fdf72629adc6cbde6264691b698d1f294bd27f10c6b579cd750a4",
+        "query_pack": "codeql/python-queries@1.8.13",
+        "query_pack_build_sha": "a1575b98a8cc19bcfa7bb6cb41be688cb3dae65c",
+        "query_pack_lock_sha256": "682c4c9b757da6b62970eab87443a464019492d406fcefd3fb99897f02e383bd",
+        "build_mode": "none",
+        "python_files_in_snapshots": 3662,
+        "python_files_scanned": 3661,
+        "findings": 16,
+        "successful_invocations": 11,
+        "failed_invocations": 0,
+        "extractor_warning_lines": 189,
+        "extractor_warning_categories": {
+          "Failed to find dynload path": 187,
+          "Python module context unavailable": 2
+        }
+      },
+      "platform": {
+        "operating_system": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "architecture": "x86_64",
+        "python_version": "3.14.4"
+      },
+      "results": {
+        "findings_by_analyzer": {
+          "arbiter_native": 105,
+          "semgrep": 2663,
+          "codeql": 16
+        },
+        "pairwise_location_differential": [
+          {
+            "pair": "arbiter_native_vs_semgrep",
+            "left_findings": 105,
+            "right_findings": 2663,
+            "location_overlapping_pairs": 39,
+            "left_findings_with_counterpart": 31,
+            "right_findings_with_counterpart": 39,
+            "pairs_with_shared_cwe_tag": 31,
+            "pairs_without_shared_cwe_tag": 8
+          },
+          {
+            "pair": "arbiter_native_vs_codeql",
+            "left_findings": 105,
+            "right_findings": 16,
+            "location_overlapping_pairs": 0,
+            "left_findings_with_counterpart": 0,
+            "right_findings_with_counterpart": 0,
+            "pairs_with_shared_cwe_tag": 0,
+            "pairs_without_shared_cwe_tag": 0
+          },
+          {
+            "pair": "codeql_vs_semgrep",
+            "left_findings": 16,
+            "right_findings": 2663,
+            "location_overlapping_pairs": 0,
+            "left_findings_with_counterpart": 0,
+            "right_findings_with_counterpart": 0,
+            "pairs_with_shared_cwe_tag": 0,
+            "pairs_without_shared_cwe_tag": 0
+          }
+        ]
+      },
+      "per_repository": [
+        {
+          "repository": "vitalik/django-ninja",
+          "source_commit": "3506fd47cca7f30e2a65b49833798ba18c8d7b9d",
+          "source_archive_sha256": "d22e9bb238059614c17d8b151589b091f4da205d910699712eb04ae1f9a94f0a",
+          "python_files_in_snapshot": 152,
+          "arbiter_findings": 0,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 28,
+          "semgrep_python_files_scanned": 52,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 3,
+          "codeql_python_files_scanned": 152,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "conan-io/conan",
+          "source_commit": "702f3b705a127096e23d0a522999521f714ac29d",
+          "source_archive_sha256": "5c16395faf74a19cf94e6f220cf86932701728e7bd8c2e649cf969315168f5f9",
+          "python_files_in_snapshot": 1103,
+          "arbiter_findings": 42,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 160,
+          "semgrep_python_files_scanned": 352,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 2,
+          "codeql_python_files_scanned": 1103,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "inventree/InvenTree",
+          "source_commit": "c475e9bfcfa8e0f7e8ac1022477968cacfd84fce",
+          "source_archive_sha256": "f76273c989fd0250c0d381ce19403ba2758706fc59cd2b326caa4fb8b6f71f5d",
+          "python_files_in_snapshot": 694,
+          "arbiter_findings": 9,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 427,
+          "semgrep_python_files_scanned": 667,
+          "semgrep_scan_errors": 7,
+          "codeql_findings": 11,
+          "codeql_python_files_scanned": 693,
+          "codeql_extractor_warning_lines": 19
+        },
+        {
+          "repository": "litestar-org/litestar",
+          "source_commit": "574e436d2a629a1a8775ea0bed11091a80f50703",
+          "source_archive_sha256": "e14dae4b3f92a9c7c7c1a545bfd9831c68af7a5039bfcdcc8bac1b6d6ac05f43",
+          "python_files_in_snapshot": 1133,
+          "arbiter_findings": 6,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 238,
+          "semgrep_python_files_scanned": 726,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 1133,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "bottlepy/bottle",
+          "source_commit": "aba0c1a7ee59ed851db001d100b6a792b54a94a3",
+          "source_archive_sha256": "27348f50d27596b58f52ea4fe778cbb6c6b69387a9998dd5be89ff5fa4c5e327",
+          "python_files_in_snapshot": 30,
+          "arbiter_findings": 3,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 26,
+          "semgrep_python_files_scanned": 2,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 30,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "mherrmann/helium",
+          "source_commit": "571c272a01eb2606d436cda64f51fd4cc77aab94",
+          "source_archive_sha256": "67f63176297b1d81f22964db42cdd29b5e013bfcd8caf7e0cc10da9bf2239daa",
+          "python_files_in_snapshot": 56,
+          "arbiter_findings": 1,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 10,
+          "semgrep_python_files_scanned": 15,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 56,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "msiemens/tinydb",
+          "source_commit": "edff96aeb2616402e9489d46e90a592c05565621",
+          "source_archive_sha256": "99f6de856e39a5832a3e82fa75ec68150b4d20fb255dcffe82ede8597d725b6e",
+          "python_files_in_snapshot": 21,
+          "arbiter_findings": 0,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 4,
+          "semgrep_python_files_scanned": 12,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 21,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "graphql-python/graphene",
+          "source_commit": "82903263080b3b7f22c2ad84319584d7a3b1a1f6",
+          "source_archive_sha256": "dfe68bbb38f6ff9dcc1e5f15037673790fb9ddb27218e88f5b4d4bd4fb4ef4e7",
+          "python_files_in_snapshot": 139,
+          "arbiter_findings": 0,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 5,
+          "semgrep_python_files_scanned": 65,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 139,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "garrettj403/SciencePlots",
+          "source_commit": "b9b16959570bd2fbc9ff5118bacc423c3bddd592",
+          "source_archive_sha256": "ffc6edac982b664a1ff1207bfb579e54d679d8012cdd881e6c680750bff0dd85",
+          "python_files_in_snapshot": 7,
+          "arbiter_findings": 0,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 0,
+          "semgrep_python_files_scanned": 3,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 7,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "tobymao/sqlglot",
+          "source_commit": "78b24a744adb8d5dc0eb285f067087338b60f266",
+          "source_archive_sha256": "3f20ff7680f4b86855181ff8b50824a33dfd5bac4389fef29049f799f70e50fb",
+          "python_files_in_snapshot": 255,
+          "arbiter_findings": 43,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 1747,
+          "semgrep_python_files_scanned": 191,
+          "semgrep_scan_errors": 1,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 255,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "agronholm/apscheduler",
+          "source_commit": "bdaceb12792f104f25798dee2850d45f9e7d83f8",
+          "source_archive_sha256": "d77e01905f4f6266d0f19d52fa33ca227c818a98946414add7fe443877c626a6",
+          "python_files_in_snapshot": 72,
+          "arbiter_findings": 1,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 18,
+          "semgrep_python_files_scanned": 61,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 72,
+          "codeql_extractor_warning_lines": 17
+        }
+      ],
+      "matching_contract": "Within each repository, normalize repository-relative paths and count findings as location-overlapping only when inclusive line spans intersect. Count CWE-tag intersection separately. A finding pair is counted once per pair of findings; one-to-many overlaps are possible. Do not infer vulnerability identity or correctness from location or CWE agreement.",
+      "limits": [
+        "This is descriptive differential coverage on a small popularity-biased convenience sample, not probability-sampled production accuracy.",
+        "Analyzer totals are not comparable correctness scores: the tools use different rules, categories, language coverage, ignore behavior, and extraction semantics.",
+        "Semgrep scanned 2,146 of 3,662 Python files, with 8 parser/rule errors (7 timeouts and 1 syntax error); its ignore rules exclude additional files.",
+        "CodeQL scanned 3,661 of 3,662 Python files. It emitted 189 extractor warning lines: repeated dynamic-library path warnings and two module-context warnings.",
+        "Arbiter ran only its lang_python probe, so all 11 overall scorecards were withheld at 8.1 percent total assessment coverage; this is not a low grade.",
+        "The location/CWE matcher is only a differential aid; 39 Arbiter/Semgrep location-overlap pairs and zero observed CodeQL overlaps do not establish true or false findings.",
+        "No precision-sample labels, independent human adjudication, repository miss audit, or rule tuning were performed."
+      ]
+    },
     "review_prerequisites": [
       "A coordinator independent of Arbiter rule authors must blind packets and select the review sample before labels are produced.",
       "Independent human adjudication remains unavailable; model labels, if later used under the approved interim design, must be reported only as model-labelled conformance.",
@@ -261,7 +553,7 @@
     "limits": [
       "This is a seeded convenience sample drawn from a popularity-sorted, MIT-filtered top-100 GitHub search frame, not a probability sample of production repositories.",
       "The cohort contains 11 repository clusters, all Python, and cannot support population-wide accuracy, recall, or 99 percent certification.",
-      "Only public repository metadata and license files at exact pinned commits were retrieved; project source snapshots were not acquired and no scans were run."
+      "Pinned source archives were acquired and scanned without executing project code; raw archives, scan reports, databases, and case-level findings were kept in temporary storage and are not committed."
     ]
   },
   "benchmark_inventory": [
