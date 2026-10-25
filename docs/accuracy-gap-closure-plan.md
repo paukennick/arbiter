@@ -63,10 +63,21 @@ Goal: rank advisory findings so the likely true positives surface first and
 estimate per-finding probability, to raise advisory-tier precision. It does
 not create findings.
 
-- **Hardware:** one RTX 5070 Laptop GPU, 8 GB. This fits a fine-tuned small
-  code encoder or LoRA on a small code model; it does not fit large-model
-  training. Needs `torch` and a code model; neither is installed yet, so
-  dependency changes go through their own requirement.
+- **Hardware:** the local RTX 5070 Laptop (8 GB) runs the CPU/small-model
+  baseline and inference. Training beyond that rents a RunPod GPU (owner
+  decision, 2026-10-25). Needs `torch` and a code model; neither is installed
+  yet, so dependency changes go through their own requirement.
+- **Cloud rules:** only public or repo-owned development code is uploaded
+  (owner-approved); sealed gold, held-out, RealVuln and ARB-109 data never
+  leave the machine. No secrets or API keys on the pod. Pin model id,
+  revision, seed and package versions; weights and pod artifacts stay out of
+  git, with only metrics, split lists and hashes committed.
+- **Budget (owner: no hard cap, keep it modest):** interim ceiling of USD 25
+  per experiment and USD 75 in total, using a single on-demand or spot
+  24-48 GB card (LoRA on a 7B code model, or a smaller encoder), with a
+  hard run-time limit and the pod stopped on completion. Raising a ceiling
+  needs the owner. The CPU baseline must come first; spend is justified
+  only if the baseline leaves headroom.
 - **Training data (development only):** existing model labels on the tuned
   gold repositories and the AI development corpus, and ground-truth items
   (OWASP, CVE fixes) when their license and holdout policy permit. About

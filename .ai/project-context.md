@@ -1541,3 +1541,4 @@ provenance and never becomes the verified tier. Hardware: RTX 5070 Laptop,
 8 GB; torch and a code model are not installed and need a separate
 dependency requirement. Nothing here is a measurement or a 99% claim.
 
+ARB-110 update: owner uses RunPod for training and approved uploading public code. Interim spend ceiling USD 25 per experiment, USD 75 total; sealed, held-out, RealVuln and ARB-109 data never leave the machine. See the plan's Workstream C.
