@@ -38,10 +38,23 @@
 #
 set -uo pipefail
 
+# The interpreter every Python step below uses. `command -v` is not enough:
+# on Windows, `python3` is often the Microsoft Store alias, which is on PATH
+# but only prints an install hint and exits non-zero. Ask each candidate to
+# run something, and take the first that does.
+PY=""
+for candidate in python3 python; do
+  if "$candidate" -c "import sys" >/dev/null 2>&1; then
+    PY="$candidate"
+    break
+  fi
+done
+
+
 CATALOG_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/src/arbiter/tooling.json"
 IFS=$'\t' read -r CATALOG_CHECKOV CATALOG_SEMGREP CATALOG_BANDIT CATALOG_RUFF \
   CATALOG_TRIVY CATALOG_GITLEAKS CATALOG_SEMGREP_RULES CATALOG_GRAMMARS < <(
-  python3 - "$CATALOG_FILE" <<'PY'
+  "${PY:-python3}" - "$CATALOG_FILE" <<'PY'
 import json
 import sys
 
@@ -131,7 +144,7 @@ fi
 PIP_FLAGS=""
 # Debian's externally-managed marker refuses a plain pip install. In a
 # container that is exactly what we want to do anyway.
-python3 -c "import sys; sys.exit(0)" 2>/dev/null && \
+[ -n "$PY" ] && \
   pip install --help 2>/dev/null | grep -q break-system-packages && \
   PIP_FLAGS="--break-system-packages"
 
@@ -181,7 +194,7 @@ install_checkov_isolated() {
     return 0
   fi
   local py
-  py="$(command -v python3 || command -v python)"
+  py="$PY"
   if [ -z "$py" ]; then
     printf '  MISSED %-10s no python3 to build an isolated venv\n' checkov
     return 0
@@ -222,7 +235,7 @@ install_semgrep_isolated() {
     return 0
   fi
   local py
-  py="$(command -v python3 || command -v python)"
+  py="$PY"
   if [ -z "$py" ]; then
     printf '  MISSED %-10s no python3 to build an isolated venv\n' semgrep
     return 0
@@ -399,7 +412,7 @@ install_trivy() {
       rm -rf "$tmp"
       return 0
     fi
-    if ! python3 - "$tmp/$checksums" "$tmp/$filename" "$filename" <<'PY'
+    if ! "${PY:-python3}" - "$tmp/$checksums" "$tmp/$filename" "$filename" <<'PY'
 import hashlib
 import pathlib
 import sys
@@ -471,7 +484,7 @@ fi
 # makes a missing one a "not assessed" fact at install time, not mid-scan.
 fetch_grammars() {
   local py
-  py="$(command -v python3 || command -v python)"
+  py="$PY"
   if [ -z "$py" ]; then
     printf '  MISSED %-10s no python3 to fetch grammars\n' grammars
     return 0
@@ -497,7 +510,7 @@ fetch_grammars
 
 echo
 echo "What Arbiter can run here:"
-python3 -c "
+"${PY:-python3}" -c "
 import sys
 sys.path.insert(0, 'src')
 try:

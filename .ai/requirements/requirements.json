@@ -2591,6 +2591,29 @@
         "the PR comment and annotations are longer on repositories with many advisory findings; --sarif-min-severity and report.show: verified are the narrowing tools",
         "Completed 2026-10-24: default view shows every tier (planted 404/404, ai-corpus 127/127 via the regression_guard default-view check); gate unchanged (tiered); SARIF advisory capped at warning. FAIL-071 records why ARB-100's default was reverted."
       ]
+    },
+    {
+      "id": "ARB-154",
+      "category": "developer-tooling",
+      "title": "install_tools.sh runs on Windows where python3 is the Store alias",
+      "description": "tools/install_tools.sh called bare python3 to read its tool catalog (added in 3561ecc). On Windows python3 is often the Microsoft Store alias: on PATH but only prints an install hint and exits non-zero, so the script exited 2 and two install-script tests failed. The script now picks the first of python3 or python that actually runs and uses it for every Python step. Defect recorded as FAIL-072.",
+      "priority": "medium",
+      "status": "completed",
+      "minimum_access_scope": [
+        "tools/install_tools.sh"
+      ],
+      "acceptance_criteria": [
+        "install_tools.sh reads its catalog when python3 is the Store alias and python works",
+        "test_install_script_never_fails_a_build passes on Windows",
+        "test_install_script_does_not_accept_an_unpinned_existing_binary passes on Windows"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/test_tools_training.py -q"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
     }
   ]
 }

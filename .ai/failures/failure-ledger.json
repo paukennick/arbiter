@@ -1684,6 +1684,30 @@
       "prevention_rules": [],
       "prevention_notes": "tools/regression_guard.py check now scans targets marked default_view (planted, ai-corpus) under the default configuration and fails if the default view lists fewer findings than the scan has active ones; test_default_view_hides_no_finding runs it in the fast suite. A requirement that changes a default should state what a user sees under it on the in-tree corpora before it is accepted.",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-072",
+      "date": "2026-10-25",
+      "title": "install_tools.sh called python3 by name; Windows Store alias broke it",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "tools/install_tools.sh exited 2 with 'Python was not found; run without arguments to install from the Microsoft Store' and 'Could not read tool versions from src/arbiter/tooling.json'; test_install_script_never_fails_a_build and test_install_script_does_not_accept_an_unpinned_existing_binary failed, so omni gate refused every commit on that machine",
+      "how_detected": "omni gate on a Windows laptop while consolidating local branches",
+      "root_cause": "3561ecc (2026-10-23) added a catalog read that runs bare python3. On Windows python3 is often the Store alias in WindowsApps: it is on PATH, so command -v finds it, but it only prints an install hint and exits non-zero. Other call sites used command -v python3 || command -v python, which has the same blind spot. Windows CI runners have a working python3, so CI never saw it",
+      "requirement": "",
+      "affected": [
+        "tools/install_tools.sh"
+      ],
+      "fix_summary": "Pick the interpreter once by asking python3 then python to run 'import sys' and taking the first that succeeds; every Python step in the script uses that choice",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_tools_training.py::test_install_script_never_fails_a_build",
+        "tests/test_tools_training.py::test_install_script_does_not_accept_an_unpinned_existing_binary"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Probe interpreters by running them, not by command -v; the Store alias defeats PATH checks",
+      "recurrence_of": ""
     }
   ]
 }

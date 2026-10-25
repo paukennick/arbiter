@@ -5,6 +5,14 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 `REQ-###` they serve. Rationale belongs in `.ai/project-context.md`.
 
 ## [Unreleased]
+### 2026-10-25
+
+- ARB-154 | `tools/install_tools.sh` works on Windows machines where `python3` is
+  the Microsoft Store alias. It called bare `python3` to read its tool catalog,
+  which that alias answers with an install hint and a non-zero exit, so the
+  script stopped with "Could not read tool versions". It now uses the first of
+  `python3` or `python` that actually runs. (FAIL-072)
+
 ### 2026-10-24 (round 5, show everything)
 
 - ARB-103 | Arbiter shows every finding by default again and blocks only on verified ones. `report.show` defaults to `all`: the console, markdown, pull-request comment, HTML, SARIF and GitHub annotations list verified findings first, then advisory, then inferred, each section labelled with what the tier means and whether it can block the gate (`FINDINGS (advisory) — not confirmed; shown, cannot block the gate`), under one summary line (`2 verified (can block the gate) · 71 advisory (shown, not gating) · 0 inferred`). `gate.tier_mode` stays `tiered`, so only verified findings can fail the gate. Reverses ARB-100's verified-only default, which with one verified rule hid every finding on the planted and AI-written corpora (FAIL-071)
