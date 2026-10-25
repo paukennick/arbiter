@@ -12,6 +12,10 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   which that alias answers with an install hint and a non-zero exit, so the
   script stopped with "Could not read tool versions". It now uses the first of
   `python3` or `python` that actually runs. (FAIL-072)
+- ARB-155 | semgrep now loads the C#, Kotlin and Swift rules already present
+  in its pinned rule set (52, 14 and 4 rule files), and the tool catalog lists
+  those languages so a repository written in them gets semgrep planned and
+  locked. The committed lock's catalog fingerprint is updated to match.
 
 ### 2026-10-25 (ported from unpushed 2026-09-18 work)
 

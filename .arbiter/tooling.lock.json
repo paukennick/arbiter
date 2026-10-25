@@ -1,5 +1,5 @@
 {
-  "catalog_sha256": "d250069ce619daea78abe3b725f8cbbeac206f57b57340686e1b6ff0ead6d6e5",
+  "catalog_sha256": "dfd3ecf84665712f97f6ab2eba06699cb3c6c09b051d956ead9bf885b49c7bfa",
   "grammars": [],
   "schema_version": 1,
   "semgrep_rules": {

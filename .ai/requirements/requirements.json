@@ -2655,6 +2655,31 @@
         "Adaptive is on for this repository only; the shipped default is unchanged",
         "Ported 2026-10-25 from local commit 7fd2ab7 where it was written as REQ-031; upstream later used that id for a different requirement"
       ]
+    },
+    {
+      "id": "ARB-155",
+      "category": "developer-tooling",
+      "title": "Point semgrep at the C#, Kotlin and Swift rules it already fetches",
+      "description": "The pinned semgrep-rules checkout (40b8c63) holds csharp, kotlin and swift rule directories (52, 14 and 4 rule files) that no --config pointed at, so those languages got no semgrep coverage. The adapter now loads them, and the tooling catalog lists csharp, kotlin and swift so a repository written in them gets semgrep in its plan and lock. Ported from unpushed commit 759ffd5; the osv-scanner half of that commit is not ported.",
+      "priority": "low",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/packs/adapters/semgrep.adapter.toml",
+        "src/arbiter/tooling.json",
+        ".arbiter/tooling.lock.json"
+      ],
+      "acceptance_criteria": [
+        "semgrep loads the csharp kotlin and swift rule directories with no errors",
+        "a Kotlin MD5 call is reported",
+        "the committed lock matches the catalog"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/test_tooling.py tests/test_tools_training.py tests/test_adapters.py -q"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
     }
   ]
 }

@@ -17,7 +17,7 @@
       "version": "1.177.0",
       "install_method": "pip",
       "install_package": "semgrep",
-      "languages": ["python", "javascript", "typescript", "go", "java", "ruby", "terraform", "hcl", "yaml", "json"]
+      "languages": ["python", "javascript", "typescript", "go", "java", "ruby", "terraform", "hcl", "yaml", "json", "csharp", "kotlin", "swift"]
     },
     {
       "name": "bandit",

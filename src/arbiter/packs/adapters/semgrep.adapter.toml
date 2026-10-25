@@ -84,6 +84,11 @@ argv = ["semgrep", "scan", "--json", "--quiet",
         "--config", "semgrep-rules/rust",
         "--config", "semgrep-rules/bash",
         "--config", "semgrep-rules/c",
+        # csharp, kotlin, swift: present in the pinned semgrep-rules checkout
+        # (52, 14 and 4 rule files at 40b8c63) but never pointed at.
+        "--config", "semgrep-rules/csharp",
+        "--config", "semgrep-rules/kotlin",
+        "--config", "semgrep-rules/swift",
         "{workdir}"]
 version_argv = ["semgrep", "--version"]
 parse = "json"
