@@ -2965,7 +2965,7 @@
       "title": "A target-root arbiter.yaml may not hide or downgrade its findings",
       "description": "restrict_target_config drops suppress and probes.severity_overrides from a config found in the target root and a score.coverage_threshold below the default; each drop is recorded in scan_scope.config.ignored and printed. --config is trusted in full; Arbiter's own CI, the omni gate rule and the shipped CI templates pass --config arbiter.yaml.",
       "priority": "high",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "src/arbiter/policy.py",
         "tests/test_target_config_hiding.py",
@@ -2995,7 +2995,7 @@
       "title": "A scan that read nothing a probe assesses withholds the grade and fails the gate",
       "description": "When no text file in a role a probe reads (source, test, config, iac, ci) was read -- an empty directory, docs only, binaries only -- the grade is withheld with withheld_by nothing_read and the gate fails; the reason counts what was found and why it was not read.",
       "priority": "high",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "src/arbiter/engine.py",
         "src/arbiter/inventory.py",
@@ -3021,7 +3021,7 @@
       "title": "Files the walk did not read are reported and counted against coverage",
       "description": "inventory.walk_repo records every skipped file (NUL byte, over the size cap, UTF-16 without a BOM, unreadable, a file symlink leaving the tree, git-ignored) and every directory it did not enter (SKIP_DIRS, symlinked, git-ignored; bounded file count) with a reason; scan_scope.skipped carries them, a files_not_read outcome joins the coverage denominator, the console and markdown print NOT READ lines, and above 50% of source-like files skipped the grade is withheld. A file symlink to a target outside the tree is not read. What counts as vendored is unchanged.",
       "priority": "high",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "src/arbiter/inventory.py",
         "src/arbiter/lang_rules.py",
@@ -3052,7 +3052,7 @@
       "title": "Under --changed a changed file counts as read only if a probe read it",
       "description": "narrow() counts changed files as read only when text and not generated; files_changed_read, files_changed_not_read, changed_not_read (path and reason) and files_changed_deleted (git_deleted) are recorded; the gate fails when changed files exist and none was read; a delete-only change passes and is named; --only-files refuses when none of its files is read.",
       "priority": "high",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "src/arbiter/incremental.py",
         "src/arbiter/engine.py",
@@ -3082,7 +3082,7 @@
       "title": "Configuration mistakes fail closed: gate severities, suppression entries, withheld grades",
       "description": "check_gate_config normalises fail_on.severity/new case-insensitively and raises on an unknown name; coverage_below and withheld_grade are type-checked. suppression_problems/check_suppress_config require reason, expires and a selector; apply_suppressions ignores invalid entries. evaluate_gate fails on a withheld grade (gate.fail_on.withheld_grade, default true, not settable false from a target root) unless withheld_by is the operator's partial scan or probes_selected (--only/--skip/--no-adapters explaining the gap).",
       "priority": "high",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "src/arbiter/policy.py",
         "src/arbiter/engine.py",
