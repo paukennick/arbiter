@@ -2858,6 +2858,46 @@
         "Analyzer agreement is not ground truth; model-labelled conformance only if separately authorized",
         "Aggregate-only differential completed on the frozen 11-repository cohort; no case-level findings, labels, independent review, precision/recall estimate, or 99% claim. Blinded finding review and a separate repository miss audit remain follow-up work."
       ]
+    },
+    {
+      "id": "ARB-110",
+      "category": "accuracy",
+      "title": "Close recall gap without human reviewers: development-only recall analysis and preregistered model-labelled sample",
+      "description": "Human reviewers are unavailable, so bridge the gap with (1) a development-data-only breakdown of missed weakness families from the ai-corpus development set and RealVuln-excluded sources, ranked by CWE and language, to direct rule work; (2) a preregistered, frozen, blinded model-labelled precision sample of the ARB-109 cohort, using the existing tools/label_models.py two-labeller-plus-adjudicator pipeline, reported only as model-labelled conformance; (3) a design for GPU-trained learned triage that uses only development labels and never sealed, RealVuln, held-out or ARB-109 evaluation data for training. No 99 percent claim; sealed sets stay closed.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "docs/accuracy-roadmap.md",
+        "docs/accuracy-baseline.md",
+        "docs/accuracy-review-protocol.md",
+        "tools/label_models.py",
+        "tools/gold/labels",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Recall-gap table from development data only with denominators",
+        "Preregistration frozen before any evaluation labels are produced",
+        "Training/evaluation split by repository with no sealed or evaluation leakage",
+        "Results labelled model-labelled conformance",
+        "No 99 percent claim"
+      ],
+      "validation_required": [
+        "python omni doctor",
+        "python omni gate",
+        "tools/precision_guard.py check",
+        "fast pytest tier"
+      ],
+      "documentation_required": [
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Model labels are not independent truth",
+        "Learned triage can overfit tuned corpora",
+        "Labeller cost and code leaving the machine as bounded excerpts only for public code"
+      ]
     }
   ]
 }

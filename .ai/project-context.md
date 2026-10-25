@@ -1526,3 +1526,18 @@ Next: preregister a blinded finding review sample and separate blind
 repository miss audit, with an independent coordinator and human reviewers.
 Model labels, if approved in place of unavailable human review, remain
 model-labelled conformance and cannot be reported as certified accuracy.
+
+## 2026-10-25 — Gap closure without human reviewers (ARB-110)
+
+Owner decision: human reviewers will not be available soon, so the gap is to
+be closed with development-data rule work, model-labelled conformance and,
+if useful, GPU-trained triage. `docs/accuracy-gap-closure-plan.md` records the
+plan. Recall (4% held-out, 28% development, 18.2% RealVuln multi-CWE) is rule
+coverage and is the dominant gap; learned triage can only reorder or annotate
+findings that analyzers already report. Training data is limited to
+development labels split by repository; the sealed held-out sets, RealVuln and
+the ARB-109 cohort stay evaluation-only. A learned score is `inferred`
+provenance and never becomes the verified tier. Hardware: RTX 5070 Laptop,
+8 GB; torch and a code model are not installed and need a separate
+dependency requirement. Nothing here is a measurement or a 99% claim.
+
