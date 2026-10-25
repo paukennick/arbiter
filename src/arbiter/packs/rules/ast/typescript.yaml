@@ -1103,6 +1103,27 @@ rules:
       a deliberate choice and not reported.
     remediation: "Log it with context, rethrow, or return a documented fallback; if ignoring is right, say why in the block."
 
+  - id: swallowed-catch-to-500
+    requirements: [ARB-110]
+    title: "`catch` without a binding turns any failure into a 500"
+    severity: low
+    confidence: medium
+    dimension: quality
+    cwe: [CWE-390, CWE-778]
+    controls: [NIST-800-218:PW.5]
+    tags: [error-handling]
+    query: |
+      (catch_clause !parameter body: (statement_block) @b
+        (#match? @b "\\b500\\b")
+        (#not-match? @b "throw|[Ll]og|console|report|[Ss]entry|[Mm]etric")) @hit
+    description: >
+      A `catch` with no bound error that answers 500. The error is not
+      available to log, so the client gets a generic failure and the operator
+      gets nothing to diagnose it with.
+    remediation: >
+      Bind the error (`catch (err)`), log it with the request context, then
+      answer 500, or let it reach the framework error handler.
+
   - id: empty-catch-in-loop
     requirements: [ARB-061]
     title: "Error swallowed by an empty `catch` inside a loop"

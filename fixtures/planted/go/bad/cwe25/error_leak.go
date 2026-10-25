@@ -42,6 +42,6 @@ func Invoice(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 // Serve mounts Orders on the default mux.
 func Serve(db *sql.DB) error {
 	http.Handle("/orders", Orders(db))
-	srv := &http.Server{Addr: ":8080", ReadHeaderTimeout: 5e9}
+	srv := &http.Server{Addr: ":8080", ReadHeaderTimeout: 5e9, ReadTimeout: 15e9, WriteTimeout: 30e9}
 	return srv.ListenAndServe()
 }

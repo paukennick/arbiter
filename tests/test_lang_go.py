@@ -108,6 +108,73 @@ def test_a_bare_client_is_reported(tmp_path):
     assert _rules(tmp_path, code).get("http-client-no-timeout") == [6]
 
 
+def test_a_server_with_only_a_header_timeout_is_reported(tmp_path):
+    code = '''
+    package main
+
+    import (
+    	"net/http"
+    	"time"
+    )
+
+    func serve(h http.Handler) error {
+    	srv := &http.Server{Addr: ":8080", Handler: h, ReadHeaderTimeout: 5 * time.Second}
+    	return srv.ListenAndServe()
+    }
+    '''
+    assert _rules(tmp_path, code).get("http-server-no-timeout") == [9]
+
+
+def test_the_package_level_listen_and_serve_is_reported(tmp_path):
+    code = '''
+    package main
+
+    import "net/http"
+
+    func main() {
+    	http.ListenAndServe(":8080", nil)
+    }
+    '''
+    assert _rules(tmp_path, code).get("http-server-no-timeout") == [6]
+
+
+def test_a_server_with_read_or_write_timeouts_is_silent(tmp_path):
+    code = '''
+    package main
+
+    import (
+    	"net/http"
+    	"time"
+    )
+
+    func serve(h http.Handler) error {
+    	a := &http.Server{Addr: ":1", ReadTimeout: 5 * time.Second}
+    	b := &http.Server{Addr: ":2", WriteTimeout: 5 * time.Second}
+    	_ = a
+    	return b.ListenAndServe()
+    }
+    '''
+    assert "http-server-no-timeout" not in _rules(tmp_path, code)
+
+
+def test_a_server_whose_timeout_is_assigned_later_is_silent(tmp_path):
+    code = '''
+    package main
+
+    import (
+    	"net/http"
+    	"time"
+    )
+
+    func serve(h http.Handler) error {
+    	srv := &http.Server{Addr: ":8080", Handler: h}
+    	srv.ReadTimeout = 10 * time.Second
+    	return srv.ListenAndServe()
+    }
+    '''
+    assert "http-server-no-timeout" not in _rules(tmp_path, code)
+
+
 def test_the_default_client_under_a_context_deadline_is_silent(tmp_path):
     code = '''
     package main

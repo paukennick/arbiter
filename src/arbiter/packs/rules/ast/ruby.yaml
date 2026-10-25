@@ -378,6 +378,54 @@ rules:
       Rescue the specific class you can handle, log or record the error, and
       re-raise or return an explicit failure for anything else.
 
+  - id: swallowed-rescue-fallback
+    requirements: [ARB-110]
+    title: "`rescue StandardError` drops the error and returns a default: `{text}`"
+    severity: low
+    confidence: medium
+    dimension: quality
+    cwe: [CWE-390, CWE-703]
+    controls: [NIST-800-218:PW.5]
+    tags: [error-handling]
+    # No `=> e`: the exception cannot be logged, so nothing in the handler can
+    # record what failed. `nil` is the existing `swallowed-error` rule.
+    query: |
+      ((rescue exceptions: (exceptions . (constant) @c .) !variable
+         body: (then . [(false) (true) (array) (hash)] @v .)) @hit
+        (#match? @c "^(StandardError|Exception)$")
+        (#match? @v "^(false|true|\\[\\s*\\]|\\{\\s*\\})$"))
+    # A `foo?` probe that answers false when the capability is absent
+    # (puma configuration.rb `ipv6_interface_available?`) is an idiom, not a drop.
+    unless_inside: |
+      ((method name: (identifier) @n) @probe (#match? @n "\\?$"))
+      ((singleton_method name: (identifier) @n) @probe (#match? @n "\\?$"))
+    description: >-
+      A broad rescue with no bound exception whose whole body is `false`,
+      `true`, `[]` or `{}`. DNS, TLS and timeout failures, and plain bugs such
+      as a NoMethodError, all come back as the same default. The caller reads
+      it as an ordinary result and nothing records what went wrong.
+    remediation: "Rescue the specific classes you expect, bind and log the exception, and return a result that distinguishes failure from a real `false`."
+
+  - id: swallowed-error-to-500
+    requirements: [ARB-110]
+    title: "`rescue` turns any failure into a 500 without logging it"
+    severity: low
+    confidence: medium
+    dimension: quality
+    cwe: [CWE-390, CWE-778]
+    controls: [NIST-800-218:PW.5]
+    tags: [error-handling]
+    query: |
+      ((rescue exceptions: (exceptions . (constant) @c .) !variable body: (then) @b) @hit
+        (#match? @c "^(StandardError|Exception)$")
+        (#match? @b "\\b500\\b")
+        (#not-match? @b "\\braise\\b|[Ll]og|warn|puts|\\$!|[Rr]eport|[Ss]entry|[Nn]otify"))
+    description: >-
+      A rescue with no bound exception that answers 500. The exception is not
+      available to log, so the client gets a generic error and the operator
+      gets nothing to diagnose it with.
+    remediation: "Bind the exception (`rescue StandardError => e`), log it with the request context, then answer 500."
+
   - id: rescue-exception
     requirements: [ARB-065]
     title: "`rescue Exception` catches interrupts, SystemExit and NoMemoryError"

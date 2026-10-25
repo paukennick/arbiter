@@ -1221,3 +1221,39 @@ def test_named_gemfiles_inline_gemfiles_and_rescued_requires_are_declared(tmp_pa
     names = sorted(f.evidence for f in rep.active() if "undeclared-import" in f.rule_id)
     # httparty is still undeclared: only the rescued require is optional.
     assert names == ["undeclared:rubygems:httparty"]
+
+
+def test_unbound_broad_rescue_returning_a_default_or_500_is_reported(tmp_path):
+    code = """
+    class F
+      def call(url)
+        post(url)
+      rescue StandardError
+        false
+      end
+      def named(url)
+        post(url)
+      rescue StandardError => e
+        false
+      end
+      def ipv6_available?
+        probe
+      rescue StandardError
+        false
+      end
+      def status
+        run
+      rescue StandardError
+        [500, {}, ["error"]]
+      end
+      def logged
+        run
+      rescue StandardError
+        warn "failed"
+        [500, {}, ["error"]]
+      end
+    end
+    """
+    got = _rules(tmp_path, code)
+    assert got.get("swallowed-rescue-fallback") == [5]
+    assert got.get("swallowed-error-to-500") == [20]

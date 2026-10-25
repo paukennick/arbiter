@@ -582,3 +582,12 @@ def test_csrf_rules_need_an_unsafe_method_or_a_cross_site_cookie_without_a_token
     # sameSite: "none" on some other cookie, in a file with no session library.
     other = 'export const opts = { sameSite: "none", secure: true };\n'
     assert not _scan(tmp_path, {"d.ts": other}, "session-cookie-cross-site")
+
+
+def test_binding_less_catch_answering_500_is_reported(tmp_path):
+    code = (
+        "export function a(res: any) { try { run(); } catch { res.status(500).end(); } }\n"
+        "export function b(res: any) { try { run(); } catch { console.error('x'); res.status(500).end(); } }\n"
+        "export function c(res: any) { try { run(); } catch (err) { res.status(500).end(); } }\n"
+    )
+    assert _lines(_scan(tmp_path, {"a.ts": code}, "swallowed-catch-to-500")) == [1]

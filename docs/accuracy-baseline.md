@@ -258,6 +258,26 @@ the CI setup does not establish equivalent analyzer coverage on Windows.
    evaluator revision, host image, architecture, and all tool/database pins.
    Populate the run record in the benchmark manifest for every new evaluation.
 
+## ARB-110 development-recall progress
+
+Development-corpus only (`fixtures/ai-corpus`, native probes with the `ast`
+extra installed), model-labelled conformance. The first rule, Go
+`http-server-no-timeout`, moved code recall from 34/117 (29.1%) to 37/117
+(31.6%), Go from 14/24 to 17/24, with no new false alarms or unreviewed
+findings. The sealed held-out aggregate guard also moved (146 to 151
+findings, true positives +3 against +5 in scope); that tree was not opened and
+the rule was not tuned to it, so treat that as a precision caution, not a
+result. Real-repository precision for the rule is unmeasured. This is not a
+99% claim.
+
+Second batch, swallowed-exception (Java, Ruby and TypeScript, five rules):
+code recall 37/117 to 41/117 (35.0%), Java 5 to 7, Ruby 5 to 6, TypeScript 4
+to 5, no new false alarms or unreviewed findings. The first Ruby draft also
+fired on a puma `ipv6_interface_available?` probe; probe methods named `foo?`
+are now exempt, and the real-repository guard (python, TypeScript, Ruby, Go)
+is unchanged. Java has no real-repository guard, so its precision is
+unmeasured. The held-out aggregate did not move. Not a 99% claim.
+
 ## Baseline decision
 
 The evidence is not sufficient for a 99% precision-and-recall claim. The

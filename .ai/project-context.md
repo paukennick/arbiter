@@ -1542,3 +1542,15 @@ provenance and never becomes the verified tier. Hardware: RTX 5070 Laptop,
 dependency requirement. Nothing here is a measurement or a 99% claim.
 
 ARB-110 update: owner uses RunPod for training and approved uploading public code. Interim spend ceiling USD 25 per experiment, USD 75 total; sealed, held-out, RealVuln and ARB-109 data never leave the machine. See the plan's Workstream C.
+
+## 2026-10-25 — First development-only recall rule (ARB-110, Workstream A)
+
+Environment note: the repository venv lacked the `ast` extra, so a first score read 8.5% code recall instead of the documented ~28%. Installing it (`uv pip install -e ".[ast]"`) restored the baseline of 34/117 (29.1%). Re-measure only with the extra installed.
+
+Ranked the development corpus misses (`tools/ai_corpus_score.py`). Largest wholly missed families: unhandled-input-error 0/8, missing-timeout 0/6, path-traversal 0/6, replay 0/5, test-ineffective 0/5, server-no-timeout 0/3. First rule: Go `http-server-no-timeout` (CWE-400). Development corpus: Go 14 -> 17 of 24, all 34 -> 37 of 117, 0 new false alarms. Guarded by planted bad/good twins and unit tests; the planted and ai-corpus snapshots were re-cut with exactly the five intended findings added.
+
+The sealed held-out aggregate guard moved as a side effect (146 -> 151 findings; true positives +3 against +5 in scope), so up to two of the new held-out findings are not true positives by its labels. That tree was not opened, the rule was not adjusted to it, and the snapshot was re-cut. Treat it as a precision caution for this rule, not a result. The pinned real-repository guards were skipped (corpus not fetched), so real-repository precision for this rule is unmeasured.
+
+Next families by defect count: unhandled-input-error, path-traversal, swallowed-exception, ssrf, unbounded-memory. Model-labelled conformance on development data only; no 99% claim.
+
+2026-10-26 ARB-110 second batch: five swallowed-exception rules (Java x2, Ruby x2, TypeScript x1), dev-corpus code recall 37 -> 41 of 117, 0 new false alarms, real-repo guard and held-out aggregate unchanged; packs 182 rules (269 in all). Remaining: path-traversal (optional-root shape), ssrf, unbounded-memory, unhandled-input-error. Model-labelled conformance on development data only; no 99% claim.

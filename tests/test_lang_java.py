@@ -18,7 +18,7 @@ PACK = "java"
 RULES = {
     "check-then-act-unsynchronized", "unsynchronized-counter", "http-client-no-timeout",
     "http-request-no-timeout", "url-connection-no-timeout", "rest-template-no-timeout",
-    "retry-without-backoff", "worker-loop-no-stop", "swallowed-exception", "sql-string-built",
+    "retry-without-backoff", "worker-loop-no-stop", "swallowed-exception", "swallowed-stack-trace-only", "swallowed-error-to-500", "sql-string-built",
     "command-injection", "object-input-stream", "xml-decoder", "jackson-default-typing",
     "stub-method", "test-without-assertion", "trust-all-certificates",
     "hostname-verifier-disabled", "weak-random-for-secret",
@@ -725,3 +725,19 @@ class Svc extends Number {
 def test_number_contracts_and_byte_buffers_narrow_on_purpose(tmp_path):
     # gson LazilyParsedNumber.intValue, tomcat drawboard DrawMessage colours.
     assert lines_of(tmp_path, _NUMBER, "parsed-number-narrowed") == [5]
+
+
+_SWALLOW = """package app;
+class H {
+    void a() { try { run(); } catch (Exception e) { e.printStackTrace(); } }
+    void b() { try { run(); } catch (Exception e) { log.error("x", e); e.printStackTrace(); } }
+    int c() { try { run(); return 200; } catch (Exception e) { return 500; } }
+    int d() { try { run(); return 200; } catch (Exception e) { log.error("failed", e); return 500; } }
+    int f() { try { run(); return 200; } catch (Exception e) { throw new IllegalStateException(e); } }
+}
+"""
+
+
+def test_stack_trace_only_catch_and_unlogged_500_are_reported(tmp_path):
+    assert lines_of(tmp_path, _SWALLOW, "swallowed-stack-trace-only") == [3]
+    assert lines_of(tmp_path, _SWALLOW, "swallowed-error-to-500") == [5]
