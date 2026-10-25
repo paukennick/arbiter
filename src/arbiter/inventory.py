@@ -104,11 +104,49 @@ class FileInfo:
         return d
 
 
+# Roles a probe reads. A file in any other role (docs, data, generated) may
+# be opened by a probe or two, but no rule pack or quality check assesses it,
+# so a tree holding only such files has had nothing assessed (ARB-149).
+ASSESSABLE_ROLES = ("source", "test", "config", "iac", "ci")
+
+# How many files are counted under a directory the walk never enters, so the
+# report can say "vendor/: 500+ files" without walking node_modules in full.
+SKIPPED_DIR_COUNT_CAP = 500
+# How many skipped files report.json names individually; the counts by
+# reason are always complete.
+SKIPPED_ENTRIES_CAP = 200
+
+# Reasons a file or directory was not read (ARB-150). Fixed strings so
+# scan_scope.skipped.by_reason groups cleanly and tests can name them.
+SKIP_NUL = "NUL byte in the first 4KB (binary, or text with a stray NUL)"
+SKIP_OVERSIZE = f"larger than {MAX_FILE_BYTES:,} bytes"
+SKIP_UTF16 = "UTF-16 without a byte-order mark (save as UTF-8, or with a BOM)"
+SKIP_UNREADABLE = "unreadable"
+SKIP_LINK_OUTSIDE = "symbolic link to a file outside the repository (not followed)"
+SKIP_GITIGNORED = "ignored by .gitignore"
+SKIP_DIR_NAMED = "vendored, build or tool directory by name (never walked)"
+SKIP_DIR_LINK = "symbolic link to a directory (not followed)"
+SKIP_DIR_GITIGNORED = "directory ignored by .gitignore"
+
+
+def source_like(rel: str, language: str) -> bool:
+    """Whether a file Arbiter did not read looks like one it would have
+    assessed: a known text extension in a role a probe reads. A skipped
+    `.png` is not a coverage gap; a skipped `.py` is."""
+    return language != "unknown" and classify(rel, language) in ASSESSABLE_ROLES
+
+
 @dataclass
 class Inventory:
     files: list[FileInfo] = field(default_factory=list)
     stacks: set[str] = field(default_factory=set)
     by_repo: dict[str, list[FileInfo]] = field(default_factory=dict)
+    # Every file and directory the walk saw and did not read, each with a
+    # reason (ARB-150): {"path", "repo_id", "reason", "kind": "file"|"dir",
+    # "source_like": bool, "files": int (dirs only)}. Before this, a file
+    # skipped for a NUL byte or its size vanished from every section of the
+    # report, and a tree of such files scored 100.
+    skipped: list[dict] = field(default_factory=list)
     # The complete inventory this one was narrowed from (a partial scan, or
     # the result cache showing a probe only the files it must re-read), or
     # None for a complete inventory. A probe that asks which paths EXIST in
@@ -140,6 +178,45 @@ class Inventory:
             "stacks": sorted(self.stacks),
         }
 
+    def assessable_files(self, repo_id: str | None = None) -> list[FileInfo]:
+        """Text files in a role a probe reads (ARB-149)."""
+        return [f for f in self.text_files(repo_id) if f.role in ASSESSABLE_ROLES]
+
+    def skipped_source_like(self) -> list[dict]:
+        return [s for s in self.skipped if s["kind"] == "file" and s.get("source_like")]
+
+    def skipped_source_share(self) -> float:
+        """Share of source-like files the walk saw that it did not read:
+        skipped over skipped plus assessable text files read. 0.0 when
+        nothing was skipped; 1.0 when every source-like file was."""
+        skipped = len(self.skipped_source_like())
+        if not skipped:
+            return 0.0
+        read = len(self.assessable_files())
+        return round(skipped / (skipped + read), 4)
+
+    def skipped_summary(self) -> dict:
+        """The `scan_scope.skipped` block: counts by reason for every skipped
+        file, the source-like ones named (capped), and every directory the
+        walk did not enter with a bounded file count."""
+        files = [s for s in self.skipped if s["kind"] == "file"]
+        dirs = [s for s in self.skipped if s["kind"] == "dir"]
+        by_reason: dict[str, int] = {}
+        for s in files:
+            by_reason[s["reason"]] = by_reason.get(s["reason"], 0) + 1
+        named = [s for s in files if s.get("source_like")]
+        return {
+            "files": len(files),
+            "source_like_files": len(named),
+            "source_like_share": self.skipped_source_share(),
+            "by_reason": dict(sorted(by_reason.items(), key=lambda kv: (-kv[1], kv[0]))),
+            "entries": [{"path": s["path"], "reason": s["reason"]}
+                        for s in named[:SKIPPED_ENTRIES_CAP]],
+            "entries_omitted": max(0, len(named) - SKIPPED_ENTRIES_CAP),
+            "dirs": [{"path": s["path"], "reason": s["reason"], "files": s.get("files", 0)}
+                     for s in dirs],
+        }
+
 
 # Byte-order marks that declare a text file, longest first so UTF-32-LE is not
 # read as UTF-16-LE (its mark starts with the same two bytes).
@@ -167,6 +244,43 @@ def _is_binary(sample: bytes) -> bool:
     if sample.startswith(_TEXT_BOMS):
         return False
     return b"\x00" in sample
+
+
+def _looks_utf16_without_bom(sample: bytes) -> bool:
+    """Whether a NUL-bearing sample has UTF-16's stride: a NUL at (nearly)
+    every odd offset and none at even offsets, or the mirror image.
+
+    Detection only. Every probe reads bytes or UTF-8 through its own path
+    (tree-sitter parses the raw bytes), so decoding here would make one
+    reader right and the rest wrong; the file is reported as not read, with
+    a reason that says how to fix it, instead of vanishing as binary.
+    """
+    n = len(sample) - (len(sample) % 2)
+    if n < 16:
+        return False
+    odd = sum(1 for i in range(1, n, 2) if sample[i] == 0)
+    even = sum(1 for i in range(0, n, 2) if sample[i] == 0)
+    half = n // 2
+    return (odd >= half * 0.5 and even == 0) or (even >= half * 0.5 and odd == 0)
+
+
+def _count_files_under(path: Path, cap: int = SKIPPED_DIR_COUNT_CAP) -> int:
+    """How many files sit under a directory the walk skipped, stopping at
+    `cap` so node_modules costs a few directory reads, not a full walk."""
+    n = 0
+    try:
+        for _, _, names in os.walk(path):
+            n += len(names)
+            if n >= cap:
+                return cap
+    except OSError:
+        pass
+    return n
+
+
+def _skip(skipped: list[dict] | None, **entry) -> None:
+    if skipped is not None:
+        skipped.append(entry)
 
 
 def classify(rel: str, language: str) -> str:
@@ -234,53 +348,103 @@ def _gitignored(root: Path) -> tuple[set[str], set[str]]:
     return dirs, files
 
 
-def walk_repo(root: Path, repo_id: str, exclude: set[str] | None = None) -> list[FileInfo]:
+def walk_repo(root: Path, repo_id: str, exclude: set[str] | None = None,
+              skipped: list[dict] | None = None) -> list[FileInfo]:
+    """Every file under `root`, classified. What the walk does not read --
+    a directory it never enters, a file it calls binary or too large, a
+    link it will not follow -- is appended to `skipped` with a reason
+    (ARB-150), except Arbiter's own output, which is excluded, not skipped.
+    """
     out: list[FileInfo] = []
     root = root.resolve()
     # Resolved, because the caller passes the output directory as it was typed
     # and `arbiter-out` is relative to the working directory, not to the root.
     excluded = {str(Path(p).resolve()) for p in (exclude or ())}
     ignored_dirs, ignored_files = _gitignored(root)
+
+    def relpath(p: Path) -> str:
+        return str(p.relative_to(root)).replace(os.sep, "/")
+
     for dirpath, dirnames, filenames in os.walk(root):
         # .git is skipped; .github is emphatically not — CI config is a target.
-        dirnames[:] = [
-            d for d in dirnames
-            if d not in SKIP_DIRS
-            and str((Path(dirpath) / d).resolve()) not in excluded
-            and str((Path(dirpath) / d).resolve()) not in ignored_dirs
-        ]
+        kept_dirs: list[str] = []
+        for d in dirnames:
+            dp = Path(dirpath) / d
+            resolved = str(dp.resolve())
+            if resolved in excluded:
+                continue
+            reason = ""
+            if d in SKIP_DIRS:
+                reason = SKIP_DIR_NAMED
+            elif dp.is_symlink():
+                # os.walk(followlinks=False) lists the link and never enters
+                # it. A monorepo's shared tree behind a link was therefore
+                # silently absent; now it is absent and said so.
+                reason = SKIP_DIR_LINK
+            elif resolved in ignored_dirs:
+                reason = SKIP_DIR_GITIGNORED
+            if reason:
+                if d != ".git":
+                    _skip(skipped, path=relpath(dp), repo_id=repo_id, kind="dir",
+                          reason=reason, files=_count_files_under(dp))
+                continue
+            kept_dirs.append(d)
+        dirnames[:] = kept_dirs
         for name in filenames:
             ap = Path(dirpath) / name
             if str(ap) in excluded:
                 # A file Arbiter writes (the result cache) rather than a
                 # directory; `root` is resolved, so `ap` already is.
                 continue
-            try:
-                st = ap.stat()
-            except OSError:
-                continue
-            rel = str(ap.relative_to(root)).replace(os.sep, "/")
-            if rel in ignored_files:
-                continue
+            rel = relpath(ap)
             ext = ap.suffix
             language = LANG_BY_EXT.get(ext, LANG_BY_EXT.get(ext.lower(), "unknown"))
             if name in ("Dockerfile", "Containerfile") or name.startswith("Dockerfile."):
                 language = "dockerfile"
             if name in ("Makefile", "Jenkinsfile"):
                 language = name.lower()
+            src_like = source_like(rel, language)
+
+            def skip_file(reason: str, rel: str = rel, src_like: bool = src_like) -> None:
+                _skip(skipped, path=rel, repo_id=repo_id, kind="file", reason=reason,
+                      source_like=src_like)
+
+            if ap.is_symlink():
+                # A link whose target is outside the tree would be read and
+                # its contents echoed into the evidence (a hostile pull
+                # request pointing at the runner's files). Inside the tree
+                # the target is walked under its own name.
+                try:
+                    ap.resolve(strict=True).relative_to(root)
+                except (OSError, ValueError):
+                    skip_file(SKIP_LINK_OUTSIDE)
+                    continue
+            try:
+                st = ap.stat()
+            except OSError as exc:
+                skip_file(f"{SKIP_UNREADABLE}: {exc.strerror or exc}")
+                continue
+            if rel in ignored_files:
+                skip_file(SKIP_GITIGNORED)
+                continue
             fi = FileInfo(path=rel, abspath=str(ap), repo_id=repo_id, language=language, size=st.st_size)
             if st.st_size > MAX_FILE_BYTES:
                 fi.binary = True
                 fi.role = "data"
                 out.append(fi)
+                skip_file(SKIP_OVERSIZE)
                 continue
             try:
                 raw = ap.read_bytes()
-            except OSError:
+            except OSError as exc:
+                skip_file(f"{SKIP_UNREADABLE}: {exc.strerror or exc}")
                 continue
-            if _is_binary(raw[:4096]):
+            sample = raw[:4096]
+            if _is_binary(sample):
                 fi.binary = True
                 fi.role = "data"
+                skip_file(SKIP_UTF16 if language != "unknown" and _looks_utf16_without_bom(sample)
+                          else SKIP_NUL)
             else:
                 fi.lines = raw.count(b"\n") + (0 if raw.endswith(b"\n") or not raw else 1)
                 fi.role = classify(rel, language)
@@ -386,7 +550,7 @@ def acquire_one(source: str, repo_id: str = "root", role: str = "", ref: str = "
 def build_inventory(repos: list[RepoInfo], exclude: set[str] | None = None) -> Inventory:
     inv = Inventory()
     for r in repos:
-        files = walk_repo(Path(r.path), r.id, exclude)
+        files = walk_repo(Path(r.path), r.id, exclude, inv.skipped)
         inv.by_repo[r.id] = files
         inv.files.extend(files)
         r.files = len(files)

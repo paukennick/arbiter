@@ -878,6 +878,8 @@ NON_PROGRAMMING_LANGUAGES = frozenset({
     "sql", "terraform", "hcl", "dockerfile", "unknown",
 })
 UNASSESSED_PROBE = "lang_unsupported"
+# The outcome that stands for files the walk saw and did not read (ARB-150).
+FILES_NOT_READ_PROBE = "files_not_read"
 _FALLBACK_PACK_LANGUAGES = frozenset({"python", "javascript", "typescript", "go", "java", "ruby"})
 _FALLBACK_CHECKS_PER_LANGUAGE = 30
 
@@ -940,6 +942,34 @@ def not_assessed_outcome(inv):
                 f"{lines:,} line(s), {share:.0%} of source lines not assessed"),
         dimensions=["security", "quality"],
         checks=_checks_per_language() * len(found),
+        applicable=True,
+    )
+
+
+def files_not_read_outcome(inv):
+    """A `skipped` outcome for the source-like files the walk did not read
+    (a NUL byte, over the size cap, UTF-16 without a mark, a link out of
+    the tree; inventory.walk_repo), sized as one rule pack so the gap
+    counts against coverage. None when every source-like file was read.
+    Directories the walk never enters are reported, not counted: what is
+    vendored stays vendored (ARB-150)."""
+    from .core import ProbeOutcome
+    from .inventory import Inventory
+    whole: Inventory = inv.whole or inv
+    named = whole.skipped_source_like()
+    if not named:
+        return None
+    by_reason: dict[str, int] = {}
+    for s in named:
+        by_reason[s["reason"]] = by_reason.get(s["reason"], 0) + 1
+    reasons = "; ".join(f"{n} {r}" for r, n in
+                        sorted(by_reason.items(), key=lambda kv: (-kv[1], kv[0])))
+    return ProbeOutcome(
+        name=FILES_NOT_READ_PROBE, status="skipped",
+        reason=(f"{len(named)} source-like file(s) were not read "
+                f"({whole.skipped_source_share():.0%} of source-like files): {reasons}"),
+        dimensions=["security", "quality"],
+        checks=_checks_per_language(),
         applicable=True,
     )
 

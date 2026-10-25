@@ -1868,6 +1868,129 @@
       "prevention_rules": [],
       "prevention_notes": "Path globs in house rules go through arbiter.globs.match; fnmatch stays only where its semantics are documented (gitignore reader, suppression path globs, pack files:).",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-125",
+      "date": "2026-10-24",
+      "title": "A target-root suppress entry or severity override hid findings so the repository passed its own gate",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "suppress: [{reason: temporary}] in the scanned repository's own arbiter.yaml set both findings aside: overall 100.0, gate PASS, no suppressed count in the scorecard. severity_overrides {'*': info} took every finding below every threshold.",
+      "how_detected": "core audit of main 8a12926 (CORE-022)",
+      "root_cause": "ARB-143 restricted precision, verify and the gate keys of a target-root config but left suppress, probes.severity_overrides and score alone as features the target is meant to use; each is a second way to pass one's own gate.",
+      "requirement": "ARB-148",
+      "affected": [
+        "src/arbiter/policy.py"
+      ],
+      "fix_summary": "restrict_target_config drops suppress and probes.severity_overrides and a score.coverage_threshold below the default from a target-root config, noting each in scan_scope.config.ignored; --config is trusted in full and the self-gate commands pass --config arbiter.yaml.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_target_config_hiding.py"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Any key of a target-root config that can remove, downgrade or re-weigh a finding goes through restrict_target_config; the trust rule is in docs/configuration.md.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-126",
+      "date": "2026-10-24",
+      "title": "An empty, docs-only or binary-only directory scored 100 with the gate passed",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "scan of an empty directory, a README-only directory and a directory holding one .bin: overall 100.0, coverage 0.945, withheld False, gate PASS.",
+      "how_detected": "core audit of main 8a12926 (CORE-017)",
+      "root_cause": "compute_scorecard measures probe-check coverage; every applicable probe ran over nothing and found nothing, and nothing asked whether any file a probe reads had been read.",
+      "requirement": "ARB-149",
+      "affected": [
+        "src/arbiter/engine.py",
+        "src/arbiter/inventory.py"
+      ],
+      "fix_summary": "Inventory.assessable_files names text files in roles source/test/config/iac/ci; when none was read the engine withholds the grade with withheld_by nothing_read and the gate fails on it.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_nothing_read.py"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "A grade requires at least one assessable file read; withheld_by carries the cause to the gate.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-127",
+      "date": "2026-10-24",
+      "title": "Files skipped for a NUL byte, size, BOM-less UTF-16, a symlinked directory or a vendored path vanished from the report",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "a.py with a NUL in a comment, a 2.4MB .py, a UTF-16 file without BOM, a symlinked src/ and app/vendor/h.py: 0 findings, 100/100, gate PASS; grep of report.json for their names found nothing. A file symlink to /outside was read and its content echoed into the evidence.",
+      "how_detected": "core audit of main 8a12926 (CORE-013/014/015/016/018/019)",
+      "root_cause": "walk_repo marked such files binary/data or pruned the directory and recorded nothing; coverage counted probe checks, not files, so a file nobody read cost nothing.",
+      "requirement": "ARB-150",
+      "affected": [
+        "src/arbiter/inventory.py",
+        "src/arbiter/lang_rules.py",
+        "src/arbiter/engine.py",
+        "src/arbiter/report.py"
+      ],
+      "fix_summary": "walk_repo appends every skipped file and directory with a reason to Inventory.skipped; scan_scope.skipped reports them; a files_not_read outcome sits in the coverage denominator; above 50% of source-like files skipped the grade is withheld; a file symlink leaving the tree is not read; BOM-less UTF-16 is detected by NUL stride and named.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_skipped_files.py"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Nothing leaves the walk silently: a skip is an entry with a reason, and source-like skips count against coverage.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-128",
+      "date": "2026-10-24",
+      "title": "--changed counted a changed file as read when no probe read it, and a delete-only change said nothing",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "a PR moving code into dist/: files_read 1, 0 findings, gate PASS; a changed file with a NUL byte: files_changed 1, lines_read 0, gate PASS; a PR that only deleted files: files_read 0, gate PASS with no note.",
+      "how_detected": "core audit of main 8a12926 (CORE-020)",
+      "root_cause": "narrow() counted a selected path as read if it was in the inventory, binary or generated included; git_changed filters deletions out, so a delete-only change looked like no change.",
+      "requirement": "ARB-151",
+      "affected": [
+        "src/arbiter/incremental.py",
+        "src/arbiter/engine.py",
+        "src/arbiter/policy.py"
+      ],
+      "fix_summary": "narrow() counts only text, non-generated files as read and lists changed_not_read with reasons; git_deleted names deletions; evaluate_gate fails when changed files exist and none was read; the renderings say what happened.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_changed_not_read.py"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "files_read means a probe read the file; a changed path that was not read is listed, never counted.",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-129",
+      "date": "2026-10-24",
+      "title": "Gate severity typos, selector-less permanent suppressions and withheld grades all passed the gate",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "gate.fail_on.severity: Critical or crtical (and new: hgih): gate PASS beside a critical, reasons empty. suppress entry with only a reason: both findings suppressed forever. probes disabled in the target config: coverage 3%, grade withheld, gate PASS.",
+      "how_detected": "core audit of main 8a12926 (CORE-022/023/025)",
+      "root_cause": "sev_at_least returned False for an unknown threshold and nothing validated the name; the apply_suppressions docstring said expiry was mandatory but nothing checked it or required a selector; coverage_below defaulted to None so a withheld grade had no bearing on the gate.",
+      "requirement": "ARB-152",
+      "affected": [
+        "src/arbiter/policy.py",
+        "src/arbiter/engine.py",
+        "src/arbiter/core.py"
+      ],
+      "fix_summary": "check_gate_config normalises severities and raises on unknown names; suppression_problems enforces reason, expires and a selector at load and in apply_suppressions; Scorecard.withheld_by names the cause and evaluate_gate fails on a withheld grade unless the operator narrowed the scan (partial, probes_selected).",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_config_fail_closed.py"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Every gate and suppression key is validated at load; a withheld grade fails the gate by default and only --config can switch that off.",
+      "recurrence_of": ""
     }
   ]
 }

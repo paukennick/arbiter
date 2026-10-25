@@ -40,8 +40,39 @@ from .scope_notes import apply_scope_notes
 ARBITER_VERSION = "0.1.0"
 
 # Above this share of source lines in languages without a rule pack, the grade
-# is withheld the way a partial scan's is (ARB-144).
+# is withheld the way a partial scan's is (ARB-144); the same limit applies to
+# the share of source-like files the walk did not read (ARB-150).
 UNASSESSED_SOURCE_LIMIT = 0.5
+# Withholding tokens a stronger cause may replace: not withheld, or withheld
+# for coverage (including coverage the operator's --only/--skip explains). A
+# partial scan's token stays: its gate is about the changed files (ARB-151).
+_OVERRIDABLE = ("", "coverage", "probes_selected")
+
+
+def _withhold(report: Report, by: str, reason: str) -> None:
+    """Withhold the grade, naming why in a token the gate reads (ARB-152)."""
+    report.scorecard.withheld = True
+    report.scorecard.overall = None
+    report.scorecard.withheld_reason = reason
+    report.scorecard.withheld_by = by
+
+
+def _reason_counts(skipped: dict) -> str:
+    return ", ".join(f"{n} {r}" for r, n in (skipped.get("by_reason") or {}).items())
+
+
+def _not_in_inventory_reason(inv, repo_id: str, path: str) -> str:
+    """Why a path that exists on disk is not in the inventory: under a
+    directory the walk skipped, a link it did not follow, or ignored by git."""
+    whole = inv.whole or inv
+    for s in whole.skipped:
+        if s["repo_id"] != repo_id:
+            continue
+        if s["kind"] == "file" and s["path"] == path:
+            return s["reason"]
+        if s["kind"] == "dir" and (path == s["path"] or path.startswith(s["path"] + "/")):
+            return f"under {s['path']}/: {s['reason']}"
+    return "not in the inventory"
 
 
 def _dedupe(findings: list[Finding]) -> list[Finding]:
@@ -441,7 +472,9 @@ def run_scan(
                     "ignored, generated or binary is not scanned either.")
             for r in repos:
                 selected[r.id] = set(want)
+        deleted: dict[str, set[str]] = {}
         if changed_since:
+            from .incremental import git_deleted
             for r in repos:
                 paths, note = git_changed(r.path, changed_since)
                 if note:
@@ -453,10 +486,32 @@ def run_scan(
                         "Run a full scan, or give a ref that exists."
                     )
                 selected.setdefault(r.id, set()).update(paths)
+                deleted[r.id] = git_deleted(r.path, changed_since)
         inv, stats = narrow(inv, selected)
-        if only_files and not stats["files_changed"]:
+        if only_files and not stats["files_changed_read"]:
             raise RuntimeError("--only-files: none of the requested files was read; "
                                "refusing to report a partial scan of nothing")
+        # Changed paths the inventory never held: deleted, or inside a
+        # directory the walk does not enter. Neither was read, and before
+        # ARB-151 a pull request that only deleted files, or moved its code
+        # under dist/, passed the gate with scan_scope saying it was read.
+        present = {(f.path, f.repo_id) for f in (inv.whole or inv).files}
+        for r in repos:
+            for path in sorted(selected.get(r.id, set())):
+                if (path, r.id) in present:
+                    continue
+                if os.path.lexists(os.path.join(r.path, path)):
+                    stats["files_changed_not_read"] += 1
+                    if len(stats["changed_not_read"]) < 50:
+                        stats["changed_not_read"].append({
+                            "path": path, "reason": _not_in_inventory_reason(inv, r.id, path)})
+                else:
+                    stats["files_changed_deleted"] = stats.get("files_changed_deleted", 0) + 1
+        stats.setdefault("files_changed_deleted", 0)
+        for r in repos:
+            gone = {p for p in deleted.get(r.id, set())
+                    if (p, r.id) not in present and p not in selected.get(r.id, set())}
+            stats["files_changed_deleted"] += len(gone)
         # Remembered so findings landing in a context file -- read so the
         # probes could reason, not because anybody asked about it -- can be
         # told apart from findings in the change itself. Blaming a pull
@@ -500,8 +555,13 @@ def run_scan(
     ctx = ProbeContext(repos=repos, inventory=inv, graph=graph, config=run_config, system=manifest,
                        changed=changed_set, changed_since=changed_since, out_dir=out_dir or "")
 
-    disabled = set((config.get("probes") or {}).get("disable") or []) | set(skip or [])
+    disabled = set((config.get("probes") or {}).get("disable") or [])
+    cli_skipped = set(skip or [])
     enabled_only = set(only or []) or None
+    # Probes the operator chose not to run: --only, --skip, --no-adapters.
+    # Their coverage gap is the operator's, and the gate may pass over it;
+    # a gap the target's config or the environment caused is not (ARB-152).
+    operator_skipped: set[str] = set()
 
     outcomes: list[ProbeOutcome] = []
     # Findings keyed by the probe's position in the registry, so that the
@@ -518,6 +578,11 @@ def run_scan(
         outcomes.append(oc)
         if enabled_only is not None and probe.name not in enabled_only:
             oc.status, oc.reason = "skipped", "not selected on the command line"
+            operator_skipped.add(probe.name)
+            continue
+        if probe.name in cli_skipped:
+            oc.status, oc.reason = "skipped", "skipped on the command line"
+            operator_skipped.add(probe.name)
             continue
         if probe.name in disabled:
             oc.status, oc.reason = "skipped", "disabled in configuration"
@@ -529,6 +594,18 @@ def run_scan(
             oc.status = "skipped"
             oc.reason = (f"partial scan ({scan_scope['basis']}): {probe.scope_reason}, "
                          "so it cannot answer from a subset")
+            continue
+        if probe.external and not use_adapters and enabled_only is None:
+            # `use_adapters=False` used to mean only "do not register": the
+            # registry is module-global, so once another scan in the same
+            # process had registered the analyzers, a scan that asked for none
+            # ran all five anyway (FAIL-044; the suite's "fast" tier spent
+            # minutes in semgrep). The flag now means what it says. An explicit
+            # `only=` that names an analyzer still wins: the caller asked for it.
+            # Before the prevented and binary checks: an analyzer the operator
+            # switched off is off whether or not it is installed (ARB-152).
+            oc.status, oc.reason = "skipped", "external analyzers disabled for this run"
+            operator_skipped.add(probe.name)
             continue
         blocked, why = probe.prevented(ctx)
         if blocked:
@@ -550,15 +627,6 @@ def run_scan(
             continue
         if probe.model and not caps["model"]:
             oc.status, oc.reason = "skipped", f"profile '{profile_name}' forbids model calls"
-            continue
-        if probe.external and not use_adapters and enabled_only is None:
-            # `use_adapters=False` used to mean only "do not register": the
-            # registry is module-global, so once another scan in the same
-            # process had registered the analyzers, a scan that asked for none
-            # ran all five anyway (FAIL-044; the suite's "fast" tier spent
-            # minutes in semgrep). The flag now means what it says. An explicit
-            # `only=` that names an analyzer still wins: the caller asked for it.
-            oc.status, oc.reason = "skipped", "external analyzers disabled for this run"
             continue
         if probe.external:
             # An analyzer in its own process: run after the native probes,
@@ -594,10 +662,16 @@ def run_scan(
     # the `lang_*` probes for the languages present were inapplicable, left
     # the denominator, and a Swift-only repository scored 99/100. One outcome
     # names those languages and sits in the denominator as not assessed.
-    from .lang_rules import not_assessed_outcome
+    from .lang_rules import files_not_read_outcome, not_assessed_outcome
     unassessed = not_assessed_outcome(inv)
     if unassessed is not None:
         outcomes.append(unassessed)
+    # Files the walk saw and did not read (a NUL byte, the size cap, UTF-16
+    # without a mark, a link out of the tree) sit in the denominator the same
+    # way; before ARB-150 a tree of such files scored 100 (FAIL-127).
+    not_read = files_not_read_outcome(inv)
+    if not_read is not None:
+        outcomes.append(not_read)
 
     if deferred:
         _run_external_probes(deferred, ctx, cache, run_config, verify_cache,
@@ -609,6 +683,8 @@ def run_scan(
     if cache is not None:
         scan_scope["cache"] = {**cache.stats(), "path": str(cache.path)}
         cache.save()
+    whole_inv = inv.whole or inv
+    scan_scope["skipped"] = whole_inv.skipped_summary()
 
     assign_occurrences(findings)
     findings = _dedupe(findings)
@@ -686,6 +762,26 @@ def run_scan(
          else sum(r.loc for r in repos)),
         config,
     )
+    if report.scorecard.withheld_by == "coverage" and operator_skipped:
+        # Probes chosen on the command line (--only, --skip, --no-adapters)
+        # are the operator's own narrowing, like --changed: the grade is
+        # withheld, and the gate -- a question about the findings in front
+        # of it -- may still pass (ARB-152). Only when the choice explains
+        # the gap, though: with the operator's probes out of the
+        # denominator, the rest must reach the bar. Coverage lost to the
+        # target's config, a missing analyzer or a language no pack reads
+        # is not a choice the operator made, and fails the gate.
+        rest = compute_scorecard(
+            report.findings, [o for o in outcomes if o.name not in operator_skipped],
+            (scan_scope.get("lines_read") if scan_scope["mode"] == "partial"
+             else sum(r.loc for r in repos)), config)
+        report.scan_scope["probes_selected"] = {"only": sorted(only or []), "skip": sorted(skip or []),
+                                                "adapters": bool(use_adapters),
+                                                "coverage_without": rest.coverage}
+        if not rest.withheld:
+            report.scorecard.withheld_by = "probes_selected"
+            report.scorecard.withheld_reason += (
+                f" (probes were chosen on the command line; coverage of the rest {rest.coverage:.0%})")
     if scan_scope["mode"] == "partial":
         # A partial scan may pass a gate and may not carry a grade. The gate is
         # a question about the findings in front of it ("did anything cross a
@@ -693,31 +789,50 @@ def run_scan(
         # repository, and a number that looks like one but describes a diff is
         # precisely the thing this tool exists not to produce. Coverage stays
         # reported, because coverage is what makes the withholding legible.
-        report.scorecard.withheld = True
-        report.scorecard.overall = None
-        report.scorecard.withheld_reason = (
-            f"partial scan ({scan_scope['basis']}): "
-            f"{scan_scope['files_read']} of {scan_scope['files_total']} file(s) read. "
-            "A grade would describe the changed files while reading as though "
-            "it described the repository."
-        )
+        _withhold(report, "partial",
+                  f"partial scan ({scan_scope['basis']}): "
+                  f"{scan_scope['files_read']} of {scan_scope['files_total']} file(s) read. "
+                  "A grade would describe the changed files while reading as though "
+                  "it described the repository.")
     from .lang_rules import unassessed_languages
     langs = unassessed_languages(inv)
     if langs:
         report.scan_scope["languages_not_assessed"] = langs
     share = sum(v["share"] for v in langs.values())
-    if share > UNASSESSED_SOURCE_LIMIT and not report.scorecard.withheld:
+    assessable = len(whole_inv.assessable_files())
+    skipped_share = whole_inv.skipped_source_share()
+    if scan_scope["mode"] != "partial" and assessable == 0:
+        # Nothing a probe reads was read: an empty directory, a mistyped
+        # path, a checkout without its submodules, a tree of docs or of
+        # binaries. Before ARB-149 this scored 100 with the gate passing
+        # (FAIL-126); a perfect grade for a scan of nothing.
+        found = len(whole_inv.files)
+        sk = scan_scope["skipped"]
+        detail = f"{found} file(s) found, none in a role a probe reads"
+        if sk["files"]:
+            detail += f" ({sk['files']} not read: {_reason_counts(sk)})"
+        _withhold(report, "nothing_read",
+                  f"no file this scan could assess was read: {detail}. "
+                  "A grade would describe nothing while reading as though it described "
+                  "the repository.")
+    elif skipped_share > UNASSESSED_SOURCE_LIMIT and report.scorecard.withheld_by in _OVERRIDABLE:
+        # Over a coverage withholding, operator-chosen or not: the gate reads
+        # the token, and unread source is a gap no --skip explains.
+        sk = scan_scope["skipped"]
+        _withhold(report, "files_not_read",
+                  f"{skipped_share:.0%} of source-like files were not read "
+                  f"({sk['source_like_files']} file(s): {_reason_counts(sk)}); a grade would "
+                  "describe the files that were read while reading as though it described "
+                  "the repository.")
+    if share > UNASSESSED_SOURCE_LIMIT and report.scorecard.withheld_by in _OVERRIDABLE:
         # The same withholding a partial scan gets, for the same reason: the
         # number would describe the minority of the source that a rule pack
         # read while reading as though it described the repository.
         names = ", ".join(langs)
-        report.scorecard.withheld = True
-        report.scorecard.overall = None
-        report.scorecard.withheld_reason = (
-            f"{share:.0%} of source lines are in languages no rule pack reads ({names}); "
-            "a grade would describe the assessed minority while reading as though "
-            "it described the repository."
-        )
+        _withhold(report, "unassessed_languages",
+                  f"{share:.0%} of source lines are in languages no rule pack reads ({names}); "
+                  "a grade would describe the assessed minority while reading as though "
+                  "it described the repository.")
     # Control coverage. Summary only; the per-control detail is one command
     # away. Failing to evaluate frameworks must never fail a scan.
     try:

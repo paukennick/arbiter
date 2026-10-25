@@ -54,7 +54,12 @@ DEFAULTS: dict[str, Any] = {
     "profile": "offline",
     "probes": {"enable": [], "disable": [], "severity_overrides": {}},
     "gate": {
-        "fail_on": {"severity": "critical", "new": None, "coverage_below": None},
+        # withheld_grade (ARB-152): a withheld grade fails the gate, except
+        # the operator's own narrowing (--changed, --only-files), which
+        # withholds the grade and may still pass. Only a --config file may
+        # set it false; a target's own config may not.
+        "fail_on": {"severity": "critical", "new": None, "coverage_below": None,
+                    "withheld_grade": True},
         "gate_on_inferred": False,
         # tiered (the default since ARB-100): fail_on reads only findings
         # whose precision tier is in `tiers` (precision.py), so a build fails
@@ -122,13 +127,14 @@ def load_config(path: str | None, repo_root: str | None = None) -> dict:
     """Load arbiter.yaml. An explicit path wins; otherwise look in the repo root.
 
     A file found in the target root is the target's own, and the target is
-    what the scan judges: it may make the gate stricter and may suppress,
-    but it may not decide which of its findings count as `verified` or let
-    more of them through the gate (`restrict_target_config`, ARB-143). Keys
-    it is not allowed to set are dropped and listed under
-    `config_source.ignored`, which the renderings print, so the drop is
-    never silent. A config the operator names with `--config` is trusted in
-    full.
+    what the scan judges: it may make the gate stricter, but it may not
+    decide which of its findings count as `verified`, let more of them
+    through the gate, hide or downgrade them (`suppress`,
+    `probes.severity_overrides`, ARB-148) or lower the coverage bar
+    (`restrict_target_config`, ARB-143). Keys it is not allowed to set are
+    dropped and listed under `config_source.ignored`, which the renderings
+    print, so the drop is never silent. A config the operator names with
+    `--config` is trusted in full.
     """
     candidate: Path | None = None
     explicit = bool(path)
@@ -155,19 +161,32 @@ def load_config(path: str | None, repo_root: str | None = None) -> dict:
     merged = _merge(DEFAULTS, data)
     check_gate_config(merged, str(candidate))
     check_report_config(merged, str(candidate))
+    check_suppress_config(merged, str(candidate))
     resolve_ledger_path(merged, candidate)
     merged["config_source"] = {"path": str(candidate), "explicit": explicit, "ignored": ignored}
     return merged
 
 
-# What a target's own arbiter.yaml may not set (ARB-143). `precision` decides
-# which findings are called verified and `verify` is the pass that confirms
-# them; a repository that could set either would be grading its own work.
-TARGET_FORBIDDEN_KEYS = ("precision", "verify")
+# What a target's own arbiter.yaml may not set (ARB-143, ARB-148). `precision`
+# decides which findings are called verified and `verify` is the pass that
+# confirms them; `suppress` hides findings. A repository that could set any
+# of them would be grading its own work. `probes.severity_overrides` (a
+# downgrade to `info` takes a finding out of every gate) and a lowered
+# `score.coverage_threshold` are dropped key by key below.
+TARGET_FORBIDDEN_KEYS = ("precision", "verify", "suppress")
 
 
 def _valid_severity(value: Any) -> bool:
     return isinstance(value, str) and value in SEV_RANK
+
+
+def normalise_severity(value: Any) -> str | None:
+    """The severity name `value` spells, case-insensitively and ignoring
+    surrounding space, or None for a name that is not one (ARB-152)."""
+    if not isinstance(value, str):
+        return None
+    name = value.strip().lower()
+    return name if name in SEV_RANK else None
 
 
 def restrict_target_config(data: dict) -> tuple[dict, list[str]]:
@@ -177,10 +196,14 @@ def restrict_target_config(data: dict) -> tuple[dict, list[str]]:
     Tighten versus loosen, key by key against `DEFAULTS["gate"]`:
 
     * `fail_on.severity` / `fail_on.new`: a known severity is allowed, since
-      none ranks above the default `critical` and `new` has no default; a
-      null (gate off) or a misspelt name (`sev_at_least` never matches an
-      unknown threshold, so the gate could never fail) is dropped.
+      none ranks above the default `critical` and `new` has no default; the
+      name is normalised (`Critical` is `critical`). A null (gate off) is
+      dropped. An unknown name is kept so that `check_gate_config` raises
+      on it (ARB-152): before that, `sev_at_least` never matched an unknown
+      threshold and the gate could never fail.
     * `fail_on.coverage_below`: a fraction adds a check; anything else drops.
+    * `fail_on.withheld_grade`: `false` would let a withheld grade pass;
+      dropped.
     * `gate_on_inferred`, `fail_on_probe_error`: `true` adds findings or
       probes to the gate; `false` is the default.
     * `tier_mode`: `legacy` gates on more tiers than `tiered`; both allowed.
@@ -189,10 +212,13 @@ def restrict_target_config(data: dict) -> tuple[dict, list[str]]:
       so that `check_gate_config` raises on it, as it always has: a typo is
       an error to fix, not a loosening to note.
 
-    `precision` and `verify` are dropped whole. Everything else in the file
-    (`suppress`, `probes`, `rules`, `score`, `quality`, ...) is left as it
-    was: those are features the target is meant to use, and each is already
-    visible in the report.
+    `precision`, `verify` and `suppress` are dropped whole (ARB-148: a
+    selector-less suppression silenced every finding and the target passed
+    its own gate). `probes.severity_overrides` is dropped; a
+    `score.coverage_threshold` below the default is dropped, a higher one
+    withholds more and is kept. Everything else (`probes.disable`, `rules`,
+    `quality`, ...) is left as it was: each is visible in the report, and a
+    disabled probe lowers coverage, which the gate now reads (ARB-152).
     """
     out = dict(data)
     notes: list[str] = []
@@ -200,6 +226,23 @@ def restrict_target_config(data: dict) -> tuple[dict, list[str]]:
         if key in out:
             out.pop(key)
             notes.append(f"{key}: a target's own config may not set it")
+    probes = out.get("probes")
+    if isinstance(probes, dict) and "severity_overrides" in probes:
+        probes = dict(probes)
+        probes.pop("severity_overrides")
+        out["probes"] = probes
+        notes.append("probes.severity_overrides: a target's own config may not set it")
+    score = out.get("score")
+    if isinstance(score, dict) and "coverage_threshold" in score:
+        floor = DEFAULTS["score"]["coverage_threshold"]
+        value = score["coverage_threshold"]
+        ok = isinstance(value, (int, float)) and not isinstance(value, bool) and value >= floor
+        if not ok:
+            score = dict(score)
+            score.pop("coverage_threshold")
+            out["score"] = score
+            notes.append(f"score.coverage_threshold: {value!r} would loosen the grade's "
+                         f"coverage bar below {floor}")
     gate = out.get("gate")
     if isinstance(gate, dict):
         kept: dict = {}
@@ -209,7 +252,15 @@ def restrict_target_config(data: dict) -> tuple[dict, list[str]]:
                 fo: dict = {}
                 for fk, fv in v.items():
                     if fk in ("severity", "new"):
-                        if _valid_severity(fv):
+                        name = normalise_severity(fv)
+                        if name:
+                            fo[fk] = name
+                        elif fv is None or not isinstance(fv, str):
+                            notes.append(f"gate.fail_on.{fk}: {fv!r} would loosen the gate")
+                        else:
+                            fo[fk] = fv  # unknown name: check_gate_config raises
+                    elif fk == "withheld_grade":
+                        if fv is True:
                             fo[fk] = fv
                         else:
                             notes.append(f"gate.fail_on.{fk}: {fv!r} would loosen the gate")
@@ -272,6 +323,9 @@ def config_notes(config: dict | None) -> list[str]:
     return list(((config or {}).get("config_source") or {}).get("ignored") or [])
 
 
+# Withholding the operator asked for (engine.py), which a gate may pass over.
+OPERATOR_WITHHOLDING = ("partial", "probes_selected")
+
 TIER_MODES = ("legacy", "tiered")
 GATE_TIERS = ("verified", "advisory", "inferred")
 SHOW_MODES = ("verified", "all")
@@ -279,7 +333,14 @@ DEFAULT_TIER_MODE = "tiered"
 
 
 def check_gate_config(config: dict, where: str = "config") -> None:
-    """A misspelt tier mode must not fall back to some other gate quietly."""
+    """A misspelt gate value must not fall back to some other gate quietly.
+
+    `fail_on.severity` and `fail_on.new` are normalised in place
+    (`Critical` becomes `critical`) and an unknown name is an error
+    (ARB-152, FAIL-129): `crtical` used to reach `sev_at_least`, which
+    matched nothing, so a repository with criticals passed a gate that had
+    been configured to fail on them.
+    """
     gate = config.get("gate") or {}
     mode = gate.get("tier_mode", DEFAULT_TIER_MODE)
     if mode not in TIER_MODES:
@@ -287,6 +348,29 @@ def check_gate_config(config: dict, where: str = "config") -> None:
     tiers = gate.get("tiers", ["verified"])
     if not isinstance(tiers, list) or any(t not in GATE_TIERS for t in tiers):
         raise RuntimeError(f"{where}: gate.tiers is a list drawn from {GATE_TIERS}, got {tiers!r}")
+    fail_on = gate.get("fail_on")
+    if fail_on is None:
+        return
+    if not isinstance(fail_on, dict):
+        raise RuntimeError(f"{where}: gate.fail_on must be a mapping, got {fail_on!r}")
+    from .core import SEVERITIES
+    for key in ("severity", "new"):
+        value = fail_on.get(key)
+        if value is None:
+            continue
+        name = normalise_severity(value)
+        if name is None:
+            raise RuntimeError(f"{where}: gate.fail_on.{key} is one of {tuple(SEVERITIES)} "
+                               f"or null, got {value!r}")
+        fail_on[key] = name
+    cov = fail_on.get("coverage_below")
+    if cov is not None and (isinstance(cov, bool) or not isinstance(cov, (int, float))
+                            or not 0 <= cov <= 1):
+        raise RuntimeError(f"{where}: gate.fail_on.coverage_below is a fraction between 0 and 1 "
+                           f"or null, got {cov!r}")
+    held = fail_on.get("withheld_grade", True)
+    if not isinstance(held, bool):
+        raise RuntimeError(f"{where}: gate.fail_on.withheld_grade is true or false, got {held!r}")
 
 
 def check_report_config(config: dict, where: str = "config") -> None:
@@ -315,9 +399,65 @@ def load_system(path: str) -> dict:
 # suppressions
 # ---------------------------------------------------------------------------
 
+SUPPRESS_SELECTORS = ("rule", "path", "id")
+
+
+def _parse_expiry(value: Any) -> _dt.date | None:
+    if isinstance(value, _dt.datetime):
+        return value.date()
+    if isinstance(value, _dt.date):
+        return value
+    if isinstance(value, str):
+        try:
+            return _dt.date.fromisoformat(value.strip())
+        except ValueError:
+            return None
+    return None
+
+
+def suppression_problems(rules: Any) -> list[str]:
+    """What is wrong with each `suppress` entry, one line per problem, or
+    [] (ARB-152). An entry needs a `reason`, an `expires` date and at least
+    one selector (`rule`, `path`, `id`): the docstring and docs/configuration.md
+    had always said `reason` and `expires` were mandatory, but nothing
+    checked, and an entry with only a reason matched every finding forever
+    (FAIL-129)."""
+    if rules is None:
+        return []
+    if not isinstance(rules, list):
+        return ["suppress must be a list of entries"]
+    out: list[str] = []
+    for i, rule in enumerate(rules):
+        where = f"suppress[{i}]"
+        if not isinstance(rule, dict):
+            out.append(f"{where}: must be a mapping")
+            continue
+        if not str(rule.get("reason") or "").strip():
+            out.append(f"{where}: `reason` is mandatory")
+        if "expires" not in rule or rule.get("expires") is None:
+            out.append(f"{where}: `expires` (YYYY-MM-DD) is mandatory; a suppression without "
+                       "an end is a deletion")
+        elif _parse_expiry(rule.get("expires")) is None:
+            out.append(f"{where}: `expires` is not a date: {rule.get('expires')!r}")
+        if not any(rule.get(k) for k in SUPPRESS_SELECTORS):
+            out.append(f"{where}: needs at least one of {SUPPRESS_SELECTORS}; with none it would "
+                       "match every finding")
+    return out
+
+
+def check_suppress_config(config: dict, where: str = "config") -> None:
+    problems = suppression_problems(config.get("suppress"))
+    if problems:
+        raise RuntimeError(f"{where}: " + "; ".join(problems))
+
+
 def apply_suppressions(findings: list[Finding], config: dict) -> int:
-    """Mark suppressed findings. Expiry is mandatory and enforced here."""
-    rules = config.get("suppress") or []
+    """Mark suppressed findings. Expiry is mandatory and enforced here: an
+    entry without a parseable `expires`, without a selector or without a
+    reason suppresses nothing (load_config refuses such a file outright;
+    this is the backstop for a config built in code)."""
+    rules = [r for r in (config.get("suppress") or [])
+             if isinstance(r, dict) and not suppression_problems([r])]
     today = _dt.date.today()
     count = 0
     for f in findings:
@@ -335,14 +475,9 @@ def apply_suppressions(findings: list[Finding], config: dict) -> int:
             # suppression written then must keep covering all of them.
             if fid and fid not in (f.id, f.fingerprint_base):
                 continue
-            expires = rule.get("expires")
-            if expires:
-                try:
-                    exp = expires if isinstance(expires, _dt.date) else _dt.date.fromisoformat(str(expires))
-                except ValueError:
-                    continue
-                if exp < today:
-                    continue  # expired suppressions stop suppressing, by design
+            exp = _parse_expiry(rule.get("expires"))
+            if exp is None or exp < today:
+                continue  # expired suppressions stop suppressing, by design
             f.suppressed = True
             f.suppression_reason = rule.get("reason", "")
             count += 1
@@ -423,6 +558,7 @@ def compute_scorecard(
     if card.coverage < threshold:
         card.withheld = True
         card.overall = None
+        card.withheld_by = "coverage"
         card.withheld_reason = (
             f"assessment coverage {card.coverage:.0%} is below the {threshold:.0%} threshold; "
             "an overall grade would overstate what was actually checked"
@@ -497,6 +633,25 @@ def evaluate_gate(report: Report, config: dict) -> dict:
     errored = [p for p in report.probes if p.status == "error"]
     if errored and gate_cfg.get("fail_on_probe_error", False):
         reasons.append(f"{len(errored)} probe(s) errored")
+
+    # A withheld grade is a scan that could not assess enough to say, and a
+    # gate that passed over it was a pass on nothing (ARB-152, FAIL-129:
+    # probes disabled in the target's config, coverage 3%, grade withheld,
+    # gate PASS). The operator's own narrowing is the exception: a partial
+    # scan, or probes chosen with --only/--skip, withholds the grade by
+    # design and may pass -- unless none of the changed files was read
+    # (ARB-151).
+    sc = report.scorecard
+    ss = report.scan_scope or {}
+    if fail_on.get("withheld_grade", True) and sc.withheld \
+            and sc.withheld_by not in OPERATOR_WITHHOLDING:
+        reasons.append(f"grade withheld ({sc.withheld_by or 'coverage'}): {sc.withheld_reason}")
+    if ss.get("mode") == "partial" and ss.get("files_changed_not_read") \
+            and not ss.get("files_changed_read"):
+        why = ss.get("changed_not_read") or []
+        reasons.append(
+            f"none of the {ss['files_changed_not_read']} changed file(s) was read"
+            + (f" ({'; '.join(sorted({w['reason'] for w in why}))})" if why else ""))
 
     return {
         "passed": not reasons,

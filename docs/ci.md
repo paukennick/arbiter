@@ -96,8 +96,13 @@ analysis is.
 So `--changed` reads less.
 
 ```bash
-arbiter gate . --changed origin/main --baseline .arbiter/baseline.json
+arbiter gate . --changed origin/main --baseline .arbiter/baseline.json --config arbiter.yaml
 ```
+
+`--config arbiter.yaml` names the repository's own file as the operator's:
+without it the file is the target's, and its `suppress` and
+`severity_overrides` blocks are ignored and reported as such
+([configuration.md](configuration.md#which-config-is-trusted)).
 
 Every probe declares a scope. **file** means every finding depends only on the
 file it is in — a hardcoded secret is a secret whether or not the rest of the

@@ -309,6 +309,13 @@ class Scorecard:
     coverage: float = 0.0
     withheld: bool = False
     withheld_reason: str = ""
+    # Why the grade is withheld, as a token the gate can read (ARB-152):
+    # `partial` (--changed, --only-files) and `probes_selected` (--only,
+    # --skip) are the operator's own narrowing and may pass a gate;
+    # `coverage`, `unassessed_languages`, `files_not_read` and
+    # `nothing_read` are gaps in what the scan could assess, and a gate that
+    # passed over them would be a pass on nothing.
+    withheld_by: str = ""
 
     def to_dict(self) -> dict:
         return {
@@ -317,6 +324,7 @@ class Scorecard:
             "coverage": self.coverage,
             "withheld": self.withheld,
             "withheld_reason": self.withheld_reason,
+            "withheld_by": self.withheld_by,
         }
 
 
@@ -429,6 +437,7 @@ class Report:
             coverage=sc.get("coverage", 0.0),
             withheld=sc.get("withheld", False),
             withheld_reason=sc.get("withheld_reason", ""),
+            withheld_by=sc.get("withheld_by", ""),
         )
         for k, v in (sc.get("dimensions") or {}).items():
             card.dimensions[k] = DimensionScore(**v)

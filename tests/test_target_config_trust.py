@@ -136,8 +136,7 @@ def test_a_target_may_tighten_its_gate(gate, kept):
 
 @pytest.mark.parametrize("gate, note", [
     ({"fail_on": {"severity": None}}, "gate.fail_on.severity"),
-    ({"fail_on": {"severity": "Critical"}}, "gate.fail_on.severity"),
-    ({"fail_on": {"severity": "nothing"}}, "gate.fail_on.severity"),
+    ({"fail_on": {"severity": 2}}, "gate.fail_on.severity"),
     ({"fail_on": {"coverage_below": None}}, "gate.fail_on.coverage_below"),
     ({"gate_on_inferred": False, "fail_on_probe_error": None}, "gate.fail_on_probe_error"),
     ({"tiers": ["advisory"]}, "gate.tiers"),

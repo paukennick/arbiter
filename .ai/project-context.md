@@ -1537,3 +1537,102 @@ rules use it; the gitignore reader, suppression `path:` globs and language
 pack `files:` keep `fnmatch`, since their documented semantics are
 fnmatch's and changing them was out of scope.
 
+
+## 2026-10-24 — Nothing leaves the scan silently (ARB-148..152)
+
+The second batch from the core audit of main 8a12926 (CORE-013..025). The
+shape is the same as ARB-143..147: an input the scan did not control -- a
+file it would not read, a directory it would not enter, a config key with a
+typo, a change with nothing readable in it -- was read as "nothing to
+report". Each fix extends the mechanism ARB-143/144 built rather than adding
+one: dropped config keys go through `restrict_target_config` and
+`scan_scope.config.ignored`; unread files become one more `skipped` outcome
+in the coverage denominator; withholding goes through the one
+`_withhold()` helper with a token the gate reads.
+
+**Config trust, second pass (ARB-148).** The question ARB-143 left open --
+whether `suppress` should be restricted for a target-root config -- is
+answered yes: `suppress` and `probes.severity_overrides` are dropped, and a
+`score.coverage_threshold` below the default is dropped. The cost is real
+and deliberate: a repository that keeps its suppressions in its own
+`arbiter.yaml` must now pass `--config arbiter.yaml` to have them honoured.
+Arbiter's own pr-check, the `omni gate` rule in
+`.ai/rules/completion-workflow.json`, the shipped GitHub action (new
+`config` input defaulting to `arbiter.yaml`; a missing file means the
+defaults) and the GitLab template do so. `probes.disable`, `rules`,
+`quality` and `score.weights` are left to the target: a disabled probe
+lowers coverage, which the gate now reads (ARB-152); the others add findings
+or re-weigh a grade the gate does not read. *Open:* `quality` thresholds
+raised to absurd values hide quality findings; `score.weights` can zero a
+dimension in the grade.
+
+**Nothing read (ARB-149).** `Inventory.assessable_files` -- text files in
+roles source/test/config/iac/ci -- is the definition of "something a probe
+reads". Docs, data and generated files are opened by a probe or two but no
+rule pack or quality check assesses them, so a tree of only those has had
+nothing assessed. Zero assessable files withholds the grade with
+`withheld_by: nothing_read`. In a partial scan the equivalent question is
+asked of the changed files (ARB-151) and the whole-tree check is skipped.
+
+**Skipped files (ARB-150).** `walk_repo` takes a `skipped` list and
+appends an entry with a fixed reason string for every file it will not read
+and every directory it will not enter. Decisions: (1) `vendor/`,
+`node_modules/`, `target/`, `site-packages/` and the rest of `SKIP_DIRS`
+are reported with a bounded file count (500+), never counted against
+coverage -- what is vendored did not change, and counting node_modules
+would wreck every Node repository's coverage; the gap is visible and that is
+the brief. (2) Source-like means a known text extension in an assessable
+role, so a skipped `.png` or `package-lock.json` is counted by reason but
+does not lower coverage; a skipped `.py` does. (3) BOM-less UTF-16 is
+detected by its NUL stride (half the odd offsets NUL and no even one, or
+the mirror) and reported with a fix-it reason, not decoded: `probes._read`
+could decode it, but `ast.py` hands tree-sitter the raw bytes and the pack
+reader uses `read_text(encoding="utf-8")`, so decoding in one place would
+make one reader right and the rest silently wrong. (4) A file symlink whose
+resolved target is outside the root is not read: before, a hostile pull
+request could point a `.py` at a runner file and have its content echoed
+into the evidence. Links inside the tree are read as before. (5) One
+`files_not_read` outcome sized as one rule pack joins the denominator;
+above 50% of source-like files skipped (`UNASSESSED_SOURCE_LIMIT`, shared
+with ARB-144) the grade is withheld.
+
+**--changed (ARB-151).** `narrow()` now counts a changed file as read only
+when it is text and not `generated`; `unread_reason()` says why otherwise.
+Deletions are named by a new `git_deleted` (the existing `git_changed`
+filters them with `--diff-filter=d`, correctly, since there is nothing to
+read). Decision: a change with changed files present and none read fails
+the gate ("none of the N changed file(s) was read (...)"); a delete-only
+change passes with a line saying so. A deletion cannot introduce a finding
+and repo-scoped probes do not run in a partial scan, so failing it would be
+a gate with no remedy.
+
+**Fail closed (ARB-152).** Three validations and one gate rule.
+`check_gate_config` normalises `fail_on.severity`/`new` case-insensitively
+and raises on an unknown name, from a target root as from `--config`
+(ARB-143 used to drop a misspelt name as "would loosen"; a typo is an error,
+not a loosening). `suppression_problems` enforces what the docstring and
+docs had always claimed -- `reason`, `expires`, a selector -- at load, and
+`apply_suppressions` ignores an invalid entry as a backstop for configs
+built in code. `Scorecard.withheld_by` names the cause of a withholding and
+`evaluate_gate` fails on any cause but the operator's own: `partial`
+(`--changed`, `--only-files`) and `probes_selected` (`--only`, `--skip`,
+`--no-adapters`). `probes_selected` is granted only when the operator's
+choice explains the gap: the engine recomputes coverage with the
+operator-skipped outcomes out of the denominator and the rest must reach
+the bar (`scan_scope.probes_selected.coverage_without`), so a target config
+that disables probes under an operator's `--no-adapters` still fails. An
+analyzer the operator switched off reads `external analyzers disabled for
+this run` whether or not it is installed (the check moved ahead of
+`prevented` and the binary check), and a `--skip` reads `skipped on the
+command line`, so claims.py's CI-12 list gained "on the command line".
+*Consequence to know:* a machine without the analyzers installed now fails
+`arbiter gate .` with `grade withheld (coverage): 24%` where it passed
+before; the remedies are `arbiter tools install`, `--no-adapters`, or
+`gate.fail_on.withheld_grade: false` in a `--config` file. A target root
+may not set it false.
+
+**Out of scope, listed as follow-ups:** CORE-024 (the sqrt(LOC) size
+factor lets five criticals grade 96/100 at 5M lines), CORE-027 (unsure
+labels leave the precision denominator), CORE-026 (`ignore:` is declared in
+DEFAULTS and read nowhere; unknown top-level keys are not validated),
+CORE-021 (CR-only line endings reach the regex rules as one line).
