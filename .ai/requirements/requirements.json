@@ -2768,6 +2768,48 @@
         "This first differential cohort is intentionally vulnerable benchmark code, not a representative real-repository population; the separate ordinary-repository precision study remains unmeasured.",
         "Completed the pinned 11-repository Python analyzer differential. Aggregate-only results and provenance are in docs/accuracy-benchmark-manifest.json. Schema validation, 10 focused conformance tests, Omni doctor, and the project-managed Omni gate passed. This is differential coverage only, not production accuracy."
       ]
+    },
+    {
+      "id": "ARB-108",
+      "category": "accuracy",
+      "title": "Freeze ordinary-repository precision pilot cohort",
+      "description": "Define and freeze a small exploratory sample of ordinary public Python repositories for the finding-precision study, separate from RealVuln and all existing sealed or tuned datasets. Pre-register the sampling frame and selection method before scans; pin each repository snapshot and verify its license at that snapshot. Record the limits honestly: this feasibility cohort is not representative population accuracy and cannot support a 99% claim. Keep a blinded adjudication as a separate follow-up requiring an independent coordinator/reviewer.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "pre-register the ordinary-repository population and reproducible cohort selection before scanning",
+        "select only repositories outside Arbiter development and sealed datasets",
+        "pin source commit and verify each license at that commit",
+        "retain aggregate-only source metadata and no case-level findings",
+        "do not call convenience-sample results production accuracy or a 99 percent claim",
+        "record independent blind-review prerequisites"
+      ],
+      "validation_required": [
+        "validate manifest against Draft 2020-12 schema",
+        "review pin and license provenance",
+        "python omni doctor",
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "A convenience sample cannot estimate representative production accuracy; no independent reviewers/coordinator are currently available; avoid all sealed or previously tuned repositories; license metadata must be verified at the exact frozen snapshot.",
+        "Frozen pre-scan metadata-only cohort with 11 verified MIT pins; scanning and independent blinded review remain separate follow-ups."
+      ]
     }
   ]
 }

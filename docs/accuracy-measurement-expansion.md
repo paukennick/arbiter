@@ -15,6 +15,10 @@ measurement beyond Python CWE-89.
 - ARB-107 completed a pinned Arbiter/Semgrep/CodeQL differential on those same
   11 snapshots. It reports analyzer coverage and location overlap only; it is
   not the ordinary-repository precision study.
+- ARB-108 froze an 11-repository ordinary Python feasibility cohort before
+  scanning. Exact pins and MIT license-file digests are recorded in the
+  benchmark manifest; no project source snapshots have been acquired and the
+  cohort has not been scanned.
 - No benchmark target code was executed. The committed output contains
   aggregate labels and differential counts only.
 - Semgrep 1.177.0 and its locked rules were used. CodeQL 2.27.3 and the pinned
@@ -185,3 +189,29 @@ The ordinary public-repository precision sample, blinded labels, independent
 human audit, other-language CodeQL extraction, and cleared external
 AI-authorship expansion remain future work. The RealVuln differential does not
 substitute for any of them.
+
+## ARB-108: frozen ordinary-repository precision cohort
+
+The pre-scan cohort is recorded in
+`docs/accuracy-benchmark-manifest.json` under
+`ordinary_repository_precision_pilot`. It was drawn from 100 GitHub search
+results filtered to Python, MIT metadata, 100–10,000 stars, pushed after
+2025-01-01, non-forks, and non-archived repositories, sorted by descending
+stars. Repository names and public descriptions were screened for ordinary
+Python libraries, frameworks, packages, clients, servers, applications, and
+developer tools; benchmark/dataset, tutorial/course, security-focused,
+AI/LLM, research, bot, and social/consumer automation projects were excluded.
+
+The 17 eligible repository identifiers and their frozen popularity order,
+sample size (11), and `random.Random(108).sample` seed are in the manifest.
+All selected snapshots have full commit pins and MIT license evidence queried
+at each exact commit, including the license path, Git blob SHA, and SHA-256 of
+the license bytes. Identifier-only overlap checks found no selected repository
+in Arbiter's 24-repository gold set or the 11-repository RealVuln subset; no
+finding labels or target source were accessed during this screening.
+
+This is a popularity-biased feasibility sample, not a probability sample or
+representative production-repository population. It is not accuracy evidence.
+The cohort is frozen but unscanned; acquire and scan only these exact snapshots
+in the next measurement stage. A separate independent coordinator/reviewer is
+still required before blinded human labels or a human-grounded accuracy claim.

@@ -1485,3 +1485,12 @@ These are differential-coverage signals on intentionally vulnerable benchmark
 applications, not accuracy, precision, recall, or ground truth. The separate
 ordinary-repository precision study, blinded review, and human miss audit
 remain unmeasured. No detection rules were tuned.
+
+ARB-108 froze the ordinary Python precision feasibility cohort before any
+source acquisition or scan. The manifest records the 100-result
+popularity-sorted metadata frame, the ordered 17-repository eligible pool,
+seeded 11-repository draw, exact commit pins, MIT license-file digests, and
+identifier-only overlap checks against Arbiter gold and RealVuln. The cohort
+is convenience-sampled and unscanned; it provides no accuracy evidence. The
+next stage must scan only the frozen pins, with blinded review coordinated
+independently and model labels described only as model-labelled conformance.

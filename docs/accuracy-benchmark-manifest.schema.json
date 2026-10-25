@@ -9,6 +9,7 @@
     "status",
     "claim_policy",
     "metric_contract",
+    "ordinary_repository_precision_pilot",
     "benchmark_inventory",
     "candidate_sources",
     "human_review_status",
@@ -101,6 +102,243 @@
         "type": "string",
         "minLength": 1
       }
+    },
+    "ordinary_repository_precision_pilot": {
+      "type": "object",
+      "required": [
+        "cohort_id",
+        "status",
+        "accuracy_claim_eligible",
+        "sampling_frame",
+        "eligibility_rules",
+        "eligible_frame",
+        "selection",
+        "overlap_screen",
+        "repositories",
+        "scan_status",
+        "review_prerequisites",
+        "limits"
+      ],
+      "properties": {
+        "cohort_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "cohort_frozen_pre_scan"
+        },
+        "accuracy_claim_eligible": {
+          "const": false
+        },
+        "sampling_frame": {
+          "type": "object",
+          "required": [
+            "source",
+            "retrieved_on",
+            "query_filters",
+            "sort_order",
+            "result_limit",
+            "result_count",
+            "metadata_frame_sha256",
+            "metadata_only"
+          ],
+          "properties": {
+            "source": {
+              "type": "string",
+              "minLength": 1
+            },
+            "retrieved_on": {
+              "type": "string",
+              "format": "date"
+            },
+            "query_filters": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "sort_order": {
+              "type": "string",
+              "minLength": 1
+            },
+            "result_limit": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "result_count": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "metadata_frame_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "metadata_only": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "eligibility_rules": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "eligible_frame": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "repository",
+              "stars"
+            ],
+            "properties": {
+              "repository": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+              },
+              "stars": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "selection": {
+          "type": "object",
+          "required": [
+            "method",
+            "seed",
+            "sample_size",
+            "ordering"
+          ],
+          "properties": {
+            "method": {
+              "type": "string",
+              "minLength": 1
+            },
+            "seed": {
+              "type": "integer"
+            },
+            "sample_size": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "ordering": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "overlap_screen": {
+          "type": "object",
+          "required": [
+            "metadata_sources",
+            "gold_repository_overlap",
+            "realvuln_repository_overlap",
+            "finding_labels_or_source_code_accessed"
+          ],
+          "properties": {
+            "metadata_sources": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "gold_repository_overlap": {
+              "const": 0
+            },
+            "realvuln_repository_overlap": {
+              "const": 0
+            },
+            "finding_labels_or_source_code_accessed": {
+              "const": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "repositories": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "repository",
+              "source_url",
+              "source_commit",
+              "commit_date",
+              "source_license",
+              "license_file_path",
+              "license_blob_sha",
+              "license_sha256"
+            ],
+            "properties": {
+              "repository": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+              },
+              "source_url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "source_commit": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{40}$"
+              },
+              "commit_date": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "source_license": {
+                "const": "MIT"
+              },
+              "license_file_path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "license_blob_sha": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{40}$"
+              },
+              "license_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "scan_status": {
+          "const": "not_scanned"
+        },
+        "review_prerequisites": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "limits": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "benchmark_inventory": {
       "type": "array",

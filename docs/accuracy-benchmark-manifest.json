@@ -1,6 +1,6 @@
 {
   "manifest_version": 1,
-  "inventory_date": "2026-10-24",
+  "inventory_date": "2026-10-25",
   "status": "inventory_baseline_not_certification",
   "purpose": "Versioned inventory of accuracy benchmark sources, evidence roles, known baselines, and mandatory per-run metadata.",
   "claim_policy": {
@@ -28,6 +28,241 @@
     "matching": "Use the evaluator's versioned file, location-tolerance, weakness/category, and duplicate rules; record the evaluator revision with every run.",
     "uncertainty": "Report a 95% lower confidence bound with a repository-cluster-aware method validated for the sampling design; do not treat findings from one repository as independent observations.",
     "incomplete_label_or_applicability_coverage": "Report separately and never assume an unlabelled, unrun, or unsupported stratum passed."
+  },
+  "ordinary_repository_precision_pilot": {
+    "cohort_id": "ordinary-python-precision-feasibility-2026-10",
+    "status": "cohort_frozen_pre_scan",
+    "accuracy_claim_eligible": false,
+    "sampling_frame": {
+      "source": "GitHub repository search metadata via gh search repos",
+      "retrieved_on": "2026-10-25",
+      "query_filters": [
+        "Python language",
+        "GitHub search license filter MIT",
+        "100 to 10000 stars",
+        "pushed after 2025-01-01",
+        "exclude forks",
+        "exclude archived repositories"
+      ],
+      "sort_order": "stargazers descending",
+      "result_limit": 100,
+      "result_count": 100,
+      "metadata_frame_sha256": "165e56a2e92b1f7f53226ccc56e3711d7dc82e547a7fb9e541d74fd4d6d14523",
+      "metadata_only": true
+    },
+    "eligibility_rules": [
+      "Require a non-empty repository description and a description or repository name indicating a Python library, framework, package, client, server, application, developer tool, parser, database, CLI, API, scheduler, inventory system, monitoring tool, or plotting library.",
+      "Exclude benchmark and dataset projects, tutorials and courseware, security-focused tools, AI/LLM and model projects, research projects, bots and consumer/social automation, and other non-ordinary software categories.",
+      "Apply these rules to repository names and public descriptions before drawing; retain the resulting eligible frame and its original popularity order."
+    ],
+    "eligible_frame": [
+      {
+        "repository": "sqlfluff/sqlfluff",
+        "stars": 9989
+      },
+      {
+        "repository": "tobymao/sqlglot",
+        "stars": 9717
+      },
+      {
+        "repository": "conan-io/conan",
+        "stars": 9545
+      },
+      {
+        "repository": "garrettj403/SciencePlots",
+        "stars": 9315
+      },
+      {
+        "repository": "vitalik/django-ninja",
+        "stars": 9217
+      },
+      {
+        "repository": "kivy/python-for-android",
+        "stars": 8940
+      },
+      {
+        "repository": "bottlepy/bottle",
+        "stars": 8797
+      },
+      {
+        "repository": "kellyjonbrazil/jc",
+        "stars": 8695
+      },
+      {
+        "repository": "pdm-project/pdm",
+        "stars": 8661
+      },
+      {
+        "repository": "houtianze/bypy",
+        "stars": 8582
+      },
+      {
+        "repository": "litestar-org/litestar",
+        "stars": 8529
+      },
+      {
+        "repository": "mherrmann/helium",
+        "stars": 8322
+      },
+      {
+        "repository": "graphql-python/graphene",
+        "stars": 8237
+      },
+      {
+        "repository": "PyMySQL/PyMySQL",
+        "stars": 7855
+      },
+      {
+        "repository": "inventree/InvenTree",
+        "stars": 7755
+      },
+      {
+        "repository": "agronholm/apscheduler",
+        "stars": 7670
+      },
+      {
+        "repository": "msiemens/tinydb",
+        "stars": 7574
+      }
+    ],
+    "selection": {
+      "method": "Python random.Random(seed).sample over the ordered eligible repository list",
+      "seed": 108,
+      "sample_size": 11,
+      "ordering": "Eligible repositories retain their order in the popularity-sorted GitHub metadata frame."
+    },
+    "overlap_screen": {
+      "metadata_sources": [
+        "tools/gold/repos.json public GitHub repository identifiers",
+        "selected repository identifiers in the RealVuln source entry of this manifest"
+      ],
+      "gold_repository_overlap": 0,
+      "realvuln_repository_overlap": 0,
+      "finding_labels_or_source_code_accessed": false
+    },
+    "repositories": [
+      {
+        "repository": "vitalik/django-ninja",
+        "source_url": "https://github.com/vitalik/django-ninja",
+        "source_commit": "3506fd47cca7f30e2a65b49833798ba18c8d7b9d",
+        "commit_date": "2026-10-20T09:48:26Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "2f962f52668db47cf082553f1aae197c73ff3e13",
+        "license_sha256": "9954b5d977b5b91eac7581ec1ab7c1a708d035e866da584f72fd37734135dbe9"
+      },
+      {
+        "repository": "conan-io/conan",
+        "source_url": "https://github.com/conan-io/conan",
+        "source_commit": "702f3b705a127096e23d0a522999521f714ac29d",
+        "commit_date": "2026-10-23T15:10:03Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE.md",
+        "license_blob_sha": "1ff9c588450dd066faa1e4f134587eb6c3f5439f",
+        "license_sha256": "cb0cfe10fad4eeb3ec0c1482474ddae67dcf2b2715cfd58655f6d18e5ce92aac"
+      },
+      {
+        "repository": "inventree/InvenTree",
+        "source_url": "https://github.com/inventree/InvenTree",
+        "source_commit": "c475e9bfcfa8e0f7e8ac1022477968cacfd84fce",
+        "commit_date": "2026-10-25T01:36:13Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "3a4626c1c4cd5afcd036830160c224a4027b6f0b",
+        "license_sha256": "70f21a7a9bb007581b06860ad76d623c95d5c92663a2326b5fa79a198aed55e0"
+      },
+      {
+        "repository": "litestar-org/litestar",
+        "source_url": "https://github.com/litestar-org/litestar",
+        "source_commit": "574e436d2a629a1a8775ea0bed11091a80f50703",
+        "commit_date": "2026-10-20T12:18:13Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "9d2bb0e452c6b99e5339a00794633349f3f8fd12",
+        "license_sha256": "04d3326998a4a1b52fee53c9d56d2ecca08b2c105e1fa032b0d87d5f1881de78"
+      },
+      {
+        "repository": "bottlepy/bottle",
+        "source_url": "https://github.com/bottlepy/bottle",
+        "source_commit": "aba0c1a7ee59ed851db001d100b6a792b54a94a3",
+        "commit_date": "2026-10-23T15:11:43Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "ca039803a39be9259c782cbe7d1c22ad967985bc",
+        "license_sha256": "43afd5c761e9359d3111aaecf4b85a72558d5c9be035c097f8f243f4ee725c2f"
+      },
+      {
+        "repository": "mherrmann/helium",
+        "source_url": "https://github.com/mherrmann/helium",
+        "source_commit": "571c272a01eb2606d436cda64f51fd4cc77aab94",
+        "commit_date": "2026-10-22T13:28:49Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE.txt",
+        "license_blob_sha": "4a74d050d895910dfd59e435ab0bdb0a93863e22",
+        "license_sha256": "45f76e9497de8370249292e4b2a21cff0b64f9f49643136143afcec8869b8722"
+      },
+      {
+        "repository": "msiemens/tinydb",
+        "source_url": "https://github.com/msiemens/tinydb",
+        "source_commit": "edff96aeb2616402e9489d46e90a592c05565621",
+        "commit_date": "2026-10-15T20:35:00Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "611d35661f933a4469c941e6c97578c22673b4ab",
+        "license_sha256": "b0e2a2d39271e3d96b717d7be8235ac413d74797bf7f742f0801cfaad6c8c912"
+      },
+      {
+        "repository": "graphql-python/graphene",
+        "source_url": "https://github.com/graphql-python/graphene",
+        "source_commit": "82903263080b3b7f22c2ad84319584d7a3b1a1f6",
+        "commit_date": "2024-11-09T20:43:17Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "ecf46fbaef4ff467eaa00f9304a6f00a1c9559a3",
+        "license_sha256": "db86a40528cfa3b991c41fd7ab7f1ce33dad25e328329cf93d375b6ad187d14d"
+      },
+      {
+        "repository": "garrettj403/SciencePlots",
+        "source_url": "https://github.com/garrettj403/SciencePlots",
+        "source_commit": "b9b16959570bd2fbc9ff5118bacc423c3bddd592",
+        "commit_date": "2026-06-23T07:44:37Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "2836bf3caa6bbe90069af47ae3a3d7f5e78e948d",
+        "license_sha256": "9e5d935909270a14c3e9dc5ede0bcfc73a69fc3411f70ddd9e05065602a46cdb"
+      },
+      {
+        "repository": "tobymao/sqlglot",
+        "source_url": "https://github.com/tobymao/sqlglot",
+        "source_commit": "78b24a744adb8d5dc0eb285f067087338b60f266",
+        "commit_date": "2026-10-23T18:37:38Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "aa0703d7fc80b4b0a7a9a115de50467013c7c219",
+        "license_sha256": "b0bf909b472ddf9bd4eab30f6e6fd8b33bf3997ce038b882fe0663f291958d2d"
+      },
+      {
+        "repository": "agronholm/apscheduler",
+        "source_url": "https://github.com/agronholm/apscheduler",
+        "source_commit": "bdaceb12792f104f25798dee2850d45f9e7d83f8",
+        "commit_date": "2026-10-12T22:23:08Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE.txt",
+        "license_blob_sha": "238c0d34b273c9d5c32971dc5131fa0b329ead1c",
+        "license_sha256": "35ed0eb40a2f7c262156ccab94b731a697808fcdc1c69f9491c991af204c2eb6"
+      }
+    ],
+    "scan_status": "not_scanned",
+    "review_prerequisites": [
+      "A coordinator independent of Arbiter rule authors must blind packets and select the review sample before labels are produced.",
+      "Independent human adjudication remains unavailable; model labels, if later used under the approved interim design, must be reported only as model-labelled conformance.",
+      "Finding precision sampling and the separate blind repository miss audit are distinct follow-up studies."
+    ],
+    "limits": [
+      "This is a seeded convenience sample drawn from a popularity-sorted, MIT-filtered top-100 GitHub search frame, not a probability sample of production repositories.",
+      "The cohort contains 11 repository clusters, all Python, and cannot support population-wide accuracy, recall, or 99 percent certification.",
+      "Only public repository metadata and license files at exact pinned commits were retrieved; project source snapshots were not acquired and no scans were run."
+    ]
   },
   "benchmark_inventory": [
     {

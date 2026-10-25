@@ -179,6 +179,12 @@ under Linux/WSL2 with `tree-sitter-language-pack` 1.22.1. This is regression
 evidence only; it does not contradict or replace the RealVuln conformance
 result and is not independent accuracy evidence.
 
+The separate ordinary-Python feasibility cohort is now frozen pre-scan in
+`docs/accuracy-benchmark-manifest.json`. It contains 11 MIT-licensed pinned
+repositories selected from a popularity-sorted GitHub metadata frame. The
+cohort is not probability-sampled or representative, no source snapshots have
+been acquired, and it contributes no precision or accuracy evidence yet.
+
 CVEfixes remains an unapproved candidate: its large archive was not
 downloaded or ingested, and neither source-code licensing nor label quality
 has been resolved. Do not silently substitute synthetic fixtures or another
