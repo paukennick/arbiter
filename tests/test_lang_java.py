@@ -18,7 +18,7 @@ PACK = "java"
 RULES = {
     "check-then-act-unsynchronized", "unsynchronized-counter", "http-client-no-timeout",
     "http-request-no-timeout", "url-connection-no-timeout", "rest-template-no-timeout",
-    "retry-without-backoff", "worker-loop-no-stop", "path-confinement-optional", "ssrf-check-then-connect", "swallowed-exception", "swallowed-stack-trace-only", "swallowed-error-to-500", "sql-string-built",
+    "retry-without-backoff", "worker-loop-no-stop", "path-confinement-optional", "ssrf-check-then-connect", "unbounded-work-queue", "body-as-class-unguarded", "swallowed-exception", "swallowed-stack-trace-only", "swallowed-error-to-500", "sql-string-built",
     "command-injection", "object-input-stream", "xml-decoder", "jackson-default-typing",
     "stub-method", "test-without-assertion", "trust-all-certificates",
     "hostname-verifier-disabled", "weak-random-for-secret",
@@ -785,3 +785,24 @@ class F {
 def test_optional_base_confinement_and_resolve_then_connect_are_reported(tmp_path):
     assert lines_of(tmp_path, _ROOT_JAVA, "path-confinement-optional") == [8]
     assert lines_of(tmp_path, _SSRF_JAVA, "ssrf-check-then-connect") == [9]
+
+
+def test_unbounded_work_queue_and_unguarded_body_parse_are_reported(tmp_path):
+    q = """package app;
+import java.util.concurrent.*;
+class Q {
+    private final BlockingQueue<String> a = new LinkedBlockingQueue<>();
+    private final BlockingQueue<String> b = new LinkedBlockingQueue<>(100);
+    private final ExecutorService c = Executors.newFixedThreadPool(4);
+}
+"""
+    assert lines_of(tmp_path, q, "unbounded-work-queue") == [4, 6]
+    bounded = q.replace("class Q {", "class Q { ArrayBlockingQueue<String> z;")
+    assert lines_of(tmp_path, bounded, "unbounded-work-queue") == []
+    body = """package app;
+class H {
+    Object a(io.javalin.http.Context ctx) { return ctx.bodyAsClass(Object.class); }
+    Object b(io.javalin.http.Context ctx) { try { return ctx.bodyAsClass(Object.class); } catch (RuntimeException e) { return null; } }
+}
+"""
+    assert lines_of(tmp_path, body, "body-as-class-unguarded") == [3]

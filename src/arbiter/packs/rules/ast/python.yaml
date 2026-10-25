@@ -1130,3 +1130,53 @@ rules:
       the check and a private one for the connection (DNS rebinding) reaches
       internal services through the guard.
     remediation: "Resolve once and connect to that address (pass the validated IP to the connection and send the original name as the `Host` header and TLS server name), or route fetches through an egress proxy that blocks internal ranges."
+
+  - id: unbounded-queue
+    requirements: [ARB-110]
+    title: "Work queue has no `maxsize`, so a burst grows memory without limit: `{text}`"
+    severity: medium
+    confidence: low
+    dimension: reliability
+    cwe: [CWE-770, CWE-400]
+    controls: [NIST-800-218:PW.5]
+    tags: [unbounded-memory]
+    query: |
+      ((assignment right: (call function: [(identifier) (attribute attribute: (identifier))] @f arguments: (argument_list) @a) @hit)
+        (#match? @f "(^|\\.)(Queue|LifoQueue|PriorityQueue|SimpleQueue)$")
+        (#match? @a "^\\(\\s*\\)$"))
+    requires_file: |
+      ((identifier) @i (#match? @i "^(Thread|ThreadPoolExecutor)$"))
+      ((attribute attribute: (identifier) @i) (#match? @i "^(Thread|ThreadPoolExecutor)$"))
+    unless_in_file: |
+      ((identifier) @i (#match? @i "^(Full|full|put_nowait|qsize|maxsize)$"))
+      ((attribute attribute: (identifier) @i) (#match? @i "^(Full|full|put_nowait|qsize|maxsize)$"))
+    description: >
+      A `queue.Queue()` built without `maxsize` feeds worker threads. A burst
+      of submissions grows the backlog in memory, each entry holding its
+      payload, and nothing tells the caller to back off.
+    remediation: "Give the queue a `maxsize`, use `put_nowait` and catch `queue.Full`, and answer 429/503 when it is full."
+
+  - id: compare-digest-unnormalised
+    requirements: [ARB-110]
+    title: "`compare_digest` on a request-supplied `str` raises on non-ASCII input: `{text}`"
+    severity: low
+    confidence: low
+    dimension: reliability
+    cwe: [CWE-20, CWE-755]
+    controls: [NIST-800-218:PW.5]
+    tags: [input-validation]
+    query: |
+      ((call function: (attribute object: (identifier) @o attribute: (identifier) @m) arguments: (argument_list . (identifier) @a)) @hit
+        (#eq? @o "hmac")
+        (#eq? @m "compare_digest"))
+    requires_in_scope: |
+      ((function_definition) @f (#match? @f "\\bHeader\\(|request\\.headers|\\.headers\\.get\\(|request\\.(args|form|json)"))
+    unless_in_scope: |
+      ((attribute attribute: (identifier) @a) (#match? @a "^(encode|isascii)$"))
+      ((identifier) @i (#match? @i "^(bytes|bytearray|isascii)$"))
+    description: >
+      `hmac.compare_digest` accepts two `str` values only when both are
+      ASCII; a header with any other character raises `TypeError`. The
+      request is unauthenticated at this point, so anyone can send one and
+      get a 500 rather than a 401.
+    remediation: "Encode both sides first (`provided.encode()`), or catch `TypeError`, so a bad header is a 401."

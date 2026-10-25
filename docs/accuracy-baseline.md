@@ -285,6 +285,14 @@ Java precision on real code is unmeasured. The rules are shape- and
 name-based, so they will miss renamed variables, and only the "optional root"
 and "resolve, then connect" shapes are covered. Not a 99% claim.
 
+Fourth batch, unbounded-memory and unhandled-input-error (four rules): code
+recall 48/117 to 55/117 (47.0%), no new false alarms, two more unreviewed
+findings. The real-repository guard did not move. The sealed held-out
+aggregate did (151 to 154 findings, in scope 137 to 140); that tree was not
+opened and the rules were not tuned to it, so this is a precision caution, not
+a result. Java precision on real code is unmeasured. The rest of the
+unhandled-input-error family is semantic and is not addressed. Not a 99% claim.
+
 ## Baseline decision
 
 The evidence is not sufficient for a 99% precision-and-recall claim. The
