@@ -68,7 +68,7 @@ def findings_from_report(report: dict) -> list[dict]:
 
 def _language(path: str) -> str:
     """JavaScript and TypeScript by extension (precision.label_language,
-    ARB-159): the TypeScript pack scans both, and precision is reported per
+    ARB-176): the TypeScript pack scans both, and precision is reported per
     language. Other files by the inventory's extension map."""
     try:
         from arbiter.inventory import LANG_BY_EXT

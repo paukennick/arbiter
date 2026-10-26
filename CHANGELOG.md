@@ -12,6 +12,17 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   traceability, test planning, modules, class diagrams, and change summaries.
   Existing generated docs now refresh automatically after requirement status
   changes.
+- ARB-169 | Accuracy plan gains Workstream D: twelve statistical methods (SPRT,
+  hierarchical Beta priors, importance-sampled active learning, Dawid–Skene,
+  Rogan–Gladen, capture–recapture, Good–Turing, conformal prediction,
+  Benjamini–Hochberg/Holm, repository clustering, Thompson sampling, value of
+  information), each reported beside the current method, with an order of work.
+- ARB-172 | Adds capture–recapture estimates of confirmed-defect totals and
+  detector catch rates from the overlap of Arbiter, Semgrep and Bandit.
+  Estimates use Chapman-corrected Lincoln–Petersen for two detectors, Chao's
+  lower bound and AIC-selected log-linear models for three. The analysis is
+  validated on OWASP Benchmark and Juliet data; development results are not
+  treated as held-out measurements.
 - ARB-158 | CI scans now use the analyzers CI installs. Since the tooling
   lock (2026-10-23) scans read analyzers from the lock-keyed cache that only
   `arbiter tools install` fills, while CI ran `install_tools.sh` alone, so the
@@ -37,7 +48,7 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   (10 well-run with OpenSSF Scorecard >= 7.0, 10 applications), chosen from GitHub
   and Scorecard metadata only, each pinned to a commit. `tools/gold/heldout-r7-python-repos.json`,
   fetched by `tools/fetch_heldout_r7_python.sh`.
-- ARB-159 | Precision is reported per language, with JavaScript apart from
+- ARB-176 | Precision is reported per language, with JavaScript apart from
   TypeScript. A finding's language in the ledger comes from its file
   extension, not the TypeScript pack that flagged it; label populations
   were re-derived from the committed runs (no relabel), and

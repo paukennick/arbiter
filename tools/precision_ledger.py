@@ -512,7 +512,7 @@ def tier_claim(rules: dict[str, dict], bar: dict, verified: set[str]) -> dict:
 
 
 def language_claims(rules: dict[str, dict], bar: dict, verified: set[str]) -> dict[str, dict]:
-    """The tier claim per language (ARB-159): for each language any rule has
+    """The tier claim per language (ARB-176): for each language any rule has
     a stratum in, the held-out, population-weighted precision over the
     verified rules (declared and admitted) with strata in that language.
 

@@ -3553,7 +3553,7 @@
       "risk_notes": []
     },
     {
-      "id": "ARB-159",
+      "id": "ARB-176",
       "category": "measurement",
       "title": "Precision reportable per language, JavaScript apart from TypeScript",
       "description": "The ledger's language stratum comes from the finding's file extension (.js/.mjs/.cjs/.jsx javascript; .ts/.tsx/.mts/.cts typescript) instead of the TypeScript pack that flagged it; label populations re-derived from the committed runs with no relabel; tools/precision_ledger.py report prints one held-out, population-weighted tier claim per language (language_claims).",
@@ -3860,6 +3860,65 @@
         "Generated-document freshness remains opt-in at the gate.",
         "Full native-Windows pytest reaches 29 passing tests before the pre-existing POSIX-shell adapter test fails because sh is unavailable; this change does not touch Arbiter source or tests.",
         "arbiter check skipped: ARB-159 changes workspace tooling only; claim integrity passed and the Arbiter source tree was unchanged."
+      ]
+    },
+    {
+      "id": "ARB-169",
+      "category": "accuracy",
+      "title": "Workstream D: twelve statistical methods for precision, labelling cost and catch rate",
+      "description": "docs/accuracy-gap-closure-plan.md Workstream D lists SPRT, hierarchical Beta priors, importance-sampled active learning, Dawid-Skene (ARB-167), Rogan-Gladen, capture-recapture, Good-Turing, conformal prediction, Benjamini-Hochberg/Holm, repository clustering (ARB-168), Thompson sampling and value of information; each reports beside the current method and changes the bar only when the owner switches it.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [],
+      "acceptance_criteria": [],
+      "validation_required": [
+        "doctor",
+        "validate"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-172",
+      "category": "accuracy",
+      "title": "Capture-recapture catch-rate estimate across Arbiter, Semgrep and Bandit (D6)",
+      "description": "Estimate the total number of confirmed defects, including those no detector found, from how much Arbiter's native rules, Semgrep and Bandit overlap on the same sites; report Arbiter's and each detector's estimated catch rate (found / N-hat, with intervals) per language and CWE family as a lower bound on misses. Lincoln-Petersen with Chapman's correction for two detectors, Chao's lower bound and AIC-selected log-linear models for three. Validated on OWASP Benchmark Python/Java and Juliet Java where the true total is known; run on development data only; held-out sets totals-only later.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "src/arbiter/capture.py",
+        "tools/capture_recapture.py",
+        "tests/test_capture.py",
+        "docs/catch-rate.md",
+        "tools/gold/results/2026-10-26-capture-recapture.md",
+        "tools/gold/capture-plan.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Matching rule documented and unit-tested",
+        "Only tp-labelled or ground-truth findings enter capture histories",
+        "Simulated independent detectors give nominal CI coverage and correlated detectors a documented downward bias",
+        "Benchmark validation reports estimate vs true total",
+        "Development results per language and family with intervals",
+        "Deterministic output",
+        "Labelling spend at most 20 USD with plan committed before any call"
+      ],
+      "validation_required": [
+        "python -m pytest -q",
+        "python tools/mutate_tests.py",
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md",
+        "docs/catch-rate.md"
+      ],
+      "risk_notes": [
+        "Detector dependence biases estimated totals downward",
+        "Small overlap counts can produce wide or unbounded intervals",
+        "CodeQL is unavailable and is not included as a detector"
       ]
     }
   ]

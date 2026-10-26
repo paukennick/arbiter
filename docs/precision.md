@@ -219,7 +219,7 @@ language of a JavaScript or TypeScript finding is its file's extension
 (`.js`/`.mjs`/`.cjs`/`.jsx` javascript, `.ts`/`.tsx`/`.mts`/`.cts`
 typescript; `precision.label_language`), not the pack that fired: the
 TypeScript pack scans both, and `python tools/precision_ledger.py report`
-gives the tier claim per language, JavaScript apart (ARB-159). A rule's
+gives the tier claim per language, JavaScript apart (ARB-176). A rule's
 held-out findings no stratum lists count against every language the rule
 has strata in. Every
 label record carries its stratum's population (see Label format below,

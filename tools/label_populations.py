@@ -111,7 +111,7 @@ def from_report(records: list[dict], report: dict, held: set[str], origin: str) 
     out = []
     for r in records:
         f = by_id.get((r.get("repo"), r["finding_id"]))
-        # A record written before ARB-159 says `typescript` for a .js file the
+        # A record written before ARB-176 says `typescript` for a .js file the
         # TypeScript pack flagged; its stratum is the file's language.
         lang = label_language(r.get("path"), r.get("language"))
         why = ("finding not in the report" if f is None else

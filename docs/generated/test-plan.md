@@ -12,7 +12,7 @@
 
 ## 2. Test modules
 
-97 test module(s) in the code graph.
+102 test module(s) in the code graph.
 
 | Test module | Verifies (per the graph) |
 | --- | --- |
@@ -31,7 +31,9 @@
 | `tests/test_authored_stub_precision.py` | src/arbiter/core.py, src/arbiter/engine.py |
 | `tests/test_bundle.py` | src/arbiter/adapters.py, src/arbiter/context.py, src/arbiter/dataflow.py, src/arbiter/history.py |
 | `tests/test_cache.py` | src/arbiter/cache.py, src/arbiter/context.py, src/arbiter/engine.py, src/arbiter/probes.py |
+| `tests/test_capture.py` | src/arbiter/capture.py, tools/capture_recapture.py, tools/label_models.py |
 | `tests/test_changed_not_read.py` | src/arbiter/engine.py, src/arbiter/incremental.py, src/arbiter/report.py |
+| `tests/test_cluster_precision.py` | src/arbiter/history.py, src/arbiter/precision.py, tools/precision_ledger.py |
 | `tests/test_concurrency.py` | src/arbiter/core.py, src/arbiter/engine.py |
 | `tests/test_config_fail_closed.py` | src/arbiter/core.py, src/arbiter/engine.py, src/arbiter/policy.py |
 | `tests/test_context.py` | src/arbiter/context.py, src/arbiter/core.py, src/arbiter/dataflow.py, src/arbiter/history.py, src/arbiter/inventory.py, src/arbiter/verify.py |
@@ -39,11 +41,12 @@
 | `tests/test_controls_lang_packs.py` | src/arbiter/ast.py, src/arbiter/controls.py, src/arbiter/core.py, src/arbiter/engine.py, src/arbiter/lang_rules.py |
 | `tests/test_controls_probe_mapping.py` | src/arbiter/adapters.py, src/arbiter/ast.py, src/arbiter/controls.py, src/arbiter/core.py, src/arbiter/engine.py, src/arbiter/history.py, src/arbiter/lang_rules.py |
 | `tests/test_dataflow.py` | src/arbiter/ast.py, src/arbiter/dataflow.py, src/arbiter/lang_rules.py |
+| `tests/test_dawid_skene.py` | src/arbiter/dawid_skene.py, src/arbiter/history.py, tools/precision_ledger.py |
 | `tests/test_docs.py` | src/arbiter/context.py, src/arbiter/dataflow.py, src/arbiter/globs.py, src/arbiter/history.py |
 | `tests/test_ecosystems_java.py` | src/arbiter/authored.py, src/arbiter/ecosystems.py |
-| `tests/test_external_scorecard.py` | tools/gold_benchmark.py, tools/ground_truth/external_scorecard.py, tools/regression_guard.py |
+| `tests/test_external_scorecard.py` | tools/capture_recapture.py, tools/freeze_breadth_python.py, tools/gold_benchmark.py, tools/ground_truth/external_scorecard.py, tools/regression_guard.py |
 | `tests/test_file_limiter.py` | src/arbiter/api.py, src/arbiter/context.py, src/arbiter/dataflow.py, src/arbiter/history.py, tools/ai_corpus_generate.py |
-| `tests/test_ghsa_benchmark.py` | src/arbiter/context.py, tools/ground_truth/ghsa_pairs.py, tools/ground_truth/ghsa_select.py |
+| `tests/test_ghsa_benchmark.py` | src/arbiter/context.py, tools/capture_recapture.py, tools/ground_truth/ghsa_pairs.py, tools/ground_truth/ghsa_select.py |
 | `tests/test_globs.py` | src/arbiter/core.py, src/arbiter/engine.py, src/arbiter/globs.py |
 | `tests/test_gold_benchmark.py` | tools/gold_benchmark.py |
 | `tests/test_governance.py` | src/arbiter/core.py, src/arbiter/diff.py, src/arbiter/engine.py, src/arbiter/incremental.py, src/arbiter/report.py |
@@ -76,6 +79,7 @@
 | `tests/test_policy_gate.py` | src/arbiter/claims.py, src/arbiter/controls.py, src/arbiter/core.py, src/arbiter/engine.py, src/arbiter/history.py, src/arbiter/judgement.py, src/arbiter/policy.py, src/arbiter/probes.py, tools/integrity.py |
 | `tests/test_precision_ledger.py` | src/arbiter/dataflow.py, src/arbiter/history.py, src/arbiter/precision.py, tools/label_populations.py, tools/precision_guard.py, tools/precision_ledger.py, tools/regression_guard.py |
 | `tests/test_precision_tiers.py` | src/arbiter/core.py, src/arbiter/engine.py, src/arbiter/policy.py, src/arbiter/precision.py, src/arbiter/report.py, tools/regression_guard.py |
+| `tests/test_prereg_b_analysis.py` | - |
 | `tests/test_probes_assurance_gosec.py` | src/arbiter/core.py, src/arbiter/engine.py |
 | `tests/test_probes_drift.py` | src/arbiter/core.py, src/arbiter/engine.py |
 | `tests/test_probes_drift_precision.py` | src/arbiter/engine.py, src/arbiter/probes.py, tools/regression_guard.py |
@@ -92,11 +96,11 @@
 | `tests/test_regression_guard.py` | src/arbiter/dataflow.py, src/arbiter/lang_rules.py, tools/regression_guard.py |
 | `tests/test_report_output.py` | src/arbiter/ab.py, src/arbiter/adapters.py, src/arbiter/core.py, src/arbiter/dataflow.py, src/arbiter/diff.py, src/arbiter/engine.py, src/arbiter/history.py, src/arbiter/report.py, tools/label_populations.py |
 | `tests/test_review_draft.py` | src/arbiter/context.py, src/arbiter/dataflow.py, src/arbiter/engine.py, src/arbiter/learn.py, src/arbiter/service.py |
-| `tests/test_review_learn.py` | src/arbiter/context.py, src/arbiter/core.py, src/arbiter/dataflow.py, src/arbiter/engine.py, src/arbiter/history.py, src/arbiter/learn.py, src/arbiter/ledger.py, src/arbiter/review.py, src/arbiter/review_ui.py |
+| `tests/test_review_learn.py` | src/arbiter/context.py, src/arbiter/core.py, src/arbiter/dataflow.py, src/arbiter/engine.py, src/arbiter/history.py, src/arbiter/learn.py, src/arbiter/ledger.py, src/arbiter/review.py, src/arbiter/review_ui.py, tools/freeze_breadth_python.py |
 | `tests/test_rule_requirements.py` | src/arbiter/lang_rules.py, src/arbiter/rule_meta.py, tools/rule_requirements.py |
 | `tests/test_scan_once_per_repo.py` | src/arbiter/engine.py, src/arbiter/history.py |
 | `tests/test_secrets_env_name.py` | src/arbiter/core.py, src/arbiter/engine.py |
-| `tests/test_secrets_scan_equivalence.py` | src/arbiter/dataflow.py, src/arbiter/probes.py |
+| `tests/test_secrets_scan_equivalence.py` | src/arbiter/dataflow.py, src/arbiter/probes.py, tools/freeze_breadth_python.py |
 | `tests/test_service_api.py` | src/arbiter/api.py, src/arbiter/context.py, src/arbiter/dataflow.py, src/arbiter/globs.py, src/arbiter/service.py, tools/ai_corpus_score.py |
 | `tests/test_skipped_files.py` | src/arbiter/adapters.py, src/arbiter/core.py, src/arbiter/engine.py, src/arbiter/inventory.py, src/arbiter/report.py, tools/label_populations.py |
 | `tests/test_supply_pinning.py` | src/arbiter/core.py, src/arbiter/engine.py, src/arbiter/inventory.py, src/arbiter/probes.py, src/arbiter/rule_meta.py, src/arbiter/supply.py |
@@ -104,7 +108,8 @@
 | `tests/test_target_config_trust.py` | src/arbiter/core.py, src/arbiter/dataflow.py, src/arbiter/engine.py, src/arbiter/policy.py, src/arbiter/precision.py, src/arbiter/report.py |
 | `tests/test_tool_version_memo.py` | src/arbiter/adapters.py, src/arbiter/context.py, src/arbiter/probes.py, tools/regression_guard.py |
 | `tests/test_tooling.py` | src/arbiter/ab.py, src/arbiter/adapters.py, src/arbiter/cli.py, src/arbiter/context.py, src/arbiter/history.py, src/arbiter/probes.py, src/arbiter/tooling.py, tools/ground_truth/gt_common.py, tools/label_populations.py |
-| `tests/test_tools_training.py` | src/arbiter/context.py, src/arbiter/controls.py, src/arbiter/core.py, src/arbiter/probes.py, src/arbiter/tooling.py, tools/disagree.py, tools/fixpairs.py, tools/ground_truth/gt_common.py |
+| `tests/test_tools_training.py` | src/arbiter/context.py, src/arbiter/controls.py, src/arbiter/core.py, src/arbiter/probes.py, src/arbiter/tooling.py, tools/fixpairs.py, tools/ground_truth/gt_common.py |
+| `tests/test_triage_baseline.py` | src/arbiter/dataflow.py, src/arbiter/history.py, tools/triage_baseline.py |
 | `tests/test_unassessed_languages.py` | src/arbiter/core.py, src/arbiter/engine.py, src/arbiter/inventory.py, src/arbiter/lang_rules.py, src/arbiter/report.py |
 | `tests/test_use_adapters_flag.py` | src/arbiter/engine.py, src/arbiter/history.py, src/arbiter/probes.py |
 | `tests/test_variants.py` | src/arbiter/adapters.py, tools/variants.py |
@@ -203,6 +208,9 @@
 | ARB-108 | completed | validate manifest against Draft 2020-12 schema; review pin and license provenance; python omni doctor; python omni gate |
 | ARB-109 | completed | manifest validates against Draft 2020-12 schema; scan provenance and source pins are verified; focused conformance tests; python omni doctor; python omni gate; Arbiter repository self-gate |
 | ARB-110 | pending | python omni doctor; python omni gate; tools/precision_guard.py check; fast pytest tier |
+| ARB-111 | completed | python omni gate; tools/precision_guard.py check; fast pytest tier |
+| ARB-112 | completed | python omni gate |
+| ARB-113 | completed | python -m pytest -q tests/test_triage_baseline.py; python omni gate |
 | ARB-120 | completed | python -m pytest -q tests/test_external_scorecard.py; python -m pytest -q; ./omni gate |
 | ARB-121 | completed | tests/test_ghsa_benchmark.py; python -m pytest -q; omni gate |
 | ARB-122 | completed | python -m pytest -q; ./omni gate; smoke calibration on about 20 ground-truth items |
@@ -226,10 +234,17 @@
 | ARB-157 | completed | PYTHONPATH=src python -m pytest tests/ -q |
 | ARB-158 | completed | PYTHONPATH=src python -m pytest tests/test_tooling.py -q |
 | ARB-159 | completed | python omni docs build --check; python -m pytest -q; PYTHONPATH=src python tools/integrity.py; python omni doctor; python omni gate |
+| ARB-162 | needs_review | bash -n tools/fetch_heldout_r7_python.sh |
+| ARB-163 | pending | doctor; validate |
+| ARB-167 | completed | PYTHONPATH=src python -m pytest tests/test_dawid_skene.py tests/test_precision_ledger.py -q |
+| ARB-168 | completed | PYTHONPATH=src python -m pytest tests/test_cluster_precision.py tests/test_precision_ledger.py -q |
+| ARB-169 | pending | doctor; validate |
+| ARB-172 | pending | python -m pytest -q; python tools/mutate_tests.py; python omni gate |
+| ARB-176 | needs_review | PYTHONPATH=src python -m pytest tests/test_precision_ledger.py tests/test_label_populations.py tests/test_label_sample.py tests/test_label_models.py tests/test_precision_tiers.py -q; python tools/precision_ledger.py check; python tools/label_populations.py backfill --check |
 
 ## 4. Requirements with no linked test
 
-25 of 108 requirement(s) have no test linked by scope, commits, ledger or graph:
+28 of 118 requirement(s) have no test linked by scope, commits, ledger or graph:
 
 - ARB-005 (pending): Establish licensing terms for arbiter
 - ARB-025 (completed): Have OmniEngineering register and verify Arbiter's live MCP server
@@ -256,10 +271,13 @@
 - ARB-109 (completed): Scan frozen ordinary Python pilot cohort
 - ARB-154 (completed): install_tools.sh runs on Windows where python3 is the Store alias
 - ARB-155 (completed): Point semgrep at the C#, Kotlin and Swift rules it already fetches
+- ARB-162 (needs_review): Held-out set r7 (Python): 20 pinned repositories frozen before scanning
+- ARB-163 (pending): Breadth set r7 Python: 180 applications frozen, dev/held-out split, scanned on pods
+- ARB-169 (pending): Workstream D: twelve statistical methods for precision, labelling cost and catch rate
 
 ## 5. Regression tests from the failure ledger
 
-84 of 96 recorded failure(s) name a regression test.
+86 of 98 recorded failure(s) name a regression test.
 
 Without one: FAIL-002 (No test reads the scripts' first line or mode bits; the CHANGELOG records the repair from the bundle diff only.), FAIL-017 (The repair is a workflow step that only runs in CI; no test reads train.yml's final step or its path discovery.), FAIL-018 (Needs the cloned corpus and network access; the suite skips the corpus-dependent test when the corpus is not cloned.), FAIL-023 (The exclusions are argv in the adapter manifests and were verified empirically against a real vendored tree (the requirement's own acceptance criterion); exercising them needs bandit and checkov installed, which the suite does not assume.), FAIL-027 (Manifest argv change, like FAIL-023; exercising it needs semgrep installed, which the suite does not assume.), FAIL-028 (No test creates an ignored directory and asserts walk_repo skips it; tests/test_graph_system.py::test_output_directory_is_not_scanned covers only the current run's out_dir.), FAIL-040 (The crash lives in a third-party JIT under a specific interpreter; the 3.10 CI cell is the regression test and runs on every pull request.), FAIL-046 (A workflow file has no unit test; the self-gate's supply.unpinned-action rule is the check that catches a return to tags.), FAIL-069 (The retrieval procedure was a one-off aggregate-only acquisition command, not retained as product code; a network integration test would add unnecessary live API dependence. All 11 retrieved records were directly validated against the pinned IDs, versions, languages, and source commits.), FAIL-070 (a documentation merge artefact; tests/test_docs.py checks links and anchors, not duplicate headings, and a one-off doc check is not worth a permanent test), FAIL-081 (The schema and manifest are validated directly with Draft202012Validator; adding jsonschema as a runtime test dependency is not justified for this documentation-only contract.), FAIL-082 (This was an environment provisioning issue rather than a product defect; the full fast test tier and the repeated Omni gate are the validation evidence.).
 

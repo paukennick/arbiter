@@ -74,7 +74,7 @@ DETERMINISTIC_PROFILES = ("offline", "ci")
 
 # The TypeScript pack also scans JavaScript, so a finding's recorded language
 # says which pack fired, not what the file is. Precision is reported per
-# language (ARB-159), so the file's extension decides between the two.
+# language (ARB-176), so the file's extension decides between the two.
 SCRIPT_LANGUAGE_BY_EXT = {
     ".js": "javascript", ".mjs": "javascript", ".cjs": "javascript", ".jsx": "javascript",
     ".ts": "typescript", ".tsx": "typescript", ".mts": "typescript", ".cts": "typescript",

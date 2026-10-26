@@ -435,7 +435,7 @@ def test_guard_fails_a_verified_rule_whose_population_is_unknown():
 
 
 # ---------------------------------------------------------------------------
-# Per language: JavaScript apart from TypeScript (ARB-159)
+# Per language: JavaScript apart from TypeScript (ARB-176)
 # ---------------------------------------------------------------------------
 
 TS_RULE = "arbiter/typescript.empty-catch"

@@ -8,14 +8,14 @@ Which tests and files belong to each requirement is in the [Requirements Traceab
 
 ## Status
 
-109 active requirement(s) in 19 area(s); 18 archived.
+119 active requirement(s) in 19 area(s); 18 archived.
 
 | Status | Requirements |
 | --- | --- |
-| pending | 6 |
-| needs_review | 2 |
+| pending | 9 |
+| needs_review | 4 |
 | proposed | 14 |
-| completed | 86 |
+| completed | 91 |
 | withdrawn | 1 |
 
 ## Functional requirements
@@ -31,8 +31,17 @@ Which tests and files belong to each requirement is in the [Requirements Traceab
 | ARB-107 | Running pinned analyzer differential rehearsal | completed | high | 0 | Run a reproducible static differential rehearsal using Arbiter, Semgrep, and CodeQL on the already-cleared, frozen 11-repository RealVuln Python subset. (more: `omni requirement show ARB-107`) |
 | ARB-108 | Freeze ordinary-repository precision pilot cohort | completed | high | 0 | Define and freeze a small exploratory sample of ordinary public Python repositories for the finding-precision study, separate from RealVuln and all existing sealed or tuned datasets. (more: `omni requirement show ARB-108`) |
 | ARB-109 | Scan frozen ordinary Python pilot cohort | completed | high | 0 | Acquire only the 11 exact source commits frozen under the ARB-108 ordinary Python feasibility cohort and run the pre-registered static-analysis measurement without building or executing target code. (more: `omni requirement show ARB-109`) |
-| ARB-110 | Close recall gap without human reviewers: development-only recall analysis and preregistered model-labelled sample | pending | high | 6 | Human reviewers are unavailable, so bridge the gap with (1) a development-data-only breakdown of missed weakness families from the ai-corpus development set and RealVuln-excluded sources, ranked by CWE and language, to direct rule work; (2) a preregistered, frozen, blinded model-labelled precision sample of the ARB-109 cohort, using the existing tools/label_models.py two-labeller-plus-adjudicator pipeline, reported only as model-labelled conformance (more: `omni requirement show ARB-110`) |
+| ARB-110 | Close recall gap without human reviewers: development-only recall analysis and preregistered model-labelled sample | pending | high | 7 | Human reviewers are unavailable, so bridge the gap with (1) a development-data-only breakdown of missed weakness families from the ai-corpus development set and RealVuln-excluded sources, ranked by CWE and language, to direct rule work; (2) a preregistered, frozen, blinded model-labelled precision sample of the ARB-109 cohort, using the existing tools/label_models.py two-labeller-plus-adjudicator pipeline, reported only as model-labelled conformance (more: `omni requirement show ARB-110`) |
+| ARB-111 | Java real-repo guard: pinned netty, tomcat and spring-security snapshots | completed | high | 1 | Extend the real-repository regression guard to three pinned development-side Java gold repositories so Java rule precision is observed on real code, and narrow java.unbounded-work-queue (drop ConcurrentLinkedQueue, deques and LinkedTransferQueue, which are pools and caches in library code) after review. (more: `omni requirement show ARB-111`) |
+| ARB-112 | Preregistration for the model-labelled ARB-109 precision study (Workstream B) | completed | high | 3 | Freeze docs/accuracy-prereg-b.md before any scan or label exists: population (11 pinned ARB-109 repositories, Arbiter at the freeze parent, census), blinded packets, prosecutor/defender/adjudicator labelling with blind OWASP-Python calibration, cluster-bootstrap outputs, stop rules and a ban on tuning rules on the cohort. (more: `omni requirement show ARB-112`) |
+| ARB-113 | Workstream C: freeze repository-family split and CPU baseline | completed | high | 1 | Start learned triage with development labels only: add a deterministic repository-family split and a CPU baseline ranker under tools/triage_baseline.py, commit the frozen split list and baseline metrics, and keep ARB-109 and held-out labels excluded from training data. (more: `omni requirement show ARB-113`) |
 | ARB-121 | External real-CVE fix-pair benchmark from GHSA, five languages, frozen dev/sealed split | completed | high | 7 | Expand real-CVE fix pairs from the GitHub Advisory Database (reviewed, CC-BY-4.0) toward ~100 per language (python, typescript, go, java, ruby), restricted to CWEs a native security rule of that language pack is tagged with; deterministic seeded selection with predeclared criteria; split by repository into development and sealed (held_out_ghsa_r1), frozen and committed before any scan; scan both sides with the pinned Arbiter and report hunk-region recall, looser function/file recall and fixed-side persistence per language and CWE with Wilson and repository-cluster bootstrap intervals (more: `omni requirement show ARB-121`) |
+| ARB-162 | Held-out set r7 (Python): 20 pinned repositories frozen before scanning | needs_review | high | 0 | Round 7 measures Python precision on repositories no rule was tuned against. 10 well-run (OpenSSF Scorecard >= 7.0, top by stars) and 9 applications (hand-picked deployed services and self-hosted tools from the metadata-qualified candidates; searxng dropped before any scan because Windows cannot check out its paths), with >= 1000 stars, OSI licence, Python >= 60% of bytes, workflows present, not used before, pinned to default-branch HEAD on 2026-10-26 and frozen before any clone. (more: `omni requirement show ARB-162`) |
+| ARB-163 | Breadth set r7 Python: 180 applications frozen, dev/held-out split, scanned on pods | pending | high | 0 | Freeze 180 Python applications from GitHub metadata only (tools/freeze_breadth_python.py, seed 20261026), split 45 dev / 135 held-out, pinned to HEAD; fetch with tools/fetch_breadth_r7_python.sh; scan on RunPod CPU pods within the $15 budget; label held-out findings with prompt v3. (more: `omni requirement show ARB-163`) |
+| ARB-167 | Dawid-Skene labeller-weighted precision alongside strict unanimity | completed | high | 8 | Estimate each labeller's sensitivity and specificity per category with Dawid-Skene EM over per-labeller votes (unsure as missing), Beta-smoothed and anchored on known-truth calibration records, giving each finding a posterior P(tp). (more: `omni requirement show ARB-167`) |
+| ARB-168 | Repository-clustered precision bounds alongside the independent-finding bound | completed | high | 8 | Findings in one repository are correlated. (more: `omni requirement show ARB-168`) |
+| ARB-169 | Workstream D: twelve statistical methods for precision, labelling cost and catch rate | pending | high | 0 | docs/accuracy-gap-closure-plan.md Workstream D lists SPRT, hierarchical Beta priors, importance-sampled active learning, Dawid-Skene (ARB-167), Rogan-Gladen, capture-recapture, Good-Turing, conformal prediction, Benjamini-Hochberg/Holm, repository clustering (ARB-168), Thompson sampling and value of information; each reports beside the current method and changes the bar only when the owner switches it. |
+| ARB-172 | Capture-recapture catch-rate estimate across Arbiter, Semgrep and Bandit (D6) | pending | high | 3 | Estimate the total number of confirmed defects, including those no detector found, from how much Arbiter's native rules, Semgrep and Bandit overlap on the same sites; report Arbiter's and each detector's estimated catch rate (found / N-hat, with intervals) per language and CWE family as a lower bound on misses. (more: `omni requirement show ARB-172`) |
 
 ### capability
 
@@ -52,9 +61,9 @@ Which tests and files belong to each requirement is in the [Requirements Traceab
 | ARB-088 | Cross-artifact consistency: interface and contract checks | completed | medium | 16 | The interface probe compares what repositories in one system say about each other: a constant that disagrees across repositories, an environment variable read but never provided or provided but never read, an IAM permission needed but not granted or granted but unused, and a port listened on but not exposed. (more: `omni requirement show ARB-088`) |
 | ARB-089 | Written claims checked against the code | completed | medium | 18 | Three rules check prose that makes a claim about the code: a configuration section documents an environment variable no source file reads (arbiter/drift.documented-env-var-absent), a docstring promises behaviour the body does not have (arbiter/authored.docstring-promises-absent-behaviour), and the judgement pass finds a claim the code contradicts (arbiter/judgement.claim-contradicts-code). (more: `omni requirement show ARB-089`) |
 | ARB-090 | Assurance census: suppressions and analysis exclusions are reported | completed | medium | 1 | The assurance probe reports what the analysis was told not to look at, so a clean result can be read for what it covers: tool configuration that excludes paths from analysis (arbiter/assurance.analysis-excluded) and a per-tool count of inline suppressions (arbiter/assurance.suppression-census). (more: `omni requirement show ARB-090`) |
-| ARB-100 | Verified-only output by default | completed | high | 67 | Findings Arbiter shows by default are the verified tier only (ledger-admitted rules at a Wilson lower bound of at least 0.99 offline, or model-confirmed under assisted), so what a reader sees is at least 99% correct. (more: `omni requirement show ARB-100`) |
-| ARB-103 | Show every tier by default; block only on verified | completed | high | 35 | Reverses ARB-100's default view. (more: `omni requirement show ARB-103`) |
-| ARB-122 | Independent multi-vendor model panel for precision labels | completed | high | 2 | tools/panel: Claude, Codex and Copilot CLIs label blind packets (label_models make_item/item_prompt/SYSTEM) one record per model with a distinct labeller name (<seat>-<model>:panel/v1); calibrate measures each model and the panel against ground truth with Wilson intervals and cost; prioritise ranks rules by labels still needed to reach Wilson 0.99. (more: `omni requirement show ARB-122`) |
+| ARB-100 | Verified-only output by default | completed | high | 68 | Findings Arbiter shows by default are the verified tier only (ledger-admitted rules at a Wilson lower bound of at least 0.99 offline, or model-confirmed under assisted), so what a reader sees is at least 99% correct. (more: `omni requirement show ARB-100`) |
+| ARB-103 | Show every tier by default; block only on verified | completed | high | 36 | Reverses ARB-100's default view. (more: `omni requirement show ARB-103`) |
+| ARB-122 | Independent multi-vendor model panel for precision labels | completed | high | 4 | tools/panel: Claude, Codex and Copilot CLIs label blind packets (label_models make_item/item_prompt/SYSTEM) one record per model with a distinct labeller name (<seat>-<model>:panel/v1); calibrate measures each model and the panel against ground truth with Wilson intervals and cost; prioritise ranks rules by labels still needed to reach Wilson 0.99. (more: `omni requirement show ARB-122`) |
 | ARB-130 | Supply-chain pinning covers the main pinning methods | completed | high | 16 | Arbiter's pinning checks cover how software is actually pinned, not only requirements.txt, package.json carets and workflow uses:. (more: `omni requirement show ARB-130`) |
 | ARB-131 | Python and npm pinning breadth | completed | medium | 1 | supply.unpinned-python-dep reads any requirements*.txt, requirements/*.txt and constraints*.txt that holds pip requirements (a prose file of that name is skipped), credits ==/=== exact pins, --hash lines and VCS references at a 40-hex commit, handles -e/--editable (local paths skipped, VCS refs judged) and is silent when poetry.lock, uv.lock, Pipfile.lock or pdm.lock sits beside it. pyproject/Pipfile/setup.cfg ranges stay unflagged (libraries declare ranges). supply.unpinned-npm-dep adds >=, >, x/X/* wildcards, bare majors/minors, \|\| and hyphen ranges (more: `omni requirement show ARB-131`) |
 | ARB-132 | Java, Ruby and Terraform pinning rules | completed | medium | 1 | supply.unpinned-java-dep: Maven LATEST/RELEASE/version ranges, SNAPSHOT dependencies in a non-SNAPSHOT build (not the project's own group: sibling modules build from the same tree), properties resolved within the POM; Gradle +, latest.release, latest.integration and ranges in build.gradle(.kts) and *.versions.toml, credited by dependencyLocking or a gradle.lockfile. supply.unpinned-ruby-dep: with no Gemfile.lock beside the Gemfile, gems with no requirement or only open ones (>=, >), and git gems with no ref: (more: `omni requirement show ARB-132`) |
@@ -87,7 +96,7 @@ Which tests and files belong to each requirement is in the [Requirements Traceab
 | ARB-033 | Probe precision on real repositories: history-aware doc drift, prose excluded from suppression scanning, a house rule that means what it says, tooling attributed upstream, and not-applicable probes kept out of the coverage denominator | completed | high | 63 | The self-scan's noise had five distinct causes. drift.doc-references-missing-file reported 24 paths named in CHANGELOG.md and project-context.md, most of them files that once existed and were deliberately removed or renamed, which an append-only history file is right to mention; the probe now asks git whether the path was ever tracked and reports those at info as removed rather than missing. assurance.blanket-suppression fired on Markdown prose that discusses # noqa (more: `omni requirement show ARB-033`) |
 | ARB-078 | arbiter.lang_rules imports on its own, before arbiter.probes | completed | medium | 16 | python -c 'import arbiter.lang_rules' raised a circular ImportError: lang_rules imported PACKS and ProbeContext from probes at load time, and probes imports lang_rules at its end to register the packs. (more: `omni requirement show ARB-078`) |
 | ARB-080 | Same-evidence findings in one file each count: occurrence ordinal in the fingerprint, with a baseline migration | completed | medium | 64 | Finding.fingerprint hashes rule, repo, path, logical symbol and evidence but no line, so repeated defects with identical evidence in one file shared one id and engine._dedupe kept one: six catch {} counted once. engine.run_scan now calls core.assign_occurrences before _dedupe: the distinct sites (start/end line and column) of one id are numbered in line order; occurrence 0 keeps the old id and occurrence k gets f:sha256(base_id#k)[:12] with occurrence and base_id in the report. (more: `omni requirement show ARB-080`) |
-| ARB-143 | A target's own arbiter.yaml cannot set precision keys or loosen the gate | completed | critical | 57 | Config found in the scanned repository root may tighten the gate and use suppressions, house rules and scoring, but its precision and verify blocks are dropped and any gate key that would loosen the gate is dropped, each recorded in scan_scope.config.ignored and printed. --config is trusted in full. precision.ledger resolves relative to the config file and may not escape its directory; a ledger bar never reads below DEFAULT_BAR. |
+| ARB-143 | A target's own arbiter.yaml cannot set precision keys or loosen the gate | completed | critical | 58 | Config found in the scanned repository root may tighten the gate and use suppressions, house rules and scoring, but its precision and verify blocks are dropped and any gate key that would loosen the gate is dropped, each recorded in scan_scope.config.ignored and printed. --config is trusted in full. precision.ledger resolves relative to the config file and may not escape its directory; a ledger bar never reads below DEFAULT_BAR. |
 | ARB-144 | Source in languages without a rule pack is reported not assessed | completed | high | 63 | The inventory recognises the common languages no pack reads; one lang_unsupported outcome (skipped, applicable, sized like the missing packs) joins the coverage denominator; scan_scope.languages_not_assessed lists each language with files, lines and share; above 50% of source lines the grade is withheld with the languages named. |
 | ARB-145 | --only-files keeps dotfiles and refuses unknown paths | completed | high | 55 | Strip only a literal leading ./ (lstrip turned .husky into husky); accept an absolute path under the target; a path that names no file the scan can read, or a request that reads zero files, is an error. |
 | ARB-146 | An analyzer failing inside ok_exit is an error, never ran clean | completed | high | 14 | No output, non-JSON output, JSON without the manifest's findings key, and a tool-reported errors list (map.errors; bandit and semgrep) each record the adapter as error with the tool's message; findings produced beside tool errors are set aside and counted in the reason (CI-7). |
@@ -126,7 +135,7 @@ Which tests and files belong to each requirement is in the [Requirements Traceab
 | ID | Requirement | Status | Priority | Tests | Statement |
 | --- | --- | --- | --- | --- | --- |
 | ARB-038 | Governance probe: Arbiter reads the OmniEngineering failure ledger and requirement ids | completed | high | 60 | Arbiter read nothing from the .ai/ workspace. (more: `omni requirement show ARB-038`) |
-| ARB-042 | Run history and the trend dashboard | completed | medium | 38 | Every report was standalone. (more: `omni requirement show ARB-042`) |
+| ARB-042 | Run history and the trend dashboard | completed | medium | 41 | Every report was standalone. (more: `omni requirement show ARB-042`) |
 | ARB-050 | arbiter_review_draft: an assistant proposes marks with reasons and never records one | completed | high | 5 | docs/mcp.md rules out any tool that records a verdict. arbiter_review_draft(report_path, output_dir, limit, rule, verdicts) writes review-draft.md in the exact review.parse format with the reason under each mark and a header saying who drafted it and that nothing is recorded, and returns the ledger entries the y marks would draft, as text. arbiter review --apply --reviewer stays the only writer; the no-verdict test is extended to the new tool. |
 | ARB-051 | The air-gapped bundle ships Arbiter without the analyzers; the hosted API's limiter is shared across processes | completed | high | 7 | arbiter bundle build writes wheels for Arbiter and its two runtime dependencies, the packs, the knowledge file, install scripts and a MANIFEST.json with a SHA-256 per file that states no analyzer is included (ARB-005); arbiter bundle verify fails on any altered or extra file. (more: `omni requirement show ARB-051`) |
 | ARB-083 | Rules for defect classes found in AI-written code | completed | high | 3 | On the 25-app AI-written development corpus (fixtures/ai-corpus) Arbiter caught 2 of 117 labelled code defects and none of the 11 high-severity ones; the misses cluster in classes no rule covered. (more: `omni requirement show ARB-083`) |
@@ -149,10 +158,11 @@ Which tests and files belong to each requirement is in the [Requirements Traceab
 | ID | Requirement | Status | Priority | Tests | Statement |
 | --- | --- | --- | --- | --- | --- |
 | ARB-065 | Gold-standard benchmark: precision budgets per rule on exemplary code, recall on ground-truth benchmarks | completed | high | 40 | A repeatable measurement of Arbiter against the best-run code in each IDE language. 24 repositories (python typescript go java ruby) chosen by recorded evidence (OpenSSF Scorecard, Best Practices badge, foundation stewardship, security policy) and pinned to one commit each in tools/fetch_corpus.sh. tools/gold_benchmark.py counts findings per rule per KLOC on them against per-rule budgets kept as data in tools/gold/budgets.json and exits non-zero when a rule is over budget; --recall scores OWASP Benchmark (Java, Python) per CWE: recall, false-positive rate and TPR-FPR. |
-| ARB-095 | Establish a defensible 99 percent accuracy program | completed | high | 34 | Define and sequence an evidence-based program to achieve at least 99 percent precision and recall on declared, independently adjudicated benchmark populations, with claims scoped by rule, weakness, applicable language, repository population, and execution platform. (more: `omni requirement show ARB-095`) |
-| ARB-096 | Inventory accuracy benchmarks and freeze evaluation manifest | completed | high | 5 | Inventory existing benchmark sources, label provenance, licenses, language and repository coverage, and development versus sealed evaluation boundaries; produce a versioned, reproducible accuracy evaluation manifest and a baseline/evidence-gap report without inspecting sealed labels, findings, or excerpts and without tuning detection rules. |
-| ARB-097 | Build a Python SQL injection oracle-conformance pilot | pending | high | 34 | Evaluate Arbiter's Python CWE-89 detection against an independent machine-labelled benchmark only after its license, source provenance, and holdout use are cleared. (more: `omni requirement show ARB-097`) |
+| ARB-095 | Establish a defensible 99 percent accuracy program | completed | high | 40 | Define and sequence an evidence-based program to achieve at least 99 percent precision and recall on declared, independently adjudicated benchmark populations, with claims scoped by rule, weakness, applicable language, repository population, and execution platform. (more: `omni requirement show ARB-095`) |
+| ARB-096 | Inventory accuracy benchmarks and freeze evaluation manifest | completed | high | 7 | Inventory existing benchmark sources, label provenance, licenses, language and repository coverage, and development versus sealed evaluation boundaries; produce a versioned, reproducible accuracy evaluation manifest and a baseline/evidence-gap report without inspecting sealed labels, findings, or excerpts and without tuning detection rules. |
+| ARB-097 | Build a Python SQL injection oracle-conformance pilot | pending | high | 40 | Evaluate Arbiter's Python CWE-89 detection against an independent machine-labelled benchmark only after its license, source provenance, and holdout use are cleared. (more: `omni requirement show ARB-097`) |
 | ARB-120 | External conformance scorecard over OWASP Benchmark, Juliet and CVE fix pairs | completed | high | 2 | One reproducible command runs the pinned Arbiter (offline, no adapters, no cache) over the outside benchmarks already wired (OWASP Benchmark Java 1.2 and Python 0.1, Juliet Java 1.3, the 70 GHSA fix pairs) and records one run record per benchmark in the accuracy manifest's run_record_template format, with per-benchmark, per-CWE and per-rule case-level TP/FP/FN/TN, labelled-case precision, recall and safe-case false-positive rate, Wilson intervals, a repository-cluster bootstrap where there are several repositories, coverage and not-assessed reasons (more: `omni requirement show ARB-120`) |
+| ARB-176 | Precision reportable per language, JavaScript apart from TypeScript | needs_review | high | 19 | The ledger's language stratum comes from the finding's file extension (.js/.mjs/.cjs/.jsx javascript; .ts/.tsx/.mts/.cts typescript) instead of the TypeScript pack that flagged it; label populations re-derived from the committed runs with no relabel; tools/precision_ledger.py report prints one held-out, population-weighted tier claim per language (language_claims). |
 
 ### precision
 
@@ -176,9 +186,9 @@ Which tests and files belong to each requirement is in the [Requirements Traceab
 | ID | Requirement | Status | Priority | Tests | Statement |
 | --- | --- | --- | --- | --- | --- |
 | ARB-048 | The doc-drift probe ignores generated output, git-ignored paths and cross-repository references | completed | high | 18 | doc_drift flagged output filenames (REPORT.md under an --out directory) and a handbook that lives in another repository. (more: `omni requirement show ARB-048`) |
-| ARB-049 | Arbiter's own debt is worked through the review flow and the baseline is re-cut | completed | high | 88 | The self-scan carried 411 baseline ids. (more: `omni requirement show ARB-049`) |
+| ARB-049 | Arbiter's own debt is worked through the review flow and the baseline is re-cut | completed | high | 92 | The self-scan carried 411 baseline ids. (more: `omni requirement show ARB-049`) |
 | ARB-052 | The governance probe tags a finding with the requirements its file's recent commits cite, not every open one | completed | high | 16 | req: tags named every open requirement, so a finding in a gate run cited all five requirements of a round and OmniEngineering's graph could not say which one introduced it. (more: `omni requirement show ARB-052`) |
-| ARB-067 | Explain why a rule fired or did not fire; feed verdicts back into confidence | proposed | high | 11 | `arbiter why <finding>` shows the matched query, the captures and which exclusions (unless_inside / unless_in_scope / unless_in_file) were checked; `arbiter why-not <file:line> <rule>` shows which part failed to match. (more: `omni requirement show ARB-067`) |
+| ARB-067 | Explain why a rule fired or did not fire; feed verdicts back into confidence | proposed | high | 12 | `arbiter why <finding>` shows the matched query, the captures and which exclusions (unless_inside / unless_in_scope / unless_in_file) were checked; `arbiter why-not <file:line> <rule>` shows which part failed to match. (more: `omni requirement show ARB-067`) |
 | ARB-071 | Briefs and instructions generated from code, or tested against it | proposed | high | 0 | Facts given to agents (pack schema, CLI commands, what the query engine supports) are generated from the source and tests. A hand-written fact carries a test that fails when it stops being true. (more: `omni requirement show ARB-071`) |
 | ARB-074 | Label statements as verified, inferred or assumed; flag lossy input | proposed | medium | 0 | Agent statements and generated reports label each claim as verified (with evidence), inferred or assumed. (more: `omni requirement show ARB-074`) |
 
@@ -194,7 +204,7 @@ Which tests and files belong to each requirement is in the [Requirements Traceab
 
 | ID | Requirement | Status | Priority | Tests | Statement |
 | --- | --- | --- | --- | --- | --- |
-| ARB-159 | Adopt Omni automatic engineering document generation | completed | low | 1 | Update Arbiter to OmniEngineering eeffebd so omni docs build generates deterministic engineering documentation and requirement changes regenerate it automatically. |
+| ARB-159 | Adopt Omni automatic engineering document generation | completed | low | 3 | Update Arbiter to OmniEngineering eeffebd so omni docs build generates deterministic engineering documentation and requirement changes regenerate it automatically. |
 
 ### training-evidence
 
@@ -369,6 +379,41 @@ Completed and withdrawn requirements are left out; their criteria are in the reg
 3. profiles are keyed so two repositories never share an entry
 4. a profile under 30 samples leaves the fixed threshold in place
 5. the configured threshold caps the adaptive one; so a uniformly bad codebase cannot raise its own limit and a tenfold uniform degradation cannot leave the flagged set unchanged
+
+### ARB-162: Held-out set r7 (Python): 20 pinned repositories frozen before scanning
+
+1. the list was committed before any repository was cloned
+2. every repository is pinned to a commit SHA
+3. every skipped candidate is recorded with a reason
+
+### ARB-163: Breadth set r7 Python: 180 applications frozen, dev/held-out split, scanned on pods
+
+1. manifest committed before any clone
+2. no repo used before
+3. no Windows-invalid paths
+4. pod spend reported
+
+### ARB-169: Workstream D: twelve statistical methods for precision, labelling cost and catch rate
+
+_None recorded._
+
+### ARB-172: Capture-recapture catch-rate estimate across Arbiter, Semgrep and Bandit (D6)
+
+1. Matching rule documented and unit-tested
+2. Only tp-labelled or ground-truth findings enter capture histories
+3. Simulated independent detectors give nominal CI coverage and correlated detectors a documented downward bias
+4. Benchmark validation reports estimate vs true total
+5. Development results per language and family with intervals
+6. Deterministic output
+7. Labelling spend at most 20 USD with plan committed before any call
+
+### ARB-176: Precision reportable per language, JavaScript apart from TypeScript
+
+1. a .js finding of the TypeScript pack is a javascript stratum
+2. a split stratum's population is not counted twice
+3. report prints one claim per language
+4. ledger and packaged copy byte-identical
+5. backfill --check passes
 
 ## Archived requirements
 

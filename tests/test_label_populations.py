@@ -110,7 +110,7 @@ def test_the_shipped_label_files_are_backfilled():
 
 
 def test_a_typescript_pack_label_on_a_js_file_is_matched_in_the_javascript_stratum():
-    # ARB-159: the TypeScript pack flags .js files and older records say
+    # ARB-176: the TypeScript pack flags .js files and older records say
     # `typescript`; the stratum, and so its population, is the file's language.
     rule = "arbiter/typescript.empty-catch"
     report = {"repos": [{"name": "dev", "language": "typescript"}],

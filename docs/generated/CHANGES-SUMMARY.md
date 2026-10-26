@@ -8,14 +8,14 @@ _The last 10 completed, newest registry entry first._
 
 - ARB-159: Adopt Omni automatic engineering document generation
 - ARB-158: CI scans use the analyzers CI installs
+- ARB-168: Repository-clustered precision bounds alongside the independent-finding bound
+- ARB-167: Dawid-Skene labeller-weighted precision alongside strict unanimity
+- ARB-113: Workstream C: freeze repository-family split and CPU baseline
+- ARB-112: Preregistration for the model-labelled ARB-109 precision study (Workstream B)
+- ARB-111: Java real-repo guard: pinned netty, tomcat and spring-security snapshots
 - ARB-157: PR checks pass on every matrix cell again
 - ARB-156: Tests that pin bytes or timing pass on Windows checkouts
 - ARB-109: Scan frozen ordinary Python pilot cohort
-- ARB-108: Freeze ordinary-repository precision pilot cohort
-- ARB-107: Running pinned analyzer differential rehearsal
-- ARB-106: Expanding labeled RealVuln baseline beyond CWE-89
-- ARB-105: Research external AI-code sources and define differential conformance study
-- ARB-104: Define blinded accuracy review protocol
 
 ## In progress
 
@@ -27,6 +27,11 @@ _The last 10 completed, newest registry entry first._
 - ARB-101: Held-out set r5: 50 repositories frozen before scanning, 1,010 model labels (needs_review)
 - ARB-110: Close recall gap without human reviewers: development-only recall analysis and preregistered model-labelled sample (pending)
 - ARB-153: Turn on adaptive quality thresholds and pin them per repository (needs_review)
+- ARB-162: Held-out set r7 (Python): 20 pinned repositories frozen before scanning (needs_review)
+- ARB-163: Breadth set r7 Python: 180 applications frozen, dev/held-out split, scanned on pods (pending)
+- ARB-169: Workstream D: twelve statistical methods for precision, labelling cost and catch rate (pending)
+- ARB-172: Capture-recapture catch-rate estimate across Arbiter, Semgrep and Bandit (D6) (pending)
+- ARB-176: Precision reportable per language, JavaScript apart from TypeScript (needs_review)
 
 ## Blocked
 
@@ -51,7 +56,7 @@ None.
 
 ## Open failures
 
-None (96 recorded).
+None (98 recorded).
 
 ## Required documentation not touched
 
@@ -59,9 +64,7 @@ Documents a requirement lists in `documentation_required` that none of its commi
 
 | Requirement | Status | Document | Commits checked |
 | --- | --- | --- | --- |
-| ARB-022 | completed | `docs/ci.md` | 1 |
-| ARB-022 | completed | `RUNNING-ON-YOUR-OWN-CODE.md` | 1 |
-| ARB-024 | completed | `docs/ci.md` | 2 |
+| ARB-024 | completed | `docs/ci.md` | 1 |
 | ARB-030 | completed | `docs/testing-parameters.md` | 2 |
 | ARB-031 | completed | `README.md` | 1 |
 | ARB-033 | completed | `README.md` | 1 |
@@ -86,6 +89,6 @@ Documents a requirement lists in `documentation_required` that none of its commi
 | ARB-152 | completed | `docs/configuration.md` | 1 |
 | ARB-152 | completed | `CHANGELOG.md` | 1 |
 
-Not checked, no commit names them in the scanned history: ARB-055, ARB-056, ARB-057, ARB-058, ARB-063, ARB-068, ARB-069, ARB-070, ARB-072, ARB-073, ARB-074, ARB-093, ARB-094, ARB-095, ARB-096, ARB-105, ARB-106, ARB-107, ARB-108, ARB-131, ARB-132, ARB-144, ARB-145, ARB-146, ARB-147, ARB-149, ARB-150, ARB-151, ARB-156.
+Not checked, no commit names them in the scanned history: ARB-020, ARB-021, ARB-022, ARB-023, ARB-055, ARB-056, ARB-057, ARB-058, ARB-063, ARB-068, ARB-069, ARB-070, ARB-072, ARB-073, ARB-074, ARB-093, ARB-094, ARB-095, ARB-096, ARB-105, ARB-106, ARB-107, ARB-108, ARB-131, ARB-132, ARB-144, ARB-145, ARB-146, ARB-147, ARB-149, ARB-150, ARB-151, ARB-156, ARB-169, ARB-172, ARB-176.
 
 Not checked, entry is not a file path: ARB-130: docs/supply-chain.md.

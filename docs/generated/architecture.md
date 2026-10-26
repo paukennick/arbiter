@@ -22,11 +22,12 @@ Open high-priority requirements (the current goals):
 - ARB-097 (pending): Build a Python SQL injection oracle-conformance pilot
 - ARB-101 (needs_review): Held-out set r5: 50 repositories frozen before scanning, 1,010 model labels
 - ARB-110 (pending): Close recall gap without human reviewers: development-only recall analysis and preregistered model-labelled sample
+- ... and 5 more; see the SRS.
 
 ## 2. Constraints
 
 - Python >=3.10 (pyproject.toml `requires-python`).
-- Languages in the code graph: bash (7 modules), python (179 modules).
+- Languages in the code graph: bash (10 modules), python (190 modules).
 - Project policy: `allow_broad_refactor`, `allow_dependency_changes`, `allow_schema_changes`, `allow_destructive_data_changes` are false, so such changes need explicit approval.
 - Declared stack: Python >=3.11 (setuptools, src layout); runtime dependency PyYAML only; optional tree-sitter AST extra.
 
@@ -35,7 +36,7 @@ Open high-priority requirements (the current goals):
 ```mermaid
 flowchart LR
     x_system["Arbiter"]
-    x_user["User / developer<br/>31 entry point(s)"]
+    x_user["User / developer<br/>35 entry point(s)"]
     x_user -->|runs| x_system
     x_deps["15 declared dependencies:<br/>bandit, checkov, fastapi, httpx2, hypothesis, mcp, pytest, python-multipart, pyyaml, ruff and 5 more"]
     x_system -->|uses| x_deps
@@ -48,7 +49,7 @@ flowchart LR
 Entry points:
 
 - console script `arbiter` -> arbiter.cli:main
-- 30 runnable `__main__` scripts: 21 in `tools/`, 8 in `tools/ground_truth/`, 1 in `tools/panel/`
+- 34 runnable `__main__` scripts: 25 in `tools/`, 8 in `tools/ground_truth/`, 1 in `tools/panel/`
 
 ## 4. Building-block view
 
@@ -57,8 +58,8 @@ Entry points:
 ```mermaid
 flowchart LR
     c_OmniEngineering_tooling["OmniEngineering tooling<br/>4 module(s)"]
-    c_arbiter["arbiter<br/>47 module(s)"]
-    c_tools["tools<br/>38 module(s)"]
+    c_arbiter["arbiter<br/>49 module(s)"]
+    c_tools["tools<br/>45 module(s)"]
 ```
 
 - Edge labels count module-level imports between containers.
@@ -74,7 +75,7 @@ flowchart LR
         m_omni_mcp_py["omni_mcp.py"]
     end
     subgraph g_arbiter ["arbiter"]
-        m_pkg_arbiter_src_arbiter["src/arbiter/ (39 modules, collapsed)"]
+        m_pkg_arbiter_src_arbiter["src/arbiter/ (41 modules, collapsed)"]
         m_src_arbiter_aiapp_py["src/arbiter/aiapp.py"]
         m_src_arbiter_assurance_py["src/arbiter/assurance.py"]
         m_src_arbiter_authored_py["src/arbiter/authored.py"]
@@ -85,7 +86,7 @@ flowchart LR
         m_src_arbiter_probes_py["src/arbiter/probes.py"]
     end
     subgraph g_tools ["tools"]
-        m_pkg_tools_tools["tools/ (26 modules, collapsed)"]
+        m_pkg_tools_tools["tools/ (33 modules, collapsed)"]
         m_pkg_tools_tools_ground_truth["tools/ground_truth/ (10 modules, collapsed)"]
         m_pkg_tools_tools_panel["tools/panel/ (2 modules, collapsed)"]
     end
@@ -104,9 +105,9 @@ flowchart LR
     m_src_arbiter_probes_py --> m_src_arbiter_contract_py
 ```
 
-- 89 modules exceed the 16-node cap: the 12 most connected are shown; 39 in `src/arbiter`, 26 in `tools`, 10 in `tools/ground_truth`, 2 in `tools/panel` are collapsed into one node per package.
+- 98 modules exceed the 16-node cap: the 12 most connected are shown; 41 in `src/arbiter`, 33 in `tools`, 10 in `tools/ground_truth`, 2 in `tools/panel` are collapsed into one node per package.
 - Arrows point from the importing module to the imported one; labels count imports when more than one.
-- 97 test module(s) are left out; see the test plan.
+- 102 test module(s) are left out; see the test plan.
 
 Per-module detail is in the [Software Design Document (SDD)](design.md) and the [Module Reference](modules.md).
 
@@ -173,7 +174,7 @@ flowchart LR
 
 ## 7. Cross-cutting concepts
 
-External modules imported by three or more source modules: `pathlib` (69), `json` (57), `re` (42), `sys` (42), `` (36), `argparse` (32), `dataclasses` (27), `collections` (26), `subprocess` (25), `typing` (24), `os` (23), `time` (20), `hashlib` (14), `arbiter` (13), `tempfile` (12).
+External modules imported by three or more source modules: `pathlib` (73), `json` (61), `sys` (45), `re` (44), `` (36), `argparse` (36), `collections` (29), `dataclasses` (27), `typing` (27), `subprocess` (26), `os` (23), `time` (22), `arbiter` (15), `hashlib` (14), `random` (13).
 
 Engineering rulepacks that apply across the codebase (`.ai/rules`):
 
@@ -193,11 +194,11 @@ Decision records and design documents in the repository:
 
 ## 9. Quality requirements
 
-15 requirement(s) name a quality attribute in their category or title (capability 2, compliance 1, performance 4, reliability 8); 6 still open: ARB-055, ARB-056, ARB-057, ARB-058, ARB-068, ARB-072. Each is a row in the [Software Requirements Specification (SRS)](requirements.md).
+17 requirement(s) name a quality attribute in their category or title (accuracy 1, capability 2, compliance 1, measurement 1, performance 4, reliability 8); 7 still open: ARB-055, ARB-056, ARB-057, ARB-058, ARB-068, ARB-072, ARB-176. Each is a row in the [Software Requirements Specification (SRS)](requirements.md).
 
 ## 10. Risks and technical debt
 
-0 open failure(s) of 96 in the failure ledger.
+0 open failure(s) of 98 in the failure ledger.
 
 9 recorded failure(s) recurred after an earlier fix (technical debt that came back): FAIL-007 repeats FAIL-005, FAIL-010 repeats FAIL-009, FAIL-011 repeats FAIL-010, FAIL-027 repeats FAIL-023, FAIL-028 repeats FAIL-006, FAIL-033 repeats FAIL-007, FAIL-038 repeats FAIL-023, FAIL-039 repeats FAIL-036, FAIL-084 repeats FAIL-067.
 
@@ -217,6 +218,8 @@ Open requirements that carry risk notes, with the notes that fit on one line (`-
 - ARB-101 (needs_review): Labels are model labels; not human labels. 993 tp / 12 fp / 5 unsure. Only supply.unpinned-action reaches Wilson lower >= 0.99 (0.9924 (more: `omni requirement show ARB-101`; 2 more notes)
 - ARB-110 (pending): Model labels are not independent truth; Learned triage can overfit tuned corpora; Labeller cost and code leaving the machine as bounded excerpts only for public code
 - ARB-153 (needs_review): Only the first repository's profile is consulted because quality thresholds are resolved once for the whole run; a multi-repo system scan cannot yet hold one set per repository (more: `omni requirement show ARB-153`; 3 more notes)
+- ARB-162 (needs_review): Labelled 2026-10-26: 389 held-out findings, v3 prompts, $17.54. Census, so these are rates, not samples. (more: `omni requirement show ARB-162`)
+- ARB-172 (pending): Detector dependence biases estimated totals downward; Small overlap counts can produce wide or unbounded intervals; CodeQL is unavailable and is not included as a detector
 
 ## 11. Glossary
 

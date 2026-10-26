@@ -117,3 +117,41 @@ not create findings.
 2. Workstream B re-scan and labelling after the preregistration is committed.
 3. Workstream C feasibility only after A and B exist: dependency approval,
    split list, baseline ranker (no GPU) for comparison, then GPU model.
+4. Workstream D alongside A–C, in the order given in its section.
+
+## Workstream D. Statistical methods (ARB-169)
+
+Added 2026-10-26 at the owner's request. The original list came from a
+2026-10-25 discussion whose record was lost; this is the rebuilt list, all
+twelve adopted. Every method reports **next to** the current Wilson /
+Kish / unanimity numbers. The admission bar (`DEFAULT_BAR`) changes only
+when the owner switches it, and the doc then states which rules move.
+
+| # | Method | Problem it solves | Status |
+|---|---|---|---|
+| D1 | Sequential probability ratio test (SPRT) | Stop labelling a rule once it has clearly passed or failed the bar, instead of always labelling 381+ | planned |
+| D2 | Hierarchical Bayesian model (Beta priors per rule family) | Rules in one family (e.g. timeouts across languages) share strength, so a thin rule does not start from zero | planned |
+| D3 | Active learning with importance sampling (Horvitz–Thompson weights) | Label the most informative findings first and reweight so the estimate stays unbiased | planned |
+| D4 | Dawid–Skene | Weigh each labeller's vote by its estimated error rate instead of requiring unanimity | in progress (ARB-167) |
+| D5 | Latent class model / Rogan–Gladen correction | Correct measured precision for the labeller's own measured error | planned |
+| D6 | Capture–recapture (Lincoln–Petersen, Chao) | Estimate defects missed by Arbiter, Semgrep and CodeQL from the overlap of what they find: a catch-rate estimate without a human audit | planned |
+| D7 | Good–Turing estimation | Chance that the next repository holds a defect kind never seen before | planned |
+| D8 | Conformal prediction | Per-finding confidence with a guaranteed error rate, for Workstream C's learned triage | planned |
+| D9 | Multiple-comparison control (Benjamini–Hochberg, Holm) | With 100+ rules tested against the bar, keep the number passing by luck bounded | planned |
+| D10 | Repository clustering / design effect | Findings from one repository are not independent; widen the interval accordingly | in progress (ARB-168) |
+| D11 | Multi-armed bandit (Thompson sampling) | Decide which language, rule and repositories get the next labelling budget | planned |
+| D12 | Value of information / information gain | Rank rule fixes and labelling batches by how far they move a language toward its claim | planned |
+
+Rules for all of Workstream D:
+
+- Same data policy as A–C: tuned on development data and calibration
+  items only; held-out sets are read for totals only.
+- Each method ships with synthetic tests where the true answer is known
+  (e.g. labellers with set error rates, a population with a set number of
+  missed defects) before it reads real labels.
+- Deterministic: fixed seeds and iteration limits, so the ledger rebuild
+  stays byte-identical for the same inputs.
+
+Order after D4 and D10: **D1** (saves the most labelling cost), **D9**
+(keeps a 99% claim defensible across many rules), **D6** (catch rate without
+an audit), then D2, D5, D3, D11, D12, D7, D8 (D8 waits for Workstream C).
