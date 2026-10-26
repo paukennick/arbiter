@@ -7,6 +7,12 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-163 | Breadth set r7 for Python frozen before any clone or scan: 180
+  applications (median 3,018 stars) chosen from GitHub metadata and file names
+  only by `tools/freeze_breadth_python.py` (seed 20261026), split 45 `dev` /
+  135 `heldout`, each pinned to a commit; 168 candidates rejected with reasons.
+  `tools/gold/breadth-r7-python-repos.json`, fetched by
+  `tools/fetch_breadth_r7_python.sh` (sliceable and shardable for pods).
 - ARB-162 | Held-out set r7 for Python frozen before any scan: 20 repositories
   (10 well-run with OpenSSF Scorecard >= 7.0, 10 applications), chosen from GitHub
   and Scorecard metadata only, each pinned to a commit. `tools/gold/heldout-r7-python-repos.json`,
