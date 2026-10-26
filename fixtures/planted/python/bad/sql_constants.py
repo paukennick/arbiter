@@ -50,3 +50,9 @@ def page(conn: sqlite3.Connection, sort_by: str):
     if sort_by not in SORTABLE:
         print("unknown sort column", sort_by)
     return conn.execute(f"SELECT id FROM {_TABLE} ORDER BY {sort_by}").fetchall()  # expect: arbiter/python.sql-injection
+
+
+def mark_from_view(conn: sqlite3.Connection, request) -> None:
+    # Django's request.POST is upper-case but is the client's, not a constant
+    column = request.POST.get("column")
+    conn.execute(f"UPDATE {_TABLE} SET {column} = 1")  # expect: arbiter/python.sql-injection

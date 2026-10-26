@@ -825,3 +825,28 @@ def test_private_helper_with_an_outside_caller_is_still_reported(tmp_path):
         "def ok3(conn):\n"
         "    _drop3(conn, 'jobs')\n")
     assert _lines(tmp_path, code, "sql-injection") == [2, 8]
+
+
+def test_django_request_values_are_never_constants(tmp_path):
+    """`request.GET` / `POST` / `META` / `COOKIES` are upper-case, so the
+    ALL_CAPS constant convention must not vouch for them; a decorated private
+    function has a framework caller the file does not show. A key looked up
+    in the program's own mapping is still constant."""
+    code = (
+        "import functools\n"
+        "COLUMNS = {'read': 'read_at'}\n"
+        "def v(self, cursor, request):\n"
+        "    cursor.execute(f\"SELECT * FROM t WHERE id = {request.GET['id']}\")\n"
+        "    name = request.POST.get('name')\n"
+        "    cursor.execute(\"SELECT * FROM u WHERE n = '\" + name + \"'\")\n"
+        "    cursor.execute(f\"SELECT {self.request.GET.get('c', '')} FROM t\")\n"
+        "    h = request.META.get('HTTP_X')\n"
+        "    cursor.execute(f\"SELECT * FROM t WHERE h = '{h}'\")\n"
+        "    col = COLUMNS.get(request.GET.get('e'), 'read_at')\n"
+        "    cursor.execute(f'UPDATE m SET {col} = 1')\n"
+        "@functools.cache\n"
+        "def _cached(cursor, t):\n"
+        "    cursor.execute(f'DROP TABLE {t}')\n"
+        "def ok(cursor):\n"
+        "    _cached(cursor, 'jobs')\n")
+    assert _lines(tmp_path, code, "sql-injection") == [4, 6, 7, 9, 14]

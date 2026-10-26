@@ -15,8 +15,10 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   and `"?"` placeholder lists; it now reports 113. A value is followed to
   every place it is bound in the file, into same-file helpers and back from
   private functions' callers; a public function's parameter, an attribute, an
-  import or an unseen call is still reported. Planted Python 82/82 -> 88/88
-  (six new injection cases, six constant twins silent), OWASP Benchmark
+  import, an unseen call, a request value (Django's upper-case `request.POST`
+  included) and a decorated private function's parameter are still reported.
+  Planted Python 82/82 -> 89/89 (seven new injection cases, their constant
+  twins silent), OWASP Benchmark
   Python CWE-89 5/5 caught and 0/11 false alarms before and after
   (FAIL-143).
 - ARB-160 | Python rules drop two false positives from the development gold

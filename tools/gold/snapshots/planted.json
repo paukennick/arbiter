@@ -1,9 +1,9 @@
 {
  "target": "planted",
  "pinned_sha": "",
- "arbiter_commit": "28ae2574c24963a11d7176e5dfb0861c260f19f5",
+ "arbiter_commit": "2441bd72e3d4d05a87fe374adab57189446dde5d",
  "recorded": "2026-10-26",
- "count": 468,
+ "count": 469,
  "by_rule": {
   "arbiter/aiapp.store-never-evicted": 5,
   "arbiter/aiapp.unauthenticated-destructive-route": 3,
@@ -111,7 +111,7 @@
   "arbiter/python.request-body-unbounded": 3,
   "arbiter/python.retry-constant-delay": 1,
   "arbiter/python.retry-loop-no-backoff": 3,
-  "arbiter/python.sql-injection": 14,
+  "arbiter/python.sql-injection": 15,
   "arbiter/python.ssrf-check-then-connect": 1,
   "arbiter/python.ssrf-stored-callback": 1,
   "arbiter/python.swallowed-error-in-worker-loop": 1,
@@ -460,6 +460,7 @@
   "arbiter/python.sql-injection\tpython/bad/sql_constants.py\t27",
   "arbiter/python.sql-injection\tpython/bad/sql_constants.py\t43",
   "arbiter/python.sql-injection\tpython/bad/sql_constants.py\t52",
+  "arbiter/python.sql-injection\tpython/bad/sql_constants.py\t58",
   "arbiter/python.ssrf-check-then-connect\tpython/bad/title_fetch.py\t16",
   "arbiter/python.ssrf-stored-callback\tpython/bad/aicode_forward.py\t7",
   "arbiter/python.swallowed-error-in-worker-loop\tpython/bad/worker.py\t30",

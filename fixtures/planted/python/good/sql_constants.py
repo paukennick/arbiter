@@ -60,3 +60,11 @@ def page(conn: sqlite3.Connection, sort_by: str, order: str):
     if order.lower() not in ("asc", "desc"):
         order = "desc"
     return conn.execute(f"SELECT id FROM {_TABLE} ORDER BY {sort_by} {order.upper()}").fetchall()
+
+
+_EVENT_COLUMNS = {"read": "read_at", "done": "done_at"}
+
+
+def mark_from_view(conn: sqlite3.Connection, request) -> None:
+    column = _EVENT_COLUMNS.get(request.POST.get("event"), "read_at")
+    conn.execute(f"UPDATE {_TABLE} SET {column} = 1")

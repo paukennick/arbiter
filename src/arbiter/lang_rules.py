@@ -759,6 +759,9 @@ _READ_METHODS = {"copy", "count", "index", "get", "items", "keys", "values", "po
 _PASS_OK = {"len", "join", "list", "tuple", "sorted", "reversed", "set", "frozenset",
             "enumerate", "zip", "any", "all", "bool", "str", "repr", "isinstance", "print",
             "min", "max", "sum", "iter", "next"}
+# An expression rooted in the request (`request.POST`, `self.request.GET`,
+# `req.headers`): never constant, whatever its case.
+_REQUEST_ROOT = re.compile(r"(?:^|\.)(?:request|req|_request)(?:\.|$)")
 _STEP_BUDGET = 4000
 _MAX_HOPS = 2
 
@@ -1115,6 +1118,8 @@ class _PyConst:
                 and fn.parent.parent is not None and fn.parent.parent.type == "function_definition"
         if not fname or not (fname.startswith("_") and not fname.startswith("__") or nested):
             return False
+        if fn.parent is not None and fn.parent.type == "decorated_definition":
+            return False        # `@app.route`, `@task`: called by a framework
         params = list(_param_names(fn).items())
         idx = next((i for i, (p, _) in enumerate(params) if p == name), None)
         if idx is None or params[idx][1] == "splat":
@@ -1244,6 +1249,8 @@ class _PyConst:
             # an element of a constant container is constant, whatever the key
             return self.collection_safe(node.child_by_field_name("value"), env)
         if t in ("identifier", "attribute"):
+            if _REQUEST_ROOT.search(_txt(node)):
+                return False        # `request.GET`: upper-case, but the client's
             if self.names and re.fullmatch(self.names, _txt(node)):
                 # an ALL_CAPS name is trusted by convention (it may be
                 # imported), unless this file shows it changing: a
