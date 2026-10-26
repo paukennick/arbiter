@@ -1,9 +1,9 @@
 {
  "target": "java-spring-security",
  "pinned_sha": "2ad2ec631b52c2f6318c4f186e599b93cc711bee",
- "arbiter_commit": "98833010b8070f0e387910ab7c7de01ad1928a25",
- "recorded": "2026-10-25",
- "count": 238,
+ "arbiter_commit": "a5416f27968b7c61f1ea91a186ebea3124d7704f",
+ "recorded": "2026-10-26",
+ "count": 226,
  "by_rule": {
   "arbiter/assurance.permanently-skipped-test": 17,
   "arbiter/assurance.suppression-census": 1,
@@ -19,8 +19,7 @@
   "arbiter/quality.file-too-long": 18,
   "arbiter/secrets.assigned-credential": 25,
   "arbiter/secrets.jwt": 45,
-  "arbiter/secrets.private-key": 8,
-  "arbiter/supply.unpinned-npm-dep": 12
+  "arbiter/secrets.private-key": 8
  },
  "findings": [
   "arbiter/assurance.permanently-skipped-test\tbuildSrc/src/test/java/io/spring/gradle/convention/ShowcaseITest.java\t35",
@@ -248,18 +247,6 @@
   "arbiter/secrets.private-key\tcore/src/test/resources/org/springframework/security/converter/simple.priv\t1",
   "arbiter/secrets.private-key\tcrypto/src/test/resources/bad.pem\t1",
   "arbiter/secrets.private-key\tcrypto/src/test/resources/fake.pem\t1",
-  "arbiter/secrets.private-key\tcrypto/src/test/resources/spacey.pem\t1",
-  "arbiter/supply.unpinned-npm-dep\tjavascript/package.json\t0",
-  "arbiter/supply.unpinned-npm-dep\tjavascript/package.json\t0",
-  "arbiter/supply.unpinned-npm-dep\tjavascript/package.json\t0",
-  "arbiter/supply.unpinned-npm-dep\tjavascript/package.json\t0",
-  "arbiter/supply.unpinned-npm-dep\tjavascript/package.json\t0",
-  "arbiter/supply.unpinned-npm-dep\tjavascript/package.json\t0",
-  "arbiter/supply.unpinned-npm-dep\tjavascript/package.json\t0",
-  "arbiter/supply.unpinned-npm-dep\tjavascript/package.json\t0",
-  "arbiter/supply.unpinned-npm-dep\tjavascript/package.json\t0",
-  "arbiter/supply.unpinned-npm-dep\tjavascript/package.json\t0",
-  "arbiter/supply.unpinned-npm-dep\tjavascript/package.json\t0",
-  "arbiter/supply.unpinned-npm-dep\tjavascript/package.json\t0"
+  "arbiter/secrets.private-key\tcrypto/src/test/resources/spacey.pem\t1"
  ]
 }
