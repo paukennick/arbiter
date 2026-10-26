@@ -573,7 +573,9 @@ least 0.5) differs from unanimity's on 10 findings:
 - 6 adjudicated findings are reversed: 4 tp become fp, and 2 fp become
   tp. Unanimity follows the adjudicator, while Dawid–Skene weighs the
   adjudicator's single vote by its weakly estimated rates against the
-  prosecutor's and defender's.
+  prosecutor's and defender's. These reversals follow from an assumed
+  adjudicator accuracy (one calibration item, so its rates are mostly the
+  prior), not from adjudicator mistakes that were found.
 
 **If Nick switches admission to Dawid–Skene:**
 
@@ -620,7 +622,9 @@ findings from one repository resemble each other. It is computed in
     `_01`…`_NN` together, since they share a source and a sink.
 
   Treating each suite as one repository would leave every benchmark rule
-  worth one finding.
+  worth one finding. With one OWASP finding per test file, the design
+  effect for those rules is 1.0 by construction, not a measured absence
+  of correlation.
 - **The bootstrap check.** ARB-112's repository bootstrap
   (`tools/prereg_b_analysis.py`, seed 109) runs per rule as a check, with
   2,000 resamples instead of its 10,000 to keep `build` near half a

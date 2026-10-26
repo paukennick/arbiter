@@ -953,12 +953,22 @@ def render_alternatives(ledger: dict, bar: dict, verified: set[str]) -> str:
     for lang, r in language_pooled(ledger).items():
         lines.append(f"{lang:<12} {r['tp']:>5} {r['fp']:>5} {f(r['precision']):>7} {f(r['lower']):>7} "
                      f"{r['ds_n']:>5} {f(r['ds_precision']):>7} {f(r['ds_lower']):>7} {r['repos'] or '-':>5} "
-                     f"{r['deff'] or '-':>7} {f(r['clustered_lower']):>7}")
-    lines += ["", f"rules within 0.05 of the admission bar ({bar['rule_lower']}) by the current lower bound",
+                     f"{r['deff'] or '-':>7} {f(r['clustered_lower']):>7}"
+                     f"{'  (deff worst case, ICC = 1)' if r['deff_source'] and r['deff_source'] != 'estimated' else ''}")
+    lines += ["", "test-file clusters (OWASP) give a design effect of 1.0 by construction, not by measurement",
+              f"rules within 0.05 of the admission bar ({bar['rule_lower']}) by the current lower bound",
               f"{'rule':<46} {'TP':>5} {'FP':>4} {'lower':>7} {'ds_lo':>7} {'repos':>5} {'deff':>7} "
               f"{'clus_lo':>7} {'boot_lo':>7}"]
+    rules_cl = (ledger.get("clustered") or {}).get("rules") or {}
     for r in near_bar(ledger):
-        note = f"  ({r['bootstrap_note']})" if r["bootstrap_note"] else ""
+        notes = []
+        if r["deff_source"] and r["deff_source"] != "estimated":
+            b = (rules_cl.get(r["rule"]) or {}).get("borrowed_icc") or {}
+            notes.append("deff worst case, ICC = 1" + (f"; pooled ICC: deff {b['deff']}, lower {f(b['wilson_lower'])}"
+                                                       if b else ""))
+        if r["bootstrap_note"]:
+            notes.append(r["bootstrap_note"])
+        note = f"  ({'; '.join(notes)})" if notes else ""
         lines.append(f"{r['rule']:<46} {r['tp']:>5} {r['fp']:>4} {f(r['lower']):>7} {f(r['ds_lower']):>7} "
                      f"{r['repos'] or '-':>5} {r['deff'] or '-':>7} {f(r['clustered_lower']):>7} "
                      f"{f(r['bootstrap_lower']):>7}{note}")
