@@ -203,7 +203,7 @@ def git_prefix(path: str) -> str:
     """The scan target's path inside its git work tree (`sub/dir/` or '')."""
     try:
         r = subprocess.run(["git", "-C", path, "rev-parse", "--show-prefix"],
-                           capture_output=True, text=True, timeout=30)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)
     except Exception:  # noqa: BLE001 - not a git checkout: paths are used as they are
         return ""
     return r.stdout.strip() if r.returncode == 0 else ""

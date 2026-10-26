@@ -109,7 +109,7 @@ def test_git_diff_against_a_real_repository(tmp_path):
     _git_repo(repo, {"m.py": "a\nb\nc\n"})
     import subprocess
     subprocess.run(["git", "-C", str(repo), "checkout", "-q", "-b", "feature"], check=True)
-    (repo / "m.py").write_text("a\nB\nc\nd\n")
+    (repo / "m.py").write_text("a\nB\nc\nd\n", encoding="utf-8")
     subprocess.run(["git", "-C", str(repo), "commit", "-qam", "x"], check=True)
     got, note = pr.git_diff_added(str(repo), "main")
     assert note == "" and got == {"m.py": {2: "B", 4: "d"}}
@@ -498,7 +498,7 @@ def test_context_comes_from_the_event_payload(tmp_path):
     ev = tmp_path / "event.json"
     ev.write_text(json.dumps({"pull_request": {
         "number": 12, "head": {"sha": "headsha", "repo": {"full_name": "fork/r"}},
-        "base": {"ref": "main", "repo": {"full_name": "o/r"}}}}))
+        "base": {"ref": "main", "repo": {"full_name": "o/r"}}}}), encoding="utf-8")
     ctx = pr.context_from_env({"GITHUB_EVENT_PATH": str(ev), "GITHUB_REPOSITORY": "o/r",
                                "GITHUB_SHA": "mergesha"})
     assert (ctx.pr, ctx.head_sha, ctx.fork, ctx.base_ref) == (12, "headsha", True, "main")
@@ -559,13 +559,14 @@ def test_reaction_labels_never_reach_admission(tmp_path, monkeypatch):
               "reactor": f"sha256:{i:016x}", "source": "pr-reaction", "held_out": False}
              for i in range(200)]
     only = tmp_path / "only.jsonl"
-    only.write_text("".join(json.dumps(r) + "\n" for r in base))
+    only.write_text("".join(json.dumps(r) + "\n" for r in base), encoding="utf-8")
     mixed = tmp_path / "human-pr.jsonl"
-    mixed.write_text("".join(json.dumps(r) + "\n" for r in human))
+    mixed.write_text("".join(json.dumps(r) + "\n" for r in human), encoding="utf-8")
     a, b = tmp_path / "a.json", tmp_path / "b.json"
     assert PL.main(["build", str(only), "--out", str(a), "--date", "2026-10-26"]) == 0
     assert PL.main(["build", str(only), str(mixed), "--out", str(b), "--date", "2026-10-26"]) == 0
-    ra, rb = json.loads(a.read_text())["rules"][TIMEOUT], json.loads(b.read_text())["rules"][TIMEOUT]
+    ra, rb = (json.loads(a.read_text(encoding="utf-8"))["rules"][TIMEOUT],
+              json.loads(b.read_text(encoding="utf-8"))["rules"][TIMEOUT])
     assert (ra["tp"], ra["fp"], ra["admitted"]) == (rb["tp"], rb["fp"], rb["admitted"])
 
 
@@ -580,22 +581,24 @@ def test_review_config_is_validated(tmp_path):
         with pytest.raises(RuntimeError):
             check_review_config({"review": {**DEFAULTS["review"], **bad}})
     cfg = tmp_path / "arbiter.yaml"
-    cfg.write_text("review:\n  min_tier: verified\n  max_comments: 5\n")
+    cfg.write_text("review:\n  min_tier: verified\n  max_comments: 5\n", encoding="utf-8")
     got = load_config(None, str(tmp_path))["review"]
     assert got == {"min_tier": "verified", "max_comments": 5, "suggestions": True}
 
 
-def test_gate_post_review_never_changes_the_exit_code(tmp_path, monkeypatch, capsys):
+@pytest.mark.parametrize("passed", [True, False])
+def test_gate_post_review_never_changes_the_exit_code(tmp_path, monkeypatch, capsys, passed):
     from arbiter import cli
-    (tmp_path / "app.py").write_text("x = 1\n")
-    calls = []
-    monkeypatch.setattr(pr, "post_review_safely", lambda *a, **k: calls.append(k) or
+    (tmp_path / "app.py").write_text("x = 1\n", encoding="utf-8")
+    monkeypatch.setattr(cli, "run_scan", lambda **k: Report(
+        system="t", repos=[RepoInfo(id="root")], gate={"passed": passed}))
+    monkeypatch.setattr(pr, "post_review_safely", lambda *a, **k:
                         (_ for _ in ()).throw(RuntimeError("boom")))
     base = ["gate", str(tmp_path), "--out", str(tmp_path / "out"), "--format", "json",
-            "--no-history", "--no-cache", "--only", "secrets", "--no-github"]
-    code_without = cli.main(base)
-    code_with = cli.main(base + ["--post-review", "--review-base", "HEAD"])
-    assert code_with == code_without
+            "--no-history", "--no-github"]
+    want = cli.EXIT_OK if passed else cli.EXIT_GATE_FAIL
+    assert cli.main(base) == want
+    assert cli.main(base + ["--post-review", "--review-base", "HEAD"]) == want
     assert "the gate result is unaffected" in capsys.readouterr().out
 
 
