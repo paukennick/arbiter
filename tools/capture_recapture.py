@@ -544,7 +544,18 @@ def cmd_validate(a) -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(rows, indent=1, sort_keys=True), encoding="utf-8")
     print("\n".join(render_rows(rows, truth=True)))
+    print()
+    print(coverage_line(rows))
     return 0
+
+
+def coverage_line(rows: list[dict]) -> str:
+    """How often the 95% interval held the known true total."""
+    est = [r for r in rows if r["estimable"]]
+    inside = [r for r in est if r["primary"]["lo"] <= r["true_total"]
+              <= (math.inf if r["primary"]["hi"] == "inf" else r["primary"]["hi"])]
+    return (f"True total inside the 95% interval in {len(inside)} of {len(est)} estimable strata; "
+            f"{len(rows) - len(est)} strata not estimable.")
 
 
 DEFAULT_LABELS = [ROOT / "tools" / "gold" / "labels" / "gold-model.jsonl"]
