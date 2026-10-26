@@ -1104,6 +1104,10 @@ def read_plan(path: Path, sequential: bool) -> tuple[dict[str, int], dict | None
     if sequential and block is None:
         raise SystemExit(f"--sequential: {path} pre-registers no \"sequential\" block "
                          "(method, alpha, beta, p0, p1, batch); add and commit it first")
+    if block is not None:
+        missing = [k for k in seq.DEFAULTS if not isinstance(block, dict) or k not in block]
+        if missing:
+            raise SystemExit(f"{path}: the \"sequential\" block must state every parameter; missing {missing}")
     if block is not None and not sequential:
         raise SystemExit(f"{path} pre-registers sequential stopping; run it with --sequential")
     return plan, (seq.validate(block) if block is not None else None)

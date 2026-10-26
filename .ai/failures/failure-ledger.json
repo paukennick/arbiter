@@ -2464,6 +2464,29 @@
       "prevention_rules": [],
       "prevention_notes": "Resolve CLI wrappers to their binary before passing multi-line arguments",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-170",
+      "date": "2026-10-26",
+      "title": "Gate's pytest in a worktree imports arbiter from the main checkout's editable install",
+      "status": "mitigated",
+      "severity": "high",
+      "symptom": "omni gate (completion.tests) in C:/Users/pauke/wt/r7-seq failed collecting tests/test_sequential.py and three label-tool test files: ImportError: cannot import name 'sequential' from 'arbiter' (C:\\Users\\pauke\\src\\arbiter\\src\\arbiter\\__init__.py).",
+      "how_detected": "omni gate on r7-seq",
+      "root_cause": "arbiter is pip-installed in editable mode from C:/Users/pauke/src/arbiter. pytest is run without PYTHONPATH and tests/conftest.py imports arbiter before any tool inserts the worktree's src on sys.path, so every worktree's gate tests the main checkout's src/arbiter, not the branch's. A branch that changes existing modules gets a gate result for code it did not change; only a new module exposes it as an import error.",
+      "requirement": "ARB-170",
+      "affected": [
+        "tests\\conftest.py",
+        "omni gate completion.tests",
+        "every worktree under C;C:\\Program Files\\Git\\Users\\pauke\\wt"
+      ],
+      "fix_summary": "Run the suite and gate from a worktree with PYTHONPATH=<worktree>/src (as tools/mutate_tests.py already does). A durable fix (pytest pythonpath setting in pyproject.toml, or conftest inserting src first) is left to the owner.",
+      "fix_commits": [],
+      "regression_tests": [],
+      "no_test_reason": "environment/install issue, not code under test",
+      "prevention_rules": [],
+      "prevention_notes": "In any worktree run pytest/omni gate with PYTHONPATH pointing at that worktree's src.",
+      "recurrence_of": ""
     }
   ]
 }

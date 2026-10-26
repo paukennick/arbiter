@@ -120,18 +120,24 @@ def labels_needed(fp: int, bar: float, alpha: float) -> int:
 
 
 def lower_bound(tp: int, fp: int, alpha: float) -> float:
-    """Lower end of the confidence sequence: the largest grid q (step 1e-4)
-    such that every grid r <= q is rejected. 0.0 when nothing is."""
+    """Lower end of the confidence sequence to a 1e-4 grid: the largest grid
+    q that the data rule out. The statistic falls as q rises (held by a test
+    over the range that matters), so the rejected grid points form a prefix
+    and bisection finds its end. 0.0 when nothing is rejected."""
     if tp + fp == 0:
         return 0.0
     thr = math.log(1 / alpha)
-    last = 0.0
-    for i in range(1, _GRID):
-        q = i / _GRID
-        if log_mixture(tp, fp, q) < thr:
-            break
-        last = q
-    return last
+    lo, hi = 0, _GRID              # invariant: grid lo rejected (or 0), grid hi not
+    if log_mixture(tp, fp, 1 / _GRID) < thr:
+        return 0.0
+    lo = 1
+    while hi - lo > 1:
+        mid = (lo + hi) // 2
+        if log_mixture(tp, fp, mid / _GRID) >= thr:
+            lo = mid
+        else:
+            hi = mid
+    return lo / _GRID
 
 
 def sprt_llr(tp: int, fp: int, p0: float, p1: float) -> float:
@@ -143,14 +149,20 @@ def sprt_fails(tp: int, fp: int, cfg: dict) -> bool:
     return sprt_llr(tp, fp, cfg["p0"], cfg["p1"]) <= math.log(cfg["beta"])
 
 
-def reachable(tp: int, fp: int, remaining: int | None, bar: float, alpha: float) -> bool:
+def reachable(tp: int, fp: int, remaining: int | None, bar: float, alpha: float,
+              wilson_too: bool = True) -> bool:
     """Could `bar` still be passed if every one of `remaining` labels were tp?
-    `remaining=None` means unbounded."""
+    `remaining=None` means unbounded. By this test, or (`wilson_too`) by the
+    ledger's fixed Wilson bound once the plan is done -- futility uses both,
+    so it never stops a rule the ledger could still admit; whether 0.99 is
+    in reach for a sequential pass uses this test only."""
     if remaining is None:
         return True
     rem = max(0, remaining)
     if tp + rem >= tp_needed(fp, bar, alpha):
         return True
+    if not wilson_too:
+        return False
     w = wilson_lower(tp + rem, tp + rem + fp)
     return w is not None and w >= bar
 
@@ -167,14 +179,15 @@ def decide(tp: int, fp: int, cfg: dict | None = None, remaining: int | None = No
 
     Returns {state, reason, stop, lower, n, tp, fp, basis}; `basis` is
     "budget" for a futility fail (the plan is too small to show 0.97, which is
-    not a measurement of the rule) and "measured" otherwise. `stop` is True when labelling
+    not a measurement of the rule), "exhausted" for a rule still undecided
+    with nothing left to label, and "measured" otherwise. `stop` is True when labelling
     this rule further cannot change what it can claim: pass-0.99, fail, or a
     pass at 0.97 when 0.99 is out of reach of the remaining plan."""
     cfg = validate(cfg or {})
     a = cfg["alpha"]
     lower = lower_bound(tp, fp, a)
     out = {"n": tp + fp, "tp": tp, "fp": fp, "lower": round(lower, 4), "basis": "measured"}
-    can99 = reachable(tp, fp, remaining, 0.99, a)
+    can99 = reachable(tp, fp, remaining, 0.99, a, wilson_too=False)
     if rejects(tp, fp, 0.99, a):
         return {**out, "state": "pass-0.99", "reason": "anytime-valid lower bound >= 0.99", "stop": True}
     if sprt_fails(tp, fp, cfg):
@@ -186,6 +199,9 @@ def decide(tp: int, fp: int, cfg: dict | None = None, remaining: int | None = No
     if not reachable(tp, fp, remaining, 0.97, a):
         return {**out, "state": "fail", "reason": "cannot reach 0.97 even if every remaining label is tp",
                 "stop": True, "basis": "budget"}
+    if remaining is not None and remaining <= 0:
+        return {**out, "state": "continue", "reason": "undecided and nothing left to label",
+                "stop": True, "basis": "exhausted"}
     return {**out, "state": "continue", "reason": "undecided", "stop": False}
 
 
@@ -227,10 +243,12 @@ def stop_state(tp: int, fp: int, cfg: dict, remaining: int | None = None) -> str
     if sprt_fails(tp, fp, cfg):
         return "fail"
     if remaining is not None:
-        if tp >= tp_needed(fp, 0.97, a) and not reachable(tp, fp, remaining, 0.99, a):
+        if tp >= tp_needed(fp, 0.97, a) and not reachable(tp, fp, remaining, 0.99, a, wilson_too=False):
             return "pass-0.97"
         if not reachable(tp, fp, remaining, 0.97, a):
             return "fail"
+        if remaining <= 0:
+            return "continue"
     return None
 
 
@@ -239,9 +257,10 @@ def simulate(p: float, runs: int, seed: int, cfg: dict | None = None,
     """Run the sequential design `runs` times on a rule of true precision `p`.
 
     Labels are drawn in batches; each run stops on `stop_state` or at
-    `max_labels` (the fixed plan). With `population`, each run first draws a
-    finite population of that size at rate `p` and then labels it without
-    replacement, as a real per-rule plan does. Returns counts per final
+    `max_labels` (the fixed plan). With `population`, each run labels, without
+    replacement and in a seeded random order, a finite population of that
+    size holding exactly round(population * (1 - p)) false positives, as a
+    real per-rule plan does. Returns counts per final
     state and the mean labels used. Seeded, so deterministic."""
     import random
     cfg = validate(cfg or {})
@@ -251,7 +270,9 @@ def simulate(p: float, runs: int, seed: int, cfg: dict | None = None,
     b = cfg["batch"]
     for _ in range(runs):
         if population is not None:
-            plan = [rng.random() < p for _ in range(population)]
+            bad = round(population * (1 - p))
+            plan = [False] * bad + [True] * (population - bad)
+            rng.shuffle(plan)
             limit = population
         else:
             plan, limit = None, max_labels
@@ -294,11 +315,11 @@ def render_status(status: dict[str, dict], cfg: dict | None = None) -> str:
     c = validate(cfg or {})
     lines = [f"Sequential status (ARB-170; held-out labels only; {c['method']}, alpha={c['alpha']}, "
              f"beta={c['beta']}, SPRT p0={c['p0']} p1={c['p1']}). Beside admission; changes nothing.",
-             f"{'rule':<56} {'TP':>5} {'FP':>4} {'left':>6} {'lower':>7}  {'state':<10} {'basis':<8} admitted"]
+             f"{'rule':<56} {'TP':>5} {'FP':>4} {'left':>6} {'lower':>7}  {'state':<10} {'basis':<9} admitted"]
     for name, d in status.items():
         left = "-" if d["remaining"] is None else str(d["remaining"])
         lines.append(f"{name:<56} {d['tp']:>5} {d['fp']:>4} {left:>6} {d['lower']:>7.4f}  "
-                     f"{d['state']:<10} {d['basis']:<8} {'yes' if d['admitted'] else 'no'}")
+                     f"{d['state']:<10} {d['basis']:<9} {'yes' if d['admitted'] else 'no'}")
     counts: dict[str, int] = {}
     for d in status.values():
         counts[d["state"]] = counts.get(d["state"], 0) + 1

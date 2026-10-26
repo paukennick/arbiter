@@ -141,8 +141,23 @@ def test_a_good_rule_passes_with_fewer_labels_than_the_fixed_plan():
 
 
 def test_without_replacement_from_a_finite_population_stays_valid():
-    r = S.simulate(0.985, 300, 16, population=1500)
-    assert r["pass-0.99"] / r["runs"] <= CFG["alpha"]
+    # exactly 15 FPs in 1,500 (precision 0.99) or 23 (0.985), labelled in a random order
+    for p in (0.99, 0.985):
+        r = S.simulate(p, 300, 16, population=1500)
+        assert r["pass-0.99"] / r["runs"] <= CFG["alpha"]
+
+
+def test_the_simulated_stopping_rule_is_the_one_the_tool_uses():
+    for tp in range(0, 901, 15):
+        for fp in range(9):
+            for remaining in (None, 0, 10, 200, 2000):
+                d = S.decide(tp, fp, CFG, remaining)
+                assert S.stop_state(tp, fp, CFG, remaining) == (d["state"] if d["stop"] else None),                     (tp, fp, remaining)
+
+
+def test_a_rule_with_nothing_left_to_label_is_marked_exhausted():
+    d = S.decide(315, 3, CFG, remaining=0)
+    assert (d["state"], d["basis"], d["stop"]) == ("continue", "exhausted", True)
 
 
 def test_simulation_is_deterministic():
@@ -228,6 +243,11 @@ def test_the_plan_must_pre_register_sequential_parameters(tmp_path):
         lm.read_plan(plan, sequential=False)
     want, cfg = lm.read_plan(plan, sequential=True)
     assert want == {"*": 0, "r/a": 100} and cfg == CFG
+    # a partial block would silently take whatever the code's defaults are today
+    for partial in ({}, {"method": S.METHOD, "alpha": 0.05}):
+        plan.write_text(json.dumps({"r/a": 100, "sequential": partial}))
+        with pytest.raises(SystemExit):
+            lm.read_plan(plan, sequential=True)
 
 
 def test_sequential_stops_at_the_same_prefix_as_the_full_plan_order():

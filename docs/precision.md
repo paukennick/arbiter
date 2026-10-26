@@ -339,7 +339,8 @@ they are checked and wherever labelling stops.
 - *Futility*: when even an all-true-positive remainder of the rule's plan
   could reach 0.97 neither by this test nor by the ledger's own Wilson bound,
   the rule stops as `fail` with basis `budget`. That says the plan is too
-  small, not that the rule is bad; the report keeps the two apart.
+  small, not that the rule is bad; the report keeps the two apart. Whether
+  0.99 is still in reach uses the sequential test alone.
 - A pass at 0.97 is final only when 0.99 is out of reach of the plan;
   otherwise the rule continues toward 0.99. Unsure labels count for neither
   side, as in the ledger.
@@ -347,7 +348,8 @@ they are checked and wherever labelling stops.
 Parameters (method `mixture-cs+sprt`): `alpha` 0.05, `beta` 0.05, `p0` 0.93,
 `p1` 0.97, `batch` 25. They are **pre-registered**: the `--per-rule` plan
 file carries a `"sequential"` block with all six before any model call,
-`--sequential` refuses a plan without one, a plan with one refuses to run
+`--sequential` refuses a plan without one or with any of the six missing
+(defaults are never filled in), a plan with one refuses to run
 without `--sequential`, and nothing on the command line overrides them.
 
 Each rule is labelled in the order its plan already gives it
@@ -389,8 +391,16 @@ advance that a rule will show none, and must label everything planned.
 A fixed 381-label plan passes a 0.999 rule only 68% of the time (one stray
 false positive sinks it); the sequential design passes 96% with 474 labels
 on average. A bad rule (0.90) stops after about 89 labels instead of the
-whole plan. Labelling without replacement from a finite population (1,500
-findings) gives the same picture (0.999: 99.7% passed, 499 labels).
+whole plan. Labelling without replacement from a finite population of
+1,500 findings, in a random order, gives the same picture: with 2 false
+positives in it (0.999) every run passed 0.99, on 522 labels on average; with
+exactly 15 (0.99) 1.65% passed 0.99 (bound: <= 5%), and the rest stopped at
+pass-0.97 after 648 labels once 0.99 was out of reach.
+
+**A rule with nothing left to label** that is still undecided shows
+`continue` with basis `exhausted`: more labels cannot be bought for it, and
+its ledger admission (which counts every label, not only held-out ones)
+stands as it is.
 
 Not covered: a rule whose true precision lies between 0.97 and 0.99 never
 clearly passes 0.99 or fails, so it runs to the end of its plan, as today.
