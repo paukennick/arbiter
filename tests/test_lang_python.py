@@ -25,6 +25,7 @@ RULES = {
     # AI-written-code defect classes (ARB-083)
     "mail-tls-unverified", "retry-constant-delay", "ssrf-stored-callback",
     "image-bomb-check-disabled", "decompress-unbounded", "request-body-unbounded",
+    "path-confinement-optional", "ssrf-check-then-connect",
 }
 
 pytestmark = pytest.mark.skipif(not ts.available(), reason="tree-sitter not installed")
@@ -657,3 +658,54 @@ def test_safe_splice_keys_are_python_and_ruby_only():
         validate_pack({"languages": ["python"], "rules": [ruby_only]}, "p")
     with pytest.raises(PackError):
         validate_pack({"languages": ["python"], "rules": [{**rule, "safe_splice_names": "("}]}, "p")
+
+
+_ROOT_PY = """import os
+from pathlib import Path
+
+def a(raw):
+    root = os.environ.get("IMAGE_ROOT")
+    if not root:
+        return Path(raw).resolve()
+    return Path(root) / raw
+
+def b(raw):
+    root = Path("/srv/images")
+    if not root:
+        return Path(raw).resolve()
+    return root / raw
+"""
+
+_SSRF_PY = """import socket, urllib.request
+
+def _is_public_host(h):
+    return socket.getaddrinfo(h, None)
+
+def first(url, h):
+    if not _is_public_host(h):
+        return None
+    return urllib.request.urlopen(url, timeout=1)
+
+def plain(url, h):
+    if not _is_public_host(h):
+        return None
+    return urllib.request.urlopen(url, timeout=1)
+
+def with_conn(url, h):
+    if not _is_public_host(h):
+        return None
+    sock = socket.create_connection((h, 443), timeout=1)
+    return sock
+
+def no_check(url):
+    return urllib.request.urlopen(url, timeout=1)
+"""
+
+
+def test_optional_root_confinement_is_reported_only_when_the_root_is_from_the_environment(tmp_path):
+    assert _lines(tmp_path, _ROOT_PY, "path-confinement-optional") == [6]
+
+
+def test_resolve_then_connect_is_reported_unless_the_checked_address_is_used(tmp_path):
+    # `first` and `plain` are the same shape; only create_connection exempts.
+    assert _lines(tmp_path, _SSRF_PY, "ssrf-check-then-connect") == [9, 14]

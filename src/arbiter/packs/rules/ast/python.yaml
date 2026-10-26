@@ -1076,3 +1076,57 @@ rules:
       server reads whatever the client sends into memory before any
       validation runs. A few concurrent multi-gigabyte requests exhaust it.
     remediation: "Flask: set `app.config[\"MAX_CONTENT_LENGTH\"]`. Starlette/FastAPI: refuse on Content-Length and read `request.stream()` up to a limit (or cap it at the proxy)."
+
+  - id: path-confinement-optional
+    requirements: [ARB-110]
+    title: "Path confinement is skipped when the root variable is unset: `{text}`"
+    severity: medium
+    confidence: low
+    dimension: security
+    cwe: [CWE-22, CWE-73]
+    controls: [NIST-800-218:PW.5]
+    tags: [path-traversal]
+    # `if not root: return <resolved path>` is the unconfined branch; the
+    # confinement check sits after it and only runs when the variable is set.
+    query: |
+      ((if_statement condition: (not_operator argument: (identifier) @v)
+         consequence: (block (return_statement (call) @r))) @hit
+        (#match? @v "(?i)(root|base|jail|sandbox|(^|_)dir)")
+        (#match? @r "resolve|abspath|realpath|Path\\("))
+    requires_in_scope: |
+      ((function_definition) @f (#match? @f "os\\.(environ\\.get|getenv)\\(|os\\.environ\\["))
+    description: >
+      The directory a caller-supplied path must stay inside comes from an
+      optional environment variable. When it is unset the function returns the
+      caller's path as given, so an absolute or `../` path reaches any file
+      the process can read or write. The default deployment is the unconfined
+      one.
+    remediation: "Make the root required (fail at start-up when it is unset) or default it to a fixed directory, and always check `resolved.is_relative_to(root)` after resolving."
+
+  - id: ssrf-check-then-connect
+    requirements: [ARB-110]
+    title: "Host is resolved for an SSRF check, then resolved again to connect: `{text}`"
+    severity: medium
+    confidence: low
+    dimension: security
+    cwe: [CWE-918, CWE-367]
+    controls: [NIST-800-218:PW.5]
+    tags: [ssrf]
+    query: |
+      ((call function: [(identifier) (attribute attribute: (identifier))] @c) @hit
+        (#match? @c "(^|\\.)(urlopen|open|get|post|put|request|urlretrieve|HTTPSConnection|HTTPConnection)$"))
+    requires_in_scope: |
+      ((function_definition) @f
+        (#match? @f "\\b_?(is|assert|check|ensure|validate|verify)_?(public|safe|external|global|allowed)\\w*(host|url|addr|ip)\\w*\\("))
+    requires_file: |
+      ((attribute attribute: (identifier) @r) (#match? @r "^(getaddrinfo|gethostbyname\\w*)$"))
+    # Connecting to the address that was checked closes the gap.
+    unless_in_scope: |
+      ((identifier) @i (#match? @i "(?i)^(create_connection|HTTPAdapter|pinned\\w*|connect_to|resolved_ip)$"))
+      ((attribute attribute: (identifier) @a) (#match? @a "^(create_connection|connect_to)$"))
+    description: >
+      The host is resolved once to decide it is public and again by the HTTP
+      client to connect. A DNS server that answers with a public address for
+      the check and a private one for the connection (DNS rebinding) reaches
+      internal services through the guard.
+    remediation: "Resolve once and connect to that address (pass the validated IP to the connection and send the original name as the `Host` header and TLS server name), or route fetches through an egress proxy that blocks internal ranges."

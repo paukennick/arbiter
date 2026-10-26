@@ -84,6 +84,42 @@ rules:
       connection for as long as the far end chooses.
     remediation: "Set Timeout on the client, or pass a context with a deadline on every request."
 
+  - id: http-server-no-timeout
+    requirements: [ARB-110]
+    title: "`{text}` serves with no read or write timeout, so a slow client holds its connection open"
+    severity: medium
+    confidence: medium
+    dimension: quality
+    cwe: [CWE-400]
+    controls: [NIST-800-218:PW.5]
+    tags: [timeout, reliability]
+    query: |
+      ((composite_literal
+        type: (qualified_type) @t
+        body: (literal_value) @body)
+        (#eq? @t "http.Server")
+        (#not-match? @body "ReadTimeout|WriteTimeout")) @hit
+      ((call_expression
+        function: (selector_expression) @fn
+        (#match? @fn "^http\\.ListenAndServe(TLS)?$")) @hit)
+    # A deadline set after construction, or per connection through
+    # http.TimeoutHandler or a ResponseController, bounds the same exchange.
+    unless_in_file: |
+      ((assignment_statement
+        left: (expression_list (selector_expression field: (field_identifier) @f)))
+        (#match? @f "^(ReadTimeout|WriteTimeout)$"))
+      ((selector_expression) @s
+        (#eq? @s "http.TimeoutHandler"))
+      ((selector_expression field: (field_identifier) @f)
+        (#match? @f "^(SetReadDeadline|SetWriteDeadline)$"))
+    description: >-
+      An http.Server with neither ReadTimeout nor WriteTimeout, or the
+      package-level http.ListenAndServe, which builds a server with none, lets
+      a client open a connection and send its body a byte at a time. ReadHeaderTimeout
+      alone only bounds the header read; the body and the response are still
+      unbounded, so enough slow clients exhaust the server's connections.
+    remediation: "Set ReadTimeout and WriteTimeout (and IdleTimeout) on the http.Server, or wrap handlers in http.TimeoutHandler."
+
   - id: db-call-no-deadline
     requirements: [ARB-061]
     title: "`{text}` runs a database call with no deadline or cancellation"

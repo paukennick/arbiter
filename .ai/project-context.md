@@ -1710,3 +1710,197 @@ factor lets five criticals grade 96/100 at 5M lines), CORE-027 (unsure
 labels leave the precision denominator), CORE-026 (`ignore:` is declared in
 DEFAULTS and read nowhere; unknown top-level keys are not validated),
 CORE-021 (CR-only line endings reach the regex rules as one line).
+
+## 2026-10-24 — RealVuln Python CWE-89 pilot completed (ARB-097)
+
+The owner-approved RealVuln 3.1.0 subset was evaluated in aggregate-only mode:
+11 pinned MIT/Unlicense Python repositories, 26 vulnerable labels, and 34 safe
+traps. The pinned ground-truth records use internal repository IDs distinct
+from their benchmark directory keys; both identities and the ground-truth
+version were validated separately. All source archives and labels were kept
+outside the checkout, source code was not executed, and the scan used the
+offline `lang_python` probe with adapters, cache, and history disabled.
+
+Aggregate case-level results were TP 21, FN 5, FP 6, TN 28: precision 21/27
+(77.8%), recall 21/26 (80.8%), and safe-trap false-positive rate 6/34 (17.6%).
+One unmatched CWE-89 finding remains unassessed. The 95% seeded
+repository-cluster bootstrap intervals (10,000 replicates) are 64.3%–90.9%
+for precision and 50.0%–100.0% for recall; they describe this curated
+11-repository subset only. All labels have `manual_review` provenance, but
+only five are explicitly marked `manually_verified`; no independent
+multi-reviewer audit is documented. All 11 overall scorecards were withheld
+because only the Python probe ran, although that probe was assessed on all 11.
+
+This result is RealVuln case-level conformance, not Arbiter finding precision,
+production-population accuracy, or evidence for the general 99% target. No
+detection rules were changed or tuned. Aggregate results and run provenance
+are recorded in `docs/accuracy-benchmark-manifest.json`; raw source, labels,
+reports, and per-repository logs were temporary and are removed after
+validation. Follow-up requires independent reviewers or an approved larger
+source with defensible labels, plus blind repository miss audits and
+representative language/platform coverage. FAIL-063 through FAIL-069 and
+FAIL-080 through FAIL-084 record
+the validation and acquisition issues encountered and their regression or
+prevention evidence. The testing playbook now requires aggregate assertions
+to account for all included fixture records.
+
+Separately, the maintainer-authored Python planted regression corpus passed
+73/73, including 8/8 planted SQL-injection cases, with no reported misses,
+unexpected findings, or safe-twin false positives. That run used Python
+3.14.4 on Linux/WSL2 with `tree-sitter-language-pack` 1.22.1 and is regression
+evidence only, not independent accuracy evidence.
+
+ARB-104 adds `docs/accuracy-review-protocol.md` as the operational next step
+after the aggregate-only RealVuln pilot. It separates blinded sampled-finding
+precision review from repository-level missed-defect audits, requires two
+independent reviewers and third-party adjudication, and calls for predeclared
+sampling and cluster-aware analysis. This is documentation only: no reviewers
+were engaged, no source or sealed dataset was opened, no new labels or audits
+were collected, and no detection rules were tuned. Before executing the
+protocol, secure an independent coordinator/reviewers, approve source and
+license terms, and freeze the study sampling and analysis plan.
+
+ARB-105 records the next measurement design in
+`docs/accuracy-measurement-expansion.md`. The first RealVuln extension should
+inventory the pinned ground truth and, if label completeness and exclusions
+validate, score eligible CWEs on the previously cleared 11 Python repo pins,
+keeping the existing case matcher and historical run untouched.
+RealVuln's pinned benchmark metadata reports 90 LLM-generated repositories
+across Python and TypeScript/JavaScript, but their per-repository rights are
+not established by the benchmark repository's Apache-2.0 license; do not
+acquire those sources until each pin is cleared. RealVuln targets are
+intentionally vulnerable applications, so its results are benchmark
+conformance, not a representative real-production-repository precision
+estimate. SecurityEval and
+RealSec-Bench also have no declared GitHub license in the reviewed metadata;
+RealSec-Bench's documented evaluator executes generated code and is outside
+the current no-execution boundary.
+
+For the real-repository precision study, Semgrep findings and CodeQL findings
+are differential signals only. A blinded model may label samples under the
+owner's interim decision, but results must be called model-labelled
+conformance, include exact model/prompt provenance, and must not be described
+as independent truth or certified 99% accuracy. Semgrep 1.177.0 and its
+locked rules are available in the current environment; CodeQL is not
+installed. The generic manifest `run_record_template` remains the stable
+cross-study format; the existing Python/CWE-89 `evaluation_run` is not
+rewritten for other scopes.
+
+## 2026-10-24 — RealVuln multi-CWE baseline (ARB-106)
+
+Validated all 502 labels in the previously approved 11 MIT/Unlicense Python
+repository pins (65 primary CWEs). The aggregate-only run included only the
+408 `manual_review` labels across 53 CWEs; 66 of those explicitly set
+`manually_verified=true`. It excluded 75 `our-scanner`, 13
+`gt_expansion_verification_2026_04_29`, five `snyk`, and one `walkthrough`
+labels. Results: TP 62, FN 279, FP 7, TN 60; labelled-case precision 62/69
+(89.9%), recall 62/341 (18.2%), safe-trap false-positive rate 7/67 (10.4%).
+Twenty-five unmatched findings remain unassessed. Descriptive repository-
+cluster bootstrap intervals are 84.5%–94.7% for precision and 13.0%–23.8%
+for recall. All 11 Python probes ran; all overall scorecards were withheld
+because other probes were not assessed. The target source was never executed.
+
+This is benchmark-maintainer label conformance, not independent multi-reviewer
+truth, finding-level precision, production accuracy, or a 99% claim. No
+case-level examples were inspected and no rules were tuned on this benchmark.
+The additive multi-CWE evaluator reproduces the historical CWE-89 confusion
+counts exactly; the prior matcher and run record are unchanged. Aggregate
+results and per-repository source, label, and report hashes are in
+`docs/accuracy-realvuln-multicwe-run.json`; `docs/accuracy-benchmark-manifest.json`
+references its digest. Prioritize follow-up rule work using development data
+and independent regression cases, not these evaluation examples.
+
+## 2026-10-24 — Pinned analyzer differential rehearsal (ARB-107)
+
+Ran Arbiter native probes, Semgrep 1.177.0 with rules commit
+`40b8c63f75dc7c22c8a77482d73bfb864b146f7e`, and CodeQL 2.27.3 with
+`codeql/python-queries@1.8.13` on the same 11 MIT/Unlicense RealVuln Python
+snapshots. CodeQL used `--build-mode none`; Arbiter used offline native probes
+with adapters, cache, and history disabled. No build, test, setup, or
+application command ran, and target code was not executed.
+
+The aggregate Python security finding counts were Arbiter 102, Semgrep 236,
+and CodeQL 96. CodeQL extracted 459/459 Python files; Semgrep scanned 360
+Python files while applying each source repository's `.semgrepignore`, so the
+effective file sets differed. Location-overlap, unmatched-by-location, and
+CWE-tag agreement counts are recorded in the analyzer differential entry of
+`docs/accuracy-benchmark-manifest.json`; raw per-case reports and databases
+were temporary and are not committed. The worktree had the ARB-107 registry
+update and unrelated pre-existing untracked paths, but scanner source files
+matched commit `f766cec`.
+
+These are differential-coverage signals on intentionally vulnerable benchmark
+applications, not accuracy, precision, recall, or ground truth. The separate
+ordinary-repository precision study, blinded review, and human miss audit
+remain unmeasured. No detection rules were tuned.
+
+ARB-108 froze the ordinary Python precision feasibility cohort before any
+source acquisition or scan. The manifest records the 100-result
+popularity-sorted metadata frame, the ordered 17-repository eligible pool,
+seeded 11-repository draw, exact commit pins, MIT license-file digests, and
+identifier-only overlap checks against Arbiter gold and RealVuln. The cohort
+is convenience-sampled and unscanned; it provides no accuracy evidence. The
+next stage must scan only the frozen pins, with blinded review coordinated
+independently and model labels described only as model-labelled conformance.
+
+## 2026-10-25 — Ordinary Python cohort differential scan (ARB-109)
+
+Scanned only the 11 exact MIT-licensed pins frozen under ARB-108. Arbiter's
+scanner sources matched commit `82ca64b5fc1c4fc8234daea1e8cd1b75051831b7`;
+the scan used its offline `lang_python` probe with adapters, cache, and history
+disabled. Semgrep 1.177.0 used rules commit
+`40b8c63f75dc7c22c8a77482d73bfb864b146f7e`; CodeQL 2.27.3 used
+`codeql/python-queries@1.8.13` and no-build extraction. No target source was
+executed and no project build, test, or setup command ran.
+
+The aggregate counts were Arbiter 105, Semgrep 2,663, and CodeQL 16. Semgrep
+scanned 2,146/3,662 Python files and reported eight errors (seven timeouts,
+one syntax error). CodeQL scanned 3,661/3,662 files, completed all 11
+invocations, and emitted 189 extractor warning lines. Arbiter ran its Python
+probe on all repositories, but all 11 overall scorecards were withheld at
+8.1% overall coverage because other probes were not selected. Location-span
+comparison found 39 Arbiter/Semgrep pairs (31 with shared CWE tags, 8 without)
+and no location-overlapping pairs involving CodeQL.
+
+These are aggregate differential-coverage observations only. The
+popularity-biased 11-repository cohort is not representative; analyzer
+agreement is not ground truth. No labels, independent human review, miss
+audit, or rule tuning were performed, so this adds no precision/recall estimate
+and no basis for a general 99% claim. The manifest retains tool/environment
+provenance, source archive hashes, per-repository aggregates, and limits;
+raw snapshots and case-level reports remain temporary.
+
+Next: preregister a blinded finding review sample and separate blind
+repository miss audit, with an independent coordinator and human reviewers.
+Model labels, if approved in place of unavailable human review, remain
+model-labelled conformance and cannot be reported as certified accuracy.
+
+## 2026-10-25 — Gap closure without human reviewers (ARB-110)
+
+Owner decision: human reviewers will not be available soon, so the gap is to
+be closed with development-data rule work, model-labelled conformance and,
+if useful, GPU-trained triage. `docs/accuracy-gap-closure-plan.md` records the
+plan. Recall (4% held-out, 28% development, 18.2% RealVuln multi-CWE) is rule
+coverage and is the dominant gap; learned triage can only reorder or annotate
+findings that analyzers already report. Training data is limited to
+development labels split by repository; the sealed held-out sets, RealVuln and
+the ARB-109 cohort stay evaluation-only. A learned score is `inferred`
+provenance and never becomes the verified tier. Hardware: RTX 5070 Laptop,
+8 GB; torch and a code model are not installed and need a separate
+dependency requirement. Nothing here is a measurement or a 99% claim.
+
+ARB-110 update: owner uses RunPod for training and approved uploading public code. Interim spend ceiling USD 25 per experiment, USD 75 total; sealed, held-out, RealVuln and ARB-109 data never leave the machine. See the plan's Workstream C.
+
+## 2026-10-25 — First development-only recall rule (ARB-110, Workstream A)
+
+Environment note: the repository venv lacked the `ast` extra, so a first score read 8.5% code recall instead of the documented ~28%. Installing it (`uv pip install -e ".[ast]"`) restored the baseline of 34/117 (29.1%). Re-measure only with the extra installed.
+
+Ranked the development corpus misses (`tools/ai_corpus_score.py`). Largest wholly missed families: unhandled-input-error 0/8, missing-timeout 0/6, path-traversal 0/6, replay 0/5, test-ineffective 0/5, server-no-timeout 0/3. First rule: Go `http-server-no-timeout` (CWE-400). Development corpus: Go 14 -> 17 of 24, all 34 -> 37 of 117, 0 new false alarms. Guarded by planted bad/good twins and unit tests; the planted and ai-corpus snapshots were re-cut with exactly the five intended findings added.
+
+The sealed held-out aggregate guard moved as a side effect (146 -> 151 findings; true positives +3 against +5 in scope), so up to two of the new held-out findings are not true positives by its labels. That tree was not opened, the rule was not adjusted to it, and the snapshot was re-cut. Treat it as a precision caution for this rule, not a result. The pinned real-repository guards were skipped (corpus not fetched), so real-repository precision for this rule is unmeasured.
+
+Next families by defect count: unhandled-input-error, path-traversal, swallowed-exception, ssrf, unbounded-memory. Model-labelled conformance on development data only; no 99% claim.
+
+2026-10-26 ARB-110 second batch: five swallowed-exception rules (Java x2, Ruby x2, TypeScript x1), dev-corpus code recall 37 -> 41 of 117, 0 new false alarms, real-repo guard and held-out aggregate unchanged; packs 182 rules (269 in all). Remaining: path-traversal (optional-root shape), ssrf, unbounded-memory, unhandled-input-error. Model-labelled conformance on development data only; no 99% claim.
+
+2026-10-26 ARB-110 third batch: path-confinement-optional (py/ts/ruby/java) and ssrf-check-then-connect (py/ts/java), dev-corpus code recall 41 -> 48 of 117, 0 new false alarms, real-repo guard and held-out aggregate unchanged; packs 189 rules (276 in all). Remaining: unbounded-memory, unhandled-input-error, Go symlink path-traversal, Ruby SSRF blocklist gaps. Model-labelled conformance on development data only; no 99% claim.

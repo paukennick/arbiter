@@ -52,8 +52,8 @@ arbiter probes ./repo
 ```
 
 The `CHECKS` column is how many rules each probe holds. On this repository,
-2026-10-23, the language packs hold 176 rules (Python 26, TypeScript/JavaScript
-42, Go 34, Java 39, Ruby 35) and Arbiter ships 263 rules in all. Every rule
+2026-10-25, the language packs hold 189 rules (Python 28, TypeScript/JavaScript
+45, Go 35, Java 43, Ruby 38) and Arbiter ships 276 rules in all. Every rule
 starts in the `advisory` precision tier ([precision.md](precision.md#tiers)).
 
 ### Probe scopes

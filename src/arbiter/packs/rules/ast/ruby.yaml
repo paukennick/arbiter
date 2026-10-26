@@ -378,6 +378,54 @@ rules:
       Rescue the specific class you can handle, log or record the error, and
       re-raise or return an explicit failure for anything else.
 
+  - id: swallowed-rescue-fallback
+    requirements: [ARB-110]
+    title: "`rescue StandardError` drops the error and returns a default: `{text}`"
+    severity: low
+    confidence: medium
+    dimension: quality
+    cwe: [CWE-390, CWE-703]
+    controls: [NIST-800-218:PW.5]
+    tags: [error-handling]
+    # No `=> e`: the exception cannot be logged, so nothing in the handler can
+    # record what failed. `nil` is the existing `swallowed-error` rule.
+    query: |
+      ((rescue exceptions: (exceptions . (constant) @c .) !variable
+         body: (then . [(false) (true) (array) (hash)] @v .)) @hit
+        (#match? @c "^(StandardError|Exception)$")
+        (#match? @v "^(false|true|\\[\\s*\\]|\\{\\s*\\})$"))
+    # A `foo?` probe that answers false when the capability is absent
+    # (puma configuration.rb `ipv6_interface_available?`) is an idiom, not a drop.
+    unless_inside: |
+      ((method name: (identifier) @n) @probe (#match? @n "\\?$"))
+      ((singleton_method name: (identifier) @n) @probe (#match? @n "\\?$"))
+    description: >-
+      A broad rescue with no bound exception whose whole body is `false`,
+      `true`, `[]` or `{}`. DNS, TLS and timeout failures, and plain bugs such
+      as a NoMethodError, all come back as the same default. The caller reads
+      it as an ordinary result and nothing records what went wrong.
+    remediation: "Rescue the specific classes you expect, bind and log the exception, and return a result that distinguishes failure from a real `false`."
+
+  - id: swallowed-error-to-500
+    requirements: [ARB-110]
+    title: "`rescue` turns any failure into a 500 without logging it"
+    severity: low
+    confidence: medium
+    dimension: quality
+    cwe: [CWE-390, CWE-778]
+    controls: [NIST-800-218:PW.5]
+    tags: [error-handling]
+    query: |
+      ((rescue exceptions: (exceptions . (constant) @c .) !variable body: (then) @b) @hit
+        (#match? @c "^(StandardError|Exception)$")
+        (#match? @b "\\b500\\b")
+        (#not-match? @b "\\braise\\b|[Ll]og|warn|puts|\\$!|[Rr]eport|[Ss]entry|[Nn]otify"))
+    description: >-
+      A rescue with no bound exception that answers 500. The exception is not
+      available to log, so the client gets a generic error and the operator
+      gets nothing to diagnose it with.
+    remediation: "Bind the exception (`rescue StandardError => e`), log it with the request context, then answer 500."
+
   - id: rescue-exception
     requirements: [ARB-065]
     title: "`rescue Exception` catches interrupts, SystemExit and NoMemoryError"
@@ -1571,3 +1619,26 @@ rules:
       whole puts whatever the client sends into one string, so a few
       concurrent multi-gigabyte requests exhaust the process.
     remediation: "Refuse on `request.content_length` above a limit and read at most `request.body.read(MAX + 1)`, or cap the body at the proxy."
+
+  - id: path-confinement-optional
+    requirements: [ARB-110]
+    title: "Path confinement only runs when the root is set: `{text}`"
+    severity: medium
+    confidence: low
+    dimension: security
+    cwe: [CWE-22, CWE-73]
+    controls: [NIST-800-218:PW.5]
+    tags: [path-traversal]
+    query: |
+      ((if condition: [(instance_variable) (identifier)] @v consequence: (then) @b) @hit
+        (#match? @v "(?i)(root|base|jail|sandbox|dir$)")
+        (#match? @b "\\braise\\b")
+        (#match? @b "start_with\\?|relative_path_from|include\\?"))
+    requires_file: |
+      ((constant) @e (#eq? @e "ENV"))
+    description: >
+      The containment check is nested under `if @root`, and the root comes
+      from an optional environment variable. When it is unset nothing confines
+      the caller's path, so an absolute or `../` path reaches any file the
+      process can read or write. The default deployment is the unconfined one.
+    remediation: "Make the root required (raise at start-up when it is unset) or default it to a fixed directory, and run the containment check on every call."

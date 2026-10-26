@@ -3195,6 +3195,336 @@
         "CHANGELOG.md"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-098",
+      "category": "accuracy",
+      "title": "Define blinded accuracy review protocol",
+      "description": "Create an operational, reviewer-ready protocol for independent blind adjudication of sampled scanner findings and repository-level missed-defect audits. Specify blinding, reviewer independence, sampling frames, disagreement resolution, evidence capture, license/privacy handling, frozen evaluation conditions, and limits on claims; do not change detection rules or access sealed corpora.",
+      "priority": "high",
+      "status": "withdrawn",
+      "minimum_access_scope": [
+        "docs/accuracy-review-protocol.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Protocol separates finding precision adjudication from repository miss audits",
+        "defines independent blinded review and disagreement resolution",
+        "specifies predeclared sampling and repository-cluster-aware analysis",
+        "documents handling and claim limits",
+        "preserves sealed datasets and prohibits tuning on evaluation cases"
+      ],
+      "validation_required": [
+        "Review documentation for alignment with docs/accuracy-roadmap.md and docs/accuracy-baseline.md; python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-review-protocol.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Protocol does not itself establish independent labels or authorize access to licensed or sealed benchmark data",
+        "Protocol is complete; independent reviewer recruitment, source approval, and data collection remain future work.",
+        "Superseded by ARB-104 after coordinating requirement IDs with concurrent main-branch work."
+      ]
+    },
+    {
+      "id": "ARB-104",
+      "category": "accuracy",
+      "title": "Define blinded accuracy review protocol",
+      "description": "Create an operational, reviewer-ready protocol for independent blind adjudication of sampled scanner findings and repository-level missed-defect audits. Specify blinding, reviewer independence, sampling frames, disagreement resolution, evidence capture, license/privacy handling, frozen evaluation conditions, and limits on claims; do not change detection rules or access sealed corpora.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-review-protocol.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Protocol separates finding precision adjudication from repository miss audits",
+        "defines independent blinded review and disagreement resolution",
+        "specifies predeclared sampling and repository-cluster-aware analysis",
+        "documents handling and claim limits",
+        "preserves sealed datasets and prohibits tuning on evaluation cases"
+      ],
+      "validation_required": [
+        "Review documentation for alignment with docs/accuracy-roadmap.md and docs/accuracy-baseline.md; python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-review-protocol.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Protocol does not itself establish independent labels or authorize access to licensed or sealed benchmark data; independent reviewer recruitment",
+        "source approval",
+        "and data collection remain future work."
+      ]
+    },
+    {
+      "id": "ARB-105",
+      "category": "accuracy",
+      "title": "Research external AI-code sources and define differential conformance study",
+      "description": "Research external AI-generated-code benchmark sources and design an aggregate-only Semgrep/CodeQL differential plus RealVuln expansion beyond CWE-89. Differential agreement is a triage signal, never ground truth; interim model labels must be blinded, provenance-recorded, and reported only as model-labelled conformance. Preserve the existing run-record template and RealVuln matching contract; do not ingest unlicensed sources or execute target code.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "tools/ground_truth/realvuln_conformance.py"
+      ],
+      "acceptance_criteria": [
+        "Separate differential agreement from ground truth; record model label provenance and all run environment/tool versions; keep existing RealVuln matcher and run-record compatibility; assess benchmark source licensing and holdout safety; document unsupported data and no universal 99 percent claims"
+      ],
+      "validation_required": [
+        "Schema validation; evaluator tests; review findings and sampling methodology; python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "CodeQL is unavailable in the current environment; benchmark license metadata is incomplete; model-labelled results are conformance only and do not establish independent truth.",
+        "Research gate only: CodeQL is unavailable in the current environment; source-level license eligibility for AI-generated repositories is not established. No benchmark corpus or target source has been acquired in this task.",
+        "This requirement completes source review and study design only; the all-CWE run, model-label measurements, CodeQL scan, and broader RealVuln acquisition remain future work pending source rights and tool provisioning."
+      ]
+    },
+    {
+      "id": "ARB-106",
+      "category": "accuracy",
+      "title": "Expanding labeled RealVuln baseline beyond CWE-89",
+      "description": "Extend the existing approved aggregate-only RealVuln pilot using only the 11 already-cleared pinned MIT/Unlicense Python repositories. Inventory all eligible CWE labels and non-scoring exclusions, validate completeness, and measure supported cases without changing the historical CWE-89 run or matcher. Do not inspect sealed fixtures, fetch additional repositories, or tune rules against evaluation data.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-roadmap.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "tools/ground_truth/realvuln_conformance.py",
+        "tests/test_realvuln_conformance.py",
+        "approved local RealVuln input/report artifacts only"
+      ],
+      "acceptance_criteria": [
+        "Inventory eligible labels and exclusions for all 11 approved source pins;validate label completeness and source commit identity;produce a reproducible additive multi-CWE aggregate run without altering historical CWE-89 data;report unsupported or unassessed cases explicitly;do not claim production accuracy or 99 percent certification"
+      ],
+      "validation_required": [
+        "focused evaluator tests;manifest schema validation;python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Benchmark labels are not independently adjudicated; the 11-repository subset is curated and Python-only; broader language expansion and rule tuning require separate rights and evaluation gates",
+        "Pinned-label inventory validated 11 approved source pins with 502 scorable cases across multiple CWEs and no identity/completeness errors; proceed with aggregate-only static scans and a separate evaluator while preserving the historical CWE-89 run.",
+        "Scope includes docs/accuracy-baseline.md and docs/accuracy-realvuln-multicwe-run.json so the current baseline and reproducible aggregate report stay aligned with the new result.",
+        "Completed the 11-repository aggregate-only multi-CWE baseline with pinned label provenance and digests; preserved historical CWE-89 output; validated focused and fast suites, schema, lint, mutation guards, Arbiter self-gate, and Omni gate."
+      ]
+    },
+    {
+      "id": "ARB-107",
+      "category": "accuracy",
+      "title": "Running pinned analyzer differential rehearsal",
+      "description": "Run a reproducible static differential rehearsal using Arbiter, Semgrep, and CodeQL on the already-cleared, frozen 11-repository RealVuln Python subset. Record tool overlap and unique findings as benchmark differential coverage only; do not interpret analyzer agreement as truth or as ordinary production-repository accuracy. Keep all case-level outputs temporary and publish aggregate-only results; do not tune rules.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "approved public-repository candidate metadata",
+        "aggregate-only differential reports",
+        "temporary pinned analyzer installation"
+      ],
+      "acceptance_criteria": [
+        "Freeze repository snapshot pins before scanning;verify each selected repository license;pin Arbiter",
+        "Semgrep binary and rules",
+        "CodeQL CLI and query pack;run same snapshots in no-target-execution mode;report agreement and unique findings without treating them as ground truth;preserve source privacy and no case-level publication without permission"
+      ],
+      "validation_required": [
+        "verify CodeQL checksums;validate same-snapshot coverage;schema validation;focused tests;python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-baseline.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Differential agreement is not ground truth; a convenience cohort cannot estimate representative production accuracy; model labels require blinding and provenance; CodeQL no-build extraction may be incomplete for some projects",
+        "This first differential cohort is intentionally vulnerable benchmark code, not a representative real-repository population; the separate ordinary-repository precision study remains unmeasured.",
+        "Completed the pinned 11-repository Python analyzer differential. Aggregate-only results and provenance are in docs/accuracy-benchmark-manifest.json. Schema validation, 10 focused conformance tests, Omni doctor, and the project-managed Omni gate passed. This is differential coverage only, not production accuracy."
+      ]
+    },
+    {
+      "id": "ARB-108",
+      "category": "accuracy",
+      "title": "Freeze ordinary-repository precision pilot cohort",
+      "description": "Define and freeze a small exploratory sample of ordinary public Python repositories for the finding-precision study, separate from RealVuln and all existing sealed or tuned datasets. Pre-register the sampling frame and selection method before scans; pin each repository snapshot and verify its license at that snapshot. Record the limits honestly: this feasibility cohort is not representative population accuracy and cannot support a 99% claim. Keep a blinded adjudication as a separate follow-up requiring an independent coordinator/reviewer.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "pre-register the ordinary-repository population and reproducible cohort selection before scanning",
+        "select only repositories outside Arbiter development and sealed datasets",
+        "pin source commit and verify each license at that commit",
+        "retain aggregate-only source metadata and no case-level findings",
+        "do not call convenience-sample results production accuracy or a 99 percent claim",
+        "record independent blind-review prerequisites"
+      ],
+      "validation_required": [
+        "validate manifest against Draft 2020-12 schema",
+        "review pin and license provenance",
+        "python omni doctor",
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "A convenience sample cannot estimate representative production accuracy; no independent reviewers/coordinator are currently available; avoid all sealed or previously tuned repositories; license metadata must be verified at the exact frozen snapshot.",
+        "Frozen pre-scan metadata-only cohort with 11 verified MIT pins; scanning and independent blinded review remain separate follow-ups."
+      ]
+    },
+    {
+      "id": "ARB-109",
+      "category": "accuracy",
+      "title": "Scan frozen ordinary Python pilot cohort",
+      "description": "Acquire only the 11 exact source commits frozen under the ARB-108 ordinary Python feasibility cohort and run the pre-registered static-analysis measurement without building or executing target code. Record aggregate-only results, tool and environment provenance, and per-repository assessment coverage; retain no case-level findings in the repository. Treat analyzer overlap as differential coverage only and do not claim precision, recall, or 99 percent accuracy without independent blinded review.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md",
+        "tools/install_tools.sh",
+        "arbiter.yaml"
+      ],
+      "acceptance_criteria": [
+        "Acquire and verify only the frozen commit pins and MIT license digests",
+        "No build test setup or target execution is performed",
+        "Run Arbiter and available pinned static analyzers with reproducible configuration and provenance",
+        "Publish aggregate-only counts and coverage without case-level finding details",
+        "Unavailable analyzers and unsupported scan strata are reported as not assessed",
+        "No precision recall or 99 percent claim is made from analyzer counts or overlap"
+      ],
+      "validation_required": [
+        "manifest validates against Draft 2020-12 schema",
+        "scan provenance and source pins are verified",
+        "focused conformance tests",
+        "python omni doctor",
+        "python omni gate",
+        "Arbiter repository self-gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "The cohort is a small popularity-biased convenience sample",
+        "Independent coordinator and human reviewers remain unavailable",
+        "Analyzer agreement is not ground truth; model-labelled conformance only if separately authorized",
+        "Aggregate-only differential completed on the frozen 11-repository cohort; no case-level findings, labels, independent review, precision/recall estimate, or 99% claim. Blinded finding review and a separate repository miss audit remain follow-up work."
+      ]
+    },
+    {
+      "id": "ARB-110",
+      "category": "accuracy",
+      "title": "Close recall gap without human reviewers: development-only recall analysis and preregistered model-labelled sample",
+      "description": "Human reviewers are unavailable, so bridge the gap with (1) a development-data-only breakdown of missed weakness families from the ai-corpus development set and RealVuln-excluded sources, ranked by CWE and language, to direct rule work; (2) a preregistered, frozen, blinded model-labelled precision sample of the ARB-109 cohort, using the existing tools/label_models.py two-labeller-plus-adjudicator pipeline, reported only as model-labelled conformance; (3) a design for GPU-trained learned triage that uses only development labels and never sealed, RealVuln, held-out or ARB-109 evaluation data for training. No 99 percent claim; sealed sets stay closed.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "docs/accuracy-roadmap.md",
+        "docs/accuracy-baseline.md",
+        "docs/accuracy-review-protocol.md",
+        "tools/label_models.py",
+        "tools/gold/labels",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Recall-gap table from development data only with denominators",
+        "Preregistration frozen before any evaluation labels are produced",
+        "Training/evaluation split by repository with no sealed or evaluation leakage",
+        "Results labelled model-labelled conformance",
+        "No 99 percent claim"
+      ],
+      "validation_required": [
+        "python omni doctor",
+        "python omni gate",
+        "tools/precision_guard.py check",
+        "fast pytest tier"
+      ],
+      "documentation_required": [
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Model labels are not independent truth",
+        "Learned triage can overfit tuned corpora",
+        "Labeller cost and code leaving the machine as bounded excerpts only for public code"
+      ]
+    },
+    {
+      "id": "ARB-156",
+      "category": "developer-tooling",
+      "title": "Tests that pin bytes or timing pass on Windows checkouts",
+      "description": "Two tests failed on a Windows laptop but not in Linux CI: a sha256-pinned accuracy report checked out with CRLF (FAIL-131), and an adapter concurrency test with a fixed 2.0s bound that ignored scan overhead (FAIL-130). The report is now kept LF by .gitattributes; the timing test compares against a baseline measured in the same run and still fails when adapters run serially.",
+      "priority": "low",
+      "status": "completed",
+      "minimum_access_scope": [
+        ".gitattributes",
+        "tests/test_adapter_cache.py",
+        "docs/accuracy-realvuln-multicwe-run.json"
+      ],
+      "acceptance_criteria": [
+        "the digest test passes on a Windows checkout",
+        "test_two_adapters_run_at_once passes five runs in a row on Windows",
+        "forcing parallel=1 makes test_two_adapters_run_at_once fail"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/test_adapter_cache.py tests/test_realvuln_conformance.py -q"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
     }
   ]
 }
