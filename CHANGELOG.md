@@ -7,6 +7,11 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-169 | Accuracy plan gains Workstream D: twelve statistical methods (SPRT,
+  hierarchical Beta priors, importance-sampled active learning, Dawid–Skene,
+  Rogan–Gladen, capture–recapture, Good–Turing, conformal prediction,
+  Benjamini–Hochberg/Holm, repository clustering, Thompson sampling, value of
+  information), each reported beside the current method, with an order of work.
 - ARB-163 | Breadth r7 held-out slice scanned on the laptop before any label: 135
   repositories, 20,614 kloc, 65,025 findings, all at their pins
   (`tools/gold/results/2026-10-26-breadth-r7-python-report.json.gz`). Labelling

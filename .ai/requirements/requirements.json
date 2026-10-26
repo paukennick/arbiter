@@ -3636,6 +3636,24 @@
         "changelog"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-169",
+      "category": "accuracy",
+      "title": "Workstream D: twelve statistical methods for precision, labelling cost and catch rate",
+      "description": "docs/accuracy-gap-closure-plan.md Workstream D lists SPRT, hierarchical Beta priors, importance-sampled active learning, Dawid-Skene (ARB-167), Rogan-Gladen, capture-recapture, Good-Turing, conformal prediction, Benjamini-Hochberg/Holm, repository clustering (ARB-168), Thompson sampling and value of information; each reports beside the current method and changes the bar only when the owner switches it.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [],
+      "acceptance_criteria": [],
+      "validation_required": [
+        "doctor",
+        "validate"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
     }
   ]
 }
