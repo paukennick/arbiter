@@ -235,4 +235,4 @@ def test_scripts_pick_an_interpreter_that_runs():
 def test_slice_script_strips_carriage_returns():
     # Windows Python ends lines with CRLF; a SHA ending in CR fails the fetch.
     slice_sh, _ = FB.fetch_scripts(L["go"], {"repos": {}})
-    assert "<<'PYEOF' | tr -d '\r' |" in slice_sh
+    assert "<<'PYEOF' | tr -d '" + chr(92) + "r' |" in slice_sh
