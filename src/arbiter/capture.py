@@ -71,6 +71,8 @@ RULE_FAMILIES: list[tuple[str, str, str]] = [
     ("*", "*request*-without-timeout*", "missing-timeout"),
     ("*", "*no-timeout*", "missing-timeout"),
     ("bandit", "bandit/B113", "missing-timeout"),
+    ("semgrep", "*use-timeout", "missing-timeout"),   # python/requests/best-practice
+    ("*", "*mutable-action-tag*", "unpinned-action"),
     ("bandit", "bandit/B31[3-9]", "xxe"),
     ("bandit", "bandit/B320", "xxe"),
     ("bandit", "bandit/B40[5-9]", "xxe"),

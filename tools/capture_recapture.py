@@ -72,7 +72,14 @@ def scan_one(args: tuple[str, str, str]) -> str:
 # Detectors and what each covers
 # ---------------------------------------------------------------------------
 
-DETECTORS = ("arbiter", "semgrep", "bandit")
+DETECTORS = ("arbiter", "semgrep", "bandit", "gitleaks")
+# Families that are about a file, not a language: one stratum ("any") over
+# every file. Bandit is not in it (it reads Python only, so it did not look
+# at the whole population). Semgrep's generic/secrets rules include a port of
+# gitleaks' own rules, so semgrep and gitleaks overlap by construction there:
+# the real-tool case of correlated detectors.
+CROSS = {"hardcoded-secret": ("arbiter", "semgrep", "gitleaks"),
+         "unpinned-action": ("arbiter", "semgrep")}
 LANG_OF = {"owasp-benchmark-python": "python", "owasp-benchmark-java": "java",
            "juliet-java": "java"}
 
@@ -138,7 +145,8 @@ def coverage(language: str) -> dict[str, set[str]]:
     Decided from the rules, never from what a scan happened to report."""
     return {"arbiter": _arbiter_families(language),
             "semgrep": _semgrep_families(language),
-            "bandit": set(BANDIT_FAMILIES) if language == "python" else set()}
+            "bandit": set(BANDIT_FAMILIES) if language == "python" else set(),
+            "gitleaks": set()}
 
 
 def detector_of(f: dict) -> str:
@@ -343,6 +351,7 @@ CLAIM_RULE = {
     "hardcoded-secret": "arbiter/secrets.capture-site",
     "missing-timeout": "capture/{lang}.http-no-timeout",
     "info-exposure": "capture/{lang}.error-message-to-client",
+    "unpinned-action": "arbiter/supply.unpinned-action",
 }
 
 
@@ -356,8 +365,10 @@ def dev_coverage() -> dict[str, dict[str, set[str]]]:
         sem: set[str] = set()
         for d in _SEMGREP_DIRS.get(lang, (lang,)):
             sem |= _semgrep_families(d)
-        out[lang] = {"arbiter": _arbiter_families(lang), "semgrep": sem,
-                     "bandit": set(BANDIT_FAMILIES) if lang == "python" else set()}
+        out[lang] = {"arbiter": _arbiter_families(lang) - set(CROSS), "semgrep": sem - set(CROSS),
+                     "bandit": set(BANDIT_FAMILIES) - set(CROSS) if lang == "python" else set(),
+                     "gitleaks": set()}
+    out["any"] = {d: {f for f, ds in CROSS.items() if d in ds} for d in DETECTORS}
     return out
 
 
@@ -378,7 +389,7 @@ def dev_sites(scans: Path) -> list[dict]:
             scan = load_scan(p)
             rows = []
             for f in scan["findings"]:
-                lang = lang_of_path(f["path"])
+                lang = "any" if f["family"] in CROSS else lang_of_path(f["path"])
                 if lang and f["family"] in cov[lang][f["detector"]] and f["detector"] in scan["ran"]:
                     rows.append({**f, "language": lang})
             for s in capture.cluster_sites(rows):
@@ -499,8 +510,8 @@ def _pct(v) -> str:
 
 def render_rows(rows: list[dict], truth: bool) -> list[str]:
     head = ["Language", "Family"] + (["Set"] if truth else []) + \
-        ["Detectors", "Found (A/S/B)", "Union", "N̂ [95% CI]"] + (["True total"] if truth else []) + \
-        ["Arbiter catch rate", "Union catch rate", "Note"]
+        ["Detectors", "Found (A/S/B/G)", "Union", "N̂ [95% CI]"] + (["True total"] if truth else []) + \
+        ["Arbiter catch rate", "Other detectors' catch rates", "Union catch rate", "Note"]
     out = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
     for r in rows:
         found = "/".join(_fmt(r["found"].get(d)) if d in r["found"] else "–" for d in DETECTORS)
@@ -511,12 +522,18 @@ def render_rows(rows: list[dict], truth: bool) -> list[str]:
             arb = f"{_pct(ar['rate'])} [{_pct(ar['lo'])}, {_pct(ar['hi'])}]" if ar else "–"
             un = r["rates"]["union"]
             uni = f"{_pct(un['rate'])} [{_pct(un['lo'])}, {_pct(un['hi'])}]"
+            oth = "; ".join(f"{d} {_pct(r['rates'][d]['rate'])} [{_pct(r['rates'][d]['lo'])}, "
+                            f"{_pct(r['rates'][d]['hi'])}]" for d in r["detectors"] if d != "arbiter")
             note = p["method"] + (f", Chao {_fmt(r['chao']['n_hat'])}" if "chao" in r else "")
+            if p.get("hi") not in ("inf", None) and p["hi"] - p["lo"] < 1:
+                note += "; interval degenerate (no defect seen by one detector only, or one detector's finds inside the other's)"
+            if "bootstrap" in r and r["bootstrap"]:
+                note += f"; repository bootstrap [{_fmt(r['bootstrap'][0])}, {_fmt(r['bootstrap'][1])}]"
         else:
-            nh, arb, uni, note = "not estimable", "–", "–", r["why"]
+            nh, arb, uni, oth, note = "not estimable", "–", "–", "–", r["why"]
         cells = [r["language"], r["family"]] + ([r.get("benchmark", "")] if truth else []) + \
             [", ".join(r["detectors"]) or "none", found, _fmt(r["union"]), nh] + \
-            ([_fmt(r["true_total"])] if truth else []) + [arb, uni, note]
+            ([_fmt(r["true_total"])] if truth else []) + [arb, oth, uni, note]
         out.append("| " + " | ".join(cells) + " |")
     return out
 

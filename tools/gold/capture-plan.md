@@ -96,4 +96,28 @@ totals (N-hat, found per detector), never per-repository or per-site rows.
 
 ## Changes after registration
 
-(none yet)
+All made before any labelling call and before any development estimate.
+
+1. **Cross-language strata.** `hardcoded-secret` and `unpinned-action` are
+   about a file, not a language: one stratum `any` over every file.
+   Detectors: secrets = arbiter, semgrep, gitleaks (gitleaks was named above
+   but missing from the code); unpinned actions = arbiter, semgrep. Bandit is
+   not in `any` (it reads Python only).
+2. **Rule overrides found missing:** semgrep `python.requests.best-practice.use-timeout`
+   -> `missing-timeout` (it carries no CWE, so Semgrep had silently dropped out
+   of the timeout stratum); semgrep `github-actions-mutable-action-tag` ->
+   `unpinned-action`.
+3. **Labelling order (replaces step 3).** Two runs, one per development set
+   (the `--corpus` differs). Run 1 (gold-dev) `--budget-usd 20`; run 2
+   (r7py-dev) `--budget-usd` = 20 minus run 1's reported spend. Within each,
+   label multi-detector sites first; then single-detector sites only in
+   strata where at least one multi-detector site came back tp (a stratum
+   with no tp overlap is not estimable, so its single-detector labels buy
+   nothing). If a stratum's single-detector sites would exceed what is left,
+   sample them per capture-history pattern (seed 20261026) and weight.
+4. **Validation reporting.** Benchmarks report "truth inside the 95%
+   interval in X of Y strata" and flag zero-width intervals as degenerate.
+5. **Juliet extraction.** `unzip` left `CWE89_SQL_Injection`, `CWE80_XSS` and
+   `CWE190_Integer_Overflow` empty on this machine; they were extracted with
+   Python's `zipfile` from the same SHA-256-checked archive (3,682 / 1,090 /
+   7,047 files) and Juliet rescanned.
