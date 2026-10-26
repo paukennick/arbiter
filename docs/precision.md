@@ -300,6 +300,101 @@ when
 
 Each failure is seeded in `tests/test_precision_ledger.py`.
 
+### Sequential labelling (ARB-170)
+
+Labelling every rule to a fixed size spends the same on a rule that is
+plainly good after 400 labels, or plainly bad after 25, as on one that is
+genuinely close to the bar. `tools/label_models.py label --sequential`
+labels each rule in batches and stops it as soon as it has clearly passed
+0.99 or clearly failed, so the money goes where it decides something.
+Admission does not change: the ledger still admits by the Wilson bound
+above, and `python tools/precision_ledger.py report` shows each rule's
+sequential state beside it (`continue`, `pass-0.97`, `pass-0.99`, `fail`),
+computed from held-out labels only.
+
+**Why not just re-check the Wilson bound after each batch.** The Wilson
+bound is valid for one look at a sample whose size was fixed in advance.
+Checking it after every batch and stopping the first time it clears the bar
+gives a run of good luck a fresh chance at every look. In simulation a rule
+whose true precision is exactly 0.99, checked every 25 labels up to 3,000,
+is wrongly passed about 9% of the time instead of the nominal 2.5%
+(`tests/test_sequential.py`). The tests used here stay valid however often
+they are checked and wherever labelling stops.
+
+**How it decides** (`src/arbiter/sequential.py`):
+
+- *Pass* uses an anytime-valid lower confidence bound (a confidence
+  sequence). For a candidate precision `q` it averages the likelihood ratio
+  of three alternatives -- a false-positive rate of 5%, 20% or 50% of what
+  `q` allows -- against `q`. While the true precision is at most `q` that
+  average cannot be expected to grow, so the chance it ever reaches
+  `1/alpha` is at most `alpha` (Ville's inequality), whenever one looks.
+  "pass-0.99" therefore carries a real 95% guarantee, and the reported
+  bound is the smallest `q` the data have not ruled out (to 0.0001).
+- *Fail* uses Wald's sequential probability ratio test with one boundary:
+  H0 precision <= `p0` = 0.93 against H1 precision >= `p1` = 0.97. A rule
+  fails when the evidence favours H0 by a factor of `1/beta` = 20. A rule
+  whose precision is at least 0.97 -- admissible -- is failed with
+  probability at most `beta`.
+- *Futility*: when even an all-true-positive remainder of the rule's plan
+  could reach 0.97 neither by this test nor by the ledger's own Wilson bound,
+  the rule stops as `fail` with basis `budget`. That says the plan is too
+  small, not that the rule is bad; the report keeps the two apart.
+- A pass at 0.97 is final only when 0.99 is out of reach of the plan;
+  otherwise the rule continues toward 0.99. Unsure labels count for neither
+  side, as in the ledger.
+
+Parameters (method `mixture-cs+sprt`): `alpha` 0.05, `beta` 0.05, `p0` 0.93,
+`p1` 0.97, `batch` 25. They are **pre-registered**: the `--per-rule` plan
+file carries a `"sequential"` block with all six before any model call,
+`--sequential` refuses a plan without one, a plan with one refuses to run
+without `--sequential`, and nothing on the command line overrides them.
+
+Each rule is labelled in the order its plan already gives it
+(`per_rule_sample`, seeded), so what a sequential run labels is the first
+part of each rule's fixed plan, and a rerun replays the same decisions from
+the label file and labels nothing new.
+
+**Labels needed to pass**, with 0, 1 or 2 false positives:
+
+| Bar | False positives | Fixed Wilson, 97.5% one look (today) | Fixed Wilson, 95% one look | Sequential, 95% any look | Rounded up to batches of 25 | Sequential, 97.5% any look |
+|---|---|---|---|---|---|---|
+| 0.99 | 0 | 381 | 268 | 370 | 375 | 450 |
+| 0.99 | 1 | 563 | 446 | 623 | 625 | 709 |
+| 0.99 | 2 | 726 | 602 | 844 | 850 | 937 |
+| 0.97 | 0 | 125 | 88 | 122 | 125 | 149 |
+| 0.97 | 1 | 185 | 147 | 206 | 225 | 235 |
+| 0.97 | 2 | 239 | 199 | 279 | 300 | 310 |
+
+The fixed bound uses z = 1.96, a one-sided 97.5% bound valid for one look;
+the sequential column is 95% for any number of looks, so the fair same-level
+comparisons are columns 4 and 5 (95%) and 3 and 7 (97.5%). Paying for the
+freedom to stop costs labels when a rule shows false positives. The saving
+comes from not labelling past the decision: a fixed plan does not know in
+advance that a rule will show none, and must label everything planned.
+
+**Simulation** (2,000 seeded runs each, labels checked every 25, plan of
+1,000 labels, `S.simulate`):
+
+| True precision | Passed 0.99 | Failed | Mean labels used |
+|---|---|---|---|
+| 0.999 | 96.4% | 0% | 474 |
+| 0.995 | 30.4% | 0% | 859 |
+| 0.99 | 3.2% (bound: <= 5%) | 0% | 984 |
+| 0.985 | 0.5% | 0.1% | 996 |
+| 0.97 | 0% | 2.1% (bound: <= 5%) | 984 |
+| 0.95 | 0% | 65.9% | 583 |
+| 0.90 | 0% | 100% | 89 |
+
+A fixed 381-label plan passes a 0.999 rule only 68% of the time (one stray
+false positive sinks it); the sequential design passes 96% with 474 labels
+on average. A bad rule (0.90) stops after about 89 labels instead of the
+whole plan. Labelling without replacement from a finite population (1,500
+findings) gives the same picture (0.999: 99.7% passed, 499 labels).
+
+Not covered: a rule whose true precision lies between 0.97 and 0.99 never
+clearly passes 0.99 or fails, so it runs to the end of its plan, as today.
+
 ## Label format
 
 What `tools/precision_ledger.py build` reads. Phase 1b's labellers write

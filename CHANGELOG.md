@@ -7,6 +7,8 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-170 | Sequential labelling (accuracy plan D1): `tools/label_models.py label --sequential` labels each rule of a `--per-rule` plan in batches of 25 and stops it on pass-0.99 (anytime-valid mixture confidence sequence, alpha 0.05) or fail (one-sided Wald SPRT 0.93 vs 0.97, beta 0.05; or the remaining plan cannot reach 0.97). Parameters must be pre-registered in the plan file. A 0.999 rule passes 96% of the time on 474 labels on average (a fixed 381-label plan: 68%); a 0.90 rule stops after about 89. `precision_ledger.py report` shows the state per rule beside admission, which is unchanged (`src/arbiter/sequential.py`, `docs/precision.md`).
+
 - ARB-169 | Accuracy plan gains Workstream D: twelve statistical methods (SPRT,
   hierarchical Beta priors, importance-sampled active learning, Dawid–Skene,
   Rogan–Gladen, capture–recapture, Good–Turing, conformal prediction,

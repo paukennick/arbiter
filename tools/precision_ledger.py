@@ -661,6 +661,9 @@ def main(argv: list[str] | None = None) -> int:
         ledger = P.load_ledger(args.ledger)
         bar = {**P.DEFAULT_BAR, **(ledger.get("bar") or {})}
         print(render_languages(language_claims(ledger.get("rules") or {}, bar, declared_verified()), bar))
+        from arbiter import sequential  # ARB-170: reported beside admission
+        print()
+        print(sequential.render_status(sequential.ledger_status(ledger.get("rules") or {})))
         return 0
     if args.cmd == "check":
         same = LEDGER.read_bytes() == PACKAGED.read_bytes()

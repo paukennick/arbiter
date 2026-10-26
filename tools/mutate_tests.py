@@ -188,6 +188,16 @@ MUTATIONS = [
         new='            if isinstance(entry, dict) and isinstance(entry.get("version"), str):',
         test="tests/test_tool_version_memo.py::test_touching_the_executable_invalidates_its_entry",
     ),
+    Mutation(
+        name="sequential-peeks-at-wilson",
+        defect="Sequential labelling stops a rule the first time its fixed Wilson bound "
+               "clears 0.99, so checking after every batch passes a 0.99 rule far more "
+               "often than alpha (ARB-170).",
+        path="src/arbiter/sequential.py",
+        old='    if tp >= tp_needed(fp, 0.99, a):\n        return "pass-0.99"',
+        new='    if (wilson_lower(tp, tp + fp) or 0) >= 0.99:\n        return "pass-0.99"',
+        test="tests/test_sequential.py::test_false_pass_rate_just_below_the_bar_is_at_most_alpha",
+    ),
 ]
 
 

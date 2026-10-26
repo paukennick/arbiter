@@ -3654,6 +3654,38 @@
         "changelog"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-170",
+      "category": "accuracy",
+      "title": "Sequential labelling: stop a rule once it has clearly passed or failed (Workstream D1)",
+      "description": "Opt-in --sequential mode for tools/label_models.py label with a --per-rule plan: each rule is labelled in seeded batches in its plan order and stops on pass-0.99 (anytime-valid mixture confidence sequence) or fail (one-sided Wald SPRT, or futility when the remaining plan cannot reach 0.97). Parameters are pre-registered in the plan file. precision_ledger.py report shows the sequential state per rule beside admission, which is unchanged.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "src/arbiter/sequential.py",
+        "tools/label_models.py",
+        "tools/precision_ledger.py",
+        "tests/test_sequential.py",
+        "docs/precision.md"
+      ],
+      "acceptance_criteria": [
+        "False-pass rate at p just below the bar <= alpha in simulation",
+        "False-fail rate for p >= p1 <= beta",
+        "A sequential run labels a prefix of each rule's plan and a rerun labels nothing new",
+        "Parameters come only from the committed plan file",
+        "Admission unchanged"
+      ],
+      "validation_required": [
+        "doctor",
+        "validate",
+        "pytest"
+      ],
+      "documentation_required": [
+        "changelog",
+        "docs/precision.md"
+      ],
+      "risk_notes": []
     }
   ]
 }

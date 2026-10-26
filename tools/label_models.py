@@ -66,6 +66,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "tools" / "ground_truth"))
 import gt_common as g  # noqa: E402
+from arbiter import sequential as seq  # noqa: E402
 
 _spec = importlib.util.spec_from_file_location("label_sample", ROOT / "tools" / "label_sample.py")
 ls = importlib.util.module_from_spec(_spec)
@@ -1091,6 +1092,85 @@ def run_label(items: list[dict], labeller: Labeller, out: Path, jobs: int) -> li
     return results
 
 
+def read_plan(path: Path, sequential: bool) -> tuple[dict[str, int], dict | None]:
+    """A `--per-rule` plan and its pre-registered `sequential` block (ARB-170).
+
+    The sequential parameters come from the committed plan file only, never
+    from the command line, so they are fixed before any model call. A plan
+    that pre-registers sequential stopping must be run with `--sequential`,
+    and `--sequential` needs a plan that pre-registers it."""
+    plan = json.loads(path.read_text(encoding="utf-8"))
+    block = plan.pop("sequential", None)
+    if sequential and block is None:
+        raise SystemExit(f"--sequential: {path} pre-registers no \"sequential\" block "
+                         "(method, alpha, beta, p0, p1, batch); add and commit it first")
+    if block is not None and not sequential:
+        raise SystemExit(f"{path} pre-registers sequential stopping; run it with --sequential")
+    return plan, (seq.validate(block) if block is not None else None)
+
+
+def rule_queues(items: list[dict]) -> dict[str, list[dict]]:
+    """Each rule's items in the order the plan produced them. A sequential run
+    labels a prefix of each queue, so what it labels is a prefix of the full
+    fixed plan."""
+    out: dict[str, list[dict]] = defaultdict(list)
+    for it in items:
+        out[it["rule"]].append(it)
+    return dict(out)
+
+
+def _key(it: dict) -> str:
+    return it["finding_id"] + "|" + it["excerpt_sha256"]
+
+
+def run_sequential(items: list[dict], labeller: Labeller, out: Path, jobs: int, cfg: dict,
+                   log=None) -> dict[str, dict]:
+    """Label each rule's queue in batches of `cfg["batch"]` and stop a rule
+    when `arbiter.sequential.decide` says stop. Decisions count held-out tp
+    and fp only; `remaining` is the held-out items left in the rule's plan.
+    Every round labels the next batch of every undecided rule together. A
+    rerun replays the same decisions from the label file. Returns the last
+    decision per rule, with `labelled` (items of the queue labelled)."""
+    log = log or (lambda m: print(m, file=sys.stderr, flush=True))
+    queues = rule_queues(items)
+    pos = {r: 0 for r in queues}
+    labels: dict[str, str] = {}
+    decision: dict[str, dict] = {}
+
+    def counts(rule):
+        q = queues[rule][: pos[rule]]
+        tp = sum(1 for it in q if it["held_out"] and labels.get(_key(it)) == "tp")
+        fp = sum(1 for it in q if it["held_out"] and labels.get(_key(it)) == "fp")
+        left = sum(1 for it in queues[rule][pos[rule]:] if it["held_out"])
+        return tp, fp, left
+
+    for rule in sorted(queues):
+        tp, fp, left = counts(rule)
+        decision[rule] = {**seq.decide(tp, fp, cfg, left), "labelled": 0}
+    rnd = 0
+    while True:
+        open_rules = [r for r in sorted(queues) if not decision[r]["stop"] and pos[r] < len(queues[r])]
+        if not open_rules:
+            break
+        rnd += 1
+        batch = {r: queues[r][pos[r]: pos[r] + cfg["batch"]] for r in open_rules}
+        todo = [it for r in open_rules for it in batch[r]]
+        for rec in run_label(todo, labeller, out, jobs):
+            labels[rec["finding_id"] + "|" + rec["excerpt_sha256"]] = rec["label"]
+        missing = [it for it in todo if _key(it) not in labels]
+        if missing:
+            log(f"sequential: round {rnd} left {len(missing)} item(s) unlabelled; stopping (rerun to resume)")
+            break
+        for r in open_rules:
+            pos[r] += len(batch[r])
+            tp, fp, left = counts(r)
+            decision[r] = {**seq.decide(tp, fp, cfg, left), "labelled": pos[r]}
+            d = decision[r]
+            log(f"sequential: round {rnd} {r}: {d['labelled']} labelled, held-out tp={tp} fp={fp} "
+                f"lower={d['lower']:.4f} -> {d['state']}{' (stop)' if d['stop'] else ''}: {d['reason']}")
+    return decision
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -1112,6 +1192,10 @@ def main(argv: list[str] | None = None) -> int:
     lab.add_argument("--per-rule", type=Path,
                      help="report: a JSON object rule -> sample size ('*' for the rest) instead of "
                           "the square-root allocation of --n")
+    lab.add_argument("--sequential", action="store_true",
+                     help="with --per-rule: label each rule in batches and stop it once it has clearly "
+                          "passed 0.99 or failed (ARB-170); parameters come from the plan's "
+                          "pre-registered \"sequential\" block")
     lab.add_argument("--max", type=int, help="label at most this many items")
     lab.add_argument("--seed", type=int, default=20261022)
     lab.add_argument("--budget-usd", type=float, default=25.0)
@@ -1151,8 +1235,12 @@ def main(argv: list[str] | None = None) -> int:
 
     items: list[dict] = []
     meta = {}
+    seq_cfg = None
+    if args.sequential and (not args.report or not args.per_rule or args.max or args.ai_corpus
+                            or args.ground_truth or args.planted or args.suspects):
+        raise SystemExit("--sequential labels one --report with a --per-rule plan, nothing else, and no --max")
     if args.report:
-        per_rule = json.loads(args.per_rule.read_text(encoding="utf-8")) if args.per_rule else None
+        per_rule, seq_cfg = read_plan(args.per_rule, args.sequential) if args.per_rule else (None, None)
         its, meta = items_from_report(args.report, args.corpus.expanduser(), args.n, args.seed, per_rule,
                                        source=args.source)
         items += its
@@ -1174,6 +1262,14 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     budget = Budget(args.budget_usd)
     labeller = Labeller(Cache(args.cache), budget, args.model)
+    if seq_cfg is not None:
+        print(f"sequential (pre-registered): {json.dumps(seq_cfg, sort_keys=True)}", file=sys.stderr)
+        decision = run_sequential(items, labeller, args.out, args.jobs, seq_cfg)
+        states = Counter(d["state"] for d in decision.values())
+        used = sum(d["labelled"] for d in decision.values())
+        print(f"sequential: {used} of {len(items)} planned items labelled; rules {dict(sorted(states.items()))}; "
+              f"${budget.spent:.2f} spent in {budget.calls} new calls -> {args.out}")
+        return 3 if budget.stopped else 0
     results = run_label(items, labeller, args.out, args.jobs)
     print(f"{len(results)} labelled, ${budget.spent:.2f} spent in {budget.calls} new calls -> {args.out}")
     return 3 if budget.stopped else 0
