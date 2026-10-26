@@ -1768,11 +1768,13 @@ rules:
     controls: [NIST-800-218:PW.5]
     tags: [unbounded-memory]
     # Fields only: `Executors.newFixedThreadPool(n)` queues without limit, and
-    # so does a `LinkedBlockingQueue` built without a capacity.
+    # so does a `LinkedBlockingQueue` built without a capacity. Other
+    # unbounded queues (`ConcurrentLinkedQueue`, deques) are mostly object
+    # pools and caches in real code, so they are not matched.
     query: |
       (field_declaration declarator: (variable_declarator value: (object_creation_expression
          type: (generic_type (type_identifier) @t) arguments: (argument_list) @a) @hit)
-        (#match? @t "^(LinkedBlockingQueue|LinkedBlockingDeque|LinkedTransferQueue|ConcurrentLinkedQueue)$")
+        (#match? @t "^LinkedBlockingQueue$")
         (#match? @a "^\\(\\s*\\)$"))
       (field_declaration declarator: (variable_declarator value: (method_invocation
          object: (identifier) @o name: (identifier) @n) @hit)

@@ -2898,6 +2898,36 @@
         "Learned triage can overfit tuned corpora",
         "Labeller cost and code leaving the machine as bounded excerpts only for public code"
       ]
+    },
+    {
+      "id": "ARB-111",
+      "category": "accuracy",
+      "title": "Java real-repo guard: pinned netty, tomcat and spring-security snapshots",
+      "description": "Extend the real-repository regression guard to three pinned development-side Java gold repositories so Java rule precision is observed on real code, and narrow java.unbounded-work-queue (drop ConcurrentLinkedQueue, deques and LinkedTransferQueue, which are pools and caches in library code) after review. Manual review only; no 99 percent claim; held-out Java repos untouched.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "tools/gold/guards.json",
+        "tools/gold/snapshots",
+        "src/arbiter/packs/rules/ast/java.yaml",
+        "CHANGELOG.md",
+        ".ai/project-context.md",
+        "docs/accuracy-baseline.md"
+      ],
+      "acceptance_criteria": [
+        "Three Java targets snapshotted and checked in the guard",
+        "Reviewed java.unbounded-work-queue false positives removed with dev-corpus recall unchanged",
+        "No held-out or sealed data used"
+      ],
+      "validation_required": [
+        "python omni gate",
+        "tools/precision_guard.py check",
+        "fast pytest tier"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
     }
   ]
 }

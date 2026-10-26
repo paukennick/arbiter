@@ -316,3 +316,16 @@ labels when human reviewers are unavailable. Report those results only as
 **model-labelled conformance**, with model and prompt provenance; they are not
 independent adjudication, certified precision/recall, or evidence for a 99%
 claim. This interim option changes no baseline result or label provenance.
+
+## Java real-repository guard (ARB-111)
+
+The guard now also scans `java-netty`, `java-tomcat` and `java-spring-security`
+(pinned development-side gold repositories). First scan: 502, 859 and 238
+findings. Hand review of the rules added in ARB-110 found
+`java.unbounded-work-queue` firing 25 times, 17 of them on object pools, caches
+and example or test handlers, so it now matches only a capacity-less
+`LinkedBlockingQueue` or a fixed/single-thread executor field (498 and 846
+findings after). `java.swallowed-stack-trace-only` fired 7 times, all genuine
+swallowed exceptions, 6 of them in example or test code. This is a manual
+review of two rules, not a per-rule precision measurement, and not a 99% claim.
+The held-out Java repositories were not used.
