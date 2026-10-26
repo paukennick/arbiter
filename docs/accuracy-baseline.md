@@ -329,3 +329,15 @@ findings after). `java.swallowed-stack-trace-only` fired 7 times, all genuine
 swallowed exceptions, 6 of them in example or test code. This is a manual
 review of two rules, not a per-rule precision measurement, and not a 99% claim.
 The held-out Java repositories were not used.
+
+## ARB-112: model-labelled precision on the ARB-109 cohort
+
+Preregistered (`docs/accuracy-prereg-b.md`) and run once: 105 `lang_python`
+findings on 11 pinned repositories, labelled by an opus prosecutor, defender
+and adjudicator after a blind OWASP-Python calibration (120/120). 44 tp, 57 fp,
+4 unsure; 43.6% tp/(tp+fp), repository-cluster interval [0.031, 0.838] over 7
+contributing repositories. `python.sql-injection` carries it (19 tp, 48 fp, 42
+of them in the SQL generator sqlglot). Full table and reading in
+`docs/accuracy-prereg-b-results.md`. Model-labelled conformance on a
+convenience cohort, no rule changed or promoted, not a 99% claim.
+
