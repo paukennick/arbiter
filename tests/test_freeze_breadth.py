@@ -191,3 +191,42 @@ def test_heldout_script_lists_only_heldout_in_get_pinned_form():
     assert "breadth-r7-go-repos.json" in slice_sh and "corpus-r7go-breadth" in slice_sh
     assert heldout_sh.count("{") == heldout_sh.count("}")
     assert "fi\n}" in heldout_sh
+
+
+# --- application screen (ARB-166) -----------------------------------------
+
+@pytest.mark.parametrize("topic", ["library", "npm-package", "react-components", "vite-plugin",
+                                   "go-library", "template", "awesome-list", "react-hooks"])
+def test_library_topics_reject(topic):
+    why = FB.metadata_reason(_item(topics=["self-hosted", topic]), set(), L["typescript"])
+    assert why and topic in why
+
+
+def test_application_topics_pass():
+    assert FB.metadata_reason(_item(topics=["self-hosted", "docker", "dashboard"]), set(),
+                              L["typescript"]) is None
+
+
+def test_python_ignores_topics():
+    assert FB.metadata_reason(_item(topics=["library"]), set(), L["python"]) is None
+
+
+@pytest.mark.parametrize("marker", ["Dockerfile", "deploy/docker-compose.prod.yml", "compose.yaml",
+                                    "Procfile", "fly.toml", "contrib/systemd/app.service",
+                                    "electron-builder.yml", "src-tauri/tauri.conf.json",
+                                    "platformio.ini", "sdkconfig.defaults", "debian/control",
+                                    "man/tool.1", "doc/man/tool.8.in"])
+def test_deployment_marker_is_recognised(marker):
+    assert FB.tree_reason(_tree("src/x", ".github/workflows/ci.yml", marker), need_marker=True) is None
+
+
+def test_a_repo_without_a_marker_is_rejected_only_when_asked():
+    t = _tree("src/index.js", "package.json", "README.md", ".github/workflows/ci.yml")
+    assert "deployment marker" in FB.tree_reason(t, need_marker=True)
+    assert FB.tree_reason(t) is None
+
+
+def test_scripts_pick_an_interpreter_that_runs():
+    slice_sh, _ = FB.fetch_scripts(L["go"], {"repos": {}})
+    assert "command -v python3 ||" not in slice_sh
+    assert "for c in python3 python" in slice_sh

@@ -51,6 +51,22 @@ LIBRARY_WORDS = re.compile(r"\b(library|sdk|bindings?|wrapper|package for|framew
 NOT_APP_WORDS = re.compile(
     r"\b(header-only|boilerplate|starter kit|starter template|awesome list|curated list|"
     r"tutorials?|examples? of|interview|leetcode|homework|course)\b", re.I)
+# Topics a library, plugin, component kit or reading list carries (ARB-166).
+NOT_APP_TOPICS = re.compile(
+    r"^(library|libraries|.*-library|npm-package|npm-module|package|sdk|.*-sdk|framework|"
+    r"web-framework|middleware|.*-middleware|.*components?|.*-ui-kit|ui-kit|hooks|react-hooks|"
+    r".*-hooks|.*-plugin|plugin|plugins|gem|rubygem|ruby-gem|header-only|documentation|docs|"
+    r"awesome|awesome-list|tutorial|boilerplate|starter|starter-kit|template|.*-template|"
+    r"examples?|course)$", re.I)
+# File names that show a repository is deployed or installed as an application:
+# a container or platform manifest, a service unit, a desktop-app packager,
+# firmware build config, a Debian package or man pages. Some real CLIs lack all
+# of these; that loss is accepted to keep libraries out.
+APP_MARKER = re.compile(
+    r"(^|/)(dockerfile[^/]*|[^/]*\.dockerfile|(docker-)?compose[^/]*\.ya?ml|procfile|fly\.toml|"
+    r"render\.yaml|[^/]+\.service|electron-builder\.(ya?ml|json|js|cjs)|forge\.config\.[cm]?[jt]s|"
+    r"tauri\.conf\.json|platformio\.ini|sdkconfig[^/]*|debian/control)$"
+    r"|(^|/)man/[^/]+\.[1-8](\.(in|md|txt|adoc|scd|ronn))?$", re.I)
 # Characters Windows refuses in a path component, plus reserved device names.
 BAD_CHARS = re.compile(r'[<>:"|?*\\]')
 RESERVED = re.compile(r"^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$", re.I)
@@ -70,7 +86,7 @@ class Lang:
     min_stars: int = 1000
     # Other languages that must stay under a share (JS: TypeScript < 10%).
     max_other: dict = field(default_factory=dict)
-    extra_not_app: bool = True
+    extra_not_app: bool = True   # description words, topics, deployment marker (ARB-166)
 
 
 SERVICE = ("self-hosted", "web-application", "webapp", "dashboard", "cms", "api-server",
@@ -79,7 +95,7 @@ SERVICE = ("self-hosted", "web-application", "webapp", "dashboard", "cms", "api-
 NATIVE = ("daemon", "server", "web-server", "http-server", "networking", "proxy", "vpn",
           "cli", "command-line-tool", "terminal", "shell", "embedded", "firmware", "esp32",
           "stm32", "microcontroller", "iot", "monitoring", "router", "self-hosted",
-          "cmake", "meson", "makefile", "linux")
+          "dns", "ssh", "http-proxy", "network-monitoring", "packet-capture", "tunnel")
 
 LANGS: dict[str, Lang] = {l.key: l for l in (
     Lang("python", "Python", "py", "python", "py", "ARB-163", (
@@ -90,12 +106,12 @@ LANGS: dict[str, Lang] = {l.key: l for l in (
         "workflow", "media-server", "download-manager", "bot"),
         total=180, dev=45, extra_not_app=False),
     Lang("javascript", "JavaScript", "js", "javascript", "js", "ARB-166", SERVICE + (
-        "express", "expressjs", "nodejs", "koa", "fastify", "socket-io", "whatsapp-bot",
-        "electron-app", "home-automation", "game-server", "chat"),
+        "whatsapp-bot", "electron-app", "home-automation", "game-server", "chat", "saas",
+        "workflow", "media-server", "mcp-server"),
         max_other={"TypeScript": 0.10}),
     Lang("typescript", "TypeScript", "ts", "typescript", "ts", "ARB-166", SERVICE + (
-        "nestjs", "express", "nextjs", "fastify", "hono", "trpc", "saas", "workflow",
-        "llm-app", "rag", "mcp-server", "electron-app", "home-automation")),
+        "saas", "workflow", "llm-app", "rag", "mcp-server", "electron-app",
+        "home-automation", "media-server", "whatsapp-bot")),
     Lang("go", "Go", "go", "go", "go", "ARB-166", SERVICE + (
         "http-server", "reverse-proxy", "gin", "echo", "fiber", "grpc", "microservice",
         "kubernetes-operator", "devops", "backup", "file-sharing", "media-server", "vpn")),
@@ -145,6 +161,10 @@ def metadata_reason(item: dict, prior: set[str], lang: Lang) -> str | None:
         return "description names a library/SDK, not an application"
     if lang.extra_not_app and NOT_APP_WORDS.search(desc):
         return "description names a tutorial/boilerplate/list, not an application"
+    if lang.extra_not_app:
+        hit = [t for t in item.get("topics") or [] if NOT_APP_TOPICS.match(t)]
+        if hit:
+            return f"topic {hit[0]} names a library/plugin/component/list, not an application"
     return None
 
 
@@ -162,8 +182,9 @@ def share_reason(langs: dict[str, int], lang: Lang) -> tuple[str | None, float]:
     return None, share
 
 
-def tree_reason(tree: dict) -> str | None:
-    """Windows-unsafe paths, a truncated tree, or no .github/workflows."""
+def tree_reason(tree: dict, need_marker: bool = False) -> str | None:
+    """Windows-unsafe paths, a truncated tree, no .github/workflows, or (when
+    asked) no file showing the repository is deployed as an application."""
     bad = []
     for e in tree.get("tree", []):
         for part in e["path"].split("/"):
@@ -176,6 +197,8 @@ def tree_reason(tree: dict) -> str | None:
         return f"paths Windows cannot check out: {bad[:2]}"
     if not any(e["path"].startswith(".github/workflows/") for e in tree.get("tree", [])):
         return "no .github/workflows directory"
+    if need_marker and not any(APP_MARKER.search(e["path"]) for e in tree.get("tree", [])):
+        return "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
     return None
 
 
@@ -217,7 +240,11 @@ def about(lang: Lang, min_stars: int, dev: int, seed: int) -> str:
         f"each with >= {min_stars} stars, pushed since {PUSHED_SINCE}, not archived/fork/"
         f"template, an OSI licence, {lang.github} >= 60% of bytes{other}, size <= {MAX_SIZE_KB} "
         "KB, a .github/workflows directory, no path Windows cannot check out, a description "
-        "that does not name a library/SDK/tutorial/boilerplate/list, and not named anywhere in "
+        "and topics that do not name a library/SDK/plugin/component kit/tutorial/boilerplate/"
+        "list, a file showing it is deployed or installed as an application (Dockerfile or "
+        "compose file, Procfile, fly.toml/render.yaml, systemd unit, electron-builder/forge/"
+        "tauri config, platformio.ini/sdkconfig, debian/control, or man pages; some real CLIs "
+        "lack all of these and are lost), and not named anywhere in "
         "Arbiter's tools, packs, docs or fixtures (held-out sets, gold repos, ground-truth "
         "sources, every other breadth manifest). Chosen from metadata and file names only; "
         f"candidates shuffled with seed {seed}, then split with seed {seed + 1} into 'dev' "
@@ -296,7 +323,7 @@ def freeze(lang: Lang, min_stars: int, total: int, dev: int, seed: int) -> dict:
         if why is None:
             branch = it["default_branch"]
             sha = gh(f"repos/{full}/commits/{branch}")["sha"]
-            why = tree_reason(gh(f"repos/{full}/git/trees/{sha}?recursive=1"))
+            why = tree_reason(gh(f"repos/{full}/git/trees/{sha}?recursive=1"), lang.extra_not_app)
         if why:
             rejected.append({"github": full, "stars": it["stargazers_count"], "reason": why})
             continue
@@ -337,7 +364,8 @@ SLICE="${{2:-all}}"
 SHARD="${{3:-0}}"
 SHARDS="${{4:-1}}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
-PY="$(command -v python3 || command -v python)"
+PY=""
+for c in python3 python; do "$c" -c '' 2>/dev/null && PY="$c" && break; done
 mkdir -p "$DEST"
 "$PY" - "$HERE/gold/breadth-r7-{key}-repos.json" "$SLICE" "$SHARD" "$SHARDS" <<'PYEOF' |
 import json, sys
@@ -438,7 +466,8 @@ def main(argv: list[str] | None = None) -> int:
         n_dev = sum(r["slice"] == "dev" for r in manifest["repos"].values())
         print(f"kept {len(manifest['repos'])} ({n_dev} dev), rejected {len(manifest['rejected'])}",
               file=sys.stderr)
-    if lang.key != "python":
+    default = out.resolve() == (ROOT / "tools" / "gold" / f"breadth-r7-{lang.key}-repos.json").resolve()
+    if lang.key != "python" and default:
         slice_sh, heldout_sh = fetch_scripts(lang, manifest)
         for name, text in ((f"fetch_breadth_r7_{lang.key}.sh", slice_sh),
                            (f"fetch_breadth_r7_{lang.key}_heldout.sh", heldout_sh)):
