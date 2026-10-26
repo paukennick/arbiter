@@ -470,6 +470,7 @@ def dev_estimates(sites: list[dict], labels: dict[str, str]) -> list[dict]:
     strata: dict[tuple, list[dict]] = {}
     for s in sites:
         strata.setdefault((s["language"], s["family"]), []).append(s)
+    weights = cell_weights([s for s in sites if set(s["stratum_detectors"]) <= set(s["ran"])], labels)
     out = []
     for (lang, fam), rows in sorted(strata.items()):
         dets = rows[0]["stratum_detectors"]
@@ -477,7 +478,7 @@ def dev_estimates(sites: list[dict], labels: dict[str, str]) -> list[dict]:
         rows = [s for s in rows if set(dets) <= set(s["ran"])]
         tp = [s for s in rows if labels.get(s["site_id"]) == "tp"]
         caught = {s["site_id"]: set(s["detectors"]) for s in tp}
-        r = stratum_result(lang, fam, dets, caught)
+        r = stratum_result(lang, fam, dets, caught, weights={k: weights[k] for k in caught})
         r["sites"] = len(rows)
         r["labelled"] = sum(1 for s in rows if s["site_id"] in labels)
         r["tp"] = len(tp)
@@ -487,7 +488,7 @@ def dev_estimates(sites: list[dict], labels: dict[str, str]) -> list[dict]:
             for s in tp:
                 h = tuple(1 if d in s["detectors"] else 0 for d in dets)
                 g = groups.setdefault(s["repo"], {})
-                g[h] = g.get(h, 0) + 1
+                g[h] = g.get(h, 0) + weights[s["site_id"]]
             ci = capture.bootstrap_ci([groups[k] for k in sorted(groups)],
                                       lambda hh: capture.estimate(hh)["n_hat"] if len(hh) > 0 else None,
                                       b=400, seed=f"capture|{lang}|{fam}")
@@ -596,6 +597,8 @@ def cmd_sites(a) -> int:
     (out / "sites.json").write_text(json.dumps(sites, indent=0, sort_keys=True), encoding="utf-8")
     todo = [s for s in sites if s["site_id"] not in labels]
     todo = phase_selection(todo, sites, labels)
+    labelled = [s for s in sites if labels.get(s["site_id"]) in ("tp", "fp")]
+    todo = sample_cells_after(todo, labelled)
     for set_name in DEV_SETS:
         rep = labelling_report(todo, set_name)
         (out / f"label-report-{set_name}.json").write_text(json.dumps(rep, indent=0), encoding="utf-8")
@@ -605,6 +608,63 @@ def cmd_sites(a) -> int:
     print(f"{len(sites)} sites, {len(labels)} already labelled, {len(todo)} selected to label now, "
           f"{sum(1 for s in todo if s['family'] in CLAIM_RULE)} claimable")
     return 0
+
+
+CELL_CAP = 20
+SAMPLE_SEED = 20261026
+
+
+def cell_of(s: dict) -> tuple:
+    """Capture-history cell: (language, family, which detectors caught it)."""
+    return (s["language"], s["family"], "+".join(s["detectors"]))
+
+
+def sample_cells_after(todo: list[dict], labelled: list[dict], cap: int = CELL_CAP) -> list[dict]:
+    """`sample_cells` minus what each cell already has labelled."""
+    have: dict[tuple, int] = {}
+    for s in labelled:
+        have[cell_of(s)] = have.get(cell_of(s), 0) + 1
+    picked = sample_cells(todo, {}, cap)
+    out, used = [], dict(have)
+    for s in picked:
+        c = cell_of(s)
+        if used.get(c, 0) < cap:
+            out.append(s)
+            used[c] = used.get(c, 0) + 1
+    return out
+
+
+def sample_cells(todo: list[dict], labels: dict[str, str], cap: int = CELL_CAP,
+                 seed: int = SAMPLE_SEED) -> list[dict]:
+    """At most `cap` labelled sites per cell (counting those already labelled):
+    a seeded shuffle per cell, keyed by the cell's name so one cell's draw
+    never depends on another's. Estimates weight each labelled site by
+    cell size / labelled in cell (`cell_weights`)."""
+    import random
+    done: dict[tuple, int] = {}
+    by: dict[tuple, list[dict]] = {}
+    for s in todo:
+        by.setdefault(cell_of(s), []).append(s)
+    out = []
+    for cell in sorted(by):
+        rows = sorted(by[cell], key=lambda s: s["site_id"])
+        random.Random(f"{seed}|{'|'.join(cell)}").shuffle(rows)
+        out += rows[: max(0, cap - done.get(cell, 0))]
+    return out
+
+
+def cell_weights(sites: list[dict], labels: dict[str, str]) -> dict[str, float]:
+    """site id -> how many sites of its cell a labelled site stands for
+    (sites with a tp/fp verdict; `unsure` counts as not labelled)."""
+    size: dict[tuple, int] = {}
+    lab: dict[tuple, int] = {}
+    for s in sites:
+        c = cell_of(s)
+        size[c] = size.get(c, 0) + 1
+        if labels.get(s["site_id"]) in ("tp", "fp"):
+            lab[c] = lab.get(c, 0) + 1
+    return {s["site_id"]: size[cell_of(s)] / lab[cell_of(s)] for s in sites
+            if labels.get(s["site_id"]) in ("tp", "fp")}
 
 
 def phase_selection(todo: list[dict], sites: list[dict], labels: dict[str, str]) -> list[dict]:

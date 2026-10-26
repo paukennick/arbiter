@@ -121,3 +121,9 @@ All made before any labelling call and before any development estimate.
    `CWE190_Integer_Overflow` empty on this machine; they were extracted with
    Python's `zipfile` from the same SHA-256-checked archive (3,682 / 1,090 /
    7,047 files) and Juliet rescanned.
+6. **Per-cell cap (fixes the sampled path in change 3).** Secrets alone give
+   ~50,000 single-detector gitleaks sites, so every capture-history cell
+   (language, family, detector set) is labelled up to 20 sites (seeded
+   shuffle per cell, seed 20261026, counting sites already labelled), and each
+   labelled site is weighted by cell size / labelled in cell. Made before any
+   labelling call.

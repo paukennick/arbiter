@@ -249,3 +249,20 @@ def test_phase_selection_overlap_first():
     # family a's overlap site came back tp: its single-detector sites open up
     assert [x["site_id"] for x in cr.phase_selection(todo, sites, {"s1": "tp"})] == ["s2", "s4"]
     assert [x["site_id"] for x in cr.phase_selection(todo, sites, {"s1": "fp"})] == ["s4"]
+
+
+def test_cell_sampling_caps_and_weights():
+    def s(i, dets, fam="sql-injection"):
+        return {"site_id": f"s{i:03}", "language": "python", "family": fam, "detectors": dets}
+    big = [s(i, ["semgrep"]) for i in range(100)]
+    small = [s(100 + i, ["arbiter", "semgrep"]) for i in range(5)]
+    picked = cr.sample_cells(big + small, {}, cap=20)
+    assert len(picked) == 25
+    assert picked == cr.sample_cells(list(reversed(big + small)), {}, cap=20)
+    labels = {x["site_id"]: "tp" for x in picked}
+    w = cr.cell_weights(big + small, labels)
+    assert w[picked[0]["site_id"]] in (5.0, 1.0)
+    assert sum(w.values()) == pytest.approx(105)
+    # cells already holding labels get only the remainder
+    again = cr.sample_cells_after(big, [x for x in picked if x in big][:15], cap=20)
+    assert len(again) == 5
