@@ -128,9 +128,10 @@ def test_certain_posteriors_reduce_exactly_to_wilson():
 
 
 def test_label_uncertainty_widens_the_interval():
-    sure = DS.summarise([1.0] * 80 + [0.0] * 20)
-    unsure = DS.summarise([0.9] * 80 + [0.1] * 20 + [0.0] * 0)
-    assert unsure["lower"] < sure["lower"]
+    sure = DS.summarise([1.0] * 74 + [0.0] * 26)
+    unsure = DS.summarise([0.9] * 80 + [0.1] * 20)          # the same 74 expected tp, held less firmly
+    assert sure["precision"] == unsure["precision"] == 0.74
+    assert unsure["lower"] < sure["lower"] - 0.005 and unsure["upper"] > sure["upper"] + 0.005
 
 
 def test_ground_truth_findings_are_fixed_and_unvoted():
