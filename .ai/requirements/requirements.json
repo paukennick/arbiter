@@ -3636,6 +3636,31 @@
         "changelog"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-166",
+      "category": "accuracy",
+      "title": "Breadth set r7 for JavaScript, TypeScript, Go, Ruby, Java, C, C++: frozen, dev/held-out split, held-out scanned",
+      "description": "Generalise tools/freeze_breadth_python.py into tools/freeze_breadth.py --language <lang> (Python config unchanged, wrapper kept). Per language freeze ~120 applications/services from GitHub metadata only (seed 20261026, split seed 20261027, 30 dev / 90 held-out) into tools/gold/breadth-r7-<lang>-repos.json with fetch scripts tools/fetch_breadth_r7_<lang>.sh and _heldout.sh, committed before any clone. Fetch dev and held-out slices; scan held-out slices of JS/TS/Go/Ruby/Java with tools/gold_benchmark.py (C/C++ pack lives on r7-ccpp: freeze and fetch only). Commit gzipped held-out reports and heldout.json entries with labelling not yet planned; no labelling, no held-out finding opened.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [],
+      "acceptance_criteria": [
+        "manifests committed before any clone",
+        "no repo used before or in another breadth manifest",
+        "no Windows-invalid paths",
+        "star floor recorded per language",
+        "held-out reports committed with totals and per-rule counts only"
+      ],
+      "validation_required": [
+        "tests/test_freeze_breadth.py",
+        "pytest",
+        "omni gate"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
     }
   ]
 }
