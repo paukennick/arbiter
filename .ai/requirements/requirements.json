@@ -3592,7 +3592,7 @@
       "id": "ARB-162",
       "category": "accuracy",
       "title": "Held-out set r7 (Python): 20 pinned repositories frozen before scanning",
-      "description": "Round 7 measures Python precision on repositories no rule was tuned against. 10 well-run (OpenSSF Scorecard >= 7.0) and 10 applications, chosen from GitHub and Scorecard metadata only with the r5 criteria, pinned to default-branch HEAD on 2026-10-26, frozen before any clone or scan. Scored aggregate-only; findings are sampled and model-labelled for the per-rule, per-language ledger (ARB-159).",
+      "description": "Round 7 measures Python precision on repositories no rule was tuned against. 10 well-run (OpenSSF Scorecard >= 7.0, top by stars) and 9 applications (hand-picked deployed services and self-hosted tools from the metadata-qualified candidates; searxng dropped before any scan because Windows cannot check out its paths), with >= 1000 stars, OSI licence, Python >= 60% of bytes, workflows present, not used before, pinned to default-branch HEAD on 2026-10-26 and frozen before any clone. Every finding of 17 Python rules (389 of 9,711 findings) is labelled with the v3 prompts so the v3 calibration applies; unsafe-deserialization and code-injection wait for a rescan after ARB-160.",
       "priority": "high",
       "status": "pending",
       "minimum_access_scope": [

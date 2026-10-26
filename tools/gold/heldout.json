@@ -353,5 +353,33 @@
     "fetch": "GHSA=only tools/ground_truth/fetch_gt.sh",
     "requirement": "ARB-121",
     "policy": "Same as `policy`: rule authors must not open findings, outcomes, labels or code of these repositories' pairs while changing a rule; only aggregate scores are reported."
+  },
+  "held_out_r7_python": {
+    "frozen": "2026-10-26",
+    "gold_repos": [
+      "py-astrbot",
+      "py-black",
+      "py-changedetection.io",
+      "py-click",
+      "py-cognee",
+      "py-ipython",
+      "py-jumpserver",
+      "py-lightrag",
+      "py-maigret",
+      "py-memray",
+      "py-mitmproxy",
+      "py-ocrmypdf",
+      "py-openai-python",
+      "py-optuna",
+      "py-paperless-ngx",
+      "py-playwright-python",
+      "py-private-gpt",
+      "py-pytest",
+      "py-theharvester"
+    ],
+    "list": "tools/gold/heldout-r7-python-repos.json",
+    "fetch": "tools/fetch_heldout_r7_python.sh",
+    "requirement": "ARB-162",
+    "labelling": "Every finding of every Python rule in tools/gold/r7-python-per-rule.json is labelled (census), with v3 prompts so the v3 calibration bound applies. unsafe-deserialization and code-injection are excluded from this batch: the scan ran before ARB-160 changed them, so their labels would describe the old rules."
   }
 }
