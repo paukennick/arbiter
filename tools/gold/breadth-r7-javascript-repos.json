@@ -1,0 +1,2578 @@
+{
+  "_about": "Breadth set r7, JavaScript (ARB-166), frozen before any clone or scan. JavaScript applications and services drawn from GitHub topics ['self-hosted', 'web-application', 'webapp', 'dashboard', 'cms', 'api-server', 'rest-api', 'backend', 'monitoring', 'automation', 'bot', 'discord-bot', 'telegram-bot', 'chatbot', 'scraper', 'crawler', 'cli', 'proxy', 'whatsapp-bot', 'electron-app', 'home-automation', 'game-server', 'chat', 'saas', 'workflow', 'media-server', 'mcp-server'], each with >= 300 stars, pushed since 2026-08-26, not archived/fork/template, an OSI licence, JavaScript >= 60% of bytes, TypeScript < 10% of bytes, size <= 400000 KB, a .github/workflows directory, no path Windows cannot check out, a description and topics that do not name a library/SDK/plugin/component kit/tutorial/boilerplate/list, a file showing it is deployed or installed as an application (Dockerfile or compose file, Procfile, fly.toml/render.yaml, systemd unit, electron-builder/forge/tauri config, platformio.ini/sdkconfig, debian/control, or man pages; some real CLIs lack all of these and are lost), and not named anywhere in Arbiter's tools, packs, docs or fixtures (held-out sets, gold repos, ground-truth sources, every other breadth manifest). Chosen from metadata and file names only; candidates shuffled with seed 20261026, then split with seed 20261027 into 'dev' (17: rule fixes may read these) and 'heldout' (measurement only, never used for tuning). Each repo is pinned to its default-branch HEAD at freeze time.",
+  "language": "javascript",
+  "requirement": "ARB-166",
+  "frozen": "2026-10-26",
+  "seed": 20261026,
+  "split_seed": 20261027,
+  "min_stars": 300,
+  "candidates": 431,
+  "target": 120,
+  "repos": {
+    "js-gladys": {
+      "github": "GladysAssistant/Gladys",
+      "url": "https://github.com/GladysAssistant/Gladys.git",
+      "sha": "9b231e828ed2d3eb912f0abb6c945eb593da70be",
+      "branch": "master",
+      "stars": 3256,
+      "license": "Apache-2.0",
+      "language_share": 0.971,
+      "description": "A privacy-first, open-source home assistant",
+      "slice": "heldout"
+    },
+    "js-portracker": {
+      "github": "mostafa-wahied/portracker",
+      "url": "https://github.com/mostafa-wahied/portracker.git",
+      "sha": "0028cfcbc43cea38d730cf0e7a5d068e99587744",
+      "branch": "main",
+      "stars": 2487,
+      "license": "MIT",
+      "language_share": 0.992,
+      "description": "An open source, self-hosted, real-time port monitoring and discovery tool.",
+      "slice": "heldout"
+    },
+    "js-phoenixanalytics": {
+      "github": "lalabuy948/PhoenixAnalytics",
+      "url": "https://github.com/lalabuy948/PhoenixAnalytics.git",
+      "sha": "1ba74dde5c0756895310eed752100c66d30ee5df",
+      "branch": "master",
+      "stars": 458,
+      "license": "Apache-2.0",
+      "language_share": 0.9,
+      "description": "📊 Plug and play analytics for Phoenix applications.",
+      "slice": "heldout"
+    },
+    "js-camofox-browser": {
+      "github": "jo-inc/camofox-browser",
+      "url": "https://github.com/jo-inc/camofox-browser.git",
+      "sha": "39c82094013480b373df6600d44c7f036f58356e",
+      "branch": "master",
+      "stars": 11977,
+      "license": "MIT",
+      "language_share": 0.936,
+      "description": "Stealth headless browser for AI agents — bypass Cloudflare, bot detection, and anti-scraping. Drop-in Puppeteer/Playwright replacement.",
+      "slice": "dev"
+    },
+    "js-fredy": {
+      "github": "orangecoding/fredy",
+      "url": "https://github.com/orangecoding/fredy.git",
+      "sha": "3c408897015aae0abdfcc203e9a06d0b72511f9c",
+      "branch": "master",
+      "stars": 1596,
+      "license": "Apache-2.0",
+      "language_share": 0.947,
+      "description": "❤️ Fredy - [F]ind [R]eal [E]state [D]amn Eas[y] - Fredy keeps searching for new apartments, houses, and flats in Europe on platforms like ImmoScout24, Immowelt, eBay Kleinanzeigen and instantly delivers the results to you via Slack, Telegram, Email, Discord or ntfy, so you can focus on the more important things in life ;)",
+      "slice": "heldout"
+    },
+    "js-teamclaude": {
+      "github": "KarpelesLab/teamclaude",
+      "url": "https://github.com/KarpelesLab/teamclaude.git",
+      "sha": "d50ca5cf01db802bea28df19e6dac392ec2b2d3e",
+      "branch": "master",
+      "stars": 449,
+      "license": "MIT",
+      "language_share": 0.996,
+      "description": "Multi-account proxy for Claude Code and Codex: pools Claude Max, ChatGPT/Codex, API-key and third-party backend accounts, and rotates on quota",
+      "slice": "heldout"
+    },
+    "js-discord-bot": {
+      "github": "CorwinDev/Discord-Bot",
+      "url": "https://github.com/CorwinDev/Discord-Bot.git",
+      "sha": "cab811eda178a8677f9beeea2ff23109606c3ce5",
+      "branch": "main",
+      "stars": 954,
+      "license": "MIT",
+      "language_share": 0.985,
+      "description": "Discord Bot with over 400 commands and made for large servers",
+      "slice": "heldout"
+    },
+    "js-pullmd": {
+      "github": "AeternaLabsHQ/pullmd",
+      "url": "https://github.com/AeternaLabsHQ/pullmd.git",
+      "sha": "cb4197eb1fad9e17e265dff65b9ea379cde98e51",
+      "branch": "main",
+      "stars": 495,
+      "license": "AGPL-3.0",
+      "language_share": 0.82,
+      "description": "Self-hosted URL- and file-to-Markdown service for humans and AI agents - web pages, documents, images, audio, YouTube. PWA + REST + MCP + Claude Code skill, Reddit-aware, refreshable share links.",
+      "slice": "heldout"
+    },
+    "js-silva-md-bot": {
+      "github": "SilvaTechB/silva-md-bot",
+      "url": "https://github.com/SilvaTechB/silva-md-bot.git",
+      "sha": "0e0a3d435c8a494065ba78cff3c56fb728d04b88",
+      "branch": "main",
+      "stars": 414,
+      "license": "MIT",
+      "language_share": 0.971,
+      "description": "Silva MD Bot is a smart tool that enhances your WhatsApp experience by automating interactions and offering useful features like motivation, media downloads, and interactive polls.",
+      "slice": "heldout"
+    },
+    "js-audiobookshelf": {
+      "github": "advplyr/audiobookshelf",
+      "url": "https://github.com/advplyr/audiobookshelf.git",
+      "sha": "edb1f7efc92ecacdef51aafb4d9d5054ce10604f",
+      "branch": "master",
+      "stars": 14803,
+      "license": "GPL-3.0",
+      "language_share": 0.676,
+      "description": "Self-hosted audiobook and podcast server",
+      "slice": "heldout"
+    },
+    "js-rsc-harness": {
+      "github": "ericrisco/rsc-harness",
+      "url": "https://github.com/ericrisco/rsc-harness.git",
+      "sha": "20235e425f38d64b5e2f3b651a91ebb3d4a95bea",
+      "branch": "main",
+      "stars": 303,
+      "license": "MIT",
+      "language_share": 0.674,
+      "description": "Your agent invents things because it has no memory, and can't touch your database because it has no arms. rsc is the meta-harness that gives it both, plus the trade to know the job and the reflexes to not break your repo. For Claude Code, Codex and 15 more.",
+      "slice": "dev"
+    },
+    "js-bot": {
+      "github": "discord-tickets/bot",
+      "url": "https://github.com/discord-tickets/bot.git",
+      "sha": "ca555b6a71140bf8c2bcf109646aca1bd3f5b287",
+      "branch": "main",
+      "stars": 1494,
+      "license": "GPL-3.0",
+      "language_share": 0.988,
+      "description": "The most popular open-source and self-hosted ticket management bot for Discord - a free alternative to the premium and white-label plans of other popular ticketing bots.",
+      "slice": "heldout"
+    },
+    "js-steam-comment-service-bot": {
+      "github": "3urobeat/steam-comment-service-bot",
+      "url": "https://github.com/3urobeat/steam-comment-service-bot.git",
+      "sha": "5acafc1ebed254beed9eeca59440c9353d631991",
+      "branch": "master",
+      "stars": 358,
+      "license": "GPL-3.0",
+      "language_share": 0.999,
+      "description": "📡 The most advanced Steam Account Manager Bot with mass coordinated comments/likes/favs/follows and plugin support",
+      "slice": "heldout"
+    },
+    "js-helicalinsight": {
+      "github": "helicalinsight/helicalinsight",
+      "url": "https://github.com/helicalinsight/helicalinsight.git",
+      "sha": "34801f2fbe812cf709fb6810a3c985209a856e33",
+      "branch": "master",
+      "stars": 1104,
+      "license": "AGPL-3.0",
+      "language_share": 0.626,
+      "description": "Free, open source BI platform with AI conversational analytics (BYO-LLM), pixel-perfect paginated reports, interactive dashboards, SSO, embedding, multi-tenancy & row-level security. Every feature free in Community Edition. Self-hosted, Docker-ready",
+      "slice": "heldout"
+    },
+    "js-tannergabriel-discord-bot": {
+      "github": "TannerGabriel/discord-bot",
+      "url": "https://github.com/TannerGabriel/discord-bot.git",
+      "sha": "1b30cb867f4b3aa4ed2000cfcc7b84ca33bc42b0",
+      "branch": "master",
+      "stars": 627,
+      "license": "MIT",
+      "language_share": 0.983,
+      "description": "Simple discord bot to play music and manage your server",
+      "slice": "heldout"
+    },
+    "js-goploader": {
+      "github": "depado/goploader",
+      "url": "https://github.com/depado/goploader.git",
+      "sha": "f402f9928577044a07db631d2e6fbf979ec85f41",
+      "branch": "main",
+      "stars": 301,
+      "license": "MIT",
+      "language_share": 0.637,
+      "description": "Easy file sharing with server-side encryption, curl/httpie/wget compliant",
+      "slice": "dev"
+    },
+    "js-free-games-claimer": {
+      "github": "vogler/free-games-claimer",
+      "url": "https://github.com/vogler/free-games-claimer.git",
+      "sha": "99c1f05302aeece21a628797cfdffb561ee38956",
+      "branch": "main",
+      "stars": 4266,
+      "license": "AGPL-3.0",
+      "language_share": 0.937,
+      "description": "Automatically claims free games and DLCs on the Epic Games Store, Amazon Prime Gaming and GOG.",
+      "slice": "heldout"
+    },
+    "js-neoxr-bot": {
+      "github": "neoxr/neoxr-bot",
+      "url": "https://github.com/neoxr/neoxr-bot.git",
+      "sha": "e280c06c56f6b86a66600a6b93c7e52d3b3b4f85",
+      "branch": "5.0-ESM",
+      "stars": 322,
+      "license": "MIT",
+      "language_share": 0.958,
+      "description": "Baileys & Zapo WhatsApp Bot ",
+      "slice": "heldout"
+    },
+    "js-cli": {
+      "github": "sequelize/cli",
+      "url": "https://github.com/sequelize/cli.git",
+      "sha": "679054aea251572ac7f6fa152f5d9eff9dbbbe9c",
+      "branch": "main",
+      "stars": 2557,
+      "license": "MIT",
+      "language_share": 0.998,
+      "description": "The Sequelize CLI",
+      "slice": "heldout"
+    },
+    "js-brightdata-mcp": {
+      "github": "brightdata/brightdata-mcp",
+      "url": "https://github.com/brightdata/brightdata-mcp.git",
+      "sha": "887db67af91b8eac1a60a0f0df9ac906c0e3c99b",
+      "branch": "main",
+      "stars": 2687,
+      "license": "MIT",
+      "language_share": 0.998,
+      "description": "A powerful Model Context Protocol (MCP) server that provides an all-in-one solution for public web access.",
+      "slice": "heldout"
+    },
+    "js-super-agent-party": {
+      "github": "heshengtao/super-agent-party",
+      "url": "https://github.com/heshengtao/super-agent-party.git",
+      "sha": "3eb32bb2f81311efc856796d83aa3c104aec521a",
+      "branch": "main",
+      "stars": 2755,
+      "license": "AGPL-3.0",
+      "language_share": 0.846,
+      "description": "⭐ All-in-one AI companion! Super Agent Party = Self hosted neuro sama + openclaw! ⭐ 全能AI伴侣！超级智能体派对 = 自托管neuro sama + openclaw!",
+      "slice": "heldout"
+    },
+    "js-echo-server": {
+      "github": "Ealenn/Echo-Server",
+      "url": "https://github.com/Ealenn/Echo-Server.git",
+      "sha": "2b735482f942cbd889f1d49f3ff892364d0519ac",
+      "branch": "master",
+      "stars": 331,
+      "license": "GPL-3.0",
+      "language_share": 0.992,
+      "description": "REST Server Tests (Echo-Server) API / Docker / Kubernetes / Helm",
+      "slice": "heldout"
+    },
+    "js-phantomas": {
+      "github": "macbre/phantomas",
+      "url": "https://github.com/macbre/phantomas.git",
+      "sha": "785ec395f0d505923ec175982d373983acbcb51c",
+      "branch": "devel",
+      "stars": 2263,
+      "license": "BSD-2-Clause",
+      "language_share": 0.869,
+      "description": "Headless Chromium-based web performance metrics collector and monitoring tool",
+      "slice": "dev"
+    },
+    "js-openccu": {
+      "github": "OpenCCU/OpenCCU",
+      "url": "https://github.com/OpenCCU/OpenCCU.git",
+      "sha": "7f73edc0f28ba89e87b50caca8fab583ca159358",
+      "branch": "master",
+      "stars": 1851,
+      "license": "Apache-2.0",
+      "language_share": 0.88,
+      "description": ":house: Buildroot-based, cloud-free smart-home platform for a Homematic IP CCU (CCU3/ELV-Charly). Runs on Raspberry Pi & x86/ARM or as a virtual appliance (Proxmox VE, Home Assistant, Docker/LXC/K8s)...",
+      "slice": "heldout"
+    },
+    "js-ui5-cli": {
+      "github": "UI5/cli",
+      "url": "https://github.com/UI5/cli.git",
+      "sha": "2ce6948368604d8bddbe97309585b20dd5ddf478",
+      "branch": "main",
+      "stars": 510,
+      "license": "Apache-2.0",
+      "language_share": 0.997,
+      "description": "An open and modular toolchain to develop state of the art applications based on the UI5 framework",
+      "slice": "heldout"
+    },
+    "js-opengym": {
+      "github": "DuarteSantos8/openGym",
+      "url": "https://github.com/DuarteSantos8/openGym.git",
+      "sha": "922b586a6ee89c2e166baef1ef3a50e062b77374",
+      "branch": "main",
+      "stars": 16155,
+      "license": "AGPL-3.0",
+      "language_share": 0.892,
+      "description": "Open-source gym & body-weight tracker, now in the App Store (iPhone + Apple Watch) and as an Android APK. Plan routines, log workouts, see which muscles are trained, import from Strong/Hevy/FitNotes. Self-host it or use it on the phone alone.",
+      "slice": "heldout"
+    },
+    "js-tms": {
+      "github": "xiweicheng/tms",
+      "url": "https://github.com/xiweicheng/tms.git",
+      "sha": "d50a870a876c3517ccc97223795dca196a8b3c0e",
+      "branch": "master",
+      "stars": 388,
+      "license": "MIT",
+      "language_share": 0.819,
+      "description": "基于频道模式的团队沟通协作+轻量级任务看板，支持mardown、富文本、在线表格和思维导图的团队博文wiki，i18n国际化翻译管理的响应式web开源团队协作系统。",
+      "slice": "heldout"
+    },
+    "js-whisper": {
+      "github": "Dun-sin/Whisper",
+      "url": "https://github.com/Dun-sin/Whisper.git",
+      "sha": "a7a94cad74166fa780debc8e64194eaf64e07b64",
+      "branch": "main",
+      "stars": 473,
+      "license": "MIT",
+      "language_share": 0.973,
+      "description": "A fun Application to have a random chat with people safely",
+      "slice": "heldout"
+    },
+    "js-noisedash": {
+      "github": "kaythomas0/noisedash",
+      "url": "https://github.com/kaythomas0/noisedash.git",
+      "sha": "1c4e6137d6c06696b2b39082045aff6db541db4e",
+      "branch": "dev",
+      "stars": 366,
+      "license": "AGPL-3.0",
+      "language_share": 0.646,
+      "description": "Self-hostable web tool for generating ambient noises",
+      "slice": "heldout"
+    },
+    "js-self-hosted": {
+      "github": "stoatchat/self-hosted",
+      "url": "https://github.com/stoatchat/self-hosted.git",
+      "sha": "9af5e9063a8d1311477b7d2f24f5764ffe3e1cd1",
+      "branch": "main",
+      "stars": 2677,
+      "license": "AGPL-3.0",
+      "language_share": 0.666,
+      "description": "Deploy Stoat on your own infrastructure!",
+      "slice": "heldout"
+    },
+    "js-github-bot": {
+      "github": "nodejs/github-bot",
+      "url": "https://github.com/nodejs/github-bot.git",
+      "sha": "a818dc847e252a12f62779698a38f59685ca254f",
+      "branch": "main",
+      "stars": 308,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "@nodejs-github-bot's heart and soul",
+      "slice": "dev"
+    },
+    "js-haven": {
+      "github": "ancsemi/Haven",
+      "url": "https://github.com/ancsemi/Haven.git",
+      "sha": "7a7ace28b8064ac04c0f25cbdf0ffc761e68166d",
+      "branch": "main",
+      "stars": 769,
+      "license": "AGPL-3.0",
+      "language_share": 0.789,
+      "description": "Self-hosted private chat: no cloud, no telemetry, no Big Tech. Discord alternative that runs on your own machine.",
+      "slice": "heldout"
+    },
+    "js-mirotalkc2c": {
+      "github": "miroslavpejic85/mirotalkc2c",
+      "url": "https://github.com/miroslavpejic85/mirotalkc2c.git",
+      "sha": "88dd1ea5d5940ddf8331a725417ef7a89f4206f9",
+      "branch": "main",
+      "stars": 520,
+      "license": "AGPL-3.0",
+      "language_share": 0.725,
+      "description": "📹 Open-source, self-hosted WebRTC 1-to-1 video calling for private real-time communication. Build secure browser-based consultations, coaching, support, telehealth, and other video call experiences with peer-to-peer communication and screen sharing.",
+      "slice": "dev"
+    },
+    "js-titanbot": {
+      "github": "codebymitch/TitanBot",
+      "url": "https://github.com/codebymitch/TitanBot.git",
+      "sha": "c59378a52a662819c6daf203ebd996ccc8f23547",
+      "branch": "main",
+      "stars": 9206,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "A powerful, all-in-one Discord assistant built for every server. ",
+      "slice": "dev"
+    },
+    "js-cloud-run-mcp": {
+      "github": "GoogleCloudPlatform/cloud-run-mcp",
+      "url": "https://github.com/GoogleCloudPlatform/cloud-run-mcp.git",
+      "sha": "e37371264b9a7af490052c5676149a68817b66ec",
+      "branch": "main",
+      "stars": 632,
+      "license": "Apache-2.0",
+      "language_share": 0.99,
+      "description": "MCP server to deploy apps to Cloud Run",
+      "slice": "heldout"
+    },
+    "js-sigmap": {
+      "github": "manojmallick/sigmap",
+      "url": "https://github.com/manojmallick/sigmap.git",
+      "sha": "780b156f74c25ba00559331bc0339d602977229b",
+      "branch": "main",
+      "stars": 645,
+      "license": "MIT",
+      "language_share": 0.992,
+      "description": "~97% token reduction for AI coding sessions — zero deps, 38 languages, MCP server",
+      "slice": "heldout"
+    },
+    "js-parse-server": {
+      "github": "parse-community/parse-server",
+      "url": "https://github.com/parse-community/parse-server.git",
+      "sha": "9805d3e8f3ceb92683a2c2f874287573c0956683",
+      "branch": "alpha",
+      "stars": 21403,
+      "license": "Apache-2.0",
+      "language_share": 0.982,
+      "description": "Parse Server for Node.js / Express",
+      "slice": "heldout"
+    },
+    "js-4gaboards": {
+      "github": "RARgames/4gaBoards",
+      "url": "https://github.com/RARgames/4gaBoards.git",
+      "sha": "01b7b16140c319600e9516e269ddd6f183538d63",
+      "branch": "main",
+      "stars": 731,
+      "license": "MIT",
+      "language_share": 0.939,
+      "description": "Straightforward realtime kanban boards management for intuitive task tracking. 4ga Boards features an elegant dark mode, collapsible todo lists, and multitasking tools to supercharge your team's productivity.",
+      "slice": "heldout"
+    },
+    "js-filesync": {
+      "github": "polius/FileSync",
+      "url": "https://github.com/polius/FileSync.git",
+      "sha": "ba329324c2fd5dd2f042a3cb522416a14255c05e",
+      "branch": "main",
+      "stars": 1855,
+      "license": "MIT",
+      "language_share": 0.619,
+      "description": "Send files from one device to many in real-time.",
+      "slice": "dev"
+    },
+    "js-ship-safe": {
+      "github": "asamassekou10/ship-safe",
+      "url": "https://github.com/asamassekou10/ship-safe.git",
+      "sha": "51ab049b4a4946357d51f1c904fec4322671b795",
+      "branch": "main",
+      "stars": 863,
+      "license": "MIT",
+      "language_share": 0.974,
+      "description": "The independent security agent for AI-written software. Finds issues, investigates whether they are real, and shows you the evidence. Deterministic core, no API key needed, JSON and SARIF output.",
+      "slice": "heldout"
+    },
+    "js-single-file-cli": {
+      "github": "gildas-lormeau/single-file-cli",
+      "url": "https://github.com/gildas-lormeau/single-file-cli.git",
+      "sha": "b940c191dc7b516507f5df37b49b8f5295295cc1",
+      "branch": "main",
+      "stars": 1669,
+      "license": "AGPL-3.0",
+      "language_share": 0.958,
+      "description": "CLI tool for saving a faithful copy of a complete web page in a single HTML file (based on SingleFile)",
+      "slice": "dev"
+    },
+    "js-call-me": {
+      "github": "miroslavpejic85/call-me",
+      "url": "https://github.com/miroslavpejic85/call-me.git",
+      "sha": "951adae1520ff95309001922ab77b04e2684eb63",
+      "branch": "main",
+      "stars": 765,
+      "license": "AGPL-3.0",
+      "language_share": 0.601,
+      "description": "📞 Open-source, self-hosted WebRTC click-to-call solution for websites. Add a video Call-Me button and let visitors instantly connect with your team through browser-based video communication. Ideal for customer support, sales, consultations, and remote assistance.",
+      "slice": "dev"
+    },
+    "js-saltgui": {
+      "github": "erwindon/SaltGUI",
+      "url": "https://github.com/erwindon/SaltGUI.git",
+      "sha": "790c014a5d5228077d6c50e6140cb95513a54d09",
+      "branch": "master",
+      "stars": 632,
+      "license": "MIT",
+      "language_share": 0.961,
+      "description": "A web interface for managing SaltStack based infrastructure.",
+      "slice": "dev"
+    },
+    "js-homepage": {
+      "github": "gethomepage/homepage",
+      "url": "https://github.com/gethomepage/homepage.git",
+      "sha": "42a26dcdc6b231062d362c109c1ef9410f0271ff",
+      "branch": "dev",
+      "stars": 33370,
+      "license": "GPL-3.0",
+      "language_share": 0.993,
+      "description": "A highly customizable homepage (or startpage / application dashboard) with Docker and service API integrations.",
+      "slice": "dev"
+    },
+    "js-firewalla": {
+      "github": "firewalla/firewalla",
+      "url": "https://github.com/firewalla/firewalla.git",
+      "sha": "2752a342e15661940a947b650925049004bddf4e",
+      "branch": "master",
+      "stars": 634,
+      "license": "AGPL-3.0",
+      "language_share": 0.799,
+      "description": "http://firewalla.com",
+      "slice": "heldout"
+    },
+    "js-fireshare": {
+      "github": "fireshare-app/fireshare",
+      "url": "https://github.com/fireshare-app/fireshare.git",
+      "sha": "ea64b10d6fe10dd8d6ea214950581cf999cdcc57",
+      "branch": "main",
+      "stars": 1509,
+      "license": "GPL-3.0",
+      "language_share": 0.62,
+      "description": "Self host your media and share with unique links",
+      "slice": "heldout"
+    },
+    "js-codexmate": {
+      "github": "SakuraByteCore/codexmate",
+      "url": "https://github.com/SakuraByteCore/codexmate.git",
+      "sha": "18d67590f49a870eab5907931b440e3c1e8ef561",
+      "branch": "main",
+      "stars": 354,
+      "license": "Apache-2.0",
+      "language_share": 0.863,
+      "description": "One dashboard for all your local AI coding agents. Switch providers, manage sessions, and orchestrate tasks across Codex, Claude Code, Gemini CLI, CodeBuddy Code, Pi, OpenCode, KiloCode, and OpenClaw. Zero cloud, local-first control plane.",
+      "slice": "heldout"
+    },
+    "js-mineflayer": {
+      "github": "PrismarineJS/mineflayer",
+      "url": "https://github.com/PrismarineJS/mineflayer.git",
+      "sha": "5a252e6d258882b042e60e21c37d552cdf3b3380",
+      "branch": "master",
+      "stars": 7649,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Create Minecraft bots with a powerful, stable, and high level JavaScript API.",
+      "slice": "heldout"
+    },
+    "js-lynkr": {
+      "github": "Fast-Editor/Lynkr",
+      "url": "https://github.com/Fast-Editor/Lynkr.git",
+      "sha": "5af364f9327de1c338e3762b3e83df025d2e37f4",
+      "branch": "main",
+      "stars": 638,
+      "license": "Apache-2.0",
+      "language_share": 0.773,
+      "description": "Streamline your workflow with Lynkr, a CLI tool that acts as an HTTP proxy for efficient code interactions using Claude Code CLI.",
+      "slice": "dev"
+    },
+    "js-dashboard": {
+      "github": "tektoncd/dashboard",
+      "url": "https://github.com/tektoncd/dashboard.git",
+      "sha": "8ab3994fc4ad59c2c3e31cd3f8a1fda7f3ab9e2e",
+      "branch": "main",
+      "stars": 962,
+      "license": "Apache-2.0",
+      "language_share": 0.893,
+      "description": "A dashboard for Tekton!",
+      "slice": "heldout"
+    },
+    "js-dockly": {
+      "github": "lirantal/dockly",
+      "url": "https://github.com/lirantal/dockly.git",
+      "sha": "04b80c58627536fed5e1b60fd4da7c4f87eb79b1",
+      "branch": "main",
+      "stars": 4035,
+      "license": "MIT",
+      "language_share": 0.993,
+      "description": "Immersive terminal interface for managing docker containers and services",
+      "slice": "dev"
+    },
+    "js-react-glass-keep": {
+      "github": "nikunjsingh93/react-glass-keep",
+      "url": "https://github.com/nikunjsingh93/react-glass-keep.git",
+      "sha": "1a62f2b450c3d9e6f182584121759bbeb5cefa85",
+      "branch": "main",
+      "stars": 602,
+      "license": "MIT",
+      "language_share": 0.956,
+      "description": "Glass Keep is Keep Notes alternative using Glass design.  Docker Server, Tauri Clients and PWA",
+      "slice": "heldout"
+    },
+    "js-homegenie": {
+      "github": "genielabs/HomeGenie",
+      "url": "https://github.com/genielabs/HomeGenie.git",
+      "sha": "d991b39c396bd1d03fea6b07de781b14493aceb5",
+      "branch": "master",
+      "stars": 459,
+      "license": "AGPL-3.0",
+      "language_share": 0.822,
+      "description": "HomeGenie: The Programmable Intelligence with 100% Local Agentic AI.",
+      "slice": "heldout"
+    },
+    "js-drawio-desktop": {
+      "github": "jgraph/drawio-desktop",
+      "url": "https://github.com/jgraph/drawio-desktop.git",
+      "sha": "e56f6f3f8689503b328456081186de0ab5594a11",
+      "branch": "dev",
+      "stars": 63662,
+      "license": "GPL-3.0",
+      "language_share": 0.984,
+      "description": "Official electron build of draw.io",
+      "slice": "heldout"
+    },
+    "js-windsurfapi": {
+      "github": "dwgx/WindsurfAPI",
+      "url": "https://github.com/dwgx/WindsurfAPI.git",
+      "sha": "272429d360cda7367c4920cd40bdba4bea59823f",
+      "branch": "master",
+      "stars": 3108,
+      "license": "MIT",
+      "language_share": 0.907,
+      "description": "Turn Windsurf / Devin Desktop's 100+ AI models (Claude, GPT, Gemini, DeepSeek, Kimi, GLM, SWE) into OpenAI-, Anthropic- & Gemini-compatible APIs. Zero-dependency self-hosted reverse proxy for Claude Code, Cline & Cursor. 把 Windsurf/Devin 云端 100+ 模型变成三套兼容 API。",
+      "slice": "dev"
+    },
+    "js-oc": {
+      "github": "only-cli/oc",
+      "url": "https://github.com/only-cli/oc.git",
+      "sha": "e12c7802b1acb4c9667594487662b730c9a65609",
+      "branch": "main",
+      "stars": 546,
+      "license": "MIT",
+      "language_share": 0.96,
+      "description": "Turn any website into a compact CLI tailored for AI agents. Browse the web in hundreds of tokens, not tens of thousands.",
+      "slice": "heldout"
+    },
+    "js-welsonjs": {
+      "github": "gnh1201/welsonjs",
+      "url": "https://github.com/gnh1201/welsonjs.git",
+      "sha": "d5e14d07cbdc5dbf0b15fe227ebe7cbb26de46ca",
+      "branch": "master",
+      "stars": 512,
+      "license": "GPL-3.0",
+      "language_share": 0.941,
+      "description": "WelsonJS - Built-in JavaScript for Industrial Automation on Windows",
+      "slice": "heldout"
+    },
+    "js-lepton": {
+      "github": "hackjutsu/Lepton",
+      "url": "https://github.com/hackjutsu/Lepton.git",
+      "sha": "36fb9eb756bfb6dbf7ca428055e830a1e76e1733",
+      "branch": "master",
+      "stars": 10342,
+      "license": "MIT",
+      "language_share": 0.917,
+      "description": "💻     Democratizing Snippet Management (macOS/Win/Linux)",
+      "slice": "heldout"
+    },
+    "js-camunda-modeler": {
+      "github": "camunda/camunda-modeler",
+      "url": "https://github.com/camunda/camunda-modeler.git",
+      "sha": "d1c5a6fc20a4596fb0f6c3fce01db83fff94737d",
+      "branch": "develop",
+      "stars": 1730,
+      "license": "MIT",
+      "language_share": 0.983,
+      "description": "A modeling solution for BPMN, DMN, and Forms based on bpmn.io. As a companion tool to your favorite IDE it supports you in implementing solutions with Camunda.",
+      "slice": "dev"
+    },
+    "js-mirotalksfu": {
+      "github": "miroslavpejic85/mirotalksfu",
+      "url": "https://github.com/miroslavpejic85/mirotalksfu.git",
+      "sha": "71a7c69a109109ef3387fce60713f64655023af7",
+      "branch": "main",
+      "stars": 3138,
+      "license": "AGPL-3.0",
+      "language_share": 0.719,
+      "description": "🏆 Self-hosted, open-source WebRTC video conferencing platform for real-time communication and collaboration. A modern alternative to Zoom, Google Meet, Jitsi Meet, and Microsoft Teams, powered by scalable SFU architecture with Mediasoup.",
+      "slice": "heldout"
+    },
+    "js-mirotalkwebrtc": {
+      "github": "miroslavpejic85/mirotalkwebrtc",
+      "url": "https://github.com/miroslavpejic85/mirotalkwebrtc.git",
+      "sha": "2005d529955355c6c67bfa608af51f73c6e8fe03",
+      "branch": "master",
+      "stars": 364,
+      "license": "AGPL-3.0",
+      "language_share": 0.655,
+      "description": "🛠 Open-source, self-hosted WebRTC SaaS platform and video meeting scheduler. Provide user accounts, dashboards, meeting scheduling, invitations, and centralized access to MiroTalk services. Build your own branded video meeting platform on infrastructure you control.",
+      "slice": "heldout"
+    },
+    "js-dcts-shipping": {
+      "github": "hackthedev/dcts-shipping",
+      "url": "https://github.com/hackthedev/dcts-shipping.git",
+      "sha": "1aa916dbcd34fe9fa795b01e302abeeb972dfc53",
+      "branch": "main",
+      "stars": 642,
+      "license": "AGPL-3.0",
+      "language_share": 0.895,
+      "description": "DCTS is an ambitious project with the goal to offer absolute independence through software with a no-bullshit mindset completely for free and with a heavy focus on self-hosting, decentralization and ease of use.",
+      "slice": "heldout"
+    },
+    "js-hubot": {
+      "github": "hubotio/hubot",
+      "url": "https://github.com/hubotio/hubot.git",
+      "sha": "9aab11a3deeafc9025731967ca4ae1e030acd8f8",
+      "branch": "main",
+      "stars": 16798,
+      "license": "MIT",
+      "language_share": 0.991,
+      "description": "A customizable life embetterment robot.",
+      "slice": "heldout"
+    },
+    "js-bgpalerter": {
+      "github": "nttgin/BGPalerter",
+      "url": "https://github.com/nttgin/BGPalerter.git",
+      "sha": "9a616c29483ae03eaae219b04773a4288b32db62",
+      "branch": "main",
+      "stars": 1026,
+      "license": "BSD-3-Clause",
+      "language_share": 0.997,
+      "description": "BGP and RPKI monitoring tool. Pre-configured for real-time detection of visibility loss, RPKI invalid announcements, hijacks, ROA misconfiguration, and more.",
+      "slice": "heldout"
+    },
+    "js-browserless": {
+      "github": "microlinkhq/browserless",
+      "url": "https://github.com/microlinkhq/browserless.git",
+      "sha": "e21af051a3232e770cc0f9119e367695450e251e",
+      "branch": "master",
+      "stars": 1841,
+      "license": "MIT",
+      "language_share": 0.992,
+      "description": "The headless Chrome/Chromium driver on top of Puppeteer. Take screenshots, generate PDFs, extract text and HTML with a production-ready API.",
+      "slice": "heldout"
+    },
+    "js-tokentracker": {
+      "github": "xiufengsun/TokenTracker",
+      "url": "https://github.com/xiufengsun/TokenTracker.git",
+      "sha": "8d32a956181bf52fae449c89b8f6520253566283",
+      "branch": "main",
+      "stars": 2134,
+      "license": "MIT",
+      "language_share": 0.76,
+      "description": "Local-first AI token usage & cost tracker for 31 coding tools incl. Claude Code, Codex, Cursor, Gemini & DeepSeek Harness—with native apps. Never reads prompts.",
+      "slice": "heldout"
+    },
+    "js-sillytavern": {
+      "github": "SillyTavern/SillyTavern",
+      "url": "https://github.com/SillyTavern/SillyTavern.git",
+      "sha": "06bde939fb1e9c4c8d8641d810f0a916b5bce127",
+      "branch": "release",
+      "stars": 34976,
+      "license": "AGPL-3.0",
+      "language_share": 0.865,
+      "description": "LLM Frontend for Power Users.",
+      "slice": "heldout"
+    },
+    "js-dotenvx": {
+      "github": "dotenvx/dotenvx",
+      "url": "https://github.com/dotenvx/dotenvx.git",
+      "sha": "509745dae480cec27aca18a2184942c81bd61d9d",
+      "branch": "main",
+      "stars": 5855,
+      "license": "BSD-3-Clause",
+      "language_share": 0.954,
+      "description": "a secure dotenv—from the creator of `dotenv`",
+      "slice": "dev"
+    }
+  },
+  "rejected": [
+    {
+      "github": "semantic-release/semantic-release",
+      "stars": 24129,
+      "reason": "topic package names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "OpenUserJS/OpenUserJS.org",
+      "stars": 1011,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "surishortlink/suri",
+      "stars": 396,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "damianeickhoff/HaCasa",
+      "stars": 485,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "SpinaCMS/Spina",
+      "stars": 2256,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "cporter202/API-mega-list",
+      "stars": 8218,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "facundoolano/google-play-scraper",
+      "stars": 2988,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "kadevin/ilab-conjure",
+      "stars": 721,
+      "reason": "JavaScript 38% of bytes (< 60%)"
+    },
+    {
+      "github": "ahmmikun/XLICON-V2-MD",
+      "stars": 410,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "Dragory/modmailbot",
+      "stars": 784,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "amitmerchant1990/notepad",
+      "stars": 383,
+      "reason": "JavaScript 55% of bytes (< 60%)"
+    },
+    {
+      "github": "unixfox/pupflare",
+      "stars": 457,
+      "reason": "licence WTFPL not in the OSI list"
+    },
+    {
+      "github": "OpenSignLabs/OpenSign",
+      "stars": 7181,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "ehmicky/modern-errors",
+      "stars": 1487,
+      "reason": "topic framework names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "nadimtuhin/claude-token-optimizer",
+      "stars": 632,
+      "reason": "topic documentation names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "censortracker/censortracker",
+      "stars": 763,
+      "reason": "JavaScript 53% of bytes (< 60%)"
+    },
+    {
+      "github": "ehmicky/log-process-errors",
+      "stars": 470,
+      "reason": "topic library names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "edelstone/tints-and-shades",
+      "stars": 589,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "artem-sedykh/mini-climate-card",
+      "stars": 328,
+      "reason": "TypeScript 27% of bytes (>= 10%)"
+    },
+    {
+      "github": "taekchef/claude-code-zh-cn",
+      "stars": 825,
+      "reason": "topic claude-code-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "lewisdonovan/google-news-scraper",
+      "stars": 384,
+      "reason": "TypeScript 36% of bytes (>= 10%)"
+    },
+    {
+      "github": "parse-community/parse-dashboard",
+      "stars": 3808,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "mermaid-js/mermaid-cli",
+      "stars": 5130,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "gulpjs/liftoff",
+      "stars": 841,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "RoderickQiu/wnr",
+      "stars": 1102,
+      "reason": "JavaScript 56% of bytes (< 60%)"
+    },
+    {
+      "github": "ldqk/Masuit.MyBlogs",
+      "stars": 1188,
+      "reason": "size 562595 KB > 400000"
+    },
+    {
+      "github": "bahmutov/start-server-and-test",
+      "stars": 1583,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "zer0tonin/Mikochi",
+      "stars": 377,
+      "reason": "JavaScript 43% of bytes (< 60%)"
+    },
+    {
+      "github": "aeonfun/aeon",
+      "stars": 783,
+      "reason": "template repository"
+    },
+    {
+      "github": "bakustarver/rpgmakermlinux-cicpoffs",
+      "stars": 403,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "UseInterstellar/Interstellar",
+      "stars": 2188,
+      "reason": "size 1029761 KB > 400000"
+    },
+    {
+      "github": "terser/html-minifier-terser",
+      "stars": 482,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "qiz029/dscode",
+      "stars": 997,
+      "reason": "TypeScript 26% of bytes (>= 10%)"
+    },
+    {
+      "github": "Javis603/token-monitor",
+      "stars": 3375,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "dromara/electron-egg",
+      "stars": 2457,
+      "reason": "JavaScript 45% of bytes (< 60%)"
+    },
+    {
+      "github": "PrismarineJS/mineflayer-pathfinder",
+      "stars": 315,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "UNITRONIX/BetterDesk",
+      "stars": 452,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "PicPeak/picpeak",
+      "stars": 343,
+      "reason": "TypeScript 35% of bytes (>= 10%)"
+    },
+    {
+      "github": "zhiyi7/gfw-pac",
+      "stars": 1266,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "didi/mpx",
+      "stars": 3950,
+      "reason": "JavaScript 52% of bytes (< 60%)"
+    },
+    {
+      "github": "EkiZR/Portofolio_V5",
+      "stars": 746,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "bablosoft/puppeteer-with-fingerprints",
+      "stars": 458,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "timothepoznanski/poznote",
+      "stars": 967,
+      "reason": "topic documentation names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "CatCatUncle/openworkbuddy",
+      "stars": 352,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "sveltia/sveltia-cms",
+      "stars": 2997,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "jasonacox/TinyLLM",
+      "stars": 353,
+      "reason": "JavaScript 47% of bytes (< 60%)"
+    },
+    {
+      "github": "WJZ-P/gemini-skill",
+      "stars": 832,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "tinode/webapp",
+      "stars": 362,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "PipedreamHQ/pipedream",
+      "stars": 11760,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "Clooos/Bubble-Card",
+      "stars": 4669,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "rdmtc/RedMatic",
+      "stars": 528,
+      "reason": "JavaScript 56% of bytes (< 60%)"
+    },
+    {
+      "github": "Elanis/web-to-desktop-framework-comparison",
+      "stars": 2003,
+      "reason": "JavaScript 45% of bytes (< 60%)"
+    },
+    {
+      "github": "breck7/scroll",
+      "stars": 487,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "piqnt/svgexport",
+      "stars": 951,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "petergyang/human-review",
+      "stars": 1437,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "AmoebeLabs/swiss-army-knife-card",
+      "stars": 349,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "collabnix/kubetools",
+      "stars": 3484,
+      "reason": "description names a tutorial/boilerplate/list, not an application"
+    },
+    {
+      "github": "Mozzo1000/booklogr",
+      "stars": 636,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "coreui/coreui",
+      "stars": 882,
+      "reason": "topic web-components names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "mruniquehacker/KnightBot-Mini",
+      "stars": 1116,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "webfactory/ssh-agent",
+      "stars": 1485,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "decaporg/decap-cms",
+      "stars": 19447,
+      "reason": "topic npm-package names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "oyvhov/Tunet",
+      "stars": 314,
+      "reason": "TypeScript 21% of bytes (>= 10%)"
+    },
+    {
+      "github": "theoephraim/awesome-cloudflare-selfhosted",
+      "stars": 1201,
+      "reason": "topic awesome names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "mruniquehacker/Knightbot-MD",
+      "stars": 8174,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "TuiQiao/CBoard",
+      "stars": 3098,
+      "reason": "JavaScript 47% of bytes (< 60%)"
+    },
+    {
+      "github": "NaiboWang/EasySpider",
+      "stars": 44737,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "thedevs-network/the-guard-bot",
+      "stars": 522,
+      "reason": "TypeScript 20% of bytes (>= 10%)"
+    },
+    {
+      "github": "renezander030/capcut-cli",
+      "stars": 956,
+      "reason": "topic capcut-template names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "fev125/dstatus",
+      "stars": 421,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "Adamant-im/adamant-tradebot",
+      "stars": 861,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "mcpware/cross-code-organizer",
+      "stars": 385,
+      "reason": "topic claude-code-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "runtipi/runtipi-appstore",
+      "stars": 502,
+      "reason": "TypeScript 21% of bytes (>= 10%)"
+    },
+    {
+      "github": "canove/whaticket-community",
+      "stars": 2079,
+      "reason": "TypeScript 37% of bytes (>= 10%)"
+    },
+    {
+      "github": "Timmoth/RackPeek",
+      "stars": 1825,
+      "reason": "JavaScript 50% of bytes (< 60%)"
+    },
+    {
+      "github": "dappros/ethora",
+      "stars": 551,
+      "reason": "size 497519 KB > 400000"
+    },
+    {
+      "github": "Lonero-Team/Decentralized-Internet",
+      "stars": 524,
+      "reason": "template repository"
+    },
+    {
+      "github": "xiaomaoJT/TgBot",
+      "stars": 316,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "MoizIbnYousaf/ai-agent-skills",
+      "stars": 1153,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "plopjs/plop",
+      "stars": 7688,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "mdn/express-locallibrary-tutorial",
+      "stars": 1275,
+      "reason": "licence CC0-1.0 not in the OSI list"
+    },
+    {
+      "github": "scrapfly/Antibot-Detector",
+      "stars": 614,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "chuspeeism/dashi-taskboard",
+      "stars": 3403,
+      "reason": "topic codex-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "dwainscheeren/dwains-lovelace-dashboard",
+      "stars": 2077,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "sunny9577/proxy-scraper",
+      "stars": 597,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "siteserver/cms",
+      "stars": 3917,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "muety/anchr",
+      "stars": 395,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "lorien/awesome-web-scraping",
+      "stars": 8194,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "antvis/chart-visualization-skills",
+      "stars": 516,
+      "reason": "TypeScript 34% of bytes (>= 10%)"
+    },
+    {
+      "github": "release-it/release-it",
+      "stars": 9079,
+      "reason": "topic hooks names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "darkzOGx/youtube-automation-agent",
+      "stars": 4670,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "chandler-stimson/live-stream-downloader",
+      "stars": 374,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "microlinkhq/top-user-agents",
+      "stars": 383,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "sepivip/SeekerClaw",
+      "stars": 319,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "agarwalvishal/claude-chat-exporter",
+      "stars": 733,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "brentvollebregt/auto-py-to-exe",
+      "stars": 4996,
+      "reason": "topic package names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "usebruno/bruno",
+      "stars": 47855,
+      "reason": "TypeScript 26% of bytes (>= 10%)"
+    },
+    {
+      "github": "TotallyInformation/node-red-contrib-uibuilder",
+      "stars": 529,
+      "reason": "topic web-components names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "carloscuesta/gitmoji-cli",
+      "stars": 4830,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "aws-samples/aws-lex-web-ui",
+      "stars": 816,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "emanuelef/daily-stars-explorer",
+      "stars": 411,
+      "reason": "JavaScript 49% of bytes (< 60%)"
+    },
+    {
+      "github": "ningbainb/deepseek-harness-desktop",
+      "stars": 869,
+      "reason": "topic dsh-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "GameFrameX/GameFrameX",
+      "stars": 771,
+      "reason": "JavaScript 47% of bytes (< 60%)"
+    },
+    {
+      "github": "a597873885/webfunny_monitor",
+      "stars": 5303,
+      "reason": "size 532130 KB > 400000"
+    },
+    {
+      "github": "typemill/typemill",
+      "stars": 618,
+      "reason": "topic docs names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "backmeupplz/voicy",
+      "stars": 914,
+      "reason": "JavaScript 57% of bytes (< 60%)"
+    },
+    {
+      "github": "PointAntStorm/grok-self",
+      "stars": 532,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "BrunoSobrino/TheMystic-Bot-MD",
+      "stars": 865,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "umutxyp/Discord-Bot-Website",
+      "stars": 323,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "sebastiancarlos/beachpatrol",
+      "stars": 926,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "AgwaB/pi-workflow",
+      "stars": 369,
+      "reason": "TypeScript 39% of bytes (>= 10%)"
+    },
+    {
+      "github": "49-Agents/49-IDE",
+      "stars": 619,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "clawplays/ospec",
+      "stars": 391,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "journiv/journiv-app",
+      "stars": 1243,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "sassanix/Warracker",
+      "stars": 1533,
+      "reason": "JavaScript 48% of bytes (< 60%)"
+    },
+    {
+      "github": "Adamant-im/adamant-exchangebot",
+      "stars": 478,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "Anil-matcha/open-spaces",
+      "stars": 920,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "lwsjs/local-web-server",
+      "stars": 1269,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "bablosoft/playwright-with-fingerprints",
+      "stars": 344,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "alohe/quicky",
+      "stars": 438,
+      "reason": "topic npm-package names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "Spielewoy/autoprompt-skill",
+      "stars": 1212,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "crocodilestick/Calibre-Web-Automated",
+      "stars": 6495,
+      "reason": "JavaScript 48% of bytes (< 60%)"
+    },
+    {
+      "github": "nusmodifications/nusmods",
+      "stars": 690,
+      "reason": "description names a tutorial/boilerplate/list, not an application"
+    },
+    {
+      "github": "fastify/aws-lambda-fastify",
+      "stars": 560,
+      "reason": "topic fastify-library names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "google/zx",
+      "stars": 45815,
+      "reason": "TypeScript 39% of bytes (>= 10%)"
+    },
+    {
+      "github": "EdgeTypE/better-deepseek",
+      "stars": 744,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "nucliweb/webperf-snippets",
+      "stars": 1454,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "cskefu/cskefu",
+      "stars": 2901,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "kennylimz/anime-character-guessr",
+      "stars": 360,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "conversejs/converse.js",
+      "stars": 3300,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "postcss/postcss-cli",
+      "stars": 856,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "QingYunA/answer-me-with-html",
+      "stars": 4492,
+      "reason": "topic dsh-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "alienzhou/blog",
+      "stars": 423,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "open-condo-software/condo",
+      "stars": 426,
+      "reason": "JavaScript 53% of bytes (< 60%)"
+    },
+    {
+      "github": "jackwener/OpenCLI",
+      "stars": 30672,
+      "reason": "TypeScript 19% of bytes (>= 10%)"
+    },
+    {
+      "github": "wuzf/2fa",
+      "stars": 456,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "mozilla/addons-linter",
+      "stars": 363,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "yangfeng20/boss_batch_push",
+      "stars": 861,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "slackapi/slack-github-action",
+      "stars": 1351,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "ahmmikun/XLICON-MD",
+      "stars": 323,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "aeonfun/opendia",
+      "stars": 1933,
+      "reason": "topic npm-package names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "benc-uk/kubeview",
+      "stars": 1218,
+      "reason": "JavaScript 46% of bytes (< 60%)"
+    },
+    {
+      "github": "plankanban/planka",
+      "stars": 12645,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "ButzYung/SystemAnimatorOnline",
+      "stars": 1972,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "xmppjs/xmpp.js",
+      "stars": 2279,
+      "reason": "topic component names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "xinnan-tech/xiaozhi-esp32-server",
+      "stars": 11044,
+      "reason": "JavaScript 39% of bytes (< 60%)"
+    },
+    {
+      "github": "octokit/request-action",
+      "stars": 451,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "sheshbabu/zen",
+      "stars": 1190,
+      "reason": "JavaScript 53% of bytes (< 60%)"
+    },
+    {
+      "github": "illuspas/Node-Media-Server",
+      "stars": 6242,
+      "reason": "TypeScript 27% of bytes (>= 10%)"
+    },
+    {
+      "github": "website-scraper/node-website-scraper",
+      "stars": 1765,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "Cerlancism/chatgpt-subtitle-translator",
+      "stars": 391,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "cnighswonger/claude-code-cache-fix",
+      "stars": 446,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "basnijholt/home-assistant-config",
+      "stars": 1971,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "1186258278/OpenClawChineseTranslation",
+      "stars": 3788,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "Kooboo/Kooboo",
+      "stars": 345,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "spr-networks/super",
+      "stars": 873,
+      "reason": "JavaScript 53% of bytes (< 60%)"
+    },
+    {
+      "github": "arminbro/generate-react-cli",
+      "stars": 411,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "agent-sh/agentsys",
+      "stars": 1007,
+      "reason": "topic plugins names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "puneetsl/lotion",
+      "stars": 2284,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "hack-chat/main",
+      "stars": 1451,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "yeuxuan/openclaw-docs",
+      "stars": 750,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "l5yth/potato-mesh",
+      "stars": 537,
+      "reason": "JavaScript 36% of bytes (< 60%)"
+    },
+    {
+      "github": "xmanrui/dsh-im",
+      "stars": 2609,
+      "reason": "topic dsh-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "sitespeedio/sitespeed.io",
+      "stars": 5046,
+      "reason": "size 458653 KB > 400000"
+    },
+    {
+      "github": "APIDevTools/swagger-parser",
+      "stars": 1207,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "everett7623/airport-recommendations-2026",
+      "stars": 1445,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "markfulton/ai-employees",
+      "stars": 796,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "learning-zone/nodejs-basics",
+      "stars": 3208,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "HeyPuter/everything",
+      "stars": 4082,
+      "reason": "size 436645 KB > 400000"
+    },
+    {
+      "github": "sheying2013/OpenBrowser",
+      "stars": 774,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "chalk/chalk",
+      "stars": 23334,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "sapientorius/Nebulynk",
+      "stars": 325,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "wix/Detox",
+      "stars": 12046,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "SchizoDuckie/DuckieTV",
+      "stars": 1189,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "rebrowser/rebrowser-patches",
+      "stars": 1448,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "rohitg00/pro-workflow",
+      "stars": 2929,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "Anil-matcha/Open-AI-Design-Agent",
+      "stars": 468,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "mindmuxai/brain.md",
+      "stars": 581,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "TooAngel/screeps",
+      "stars": 646,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "fastify/fastify-cli",
+      "stars": 735,
+      "reason": "topic fastify-library names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "ertugrulakben/cashclaw",
+      "stars": 305,
+      "reason": "topic npm-package names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "iFurySt/open-browser-use",
+      "stars": 398,
+      "reason": "topic javascript-sdk names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "dyatko/arkit",
+      "stars": 971,
+      "reason": "topic component names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "svg/svgo",
+      "stars": 22767,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "SynkraAI/aiox-core",
+      "stars": 3135,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "webpack/webpack-cli",
+      "stars": 2620,
+      "reason": "TypeScript 26% of bytes (>= 10%)"
+    },
+    {
+      "github": "IrosTheBeggar/mStream",
+      "stars": 2420,
+      "reason": "size 1052700 KB > 400000"
+    },
+    {
+      "github": "apconw/Aix-DB",
+      "stars": 2254,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "thalesgroup-cert/Watcher",
+      "stars": 1434,
+      "reason": "JavaScript 56% of bytes (< 60%)"
+    },
+    {
+      "github": "aozorae/Edgechat",
+      "stars": 1354,
+      "reason": "JavaScript 52% of bytes (< 60%)"
+    },
+    {
+      "github": "coreui/coreui-free-react-admin-template",
+      "stars": 4965,
+      "reason": "topic admin-template names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "nextcloud/calendar",
+      "stars": 1193,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "j-a-n/lovelace-wallpanel",
+      "stars": 885,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "nesaku/BiblioReads",
+      "stars": 357,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "Goldentrii/AgentRecall-X",
+      "stars": 372,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "cefjoeii/mern-crud",
+      "stars": 764,
+      "reason": "JavaScript 57% of bytes (< 60%)"
+    },
+    {
+      "github": "swagger-api/swagger-ui",
+      "stars": 29046,
+      "reason": "size 637950 KB > 400000"
+    },
+    {
+      "github": "prometheus/client_js",
+      "stars": 3497,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "vikiboss/r2-web",
+      "stars": 488,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "figranium/figranium",
+      "stars": 777,
+      "reason": "JavaScript 49% of bytes (< 60%)"
+    },
+    {
+      "github": "firecrawl/firecrawl-mcp-server",
+      "stars": 7692,
+      "reason": "JavaScript 55% of bytes (< 60%)"
+    },
+    {
+      "github": "TTLApp/time-to-leave",
+      "stars": 489,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "wiesner-philipp/simple-dash",
+      "stars": 311,
+      "reason": "JavaScript 41% of bytes (< 60%)"
+    },
+    {
+      "github": "xanderfrangos/twinkle-tray",
+      "stars": 9241,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "BackendStack21/restana",
+      "stars": 468,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "Countly/countly-server",
+      "stars": 5922,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "doramart/DoraCMS",
+      "stars": 3550,
+      "reason": "TypeScript 11% of bytes (>= 10%)"
+    },
+    {
+      "github": "getgauge/taiko",
+      "stars": 3673,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "Kritt-ai/open-kritt",
+      "stars": 2340,
+      "reason": "JavaScript 55% of bytes (< 60%)"
+    },
+    {
+      "github": "bvisible/mcp-ssh-manager",
+      "stars": 519,
+      "reason": "TypeScript 21% of bytes (>= 10%)"
+    },
+    {
+      "github": "Zen4-bit/Proxima",
+      "stars": 1200,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "karanb192/claude-code-hooks",
+      "stars": 563,
+      "reason": "topic claude-code-hooks names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "marclou/mailcheap",
+      "stars": 1484,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "arakoodev/EdgeChains",
+      "stars": 432,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "DeekeScript/ad-deeke",
+      "stars": 421,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "JoeanAmier/XHS-Downloader",
+      "stars": 13115,
+      "reason": "JavaScript 41% of bytes (< 60%)"
+    },
+    {
+      "github": "evancohen/smart-mirror",
+      "stars": 2817,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "hanzohanzhe/Grandet",
+      "stars": 823,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "jason5ng32/MyIP",
+      "stars": 12227,
+      "reason": "size 798672 KB > 400000"
+    },
+    {
+      "github": "Derpyu520/qq-bridge",
+      "stars": 2786,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "AwesomeHomelab/awesome-homelab",
+      "stars": 2620,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "louislam/uptime-kuma",
+      "stars": 92950,
+      "reason": "JavaScript 54% of bytes (< 60%)"
+    },
+    {
+      "github": "flow-typed/flow-typed",
+      "stars": 3759,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "certd/certd",
+      "stars": 5093,
+      "reason": "TypeScript 24% of bytes (>= 10%)"
+    },
+    {
+      "github": "tommy0103/obelisk",
+      "stars": 696,
+      "reason": "JavaScript 59% of bytes (< 60%)"
+    },
+    {
+      "github": "TonF1917/Trace",
+      "stars": 566,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "ImranR98/apps.obtainium.imranr.dev",
+      "stars": 613,
+      "reason": "JavaScript 30% of bytes (< 60%)"
+    },
+    {
+      "github": "node-pinus/pinus",
+      "stars": 1932,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "cyrus-and/chrome-har-capturer",
+      "stars": 571,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "lsfusion-solutions/mycompany",
+      "stars": 363,
+      "reason": "JavaScript 59% of bytes (< 60%)"
+    },
+    {
+      "github": "kalkih/mini-graph-card",
+      "stars": 3904,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "restify/node-restify",
+      "stars": 10689,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "preactjs/preact-www",
+      "stars": 383,
+      "reason": "topic docs names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "halfzebra/create-elm-app",
+      "stars": 1675,
+      "reason": "topic boilerplate names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "xemle/home-gallery",
+      "stars": 1205,
+      "reason": "JavaScript 52% of bytes (< 60%)"
+    },
+    {
+      "github": "citrolabs/ego-lite",
+      "stars": 19716,
+      "reason": "JavaScript 60% of bytes (< 60%)"
+    },
+    {
+      "github": "flatkey-ai/flatkey-cli",
+      "stars": 876,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "paed01/bpmn-engine",
+      "stars": 972,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "error311/FileRise",
+      "stars": 1022,
+      "reason": "JavaScript 49% of bytes (< 60%)"
+    },
+    {
+      "github": "pchuri/confluence-cli",
+      "stars": 319,
+      "reason": "topic documentation names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "gamosoft/NoteDiscovery",
+      "stars": 2849,
+      "reason": "JavaScript 40% of bytes (< 60%)"
+    },
+    {
+      "github": "WWBN/AVideo",
+      "stars": 2108,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "i18next/i18next-http-backend",
+      "stars": 527,
+      "reason": "topic plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "intri-in/manage-my-damn-life-nextjs",
+      "stars": 644,
+      "reason": "TypeScript 27% of bytes (>= 10%)"
+    },
+    {
+      "github": "therealarthur/myrlin-workbook",
+      "stars": 386,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "GreyWolfDev/Werewolf",
+      "stars": 665,
+      "reason": "JavaScript 45% of bytes (< 60%)"
+    },
+    {
+      "github": "zapier/zapier-platform",
+      "stars": 562,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "RPi-Monitor/RPi-Monitor",
+      "stars": 1213,
+      "reason": "JavaScript 48% of bytes (< 60%)"
+    },
+    {
+      "github": "sindresorhus/yoctocolors",
+      "stars": 878,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "msys2/setup-msys2",
+      "stars": 392,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "streamaserver/streama",
+      "stars": 9822,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "koosoli/ESPHomeDesigner",
+      "stars": 1140,
+      "reason": "topic custom-component names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "lint-staged/lint-staged",
+      "stars": 14743,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "jarrodwatts/claude-hud",
+      "stars": 28901,
+      "reason": "topic plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "rezarahiminia/livescoreFootball",
+      "stars": 475,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "ikechan8370/chatgpt-plugin",
+      "stars": 1079,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "contentful/contentful-cli",
+      "stars": 361,
+      "reason": "JavaScript 53% of bytes (< 60%)"
+    },
+    {
+      "github": "lakeday-org/perch",
+      "stars": 353,
+      "reason": "TypeScript 14% of bytes (>= 10%)"
+    },
+    {
+      "github": "miroapp/app-examples",
+      "stars": 428,
+      "reason": "topic plugins names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "getprimate/primate",
+      "stars": 583,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "ooples/token-optimizer-mcp",
+      "stars": 563,
+      "reason": "TypeScript 27% of bytes (>= 10%)"
+    },
+    {
+      "github": "Fei2411/DS-Bot",
+      "stars": 4110,
+      "reason": "topic dsh-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "LeCoupa/awesome-cheatsheets",
+      "stars": 46581,
+      "reason": "JavaScript 48% of bytes (< 60%)"
+    },
+    {
+      "github": "avwo/whistle",
+      "stars": 15755,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "DhanushNehru/Ultimate-NodeJs-Resources",
+      "stars": 554,
+      "reason": "licence CC0-1.0 not in the OSI list"
+    },
+    {
+      "github": "alam00000/bentopdf",
+      "stars": 16150,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "sindresorhus/np",
+      "stars": 7713,
+      "reason": "topic npm-package names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "prodaft/cradle",
+      "stars": 342,
+      "reason": "JavaScript 38% of bytes (< 60%)"
+    },
+    {
+      "github": "linear-b/gitstream",
+      "stars": 344,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "cporter202/agentic-ai-apis",
+      "stars": 662,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "holesail/holesail",
+      "stars": 352,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "BlackMixture/Mix-Studio",
+      "stars": 301,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "anmol098/npx_card",
+      "stars": 531,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "mojolicious/mojo.js",
+      "stars": 510,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "Adamant-im/adamant-console",
+      "stars": 518,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "Anil-matcha/awesome-open-source-saas-alternatives",
+      "stars": 3430,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "website-scraper/website-scraper-puppeteer",
+      "stars": 376,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "Paxa/postbird",
+      "stars": 1635,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "papersgpt/papersgpt-for-zotero",
+      "stars": 2684,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "sengchor/kokraf",
+      "stars": 591,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "NaturalIntelligence/fast-xml-parser",
+      "stars": 3138,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "Forward-Future/loopy",
+      "stars": 3205,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "strapi/documentation",
+      "stars": 1288,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "atlassian/atlassian-mcp-server",
+      "stars": 1123,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "kanasimi/work_crawler",
+      "stars": 4331,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "avajs/ava",
+      "stars": 20825,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "LuanRT/google-this",
+      "stars": 379,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "ehmicky/nve",
+      "stars": 714,
+      "reason": "topic library names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "playframework/play-samples",
+      "stars": 553,
+      "reason": "licence CC0-1.0 not in the OSI list"
+    },
+    {
+      "github": "BackendStack21/fast-gateway",
+      "stars": 323,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "HughYau/qiushi-skill",
+      "stars": 3831,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "badrisnarayanan/antigravity-claude-proxy",
+      "stars": 4023,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "EvoMap/evolver",
+      "stars": 8702,
+      "reason": "topic skill-library names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "clusterzx/paperless-ai",
+      "stars": 5978,
+      "reason": "JavaScript 55% of bytes (< 60%)"
+    },
+    {
+      "github": "TuyaAPI/cli",
+      "stars": 305,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "Bytedesk/bytedesk",
+      "stars": 513,
+      "reason": "size 2615398 KB > 400000"
+    },
+    {
+      "github": "zcjunblog/google-access-helper-mv3",
+      "stars": 373,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "TraceApps/nutritrace",
+      "stars": 353,
+      "reason": "JavaScript 51% of bytes (< 60%)"
+    },
+    {
+      "github": "swagger-api/swagger-client",
+      "stars": 2696,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "Moyf/moys-asr-workflow",
+      "stars": 560,
+      "reason": "JavaScript 41% of bytes (< 60%)"
+    },
+    {
+      "github": "Shuffle/Shuffle",
+      "stars": 2462,
+      "reason": "JavaScript 49% of bytes (< 60%)"
+    },
+    {
+      "github": "actions/create-github-app-token",
+      "stars": 905,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "redf0x1/camofox-browser",
+      "stars": 428,
+      "reason": "JavaScript 56% of bytes (< 60%)"
+    },
+    {
+      "github": "JiHong88/suneditor",
+      "stars": 2025,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "BOTCAHX/RTXZY-MD",
+      "stars": 464,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "sodiumsun/agenttrail",
+      "stars": 963,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "klsdf/GreenResourcesManager",
+      "stars": 1066,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "anus-dev/ANUS",
+      "stars": 6553,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "souravkl11/raganork-md",
+      "stars": 1143,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "MarSeventh/CloudFlare-ImgBed",
+      "stars": 6788,
+      "reason": "template repository"
+    },
+    {
+      "github": "djdevil/AlertTicker-Card",
+      "stars": 338,
+      "reason": "topic javascript-library names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "cheapestinference/claude-auto-retry",
+      "stars": 389,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "oxylabs/agent-skills",
+      "stars": 876,
+      "reason": "JavaScript 53% of bytes (< 60%)"
+    },
+    {
+      "github": "datawhalechina/easy-vibe",
+      "stars": 20188,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "chartbrew/chartbrew",
+      "stars": 4064,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "AnkleBreaker-Studio/unity-mcp-server",
+      "stars": 527,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "danielyaa5/puml-for-markdown",
+      "stars": 343,
+      "reason": "topic documentation names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "traccar/traccar-web",
+      "stars": 1198,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "MageByte-Zero/spec-superflow",
+      "stars": 872,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "insoxin/API",
+      "stars": 1339,
+      "reason": "template repository"
+    },
+    {
+      "github": "MattIPv4/DNS-over-Discord",
+      "stars": 325,
+      "reason": "topic discord-message-components names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "swagger-api/swagger-editor",
+      "stars": 9468,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "pinganbbOvO/ai-companion-kit",
+      "stars": 493,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "upgundecha/howtheysre",
+      "stars": 9833,
+      "reason": "template repository"
+    },
+    {
+      "github": "KidkArolis/jetpack",
+      "stars": 1307,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "chadbyte/clay",
+      "stars": 405,
+      "reason": "topic claude-agent-sdk names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "waynesutton/builder-skills",
+      "stars": 405,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "apostrophecms/apostrophe",
+      "stars": 4654,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "fastify/fastify-http-proxy",
+      "stars": 394,
+      "reason": "topic fastify-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "goldbergyoni/nodejs-testing-best-practices",
+      "stars": 4401,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "kwakseongjae/oh-my-design",
+      "stars": 549,
+      "reason": "JavaScript 52% of bytes (< 60%)"
+    },
+    {
+      "github": "JawadTechYT/KHAN-MD",
+      "stars": 1503,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "NativeScript/nativescript-cli",
+      "stars": 1052,
+      "reason": "TypeScript 32% of bytes (>= 10%)"
+    },
+    {
+      "github": "TryGhost/Ghost-CLI",
+      "stars": 499,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "webdiscus/ansis",
+      "stars": 512,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "gautamkrishnar/blog-post-workflow",
+      "stars": 3448,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "umutxyp/MusicBot",
+      "stars": 1291,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "kailashsr38/ascii-magic-art",
+      "stars": 309,
+      "reason": "topic web-components names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "jatinkrmalik/LLMFeeder",
+      "stars": 485,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "Unitech/pm2",
+      "stars": 43322,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "walinejs/waline",
+      "stars": 3144,
+      "reason": "JavaScript 40% of bytes (< 60%)"
+    },
+    {
+      "github": "dawidd6/action-download-artifact",
+      "stars": 831,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "Raja0sama/vibex",
+      "stars": 388,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "IonicaBizau/scrape-it",
+      "stars": 4069,
+      "reason": "TypeScript 12% of bytes (>= 10%)"
+    },
+    {
+      "github": "DialmasterOrg/Youtarr",
+      "stars": 1781,
+      "reason": "JavaScript 50% of bytes (< 60%)"
+    },
+    {
+      "github": "Anil-matcha/postiz-cheap",
+      "stars": 1219,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "ioBroker/ioBroker.javascript",
+      "stars": 331,
+      "reason": "size 452861 KB > 400000"
+    },
+    {
+      "github": "sismics/docs",
+      "stars": 2570,
+      "reason": "JavaScript 53% of bytes (< 60%)"
+    },
+    {
+      "github": "speakeasy-api/speakeasy",
+      "stars": 455,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "wwebjs/whatsapp-web.js",
+      "stars": 22798,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "ever-co/ever-traduora",
+      "stars": 2139,
+      "reason": "TypeScript 21% of bytes (>= 10%)"
+    },
+    {
+      "github": "PrismarineJS/node-minecraft-protocol",
+      "stars": 1423,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "sandstorm-io/sandstorm",
+      "stars": 7079,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "cube-root/directory-serve",
+      "stars": 425,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "googleworkspace/add-ons-samples",
+      "stars": 352,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "pi-hole/web",
+      "stars": 2609,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "Johell1NS/browser-search",
+      "stars": 539,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "absolute-version/commit-and-tag-version",
+      "stars": 658,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "Azim-Ahmed/Automation-workflow",
+      "stars": 326,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "Juwan-Hwang/Zephyr",
+      "stars": 727,
+      "reason": "size 1361830 KB > 400000"
+    },
+    {
+      "github": "caol64/wenyan-mcp",
+      "stars": 1350,
+      "reason": "JavaScript 59% of bytes (< 60%)"
+    },
+    {
+      "github": "webtorrent/webtorrent-cli",
+      "stars": 1384,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "breakstageaxe61/genspark-claw",
+      "stars": 538,
+      "reason": "no .github/workflows directory"
+    }
+  ]
+}
