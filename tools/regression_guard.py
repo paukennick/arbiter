@@ -413,10 +413,27 @@ def check(guards: dict, targets: list[Target], do_snap: bool, do_perf: bool,
     return 1 if failures else 0
 
 
+def rebase_reference(base: dict, ref_now: float, retimed: set[str]) -> None:
+    """Record a new reference time without breaking the targets that are not
+    being re-timed. Every target time is only meaningful against the
+    reference measured on the same machine; an update of a few targets on a
+    different machine used to overwrite the reference and leave the others
+    measured against the old one, so CI's machine factor (and every old
+    budget) shrank by the ratio of the two machines (FAIL-160). Untouched
+    targets are rescaled to the new reference instead."""
+    ref_old = base.get("reference_seconds")
+    if ref_old and ref_old > 0:
+        scale = ref_now / ref_old
+        for name in list(base.get("targets", {})):
+            if name not in retimed:
+                base["targets"][name] = round(base["targets"][name] * scale, 2)
+    base["reference_seconds"] = ref_now
+
+
 def update(guards: dict, targets: list[Target], do_snap: bool, do_perf: bool, repeats: int) -> int:
     base = json.loads(perf_baseline_path().read_text()) if perf_baseline_path().is_file() else {"targets": {}}
     if do_perf:
-        base["reference_seconds"] = reference_seconds(guards)
+        rebase_reference(base, reference_seconds(guards), {t.name for t in targets})
         base["recorded"] = time.strftime("%Y-%m-%d")
         base["arbiter_commit"] = _head(ROOT)
     for t in targets:

@@ -14,7 +14,7 @@ public class JobQueue implements Runnable {
 
     private final List<Job> pending = new ArrayList<>();
     private final Map<String, Job> byId = new HashMap<>();
-    private final ExecutorService pool = Executors.newFixedThreadPool(4);
+    private final ExecutorService pool = Executors.newFixedThreadPool(4); // expect: arbiter/java.unbounded-work-queue
     private final LockStore store;
     private int processed;
     private int failed;

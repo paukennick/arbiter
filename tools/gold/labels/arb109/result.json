@@ -1,0 +1,167 @@
+{
+ "status": "model-labelled conformance on an 11-repository convenience cohort",
+ "calibration": {
+  "n": 120,
+  "final": {
+   "n": 120,
+   "decided": 120,
+   "unsure": 0,
+   "accuracy_decided": 1.0,
+   "tp_call_precision": 1.0,
+   "tp_call_wilson_lower": 0.96,
+   "fp_call_precision": 1.0,
+   "false_tp_rate": 0.0,
+   "truth_tp_recall": 1.0,
+   "confusion": {
+    "fp|truth=fp": 27,
+    "tp|truth=tp": 93
+   }
+  },
+  "prosecutor": {
+   "n": 120,
+   "decided": 120,
+   "unsure": 0,
+   "accuracy_decided": 1.0,
+   "tp_call_precision": 1.0,
+   "tp_call_wilson_lower": 0.96,
+   "fp_call_precision": 1.0,
+   "false_tp_rate": 0.0,
+   "truth_tp_recall": 1.0,
+   "confusion": {
+    "fp|truth=fp": 27,
+    "tp|truth=tp": 93
+   }
+  },
+  "defender": {
+   "n": 120,
+   "decided": 120,
+   "unsure": 0,
+   "accuracy_decided": 1.0,
+   "tp_call_precision": 1.0,
+   "tp_call_wilson_lower": 0.96,
+   "fp_call_precision": 1.0,
+   "false_tp_rate": 0.0,
+   "truth_tp_recall": 1.0,
+   "confusion": {
+    "fp|truth=fp": 27,
+    "tp|truth=tp": 93
+   }
+  },
+  "kappa_prosecutor_defender": 1.0,
+  "kappa_final_vs_truth": 1.0,
+  "agreement_with_truth": 1.0,
+  "threshold": 0.8,
+  "reliable": true
+ },
+ "overall": {
+  "findings": 105,
+  "tp": 44,
+  "fp": 57,
+  "unsure": 4,
+  "unsure_rate": 0.038,
+  "precision": 0.436,
+  "wilson95": [
+   0.343,
+   0.533
+  ]
+ },
+ "by_rule": {
+  "arbiter/python.code-injection": {
+   "findings": 17,
+   "tp": 14,
+   "fp": 2,
+   "unsure": 1,
+   "unsure_rate": 0.059,
+   "precision": 0.875,
+   "wilson95": [
+    0.64,
+    0.965
+   ]
+  },
+  "arbiter/python.command-injection": {
+   "findings": 4,
+   "tp": 1,
+   "fp": 1,
+   "unsure": 2,
+   "unsure_rate": 0.5,
+   "precision": 0.5,
+   "wilson95": null
+  },
+  "arbiter/python.http-no-timeout": {
+   "findings": 5,
+   "tp": 5,
+   "fp": 0,
+   "unsure": 0,
+   "unsure_rate": 0.0,
+   "precision": 1.0,
+   "wilson95": null
+  },
+  "arbiter/python.insecure-random-for-secret": {
+   "findings": 2,
+   "tp": 2,
+   "fp": 0,
+   "unsure": 0,
+   "unsure_rate": 0.0,
+   "precision": 1.0,
+   "wilson95": null
+  },
+  "arbiter/python.request-body-unbounded": {
+   "findings": 5,
+   "tp": 0,
+   "fp": 4,
+   "unsure": 1,
+   "unsure_rate": 0.2,
+   "precision": 0.0,
+   "wilson95": null
+  },
+  "arbiter/python.retry-loop-no-backoff": {
+   "findings": 1,
+   "tp": 1,
+   "fp": 0,
+   "unsure": 0,
+   "unsure_rate": 0.0,
+   "precision": 1.0,
+   "wilson95": null
+  },
+  "arbiter/python.sql-injection": {
+   "findings": 67,
+   "tp": 19,
+   "fp": 48,
+   "unsure": 0,
+   "unsure_rate": 0.0,
+   "precision": 0.284,
+   "wilson95": [
+    0.19,
+    0.401
+   ]
+  },
+  "arbiter/python.swallowed-error-in-worker-loop": {
+   "findings": 2,
+   "tp": 0,
+   "fp": 2,
+   "unsure": 0,
+   "unsure_rate": 0.0,
+   "precision": 0.0,
+   "wilson95": null
+  },
+  "arbiter/python.unsafe-deserialization": {
+   "findings": 2,
+   "tp": 2,
+   "fp": 0,
+   "unsure": 0,
+   "unsure_rate": 0.0,
+   "precision": 1.0,
+   "wilson95": null
+  }
+ },
+ "cluster": {
+  "repositories_with_findings": 7,
+  "repositories_total": 7,
+  "resamples": 10000,
+  "seed": 109,
+  "interval95": [
+   0.031,
+   0.838
+  ]
+ }
+}

@@ -1,11 +1,14 @@
 {
- "arbiter_commit": "2520303ae488d9b8e6e4d2182f822d8bb19fd368",
- "recorded": "2026-10-22",
+ "arbiter_commit": "98833010b8070f0e387910ab7c7de01ad1928a25",
+ "recorded": "2026-10-25",
  "reference_seconds": 0.338,
  "targets": {
   "ai-corpus": 1.1,
   "ai-corpus-heldout": 13.27,
   "go-coredns": 7.3,
+  "java-netty": 60.67,
+  "java-spring-security": 46.09,
+  "java-tomcat": 66.36,
   "planted": 0.88,
   "py-urllib3": 1.76,
   "ruby-puma": 1.85,

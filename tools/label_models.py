@@ -192,6 +192,10 @@ CLAIMS: list[tuple[str, str, str]] = [
     ("*.image-*", "resilience", f"an image from {_OUTSIDE} is decoded with no limit on its pixel dimensions, so a small file can make the process allocate a very large amount of memory."),
     ("*.decompress-*", "resilience", f"compressed data from {_OUTSIDE} is decompressed with no limit on the output size, so a small input can expand to exhaust memory or disk."),
     ("*.request-body-*", "resilience", "a request body is read into memory with no maximum size, so one large request can exhaust the process's memory."),
+    ("*.unbounded-work-queue", "resilience", "the queue that feeds worker threads has no capacity limit, so submissions arriving faster than they are processed pile up in memory with nothing to make callers back off."),
+    ("*.unbounded-queue", "resilience", "the queue that feeds worker threads has no capacity limit, so submissions arriving faster than they are processed pile up in memory with nothing to make callers back off."),
+    ("*.body-as-class-unguarded", "resilience", f"a request body from {_OUTSIDE} is parsed with no handling for malformed or null JSON, so bad input is answered as a server error instead of a client error."),
+    ("*.compare-digest-unnormalised", "resilience", f"a value from {_OUTSIDE} is passed to a constant-time comparison that raises on non-ASCII text, so bad input is answered as a server error instead of a client error."),
     ("*.upload-memory-storage-unbounded", "resilience", "uploaded files are held in memory with no size limit, so one large upload can exhaust the process's memory."),
     ("*.requeue-without-delay", "resilience", "a failed job is put back on the queue immediately with no delay or attempt limit, so a persistent failure loops as fast as the worker can run."),
 ]

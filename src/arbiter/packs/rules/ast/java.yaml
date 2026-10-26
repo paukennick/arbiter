@@ -1757,3 +1757,63 @@ rules:
       the check and a private one for the connection (DNS rebinding) reaches
       internal services through the guard.
     remediation: "Resolve once and connect to that address (a custom resolver or socket factory that returns the validated `InetAddress`), or route fetches through an egress proxy that blocks internal ranges."
+
+  - id: unbounded-work-queue
+    requirements: [ARB-110]
+    title: "Work queue has no capacity, so a burst grows memory without limit: `{text}`"
+    severity: medium
+    confidence: low
+    dimension: reliability
+    cwe: [CWE-770, CWE-400]
+    controls: [NIST-800-218:PW.5]
+    tags: [unbounded-memory]
+    # Fields only: `Executors.newFixedThreadPool(n)` queues without limit, and
+    # so does a `LinkedBlockingQueue` built without a capacity. Other
+    # unbounded queues (`ConcurrentLinkedQueue`, deques) are mostly object
+    # pools and caches in real code, so they are not matched.
+    query: |
+      (field_declaration declarator: (variable_declarator value: (object_creation_expression
+         type: (generic_type (type_identifier) @t) arguments: (argument_list) @a) @hit)
+        (#match? @t "^LinkedBlockingQueue$")
+        (#match? @a "^\\(\\s*\\)$"))
+      (field_declaration declarator: (variable_declarator value: (method_invocation
+         object: (identifier) @o name: (identifier) @n) @hit)
+        (#eq? @o "Executors")
+        (#match? @n "^(newFixedThreadPool|newSingleThreadExecutor)$"))
+    unless_in_file: |
+      ((identifier) @i (#match? @i "^(ArrayBlockingQueue|ThreadPoolExecutor|CallerRunsPolicy|remainingCapacity)$"))
+      ((type_identifier) @i (#match? @i "^(ArrayBlockingQueue|ThreadPoolExecutor|CallerRunsPolicy)$"))
+    description: >
+      The queue that feeds the workers has no capacity, so submissions faster
+      than the workers can drain them pile up in memory, each holding its
+      payload, until the process is out of heap. Nothing tells the caller to
+      back off.
+    remediation: "Use a bounded queue (`new ArrayBlockingQueue<>(n)` or a `ThreadPoolExecutor` with a bounded queue and a rejection policy) and answer 429/503 when it is full."
+
+  - id: body-as-class-unguarded
+    requirements: [ARB-110]
+    title: "Request body is parsed with no handling for malformed JSON: `{text}`"
+    severity: low
+    confidence: low
+    dimension: reliability
+    cwe: [CWE-20, CWE-755]
+    controls: [NIST-800-218:PW.5]
+    tags: [input-validation]
+    query: |
+      ((method_invocation object: (identifier) @o name: (identifier) @n) @hit
+        (#match? @o "^(ctx|context|c)$")
+        (#eq? @n "bodyAsClass"))
+    # A try/catch around it, or a registered handler for the parse exception,
+    # turns bad JSON into a 400.
+    unless_in_scope: |
+      (catch_clause) @c
+    unless_in_file: |
+      ((identifier) @i (#match? @i "^(JsonProcessingException|JsonMappingException|MismatchedInputException|JsonParseException|BadRequestResponse)$"))
+      ((type_identifier) @i (#match? @i "^(JsonProcessingException|JsonMappingException|MismatchedInputException|JsonParseException|BadRequestResponse)$"))
+    description: >
+      `bodyAsClass` throws the JSON library's own exception on a malformed
+      body, and returns null for a literal `null`. Neither is a client error
+      to the framework, so a request any client can send reaches the generic
+      handler and is answered 500, and the failure is counted as a server
+      fault.
+    remediation: "Catch the parse exception and answer 400, register a handler for it, and null-check the result."

@@ -25,7 +25,7 @@ RULES = {
     # AI-written-code defect classes (ARB-083)
     "mail-tls-unverified", "retry-constant-delay", "ssrf-stored-callback",
     "image-bomb-check-disabled", "decompress-unbounded", "request-body-unbounded",
-    "path-confinement-optional", "ssrf-check-then-connect",
+    "path-confinement-optional", "ssrf-check-then-connect", "unbounded-queue", "compare-digest-unnormalised",
 }
 
 pytestmark = pytest.mark.skipif(not ts.available(), reason="tree-sitter not installed")
@@ -709,3 +709,14 @@ def test_optional_root_confinement_is_reported_only_when_the_root_is_from_the_en
 def test_resolve_then_connect_is_reported_unless_the_checked_address_is_used(tmp_path):
     # `first` and `plain` are the same shape; only create_connection exempts.
     assert _lines(tmp_path, _SSRF_PY, "ssrf-check-then-connect") == [9, 14]
+
+
+def test_unbounded_queue_and_unnormalised_compare_digest_are_reported(tmp_path):
+    bounded = "import queue, threading\nq = queue.Queue(maxsize=5)\nt = threading.Thread(target=print)\n"
+    unbounded = "import queue, threading\nq = queue.Queue()\nt = threading.Thread(target=print)\n"
+    assert _lines(tmp_path, unbounded, "unbounded-queue") == [2]
+    assert _lines(tmp_path, bounded, "unbounded-queue") == []
+    assert _lines(tmp_path, "import queue\nq = queue.Queue()\n", "unbounded-queue") == []
+    header = "import hmac\nfrom fastapi import Header\ndef f(s, sig: str = Header(None)):\n    return hmac.compare_digest(sig, s)\n"
+    assert _lines(tmp_path, header, "compare-digest-unnormalised") == [4]
+    assert _lines(tmp_path, header.replace("(sig, s)", "(sig.encode(), s.encode())"), "compare-digest-unnormalised") == []

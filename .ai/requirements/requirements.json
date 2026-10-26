@@ -3636,6 +3636,95 @@
         "changelog"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-111",
+      "category": "accuracy",
+      "title": "Java real-repo guard: pinned netty, tomcat and spring-security snapshots",
+      "description": "Extend the real-repository regression guard to three pinned development-side Java gold repositories so Java rule precision is observed on real code, and narrow java.unbounded-work-queue (drop ConcurrentLinkedQueue, deques and LinkedTransferQueue, which are pools and caches in library code) after review. Manual review only; no 99 percent claim; held-out Java repos untouched.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "tools/gold/guards.json",
+        "tools/gold/snapshots",
+        "src/arbiter/packs/rules/ast/java.yaml",
+        "CHANGELOG.md",
+        ".ai/project-context.md",
+        "docs/accuracy-baseline.md"
+      ],
+      "acceptance_criteria": [
+        "Three Java targets snapshotted and checked in the guard",
+        "Reviewed java.unbounded-work-queue false positives removed with dev-corpus recall unchanged",
+        "No held-out or sealed data used"
+      ],
+      "validation_required": [
+        "python omni gate",
+        "tools/precision_guard.py check",
+        "fast pytest tier"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-112",
+      "category": "accuracy",
+      "title": "Preregistration for the model-labelled ARB-109 precision study (Workstream B)",
+      "description": "Freeze docs/accuracy-prereg-b.md before any scan or label exists: population (11 pinned ARB-109 repositories, Arbiter at the freeze parent, census), blinded packets, prosecutor/defender/adjudicator labelling with blind OWASP-Python calibration, cluster-bootstrap outputs, stop rules and a ban on tuning rules on the cohort. The study run is a later step under this requirement. Model-labelled conformance only; no 99 percent claim.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-prereg-b.md",
+        "docs/accuracy-gap-closure-plan.md",
+        "tools/label_models.py",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Preregistration committed before any label exists",
+        "Population gate and calibration reliability threshold stated",
+        "Labels never used to tune rules",
+        "No 99 percent claim"
+      ],
+      "validation_required": [
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-113",
+      "category": "accuracy",
+      "title": "Workstream C: freeze repository-family split and CPU baseline",
+      "description": "Start learned triage with development labels only: add a deterministic repository-family split and a CPU baseline ranker under tools/triage_baseline.py, commit the frozen split list and baseline metrics, and keep ARB-109 and held-out labels excluded from training data. This step does not install torch, does not train on GPU, and does not evaluate on ARB-109.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "tools/triage_baseline.py",
+        "tools/gold/labels/triage/",
+        "tests/test_triage_baseline.py",
+        "docs/accuracy-gap-closure-plan.md",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Repository-family disjoint split committed with seed and ratio",
+        "CPU baseline metrics committed from development labels only",
+        "ARB-109 and held-out labels excluded by loader policy",
+        "No GPU/dependency changes in this step"
+      ],
+      "validation_required": [
+        "python -m pytest -q tests/test_triage_baseline.py",
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
     }
   ]
 }

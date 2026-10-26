@@ -376,6 +376,14 @@ Java precision on real code is unmeasured. The rules are shape- and
 name-based, so they will miss renamed variables, and only the "optional root"
 and "resolve, then connect" shapes are covered. Not a 99% claim.
 
+Fourth batch, unbounded-memory and unhandled-input-error (four rules): code
+recall 48/117 to 55/117 (47.0%), no new false alarms, two more unreviewed
+findings. The real-repository guard did not move. The sealed held-out
+aggregate did (151 to 154 findings, in scope 137 to 140); that tree was not
+opened and the rules were not tuned to it, so this is a precision caution, not
+a result. Java precision on real code is unmeasured. The rest of the
+unhandled-input-error family is semantic and is not addressed. Not a 99% claim.
+
 ## Baseline decision
 
 The evidence is not sufficient for a 99% precision-and-recall claim. The
@@ -399,3 +407,45 @@ labels when human reviewers are unavailable. Report those results only as
 **model-labelled conformance**, with model and prompt provenance; they are not
 independent adjudication, certified precision/recall, or evidence for a 99%
 claim. This interim option changes no baseline result or label provenance.
+
+## Java real-repository guard (ARB-111)
+
+The guard now also scans `java-netty`, `java-tomcat` and `java-spring-security`
+(pinned development-side gold repositories). First scan: 502, 859 and 238
+findings. Hand review of the rules added in ARB-110 found
+`java.unbounded-work-queue` firing 25 times, 17 of them on object pools, caches
+and example or test handlers, so it now matches only a capacity-less
+`LinkedBlockingQueue` or a fixed/single-thread executor field (498 and 846
+findings after). `java.swallowed-stack-trace-only` fired 7 times, all genuine
+swallowed exceptions, 6 of them in example or test code. This is a manual
+review of two rules, not a per-rule precision measurement, and not a 99% claim.
+The held-out Java repositories were not used.
+
+## ARB-112: model-labelled precision on the ARB-109 cohort
+
+Preregistered (`docs/accuracy-prereg-b.md`) and run once: 105 `lang_python`
+findings on 11 pinned repositories, labelled by an opus prosecutor, defender
+and adjudicator after a blind OWASP-Python calibration (120/120). 44 tp, 57 fp,
+4 unsure; 43.6% tp/(tp+fp), repository-cluster interval [0.031, 0.838] over 7
+contributing repositories. `python.sql-injection` carries it (19 tp, 48 fp, 42
+of them in the SQL generator sqlglot). Full table and reading in
+`docs/accuracy-prereg-b-results.md`. Model-labelled conformance on a
+convenience cohort, no rule changed or promoted, not a 99% claim.
+
+## ARB-113: learned-triage CPU baseline on development labels
+
+Workstream C has started with a repository-family-disjoint split and a cheap CPU
+baseline (`tools/triage_baseline.py`), using only development model labels
+(`ai-corpus-model`, non-held-out rows of `gold-model`). Training input excludes
+held-out labels, calibration labels and ARB-109 labels by loader policy.
+
+Frozen split (`tools/gold/labels/triage/dev-split-v1.json`): seed 113, 25%
+target, six validation families (`go-etcd`, `py-aiohttp`, `py-celery`,
+`py-django`, `ruby-rails`, `ts-jose`). Stats: train 339 findings (248 tp,
+91 fp), valid 354 findings (290 tp, 64 fp).
+
+CPU baseline metrics: AP 0.980 on the frozen split; 5-fold family CV pooled AP
+0.976 (fold mean 0.955, min 0.860, max 0.997). This is a development-only
+ranking baseline and a spend gate for any GPU run; no dependency changes, no
+GPU training and no ARB-109 evaluation happened in this step.
+

@@ -1,0 +1,24 @@
+{
+ "train": {
+  "n": 339,
+  "tp": 248,
+  "fp": 91,
+  "repos": 31,
+  "families": 16
+ },
+ "valid": {
+  "n": 354,
+  "tp": 290,
+  "fp": 64,
+  "repos": 6,
+  "families": 6
+ },
+ "metrics": {
+  "average_precision": 0.98,
+  "precision_at_10": 1.0,
+  "precision_at_20": 1.0,
+  "precision_at_50": 1.0,
+  "precision_at_100": 1.0,
+  "base_rate_valid": 0.819
+ }
+}
