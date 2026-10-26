@@ -202,6 +202,11 @@ controls:
     satisfied_by:
       - arbiter/supply.unpinned-python-dep
       - arbiter/supply.unpinned-npm-dep
+      - arbiter/supply.unpinned-java-dep
+      - arbiter/supply.unpinned-ruby-dep
+      - arbiter/supply.unpinned-terraform
+      - arbiter/supply.unpinned-container-image
+      - arbiter/supply.unpinned-install-in-build
       - arbiter/resource.k8s-mutable-image-tag
 
   - id: CM-6
@@ -221,11 +226,15 @@ controls:
     family: CM
     automatable: partial
     machine_scope: >-
-      Workflow actions pinned to mutable references, and workflows triggering
-      on pull_request_target with a checkout of untrusted code.
+      Workflow actions, pre-commit hooks and CI includes pinned to mutable
+      references, remote scripts piped into an interpreter, and workflows
+      triggering on pull_request_target with a checkout of untrusted code.
     residual: Whether the functionality present is needed at all.
     satisfied_by:
       - arbiter/supply.unpinned-action
+      - arbiter/supply.unpinned-precommit
+      - arbiter/supply.unpinned-ci-include
+      - arbiter/supply.remote-script-piped
       - arbiter/supply.pull-request-target
 
   # ---- Contingency Planning ----------------------------------------------

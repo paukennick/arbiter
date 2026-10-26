@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from .core import Finding, Report, SEV_RANK
+from .core import FINGERPRINT_SCHEME, SEV_RANK, Finding, Report
 
 
 @dataclass
@@ -69,9 +69,18 @@ def diff_reports(before: Report, after: Report) -> ReportDiff:
     d = ReportDiff(before=before, after=after)
     a_by_id = {f.id: f for f in before.active()}
     b_by_id = {f.id: f for f in after.active()}
+    # A report from before occurrence ids (ARB-080) has one id for every
+    # same-evidence repeat in a file. Each repeat in `after` then persists
+    # from it rather than reading as new: the code did not change, the ids did.
+    legacy = before.fingerprint != FINGERPRINT_SCHEME and after.fingerprint == FINGERPRINT_SCHEME
+    matched: set[str] = set()
 
     for fid, f in b_by_id.items():
         prev = a_by_id.get(fid)
+        if prev is None and legacy:
+            prev = a_by_id.get(f.fingerprint_base)
+        if prev is not None:
+            matched.add(prev.id)
         if prev is None:
             d.new.append(f)
         else:
@@ -82,7 +91,7 @@ def diff_reports(before: Report, after: Report) -> ReportDiff:
                 d.moved.append((prev, f))
 
     for fid, f in a_by_id.items():
-        if fid not in b_by_id:
+        if fid not in matched:
             d.fixed.append(f)
 
     order = {s: i for i, s in enumerate(["critical", "high", "medium", "low", "info"])}
@@ -140,23 +149,60 @@ def render_pr_comment(after: Report, d: ReportDiff | None = None) -> str:
         L.append(f"**{sc.overall}/100** at {sc.coverage:.0%} coverage")
     L.append("")
 
-    if d is not None:
-        L.append(f"`{len(d.new)}` new · `{len(d.fixed)}` fixed · `{len(d.persisting)}` unchanged")
+    # The comparison ran over every finding (a baseline is about the whole
+    # set); what the comment lists follows the report's view (ARB-100): every
+    # tier by default (ARB-103), verified first, each row saying whether its
+    # tier can block the gate; the verified tier only under `report.show:
+    # verified`, with one line on the rest.
+    from .precision import gating_tiers
+    from .report import (
+        HINT_CONFIG,
+        requirement_block,
+        shown_findings,
+        view_of,
+        view_summary,
+    )
+    listed = shown_findings(after)
+    rank = {f.id: i for i, f in enumerate(listed)}
+    gating = gating_tiers(gate)
+    if after.active():
+        L.append(f"_{view_summary(after, HINT_CONFIG)}._")
         L.append("")
-        if d.new:
-            L.append("| Severity | Finding | Location |")
-            L.append("|---|---|---|")
-            for f in d.new[:10]:
-                L.append(f"| {f.severity} | {f.title} | `{f.location.short()}` |")
-            if len(d.new) > 10:
-                L.append(f"| | _… {len(d.new) - 10} more_ | |")
+
+    if d is not None:
+        new_shown = sorted((f for f in d.new if f.id in rank), key=lambda f: rank[f.id])
+        L.append(f"`{len(d.new)}` new · `{len(d.fixed)}` fixed · `{len(d.persisting)}` unchanged")
+        hidden_new = len(d.new) - len(new_shown)
+        if hidden_new:
+            L[-1] += f" · `{hidden_new}` of the new findings are advisory or inferred and not listed"
+        L.append("")
+        if new_shown:
+            tier_col = view_of(after) == "all"
+            L.append("| Severity | Finding | Location |" + (" Tier |" if tier_col else ""))
+            L.append("|---|---|---|" + ("---|" if tier_col else ""))
+            for f in new_shown[:10]:
+                tier = f.tier or "advisory"
+                L.append(f"| {f.severity} | {f.title} | `{f.location.short()}` |"
+                         + (f" {tier}{'' if tier in gating else ' (not gating)'} |" if tier_col else ""))
+            if len(new_shown) > 10:
+                L.append(f"| | _… {len(new_shown) - 10} more_ | |" + (" |" if tier_col else ""))
             L.append("")
     else:
         counts: dict[str, int] = {}
-        for f in after.active():
+        for f in listed:
             counts[f.severity] = counts.get(f.severity, 0) + 1
-        L.append(" · ".join(f"`{n}` {s}" for s, n in counts.items()) or "No findings.")
-        L.append("")
+        if counts:
+            # Severity order, not the order of `listed` (which is by tier).
+            order = ["critical", "high", "medium", "low", "info"]
+            ranked = sorted(counts.items(), key=lambda kv: order.index(kv[0]) if kv[0] in order else len(order))
+            L.append(" · ".join(f"`{n}` {s}" for s, n in ranked))
+            L.append("")
+        elif not after.active():
+            L.append("No findings.")
+            L.append("")
+
+    L.extend(requirement_block(listed, heading="**By requirement**",
+                               base=(after.scan_scope or {}).get("changed_since")))
 
     skipped = [p for p in after.probes if p.status != "ran"]
     if skipped:

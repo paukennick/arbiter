@@ -34,9 +34,12 @@ change, or ambiguous task.
 - For high-impact engineering decisions, use
   `.ai/knowledge/swebok/engineering-foundations.md`.
 - Before broad traversal, read `.ai/project-map.md` when it exists. If it is
-  missing or stale after structural changes, update it by hand before
-  selecting files to inspect — `./omni map` is intentionally never run
-  against this repo (see `.ai/project-configuration.md`).
+  missing or stale after structural changes, run `./omni map` before selecting
+  files to inspect.
+- Check history before scoping: `omni graph why <area>` shows the requirements,
+  tests and earlier failures already attached to the code you plan to change.
+  Put the relevant prior failures and their regression tests in the validation
+  plan.
 - Ask a question only when a safe assumption would be risky.
 - If the task is small and clear, plan briefly and proceed.
 - If the task is broad, split it into requirements before implementation.

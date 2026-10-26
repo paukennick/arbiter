@@ -8,7 +8,7 @@ arbiter:
   before_script:
     - pip install --quiet .
   script:
-    - arbiter gate . --profile "$ARBITER_PROFILE" --out arbiter-out --format json,sarif,markdown
+    - arbiter gate . --profile "$ARBITER_PROFILE" --config arbiter.yaml --out arbiter-out --format json,sarif,markdown
   artifacts:
     when: always
     paths:

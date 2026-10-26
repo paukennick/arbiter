@@ -1,8 +1,8 @@
-Not applicable to arbiter today: it is proprietary and ships its own
-`NOTICE.md` rather than the OmniEngineering `LICENSE`/`NOTICE`/
-`TRADEMARKS.md` set (see `.ai/project-configuration.md`). Keep this
-checklist for the day that changes, or for an adopting project that is
-already public.
+Applies to arbiter: the repository is public and, since 2026-10-21, licensed
+under Apache-2.0 (`LICENSE`, with Arbiter's copyright and the OmniEngineering
+workspace's notice in `NOTICE`, third-party components in `NOTICE.md`; see
+`docs/licensing.md`). The full-history secrets scan run for the change is
+recorded in `CHANGELOG.md` under 2026-10-21.
 
 - `LICENSE`, `NOTICE`, `TRADEMARKS.md`, `CONTRIBUTING.md` exist, are current,
   and name the actual license and actual trademark holder — not placeholder
@@ -23,11 +23,11 @@ already public.
   removed or clearly marked as such.
 - `CHANGELOG.md` reflects what's actually shipping, each entry still citing
   its `REQ-###`.
-- `.ai/requirements/requirements.json` has no dangling `pending` or
-  `blocked` entries that are actually resolved; sweep them into
-  `.ai/requirements/archive.json` with `python omni requirement archive`
-  first.
-- `python omni doctor` run and its output reviewed line by line — for a
-  project that *is* going public, the adapter/legal-file FAILs this repo
-  currently treats as an accepted gap stop being acceptable and need
-  resolving for real, not documented around.
+- `python omni requirement list --status pending` shows no entries that are
+  actually resolved; close them with `python omni requirement complete` and
+  sweep terminal ones into `.ai/requirements/requirements-archive.json` with
+  `python omni requirement archive` first.
+- `python omni failure list --status open` is empty, or each open entry is
+  named in the release notes.
+- `python omni doctor` and `python omni gate` run clean (doctor's remaining
+  WARNs are listed in `.ai/project-configuration.md`; anything else is real).

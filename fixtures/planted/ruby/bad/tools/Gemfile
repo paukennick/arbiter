@@ -1,0 +1,9 @@
+# Tooling bundle for release scripts; no Gemfile.lock is committed.
+source "https://rubygems.org"
+
+gem "rake" # expect: arbiter/supply.unpinned-ruby-dep
+gem "octokit", ">= 9.0" # expect: arbiter/supply.unpinned-ruby-dep
+gem "rubocop", "~> 1.66", require: false
+gem "release-notes", git: "https://github.com/example/release-notes" # expect: arbiter/supply.unpinned-ruby-dep
+gem "changelog", github: "example/changelog", ref: "8e5e7e5ab8b370d6c329ec480221332ada57f0ab"
+gem "local_helpers", path: "../helpers"

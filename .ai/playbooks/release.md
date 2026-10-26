@@ -18,20 +18,18 @@ Use this before merge, publish, package handoff, or public release.
 - Economics decision checklist is satisfied for major scope, cost, or tradeoff
   decisions.
 - Engineering foundations checklist is satisfied for high-impact releases.
+- No failure is left `open` without a decision, and every `fixed` failure has a
+  root cause, a regression test or reason, and a prevention (`omni failure check`).
 - Known risks and follow-ups are stated.
 - Commit sentence is ready.
 - Pull request summary is ready.
 
-## Validation Gate
+## OmniContext Public Package Check
 
-This project does not do public package releases, and `./omni doctor` is
-not the real validation gate here (expect false-positive FAILs for
-intentionally-excluded adapters/entrypoints/legal files — see
-`.ai/project-configuration.md`). Run instead:
+Run:
 
 ```bash
-python3 tests/validate_stacks.py
-pytest tests/
+./omni doctor
 ```
 
-Confirm no local session notes or secrets are staged.
+Confirm that `.codex-local/` remains ignored if local session notes exist.

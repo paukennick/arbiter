@@ -1,0 +1,10 @@
+services:
+  web:
+    build: .
+    image: planted/web:dev
+  worker:
+    image: planted/web:dev
+  db:
+    image: postgres:16.4@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+  cache:
+    image: redis:7.4.1@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef

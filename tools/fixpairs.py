@@ -137,7 +137,7 @@ def _export(repo: Path, sha: str, dest: Path) -> bool:
         subprocess.run(["tar", "-x", "-C", str(dest)], input=proc.stdout,
                        capture_output=True, timeout=180)
         return True
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001 - an export that fails for any reason is "no pair", not a crashed miner
         return False
 
 
@@ -173,7 +173,7 @@ def mine(repo: Path, name: str, limit: int, cfg: dict, paths: list[str]) -> list
                 continue
             try:
                 before, after = _scan(before_dir, cfg), _scan(after_dir, cfg)
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: BLE001 - a commit whose scan crashes is skipped; the pairs that compare are kept
                 continue
         subject = _git(repo, "log", "-1", "--format=%s", sha).strip()[:140]
         for key, f in before.items():
@@ -264,7 +264,7 @@ def main() -> int:
     if out.is_file():
         try:
             existing = json.loads(out.read_text()).get("pairs", [])
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001 - an unreadable existing file starts the list fresh
             existing = []
     # Never discard a confirmed verdict by re-running the miner.
     confirmed = {(p["repo"], p["fixed_in"], p["rule"], p["path"]): p.get("confirmed")

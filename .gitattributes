@@ -1,0 +1,8 @@
+# Label files are data that tools/label_populations.py --check compares byte for byte;
+# keep them LF on every OS (Windows checkouts otherwise get CRLF).
+*.jsonl text eol=lf
+# The tooling lock pins a sha256 of the catalog bytes; keep it LF so Windows checkouts hash the same.
+src/arbiter/tooling.json text eol=lf
+# Accuracy run reports and their manifest pin sha256 of the exact committed bytes;
+# keep them LF so a Windows checkout hashes the same as CI.
+docs/accuracy-*.json text eol=lf

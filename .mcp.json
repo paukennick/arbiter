@@ -2,7 +2,17 @@
   "mcpServers": {
     "arbiter": {
       "command": "arbiter",
-      "args": ["mcp"]
+      "args": [
+        "mcp"
+      ]
+    },
+    "omni": {
+      "command": "python",
+      "args": [
+        "omni",
+        "mcp",
+        "serve"
+      ]
     }
   }
 }

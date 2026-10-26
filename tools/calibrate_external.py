@@ -70,11 +70,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from corpus import CORPUS  # noqa: E402
+
 from arbiter.engine import run_scan  # noqa: E402
 from arbiter.inventory import LANG_BY_EXT  # noqa: E402
 from arbiter.policy import load_config  # noqa: E402
-
-from corpus import CORPUS  # noqa: E402
 
 # A check needs to have been seen this many times before a ratio computed from
 # it is worth acting on. Below it the table records the counts and assigns
@@ -235,7 +235,7 @@ def main() -> int:
             print(f"  {name:<20}{population:<11}   timed out after "
                   f"{args.timeout_per_repo}s — skipped", flush=True)
             continue
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:  # noqa: BLE001 - one repository that crashes the scan is recorded as failed; the run continues
             failed.append((name, f"{type(exc).__name__}: {exc}"[:120]))
             continue
         loc[population] += max(1, sum(r.loc for r in rep.repos))

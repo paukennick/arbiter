@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>planted</groupId>
+  <artifactId>planted-java-dynamic</artifactId>
+  <version>1.4.0</version>
+  <properties>
+    <collections.version>4.4</collections.version>
+    <sibling.version>1.5.0-SNAPSHOT</sibling.version>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>2.0.16</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>${collections.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.example</groupId>
+      <artifactId>client</artifactId>
+      <version>2.0.4</version>
+    </dependency>
+    <dependency>
+      <groupId>planted</groupId>
+      <artifactId>planted-java-sibling</artifactId>
+      <version>${sibling.version}</version>
+    </dependency>
+  </dependencies>
+</project>

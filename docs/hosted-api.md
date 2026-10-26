@@ -1,6 +1,6 @@
 # Hosted API
 
-> **Status: built, not deployed.** Tracked as **REQ-018**. The service layer
+> **Status: built, not deployed.** Tracked as **ARB-018**. The service layer
 > (`src/arbiter/service.py`) and the HTTP surface (`src/arbiter/api.py`) exist
 > and are tested. Nothing has been exposed to a network. It binds to localhost
 > by default, and must not face an external caller before the custody terms in
@@ -55,14 +55,17 @@ eventually be written differently.
 
 | Layer | Responsibility |
 |---|---|
-| `service.py` | workspace lifecycle, archive ingest, path containment, profile checks, the three operations |
+| `service.py` | workspace lifecycle, archive ingest, path containment, profile checks, the four operations |
 | `mcp.py` | tool schemas and dispatch; no containment logic of its own |
 | `api.py` | keys, request limits, TLS enforcement, the audit line; no containment logic of its own |
 
-Three operations, and only three: `scan`, `gate` and `review_queue`.
-`service.OPERATIONS` names them, and a test asserts the set is exactly that.
+Four operations, and only four: `scan`, `gate`, `review_queue` and
+`review_draft`. `service.OPERATIONS` names them, and a test asserts the set is
+exactly that. The HTTP API exposes the first three (`api.ENDPOINTS`, also
+asserted); `review_draft` is reachable only through MCP, and it writes a file
+for a person to read and records nothing.
 
-Arbiter runs as a subprocess rather than an import. `run_scan` takes fifteen
+Arbiter runs as a subprocess rather than an import. `run_scan` takes twenty
 parameters and `src/arbiter/__init__.py` exports only `__version__`, so there is
 no stable Python API to bind to yet. The subprocess also means a probe that
 wedges or dies takes down a subprocess, not the server.
@@ -109,6 +112,11 @@ What the code already does:
 - **The network stays off.** `check_profile` refuses `connected` and `audit`,
   which declare `network: True`, unless the operator explicitly allows it. The
   hosted door never will. The MCP schemas offer only `offline` and `ci`.
+  One exception to know about: `assisted` declares `network: False` but
+  `model: True`, and `check_profile` does **not** refuse it. Its only traffic
+  is the model-verification call, and that call is made only when the
+  server's environment holds `ANTHROPIC_API_KEY`. A hosted deployment must
+  not set that variable; `deploy/` does not.
 - **The scanned repository is never executed.** No build, test, hook or entry
   point from the target runs at any stage. Probes read files.
 
@@ -139,9 +147,11 @@ server-side and returning findings over HTTP conveys no copy to the caller, so
 gate hosting.** Hosting triggers fewer third-party obligations than the bundle
 does, not more.
 
-What does still need counsel is L-3's term structure — a hosted service is
-priced and terminated differently from a delivered copy — and the custody terms
-above. See [licensing.md](licensing.md).
+Arbiter itself is Apache-2.0 (decided 2026-10-21), so there is no longer a
+proprietary term structure to adapt for a service. What still needs a person,
+and counsel before anything beyond a pilot, is the custody terms above — they
+are contractual, and the licence does not answer them. See
+[licensing.md](licensing.md).
 
 ## Access is handed out by hand, one key per user
 
@@ -210,16 +220,47 @@ own share is told that rather than told the service is busy — the two have
 different answers, one being "wait for your own scan" and the other "wait for
 somebody else's".
 
-`--no-expiry` mints a permanent key. It exists for something like a build
+Keys last 90 days unless `--expires-days N` says otherwise. `--no-expiry` mints a permanent key. It exists for something like a build
 server, and it is a deliberate exception rather than the default.
 
 Expired, revoked and unknown keys all get the same `401` message. Distinguishing
 them would confirm to a stranger that a key they guessed had once existed.
 
-The counts are held in memory, which is the honest scope: they do not survive a
-restart and are not shared between processes, so running several instances
-behind one address would multiply the effective limit. That is a known gap, not
-a surprise, and it is fine for a single-machine pilot.
+By default the counts are held in memory, which is the honest scope of one
+process: they do not survive a restart and are not shared, so two instances
+behind one address would each grant the full budget. That is fine for a
+single-process pilot. For more than one process, choose the file limiter.
+
+### Sharing the limits between processes: `--limiter file`
+
+```bash
+arbiter api serve --cert cert.pem --key key.pem --limiter file
+arbiter mcp --http --root /srv/work --cert cert.pem --key key.pem --limiter file
+```
+
+`--limiter file` counts in a SQLite file, `limiter.db`, beside the key file
+(`~/.arbiter/limiter.db`, or next to whatever `--keys` / `$ARBITER_KEYS`
+names). Every process serving the same keys then draws on one budget: uvicorn
+workers, two `arbiter api serve` instances behind one proxy, or the API and the
+MCP door side by side. The same four caps apply with the same `429` answers;
+`/v1/health` publishes them as before.
+
+Each decision — "has this key a request left this hour", "is there a slot" —
+is one `BEGIN IMMEDIATE` transaction, so SQLite hands the write lock to one
+process at a time and two workers cannot both see one slot left and both take
+it. A slot is a row stamped with the time it was taken and deleted when the
+scan ends, including when it fails. A process killed mid-scan cannot delete its
+row, so a row older than the scan ceiling plus a minute
+(`service.DEFAULT_TIMEOUT`, 900 s) is treated as released by whichever decision
+comes next; a crash costs one slot for at most that long. The hourly counts
+survive a restart, which the memory limiter's do not.
+
+`memory` stays the default because it needs no file and because one process is
+the common case. The two never mix: a server started with `--limiter memory`
+beside one started with `--limiter file` is two budgets again, which is why
+the choice is a start-up flag rather than something a request can change.
+Startup prints the path of the file in use. The file is per deployment, not
+per key, and holds only key ids and timestamps — nothing a caller sent.
 
 ### One line per request, about the caller and not their code
 
@@ -255,7 +296,7 @@ The endpoints below are what the service exposes. Almost nobody should have to
 touch them directly. The client is the way in:
 
 ```
-pip install arbiter-eval          # PyYAML and nothing else
+pip install git+https://github.com/paukennick/arbiter   # not on PyPI yet; PyYAML (and tomli on 3.10), nothing else
 export ARBITER_SERVER=https://arbiter.example.com
 export ARBITER_API_KEY=arb_...    # issued by hand, sent to you out of band
 
@@ -271,7 +312,7 @@ file.
 What makes this worth having is what the caller did not install. `arbiter remote
 scan` sends the directory and renders the answer through the same functions
 `arbiter scan` uses, so `--out`, `--format` and `--limit` mean what they always
-meant and the console output is the same text. None of the five analyzers, the
+meant and the console output is the same text. None of the six analyzers, the
 grammar pack or the rule engine is on that machine. The transport is `urllib`
 from the standard library rather than `requests` or `httpx`, because a thin
 client that drags in a dependency tree is not a thin client.
@@ -302,10 +343,10 @@ no endpoint that does — see below.
 | `POST /v1/scan` | an uploaded archive | the report |
 | `POST /v1/gate` | an uploaded archive | pass or fail, with the claim ledger |
 | `POST /v1/review-queue` | a report the caller already has | a queue with every mark blank, or an empty one when there is nothing left to ask about |
-| `GET /v1/health` | nothing; no key needed | version, and that it retains nothing |
+| `GET /v1/health` | nothing; no key needed | version, that it retains nothing and requires TLS, and every limit (requests per hour, concurrent scans per key and in total, upload cap, key lifetime) |
 
 Everything but `/v1/health` needs an `X-API-Key` header. Uploads are capped at
-`MAX_UPLOAD_BYTES` (100 MB) and refused before anything is written.
+`MAX_UPLOAD_BYTES` (100 MiB) and refused before anything is written.
 
 ## TLS, with no plaintext mode
 
@@ -403,10 +444,11 @@ the length of one request.
 ## What is built
 
 - `service.py`: `Workspace`, `extract_archive`, `resolve_within`,
-  `check_profile`, `scan`, `gate`, `review_queue`.
-- `api.py`: key issuance and verification, per-key and whole-server limits, the
-  request log, the three request handlers, and a FastAPI application built only
-  when actually serving.
+  `check_profile`, `scan`, `gate`, `review_queue`, `review_draft`.
+- `api.py`: key issuance and verification, per-key and whole-server limits
+  (in memory, or shared between processes through SQLite with
+  `--limiter file`), the request log, the three request handlers, and a
+  FastAPI application built only when actually serving.
 - `mcp.py`: tool schemas and dispatch over the same service layer.
 - `client.py`: the caller's half — settings resolution, the plaintext and
   certificate refusals, the archive builder that skips `SKIP_DIRS`, and one
@@ -425,8 +467,6 @@ alone and the whole module stays testable without them.
 
 - Certificate issuance and renewal, which are the operator's job. TLS itself is
   enforced — see above.
-- Rate limits shared across processes. The per-key caps exist but are held in
-  one process's memory — see above.
 - Any deployment. Nothing here has been exposed to a network, and
   [pilot-runbook.md](pilot-runbook.md) is the arrangement to stand up when it
   is.

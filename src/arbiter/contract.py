@@ -105,12 +105,12 @@ def normalize_path(p: str) -> str:
 
 
 def _load_spec(text: str, path: str) -> dict | None:
+    import yaml
     try:
         if path.lower().endswith(".json"):
             return json.loads(text)
-        import yaml
         return yaml.safe_load(text)
-    except Exception:  # noqa: BLE001
+    except (ValueError, yaml.YAMLError):
         return None
 
 

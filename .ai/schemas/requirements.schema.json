@@ -2,12 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://omni-context.local/schemas/requirements.schema.json",
   "title": "OmniContext Requirements Registry",
-  "description": "Requirements grouped under named categories, each holding a flat array; the category name is the object key, and individual requirement objects carry no 'category' field. The required-key list mirrors REQUIRED_REQUIREMENT_KEYS in make_ai.py. Every list-shaped field is a JSON array, not a comma-separated string.",
   "type": "object",
   "required": [
     "version",
     "requirement_id_prefix",
-    "categories"
+    "requirements"
   ],
   "properties": {
     "version": {
@@ -17,120 +16,100 @@
       "type": "string",
       "pattern": "^[A-Z]+$"
     },
-    "categories": {
+    "id_aliases": {
       "type": "object",
-      "minProperties": 1,
+      "description": "Old id -> current id, written by `omni requirement renumber` so history citing the old prefix stays valid. Keys must not be live ids; values must exist in the registry or its archive.",
       "propertyNames": {
-        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        "pattern": "^[A-Z]+-[0-9]{3}$"
       },
       "additionalProperties": {
-        "type": "array",
-        "items": {
-          "$ref": "#/$defs/requirement"
-        }
+        "type": "string",
+        "pattern": "^[A-Z]+-[0-9]{3}$"
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "category",
+          "title",
+          "description",
+          "priority",
+          "status",
+          "minimum_access_scope",
+          "acceptance_criteria",
+          "validation_required",
+          "documentation_required",
+          "risk_notes"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z]+-[0-9]{3}$"
+          },
+          "category": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "priority": {
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "status": {
+            "enum": [
+              "completed",
+              "pending",
+              "proposed",
+              "blocked",
+              "needs_review",
+              "withdrawn"
+            ]
+          },
+          "minimum_access_scope": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "acceptance_criteria": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "validation_required": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "documentation_required": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk_notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
       }
     }
   },
-  "additionalProperties": false,
-  "$defs": {
-    "requirement": {
-      "type": "object",
-      "required": [
-        "id",
-        "title",
-        "description",
-        "priority",
-        "status",
-        "minimum_access_scope",
-        "acceptance_criteria",
-        "validation_required",
-        "documentation_required",
-        "risk_notes"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[A-Z]+-[0-9]{3}$"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "minItems": 1
-            }
-          ]
-        },
-        "priority": {
-          "enum": [
-            "critical",
-            "high",
-            "medium",
-            "low"
-          ]
-        },
-        "status": {
-          "enum": [
-            "completed",
-            "pending",
-            "proposed",
-            "blocked",
-            "needs_review",
-            "withdrawn"
-          ]
-        },
-        "minimum_access_scope": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1
-        },
-        "do_not_access": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1
-        },
-        "acceptance_criteria": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1
-        },
-        "validation_required": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1
-        },
-        "documentation_required": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1
-        },
-        "risk_notes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1
-        }
-      },
-      "additionalProperties": false
-    }
-  }
+  "additionalProperties": false
 }

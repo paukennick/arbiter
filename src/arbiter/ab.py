@@ -21,12 +21,11 @@ import shlex
 import subprocess
 import tempfile
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any
 
 from .core import Finding, Report
-from .report import SEV_ORDER, _HTML_CSS
+from .report import _HTML_CSS, SEV_ORDER
 
 STOPWORDS = {
     "the", "a", "an", "is", "are", "not", "no", "in", "on", "for", "of", "to",
@@ -214,23 +213,32 @@ def run_arm(arm: Arm, targets: list[str], system_path: str | None, base_config: 
                     res.probes_skipped = sum(1 for p in rep.probes if p.status != "ran")
 
         elif arm.kind == "tool":
+            import shutil as _sh
+
             from .adapters import load_all
             from .engine import resolve_targets
+            from .inventory import build_inventory
             from .probes import ProbeContext
-            import shutil as _sh
             adapters = {a.name: a for a in load_all()}
             ad = adapters.get(arm.tool or "")
             if ad is None:
                 res.error = f"no adapter named '{arm.tool}'"
-            elif ad.missing_binaries():
-                res.error = f"missing binary: {', '.join(ad.missing_binaries())}"
             else:
                 name, repos, tmps, manifest = resolve_targets(targets, system_path)
                 try:
-                    ctx = ProbeContext(repos=repos, config=base_config, system=manifest)
-                    res.findings = ad.run(ctx)
-                    res.probes_ran = 1
-                    res.coverage = 1.0
+                    inventory = build_inventory(repos)
+                    ctx = ProbeContext(repos=repos, inventory=inventory,
+                                       config=base_config, system=manifest)
+                    missing = ad.missing_binaries(ctx)
+                    blocked, why = ad.missing_files(ctx)
+                    if missing:
+                        res.error = f"missing binary: {', '.join(missing)}"
+                    elif blocked:
+                        res.error = why
+                    else:
+                        res.findings = ad.run(ctx)
+                        res.probes_ran = 1
+                        res.coverage = 1.0
                 finally:
                     for d in tmps:
                         _sh.rmtree(d, ignore_errors=True)
@@ -245,7 +253,7 @@ def run_arm(arm: Arm, targets: list[str], system_path: str | None, base_config: 
             res.coverage = rep.scorecard.coverage
             res.probes_ran = sum(1 for p in rep.probes if p.status == "ran")
             res.probes_skipped = sum(1 for p in rep.probes if p.status != "ran")
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001 - an arm that crashes is a result with an error, so the other arm still reports
         res.error = f"{type(exc).__name__}: {exc}"[:300]
     res.duration_s = time.time() - t0
     return res
@@ -322,10 +330,10 @@ def load_ground_truth(target: str) -> dict | None:
     for name in (".arbiter-expected.yaml", ".arbiter-expected.yml"):
         p = Path(target) / name
         if p.is_file():
+            import yaml
             try:
-                import yaml  # type: ignore
                 return yaml.safe_load(p.read_text(encoding="utf-8")) or {}
-            except Exception:
+            except (OSError, yaml.YAMLError):
                 return None
     return None
 
@@ -371,7 +379,7 @@ def score_ground_truth(truth: dict, findings: list[Finding]) -> GroundTruthResul
 # ---------------------------------------------------------------------------
 
 def load_ab_spec(path: str) -> dict:
-    import yaml  # type: ignore
+    import yaml
     data = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
     if "arms" not in data:
         raise RuntimeError(f"{path} must define `arms`")

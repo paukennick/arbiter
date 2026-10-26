@@ -18,7 +18,7 @@ violated when a claim's strength exceeds its basis.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 
 from .core import Report
 
@@ -85,7 +85,12 @@ def abstentions(report: Report) -> list[str]:
     if unread:
         out.append(unread)
     for p in report.probes:
-        if p.status != "ran":
+        if p.status != "ran" and getattr(p, "applicable", True):
+            # A probe that could never have applied here is not an abstention:
+            # it had no question to answer. It is still named in the coverage
+            # claim, because "nothing here to assess" and "could not assess"
+            # must never read the same, and CI-12 refuses the second dressed
+            # as the first.
             out.append(f"probe:{p.name}")
     # A rule that matched a resource but could not be evaluated is an
     # abstention too, even though its probe ran.
@@ -134,6 +139,7 @@ def build_claims(report: Report) -> list[Claim]:
         dim_abst = [
             f"probe:{p.name}" for p in report.probes
             if p.status != "ran" and name in (p.dimensions or [])
+            and getattr(p, "applicable", True)
         ]
         # A dimension can reach full probe coverage in a partial scan -- if
         # every probe carrying that dimension is file-scoped, they all ran.
@@ -171,10 +177,12 @@ def build_claims(report: Report) -> list[Claim]:
     # claim weakened by them: "57% of applicable checks ran" is exactly true
     # however many abstained. Listing them here would mean the report cannot
     # state its own incompleteness without violating an invariant.
+    not_applicable = [p.name for p in report.probes if not getattr(p, "applicable", True)]
     claims.append(Claim(
         id="coverage",
         kind=COVERAGE,
-        statement=f"{sc.coverage:.3f} of applicable checks ran; {len(absts)} abstention(s)",
+        statement=(f"{sc.coverage:.3f} of applicable checks ran; {len(absts)} abstention(s)"
+                   + (f"; not applicable here: {', '.join(not_applicable)}" if not_applicable else "")),
         scope=COMPLETE,
         basis=ran,
         abstained=[],
@@ -201,7 +209,15 @@ INVARIANTS = {
     "CI-9": "coverage may never exceed 1.0 or fall below 0.0",
     "CI-10": "a passing gate with abstentions must be scoped partial, not complete",
     "CI-11": "a partial scan may make no complete-scope claim about the repository",
+    "CI-12": "a probe recorded as not applicable must not be one that was merely prevented from running",
 }
+
+# The engine's own wording for a probe it was PREVENTED from running. A report
+# that pairs one of these with applicable=False is laundering a coverage gap
+# as a non-question, which is exactly the move CI-12 exists to refuse.
+_PREVENTED_REASONS = ("missing binary", "missing python package", "not installed", "forbids",
+                      "not selected", "disabled in configuration", "on the command line",
+                      "partial scan")
 
 
 def verify(report: Report, config: dict | None = None) -> list[Violation]:
@@ -234,6 +250,17 @@ def verify(report: Report, config: dict | None = None) -> list[Violation]:
         if p.status == "error" and p.finding_count:
             out.append(Violation("CI-7", f"probe:{p.name}",
                                  "errored probe reported findings"))
+
+    for p in report.probes:
+        if getattr(p, "applicable", True):
+            continue
+        reason = (p.reason or "").lower()
+        if p.status == "ran" or p.status == "error":
+            out.append(Violation("CI-12", f"probe:{p.name}",
+                                 f"not applicable yet status is {p.status}"))
+        elif any(marker in reason for marker in _PREVENTED_REASONS):
+            out.append(Violation("CI-12", f"probe:{p.name}",
+                                 f"not applicable yet the reason says it was prevented: {p.reason}"))
 
     for name, dim in sc.dimensions.items():
         if dim.coverage >= 1.0 and dim.checks_run < dim.checks_applicable:

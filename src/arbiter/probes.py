@@ -12,12 +12,14 @@ silent pass.
 from __future__ import annotations
 
 import codecs
+import fnmatch
 import math
 import os
 import re
+import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Iterable
+from typing import Any, Callable
 
 from .core import Finding, Location
 from .graph import Resource
@@ -32,6 +34,15 @@ class ProbeContext:
     graph: list[Resource] = field(default_factory=list)
     config: dict = field(default_factory=dict)
     system: dict = field(default_factory=dict)
+    # Repo id -> relative posix paths changed since the base of a `--changed`
+    # scan. Empty in a full scan, which is how a change-scoped probe tells
+    # "nothing changed" from "nobody asked about a change" (REQ-038).
+    changed: dict[str, set[str]] = field(default_factory=dict)
+    changed_since: str | None = None
+    # Where this run writes its report (`--out`). A document that names a
+    # file under it is describing output, not a file the repository is
+    # missing (ARB-048). Empty when the caller gave no output directory.
+    out_dir: str = ""
 
     def repo_ids(self) -> list[str]:
         return [r.id for r in self.repos]
@@ -46,6 +57,13 @@ class Probe:
     stacks: list[str] | None = None       # None = always applicable
     binaries: list[str] = field(default_factory=list)
     modules: list[str] = field(default_factory=list)
+    # Files the probe cannot run without (an analyzer's ruleset). `{cache}`
+    # resolves to adapters.cache_dir() at check time. A missing one is a
+    # dependency this machine lacks, like a missing binary (ARB-059).
+    files: list[str] = field(default_factory=list)
+    # tree-sitter grammars the probe parses with. One that is not cached is a
+    # dependency this machine lacks: not assessed, never a clean pass.
+    grammars: list[str] = field(default_factory=list)
     network: bool = False
     model: bool = False
     multi_repo_only: bool = False
@@ -58,6 +76,10 @@ class Probe:
     # suppressions the repository contains -- so a subset gives a wrong answer
     # rather than a partial one. Those are reported as not assessed in an
     # incremental scan, never as a pass.
+    # "change" means the probe reads a small, fixed set of files it names
+    # itself (a ledger, a registry) plus the set of changed paths, so a
+    # partial scan is its natural habitat and a full scan is answered with the
+    # empty change. It runs in both modes.
     #
     # Conservative by default: a probe is "repo" unless it is known not to be.
     scope: str = "repo"
@@ -67,18 +89,76 @@ class Probe:
     # because it reasons across files -- so an adapter supplies its own.
     scope_reason: str = "this check reads relationships between files"
     version: str = "0.1.0"
+    # May this probe's per-file results be stored in the persistent result
+    # cache (cache.py) and served on the next scan without running it?
+    #
+    # Only when every finding it produces carries a path AND depends on that
+    # file alone: the same file, under the same configuration, must yield the
+    # same findings whether or not any other file is in the inventory. That
+    # is stricter than scope="file". `house_rules` is file-scoped and NOT
+    # cacheable: a file_exists or file_absent rule reports on the repository,
+    # with no path to attribute the result to. A probe whose answer for a
+    # file depends on something outside it -- the manifests, for a probe that
+    # checks whether an import is declared -- may still be cacheable if it
+    # declares that dependency as `cache_context`, a function of the probe
+    # context whose digest is folded into the cache key.
+    #
+    # The declaration is a claim, and tools/integrity.py (CI-13) tests it:
+    # every cacheable probe is run on a file alone and beside another file,
+    # and must give the same answer for it.
+    cacheable: bool = False
+    cache_context: Callable[["ProbeContext"], str] | None = None
+    # Registered from an adapter manifest (adapters.py), so `run` starts an
+    # external process and waits on it rather than reading files in this
+    # one. The engine runs these in a thread pool, where a native probe --
+    # which shares the read cache and the probe context -- would race, and
+    # memoises each one whole in the result cache (ARB-047).
+    external: bool = False
+
+
+    # A probe's own answer to "is there anything here for me to check": a
+    # ledger to read, a registry to compare against. Consulted after the
+    # stack and multi-repo checks. Saying no records the probe as not
+    # applicable, which leaves the coverage denominator; it must never be
+    # used for a dependency this machine lacks (that is `prevented`).
+    applies: Callable[[ProbeContext], tuple[bool, str]] | None = None
+    binary_checker: Callable[[ProbeContext], list[str]] | None = None
+    dependency_checker: Callable[[ProbeContext], tuple[bool, str]] | None = None
+
+    def prevented(self, ctx: ProbeContext | None = None) -> tuple[bool, str]:
+        """A dependency this machine lacks, never a reason to call a probe inapplicable."""
+        for mod in self.modules:
+            import importlib.util
+            if importlib.util.find_spec(mod) is None:
+                return True, f"missing python package: {mod}"
+        if self.grammars:
+            from . import ast as _ts
+            missing = sorted(set(self.grammars) - _ts.cached_grammars())
+            if missing:
+                return True, (f"missing tree-sitter grammar: {', '.join(missing)} "
+                              "(run tools/install_tools.sh)")
+        if self.dependency_checker is not None and ctx is not None:
+            return self.dependency_checker(ctx)
+        if self.files:
+            from .adapters import cache_dir
+            for spec in self.files:
+                path = Path(spec.replace("{cache}", str(cache_dir())))
+                if not path.exists():
+                    return True, (f"missing required file: {path} "
+                                  "(run tools/install_tools.sh)")
+        return False, ""
 
     def applicable(self, ctx: ProbeContext) -> tuple[bool, str]:
         if self.multi_repo_only and len(ctx.repos) < 2:
             return False, "system has a single repo; no seams to check"
-        for mod in self.modules:
-            import importlib.util
-            if importlib.util.find_spec(mod) is None:
-                return False, f"missing python package: {mod}"
         if self.stacks is not None:
             present = set(getattr(ctx.inventory, "stacks", set()) or set())
             if not (set(self.stacks) & present):
                 return False, f"no {'/'.join(self.stacks)} detected in target"
+        if self.applies is not None:
+            ok, why = self.applies(ctx)
+            if not ok:
+                return False, why
         return True, ""
 
 
@@ -251,6 +331,43 @@ _ASSIGNED_SECRET = re.compile(
     """
 )
 
+# The words `_ASSIGNED_SECRET` requires inside its symbol, and the most word
+# characters it allows before them. Every match starts at most this far before
+# one of these words, so the scan below tries the full pattern only there
+# instead of at every character: the same matches, about five times faster
+# (secrets was 31 s of regex on keycloak). Keep the three in step with the
+# pattern; tests/test_secrets_scan_equivalence.py fails when they drift.
+_ASSIGNED_SECRET_WORD = re.compile(
+    r"""(?ix)password|passwd|pwd|secret|token|api[._-]?key|access[._-]?key|
+         client[._-]?secret|private[._-]?key|credential""")
+_ASSIGNED_SECRET_PREFIX = 24
+
+
+def _assigned_secret_matches(text: str):
+    """Exactly `_ASSIGNED_SECRET.finditer(text)`, tried only near a keyword.
+
+    The pattern has no anchors or lookbehind, so whether it matches at a
+    position depends on the text from there on alone, and `match` at each
+    candidate start, leftmost first, finds what `finditer` finds. A match
+    cannot be empty, so the next search resumes at its end, as finditer does.
+    """
+    pos = 0
+    while True:
+        k = _ASSIGNED_SECRET_WORD.search(text, pos)
+        if k is None:
+            return
+        found = None
+        for start in range(max(pos, k.start() - _ASSIGNED_SECRET_PREFIX), k.start() + 1):
+            found = _ASSIGNED_SECRET.match(text, start)
+            if found:
+                break
+        if found:
+            yield found
+            pos = found.end()
+        else:
+            pos = k.start() + 1
+
+
 # Unquoted values. A .env file, a Kubernetes Secret, a docker-compose file, a
 # `export` line and a Dockerfile `ENV` all write secrets without quotes, and
 # those are the places secrets most commonly leak. The quoted pattern above saw
@@ -277,11 +394,63 @@ _ASSIGNED_SECRET_BARE = re.compile(
 # A symbol whose name ends this way holds a reference to a secret, not a
 # secret: `secretName`, `access_key_status`, `tokenUrl`, `secretKeyRef`.
 _NON_SECRET_SUFFIX = re.compile(
-    r"(_(?:status|state|id|name|arn|path|file|url|uri|type|enabled|required|"
-    r"expiry|expires|rotation|algorithm|version|ref|class|provider|manager|store|hash|selector|policy|config|template|format|scope|prefix|suffix)"
+    # The underscore spelling is matched in either case: `TOKEN_URL` and
+    # `PASSWORD_FIELD` are constants named for what they hold (ARB-065).
+    r"((?i:_(?:status|state|id|name|arn|path|file|url|uri|type|enabled|required|"
+    r"expiry|expires|rotation|algorithm|version|ref|class|provider|manager|store|hash|selector|policy|config|template|format|scope|prefix|suffix|"
+    r"endpoint|header|field|param|parameter|property|attribute|attr|label|key_name|lifespan|length|size|timeout|ttl|count))"
     r"|(?:Status|State|Id|Name|Arn|Path|File|Url|Uri|Type|Enabled|Required|"
-    r"Expiry|Expires|Rotation|Algorithm|Version|Ref|Class|Provider|Manager|Store|Hash|Selector|Policy|Config|Template|Format|Scope|Prefix|Suffix))$"
+    r"Expiry|Expires|Rotation|Algorithm|Version|Ref|Class|Provider|Manager|Store|Hash|Selector|Policy|Config|Template|Format|Scope|Prefix|Suffix|"
+    r"Endpoint|Header|Field|Param|Parameter|Property|Attribute|Attr|Label|Lifespan|Length|Size|Timeout|Ttl|Count))$"
 )
+
+# Languages in which an unquoted right-hand side is never a string literal: it
+# is a variable, a call or an expression. `self.key_password = key_password`
+# (urllib3's connection.py) and `this.accessTokenLifespan = realm.get...` were
+# about 630 of 1,696 assigned-credential reports on gold (ARB-065). The bare
+# pattern exists for .env, YAML, shell, Dockerfile and properties files, where
+# values are written without quotes; in source code it only ever saw names.
+_EXPRESSION_LANGUAGES = frozenset({
+    "python", "javascript", "typescript", "go", "ruby", "java", "kotlin", "c",
+    "cpp", "csharp", "rust", "php",
+})
+
+# A quoted value that names something rather than being something. Constants
+# like `PASSWORD_KEY = "password"`, `TOKEN_HEADER = "X-Auth-Token"`,
+# `KEY_PASSWORD_KEY = "keyPassword"` and OpenTelemetry's
+# `ATTR_GEN_AI_USAGE_INPUT_TOKENS = "gen_ai.usage.input_tokens"` hold the NAME
+# of a config key, header or attribute. Three shapes, all letters only (a digit
+# anywhere and the value is judged as a credential as before):
+#   - a dotted, colon or slash path of words: `spring.security.user.password`,
+#     `gen_ai.usage.input_tokens`; `oauth2.client-secret` fails on the digit;
+#   - a Title-Case header name: `X-Auth-Token`, `Proxy-Authorization`. Plain
+#     lower-case kebab (`super-secret-key`) is how weak secrets are written,
+#     and stays reported;
+#   - a short lowerCamelCase identifier, two to four words: `keyPassword`,
+#     `accessToken`. A longer camel phrase is a passphrase: WebGoat's
+#     password for Tom in ResetLinkAssignment.java is one ("somethingVery
+#     RandomWhich..."), so it is still reported.
+_KEY_NAME_VALUE = re.compile(
+    r"^(?:[A-Za-z][A-Za-z_-]*(?:[.:/][A-Za-z][A-Za-z_-]*)+"
+    # Three or more segments may each carry one run of digits: tomcat's
+    # `org.apache.tomcat.manager2.CsrfFilter.token`, keycloak's
+    # `picketlink.wstrust.base64_encode_wstrust_secret_key`, grpc's
+    # `type.googleapis.com/envoy...access_token.v3.AccessTokenCredentials`
+    # (ARB-065). A JWT has three segments too, but each is base64 with digits
+    # scattered through it, so no segment of one matches.
+    r"|[A-Za-z][A-Za-z_-]*(?:\d+[A-Za-z_-]*)?(?:[.:/][A-Za-z][A-Za-z_-]*(?:\d+[A-Za-z_-]*)?){2,}"
+    r"|[A-Z][a-z]*(?:-[A-Z][a-z]*)+"
+    r"|(?=.{0,32}$)[a-z]+(?:[A-Z][a-z]+){1,3})$")
+# A URL without user-info is an endpoint (`TOKEN_URL = "https://oauth2...`).
+# Credentials embedded in a URL are the pg-url pattern's business.
+_PLAIN_URL_VALUE = re.compile(r"^[a-z][a-z0-9+.-]*://[^\s@]*$|^/[^\s]*$", re.IGNORECASE)
+
+# Java i18n message bundles: `messages.properties`, `messages_de.properties`,
+# `ValidationMessages_pt_BR.properties`, tomcat's `LocalStrings.properties`. Their keys say `emptyPassword` and
+# their values are translated text, sometimes without a space (67 on gold).
+_MESSAGE_BUNDLE = re.compile(
+    r"(^|/)(?:[\w-]*(?i:messages?|localstrings)[\w-]*|[\w-]+_[a-z]{2}(?:_[A-Z]{2}|_[A-Z][a-z]{3})?)\.properties$"
+    r"|(^|/)(?i:i18n|l10n|locales?|messages|translations?)/[^/]+\.properties$")
 
 _PLACEHOLDER = re.compile(
     r"(?i)^(|x{3,}|\*{3,}|\.{3,}|changeme|todo|none|null|test|dummy|"
@@ -304,9 +473,37 @@ _TEST_MATERIAL = re.compile(
     # under integration/resources/tls -- material committed on purpose so the
     # integration suite has something to serve. Same category as the keys under
     # psf/requests' tests/certs, different word for the directory.
-    r"|integration|e2e|acceptance|conformance|hack|scripts?/dev)(/|$)"
+    r"|integration|e2e|acceptance|conformance|hack|scripts?/dev"
+    # Test vectors: pyca/cryptography ships its key corpus as the
+    # `vectors/cryptography_vectors` package.
+    r"|vectors|test[-_]?vectors"
+    # Suites in a directory the inventory does not call a test (ARB-065):
+    # keycloak's `testsuite/`, urllib3's `dummyserver/certs`, celery's `t/`.
+    # Their keys were reported as critical, high-confidence leaks.
+    r"|testsuite|test[-_]suites?|dummyserver|t)(/|$)"
     r"|(^|/)[^/]*\.(test|spec)\.[a-z]+$"
+    # A module named for fixtures: jose's tap/fixtures.ts, cryptography's
+    # fixtures_rsa.py.
+    r"|(^|/)fixtures?(?:[_-][^/]*)?\.[a-z]+$"
+    # A key issued for `localhost` identifies no deployed host: caddy's
+    # caddytest/caddy.localhost.key, keycloak's test-user@localhost.key.pem.
+    r"|(^|/)[^/]*localhost[^/]*\.(?:key|pem)$"
 )
+
+# Directories that hold fixture DATA, by name: testdata/, fixtures/, test
+# vectors. A data file there (a .pem, .key or .txt the inventory gives no
+# language) exists to be the fixture -- grpc-go's testdata/x509, etcd's
+# tests/fixtures/*.key.insecure, cryptography's vectors and its RFC 8032
+# SECRET lines, coredns's testdata/*.private. 146 of 260 private-key and 18 of
+# 210 assigned-credential gold reports (ARB-065). It is not reported. A key
+# under any other test path (tests/certs, integration/.../tls, examples/), or
+# a key written into test source code, is still reported, at low.
+_FIXTURE_DATA_DIR = re.compile(
+    r"(^|/)(testdata|test[-_]data|fixtures?(?:-[\w-]+)?|__fixtures__|vectors|test[-_]?vectors)/")
+
+
+def _fixture_data_file(f) -> bool:
+    return f.language == "unknown" and bool(_FIXTURE_DATA_DIR.search(f.path))
 
 # A PEM header with nothing behind it. Argo CD's operator manual shows how to
 # register a repository credential, and the key body in that example is three
@@ -400,6 +597,90 @@ def _entropy(s: str) -> float:
     return -sum((c / n) * math.log2(c / n) for c in counts.values())
 
 
+# A value shaped like an environment-variable name: upper-case letters, digits
+# and underscores only, starting with a letter. Credentials mix cases or carry
+# punctuation; `OMNI_GRAPH_SEMANTIC_API_KEY` is the name of where one lives.
+_ENV_VAR_NAME = re.compile(r"^[A-Z][A-Z0-9_]{2,}$")
+# A symbol that says it holds the NAME of something (`API_KEY_ENV`,
+# `token_env_var`, `secret_name`), not the thing itself.
+_NAME_HOLDER_SUFFIX = re.compile(r"(?i)(?:_env|_env_var|_envvar|_var|_name|_key_name)$")
+# A constant whose PREFIX says it holds a name: spring-security's XML parsers
+# write `ATT_USER_PASSWORD = "password-attribute"` and
+# `ELT_ENCRYPTION_CREDENTIAL = "encryption-credential"` (ARB-065).
+_NAME_HOLDER_PREFIX = re.compile(
+    r"^(?:ATTR?|ELT|ELEM|ELEMENT|PARAM|HEADER|PROP|PROPERTY|FIELD|COL|COLUMN|CLAIM|OPT|OPTION)_")
+# A password HASH is the safe way to store one; a test of the encoder holds
+# many. bcrypt/argon2/crypt(3) modular format, and Spring's `{id}` prefix for
+# a hashing encoder (not `{noop}`, which is plaintext).
+_PASSWORD_HASH = re.compile(
+    r"^\$(?:2[abxy]?|argon2(?:id|i|d)|pbkdf2[\w-]*|scrypt|[1356])\$"
+    r"|^\{(?:bcrypt|ssha|sha(?:-?\d+)?|md[45]|ldap|pbkdf2|scrypt|argon2|sha256)\}", re.IGNORECASE)
+
+
+# The Fetch API's `credentials` option takes a mode, not a credential:
+# `credentials: 'same-origin'` (tomcat's manager webapp, axios, undici, the
+# Turbo bundle in Rails' guides).
+_FETCH_CREDENTIALS_MODES = frozenset({"same-origin", "include", "omit"})
+# A symbol named for a digest of a password holds the hash, which is how a
+# password is meant to be stored: spring-security's Pbkdf2PasswordEncoderTests
+# `encodedPassword = "ab1146a8..."`, tomcat's TestRealmBase `PWD_MD5`.
+# Not `hash` or `digest` alone: `HASH_SECRET` and an HTTP digest password are
+# secrets used for hashing, not hashes. `encoded` only beside `password`: a
+# password encoder's output is a hash, but spring-security's
+# `DEFAULT_ENCODED_SECRET_KEY` is a base64-encoded key and stays reported.
+_HASH_NAME_WORDS = frozenset({"hashed", "md5", "sha", "sha1", "sha256", "sha512", "bcrypt"})
+_PASSWORD_WORDS = frozenset({"password", "passwd", "pwd"})
+
+
+def _holds_password_hash(name: str) -> bool:
+    words = _words(name)
+    return bool(words & _HASH_NAME_WORDS) or ("encoded" in words and bool(words & _PASSWORD_WORDS))
+# The words a key or message id adds to the symbol it is named after: keycloak's
+# `EXPIRED_ACTION_TOKEN_NO_SESSION = "expiredActionTokenNoSessionMessage"`.
+_NAMING_WORDS = frozenset({"message", "msg", "key", "name", "id", "attr", "attribute",
+                           "param", "header", "field", "error", "exp", "type", "claim",
+                           "label", "property", "prop"})
+# A snake_case identifier of letters only, which is how form fields, claims
+# and map keys are spelled (`j_password`, `_password_reset_token`).
+_SNAKE_IDENTIFIER = re.compile(r"^_?[a-z]+(?:_[a-z]+)+$")
+# A string built by interpolation is computed, not a constant: rubygems'
+# s3_uri_signer.rb builds its `credential_info` from `#{date}` and
+# `#{s3_config.region}` (reported at high).
+_INTERPOLATION = re.compile(r"#\{[^}]*\}|\$\{[^}]*\}")
+# A value that is a variable reference: openssl.cnf's `private_key =
+# $dir/private/ca.key.pem`, Maven's `token="$${project.version}"`.
+_VARIABLE_REFERENCE = re.compile(r"^\$+(?:\{|\(|[A-Za-z_]\w*(?:/|$))")
+
+
+def _full_name(text: str, offset: int, name: str) -> str:
+    """The whole symbol, when the pattern's 24-character prefix cut it short.
+
+    `LOGOUT_TRIGGERED_BY_ACTION_TOKEN` was matched as `OUT_TRIGGERED_BY_ACTION_
+    TOKEN`, so its value `"logout_triggered_by_action_token"` no longer echoed it.
+    """
+    j = offset
+    while j > 0 and (text[j - 1].isalnum() or text[j - 1] == "_"):
+        j -= 1
+    return text[j:offset] + name
+
+
+def _names_the_symbol(name: str, val_s: str) -> bool:
+    """The value is the symbol's own name as a key, message id or field name."""
+    name_words, value_words = _words(name), _words(val_s)
+    if not value_words or any(c.isdigit() for c in val_s):
+        return False
+    extra = value_words - name_words
+    if name_words <= value_words and len(extra) <= 1 and extra <= _NAMING_WORDS:
+        return True
+    return bool(_SNAKE_IDENTIFIER.match(val_s) and value_words & name_words)
+
+
+def _words(s: str) -> set[str]:
+    """Lower-case words of an identifier or value: camelCase and separators split."""
+    spaced = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", s)
+    return {w for w in re.split(r"[^A-Za-z0-9]+", spaced.lower()) if w}
+
+
 def _credential_finding(f, text: str, offset: int, name: str, value: str,
                         test_material: bool, quoted: bool) -> Finding | None:
     """Shared judgement for a credential-shaped assignment.
@@ -411,12 +692,47 @@ def _credential_finding(f, text: str, offset: int, name: str, value: str,
     val_s = (value or "").strip()
     if not val_s or _PLACEHOLDER.match(val_s):
         return None
+    name = _full_name(text, offset, name)
+    if _VARIABLE_REFERENCE.match(val_s) or (quoted and _INTERPOLATION.search(val_s)):
+        return None
+    # An unquoted value ending in `;` is a statement: `token: CancelToken;` is
+    # a property type in axios's index.d.cts.
+    if not quoted and val_s.endswith(";"):
+        return None
+    if val_s.lower() in _FETCH_CREDENTIALS_MODES or _holds_password_hash(name):
+        return None
+    # `SEMANTIC_API_KEY_ENV = "OMNI_GRAPH_SEMANTIC_API_KEY"` names the variable
+    # the key is read FROM; the value is an identifier, not a credential
+    # (FAIL-050: reported as a hardcoded credential on OmniEngineering's own
+    # scan). An upper-case identifier with underscores has two character
+    # classes and enough entropy to pass the gates below, so it is excluded by
+    # shape, and so is a symbol whose suffix says it holds a name, not a value.
+    if _ENV_VAR_NAME.match(val_s) or _NAME_HOLDER_SUFFIX.search(name) \
+            or _NAME_HOLDER_PREFIX.match(name):
+        return None
+    if _PASSWORD_HASH.match(val_s):
+        return None
+    # `"CredentialsNonExpired=").append(this.credentialsNonExpired).append(";"`:
+    # the "value" is the code between two string literals.
+    if quoted and (val_s[0] in ")+,;" or ").append(" in val_s or '" +' in val_s):
+        return None
     # `access_key_status = "Inactive"` and `secretName: tls-cert` hold a status
     # and a reference. The keyword matched; the suffix says what it holds.
     if _NON_SECRET_SUFFIX.search(name):
         return None
-    # `secret_key = "secret_key"` — a literal echoing its own symbol.
+    if quoted and (_KEY_NAME_VALUE.match(val_s) or _PLAIN_URL_VALUE.match(val_s)):
+        return None
+    # `secret_key = "secret_key"` — a literal echoing its own symbol. Echoing
+    # part of it counts too: `ELT_ENCRYPTION_CREDENTIAL = "encryption-credential"`
+    # and `INVALID_ID_TOKEN_ERROR_CODE = "invalid_id_token"` name an XML element
+    # and an error code (spring-security, ARB-065). A value with a word of its
+    # own (a JWT secret of "super-secret-key") is still judged below.
     if re.sub(r"[^a-z0-9]", "", val_s.lower()) == re.sub(r"[^a-z0-9]", "", name.lower()):
+        return None
+    value_words = _words(val_s)
+    if value_words and value_words <= _words(name):
+        return None
+    if quoted and _names_the_symbol(name, val_s):
         return None
     # Real credentials do not contain spaces. Values that do are example
     # passphrases ("keyboard cat") or prose, and were the largest source of
@@ -452,6 +768,16 @@ def _credential_finding(f, text: str, offset: int, name: str, value: str,
     ent = _entropy(val_s)
     if ent < 2.6 or classes < 2:
         return None
+    # Under a test or fixture path a credential-named literal is test data by
+    # design (django's auth tests pass "some-gibbberish" as a password, and
+    # "test-token" as a token) -- about 600 of
+    # the gold reports. Only a value that looks generated is reported there:
+    # three character classes and the entropy of a real password, or a long
+    # high-entropy blob (juice-shop's hex wallet keys in checkKeys.test.ts). A
+    # live key pasted into a test is still caught; `admin123` is not.
+    generated = (classes >= 3 and ent >= 3.3) or (len(val_s) >= 32 and ent >= 3.5)
+    if test_material and not generated:
+        return None
     strong = ent >= 4.2 and classes >= 3 and not test_material
     where = "unquoted " if not quoted else ""
     return Finding(
@@ -486,10 +812,12 @@ def probe_secrets(ctx: ProbeContext) -> list[Finding]:
         # operator manual is the case: real-looking YAML, placeholder values.
         test_material = (bool(_TEST_MATERIAL.search(f.path))
                          or f.role in ("test", "docs"))
+        fixture_data = test_material and _fixture_data_file(f)
         for suffix, title, sev, pattern in SECRET_PATTERNS:
             for m in re.finditer(pattern, text):
                 val = m.group(0)
-                if suffix == "private-key" and not _pem_has_key_material(text, m.start()):
+                if suffix == "private-key" and (fixture_data
+                                                or not _pem_has_key_material(text, m.start())):
                     continue
                 eff_sev, eff_conf = sev, "high"
                 note = ""
@@ -500,6 +828,13 @@ def probe_secrets(ctx: ProbeContext) -> list[Finding]:
                             "than a leaked credential.")
                 elif test_material:
                     eff_sev = "medium" if sev in ("critical", "high") else sev
+                    # A key under a test or fixture path is almost always the
+                    # TLS or crypto library's own test material: grpc-go's
+                    # testdata/x509, cryptography's vectors (240 on gold,
+                    # ARB-065). Still reported, never silenced, but low, and
+                    # tagged so a budget or a policy can treat it on its own.
+                    if suffix == "private-key":
+                        eff_sev = "low"
                     eff_conf = "low"
                     note = (" This file sits under a test or fixture path, so the material is "
                             "probably deliberate — confirm it is not a production credential.")
@@ -517,14 +852,20 @@ def probe_secrets(ctx: ProbeContext) -> list[Finding]:
                     remediation="Remove the literal, rotate the credential, and load it from a secret store at runtime.",
                     evidence=f"{suffix}:{_mask(val)}",
                     controls=["NIST-800-53r5:IA-5", "NIST-800-53r5:SC-28"],
-                    tags=["secret"],
+                    tags=["secret"] + (["test-fixture"] if test_material else []),
                 ))
-        for m in _ASSIGNED_SECRET.finditer(text):
+        # The name heuristic is for code and configuration. In documentation
+        # (`docs/`, `.adoc`, release notes) a credential-named assignment is an
+        # illustration; the provider-token patterns above still run there.
+        if _MESSAGE_BUNDLE.search(f.path) or f.role == "docs" or fixture_data:
+            continue
+        for m in _assigned_secret_matches(text):
             found = _credential_finding(f, text, m.start(), m.group(1), m.group(3),
                                         test_material, quoted=True)
             if found:
                 out.append(found)
-        for m in _ASSIGNED_SECRET_BARE.finditer(text):
+        for m in ([] if f.language in _EXPRESSION_LANGUAGES
+                  else _ASSIGNED_SECRET_BARE.finditer(text)):
             found = _credential_finding(f, text, m.start(1), m.group(1), m.group(2),
                                         test_material, quoted=False)
             if found:
@@ -532,7 +873,8 @@ def probe_secrets(ctx: ProbeContext) -> list[Finding]:
     return out
 
 
-register(Probe(name="secrets", scope="file", dimensions=["security"], checks=len(SECRET_PATTERNS) + 1, run=probe_secrets))
+register(Probe(name="secrets", scope="file", cacheable=True, dimensions=["security"],
+               checks=len(SECRET_PATTERNS) + 1, run=probe_secrets))
 
 
 # ===========================================================================
@@ -541,11 +883,11 @@ register(Probe(name="secrets", scope="file", dimensions=["security"], checks=len
 
 def _load_resource_rules() -> list[dict]:
     path = PACKS / "rules" / "resource.yaml"
+    import yaml
     try:
-        import yaml  # type: ignore
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
         return data.get("rules", []) if isinstance(data, dict) else []
-    except Exception:
+    except (OSError, yaml.YAMLError):
         return []
 
 
@@ -895,8 +1237,6 @@ def probe_quality(ctx: ProbeContext) -> list[Finding]:
     out: list[Finding] = []
     cfg = (ctx.config.get("quality") or {})
     max_file = int(cfg.get("max_file_lines", 800))
-    max_func = int(cfg.get("max_function_lines", 120))
-    max_cx = int(cfg.get("max_complexity", 20))
 
     source_files = [f for f in ctx.inventory.text_files() if f.role in ("source", "iac")]
     test_files = [f for f in ctx.inventory.text_files() if f.role == "test"]
@@ -1012,7 +1352,7 @@ def probe_ast_metrics(ctx: ProbeContext) -> list[Finding]:
 
 
 register(Probe(
-    name="ast_metrics", scope="file", dimensions=["quality"], checks=3,
+    name="ast_metrics", scope="file", cacheable=True, dimensions=["quality"], checks=3,
     run=probe_ast_metrics, modules=["tree_sitter_language_pack"],
 ))
 
@@ -1021,91 +1361,21 @@ register(Probe(
 # supply chain
 # ===========================================================================
 
-_UNPINNED_PY = re.compile(r"^\s*([A-Za-z0-9._-]+)\s*(?:[><~!]=|>|<)?\s*([0-9][^\s;#]*)?\s*$")
-_ACTION_USES = re.compile(r"^\s*-?\s*uses:\s*([^\s@]+)@([^\s#]+)", re.M)
-_SHA40 = re.compile(r"^[0-9a-f]{40}$")
-
-
 def probe_supply_chain(ctx: ProbeContext) -> list[Finding]:
+    """Pinning checks (src/arbiter/supply.py) and `pull_request_target`.
+
+    Each file's answer depends on that file and on which lockfiles exist
+    beside it, which `supply.cache_context` folds into the cache key."""
+    from . import supply
     out: list[Finding] = []
+    locks = supply.lock_paths(ctx)
     for f in ctx.inventory.text_files():
-        base = f.path.rsplit("/", 1)[-1]
         text = _read(f)
         if not text:
             continue
-
-        if base in ("requirements.txt", "requirements-dev.txt"):
-            for i, line in enumerate(text.split("\n"), 1):
-                s = line.strip()
-                if not s or s.startswith(("#", "-r", "--")):
-                    continue
-                if "==" not in s and not s.startswith("git+"):
-                    pkg = re.split(r"[<>=!~\[; ]", s, 1)[0].strip()
-                    out.append(Finding(
-                        rule_id="arbiter/supply.unpinned-python-dep",
-                        title=f"Unpinned dependency `{pkg}`",
-                        # Severity "info": measured on the corpus, this fires at
-                        # 0.0x on deliberately vulnerable Python relative to
-                        # well-maintained Python. It does not discriminate, so it
-                        # is reported for completeness and scores zero.
-                        dimension="supply_chain", severity="info", confidence="high",
-                        repo_id=f.repo_id, probe="supply_chain",
-                        location=Location(path=f.path, start_line=i, repo_id=f.repo_id),
-                        description="An unpinned requirement makes builds non-reproducible. Note that "
-                                    "libraries are expected to declare ranges; this matters for "
-                                    "applications and deployment manifests.",
-                        remediation="Pin with == and manage upgrades deliberately.",
-                        evidence=s[:80],
-                        controls=["NIST-800-218:PW.4", "NIST-800-53r5:CM-2"],
-                        tags=["dependencies"],
-                    ))
-
-        if base == "package.json":
-            import json as _json
-            try:
-                doc = _json.loads(text)
-            except Exception:
-                continue
-            for section in ("dependencies", "devDependencies"):
-                for name, spec in (doc.get(section) or {}).items():
-                    if isinstance(spec, str) and spec[:1] in ("^", "~", "*") or spec in ("latest", "*"):
-                        out.append(Finding(
-                            rule_id="arbiter/supply.unpinned-npm-dep",
-                            title=f"Floating version range on `{name}` ({spec})",
-                            # Severity "info": 0.68/kloc on well-maintained Node
-                            # vs 0.73/kloc on deliberately vulnerable Node — a
-                            # ratio of 1.1x, which is no signal at all.
-                            dimension="supply_chain", severity="info", confidence="high",
-                            repo_id=f.repo_id, probe="supply_chain",
-                            location=Location(path=f.path, repo_id=f.repo_id,
-                                              logical=f"{section}.{name}"),
-                            description="A caret or tilde range resolves differently over time.",
-                            remediation="Pin exact versions and rely on a lockfile plus a bot for upgrades.",
-                            evidence=f"{name}@{spec}",
-                            controls=["NIST-800-218:PW.4"],
-                            tags=["dependencies"],
-                        ))
+        out += supply.check_file(f, text, locks.get(f.repo_id, set()))
 
         if f.role == "ci":
-            for m in _ACTION_USES.finditer(text):
-                action, ref = m.group(1), m.group(2)
-                if action.startswith("./") or _SHA40.match(ref):
-                    continue
-                out.append(Finding(
-                    rule_id="arbiter/supply.unpinned-action",
-                    title=f"Action `{action}` pinned to a mutable ref (`{ref}`)",
-                    # Stays at "low": unlike the package-manager rules, this one
-                    # discriminates — 4.3x on Node, 219x on CloudFormation.
-                    dimension="supply_chain", severity="low", confidence="high",
-                    repo_id=f.repo_id, probe="supply_chain",
-                    location=Location(path=f.path, repo_id=f.repo_id,
-                                      start_line=_line_of(text, m.start())),
-                    description="Tags and branches can be repointed, so the workflow can execute different code tomorrow.",
-                    remediation="Pin the action to a full commit SHA.",
-                    evidence=f"{action}@{ref}",
-                    controls=["NIST-800-218:PW.4", "NIST-800-53r5:CM-7"],
-                    tags=["ci", "supply-chain"],
-                ))
             if "pull_request_target" in text:
                 idx = text.index("pull_request_target")
                 # The trigger alone is not the vulnerability. It becomes one
@@ -1154,7 +1424,14 @@ def probe_supply_chain(ctx: ProbeContext) -> list[Finding]:
     return out
 
 
-register(Probe(name="supply_chain", scope="file", dimensions=["supply_chain", "security"], checks=5, run=probe_supply_chain))
+def _supply_cache_context(ctx: ProbeContext) -> str:
+    from .supply import cache_context
+    return cache_context(ctx)
+
+
+register(Probe(name="supply_chain", scope="file", cacheable=True,
+               cache_context=_supply_cache_context,
+               dimensions=["supply_chain", "security"], checks=12, run=probe_supply_chain))
 
 
 # ===========================================================================
@@ -1188,10 +1465,160 @@ def _normalize_relative(path: str) -> str:
     return "/".join(parts)
 _BACKTICK_PATH = re.compile(r"`([A-Za-z0-9_./-]+\.(?:py|tf|ts|js|json|ya?ml|md|sh|sql))`")
 _ENV_MENTION = re.compile(r"\b([A-Z][A-Z0-9_]{4,})\b")
+_URL_ON_LINE = re.compile(r"https?://")
+# The directory `arbiter scan` writes to unless told otherwise. A path with
+# this segment in it is a run's output wherever the run was pointed.
+_OUTPUT_SEGMENT = "arbiter-out"
+
+# One parsed .gitignore line: the glob, whether it re-includes (`!`), whether
+# it names only a directory (trailing `/`), and whether it is anchored to the
+# repository root (a `/` anywhere but the end).
+IgnorePattern = tuple[str, bool, bool, bool]
+
+
+def _ignore_patterns(root: Path) -> list[IgnorePattern]:
+    """Parse the root .gitignore, as far as the drift probe needs it.
+
+    Comments and blank lines are dropped; `dir/`, `*.ext`, `path/**`, a
+    leading `/` and `!` negation are honoured. Nested .gitignore files, escaped
+    characters and the finer points of `**` are not: a pattern this misreads
+    makes one documented path look missing, which is the finding the person
+    was already getting, and a pattern read too broadly hides real drift,
+    which is why only these shapes are read at all.
+    """
+    try:
+        lines = (root / ".gitignore").read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return []
+    out: list[IgnorePattern] = []
+    for raw in lines:
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        negated = line.startswith("!")
+        if negated:
+            line = line[1:]
+        dir_only = line.endswith("/")
+        line = line.rstrip("/")
+        # `**/x` means x at any depth, which is what an unanchored pattern
+        # already means here; the prefix is dropped and the anchor with it.
+        any_depth = line.startswith("**/")
+        if any_depth:
+            line = line[3:]
+        anchored = "/" in line and not any_depth
+        line = line.lstrip("/")
+        if line:
+            out.append((line, negated, dir_only, anchored))
+    return out
+
+
+def _ignore_match(path: str, pattern: str, anchored: bool) -> bool:
+    """One gitignore glob against one relative path.
+
+    Anchored patterns match the whole path from the root. Unanchored ones
+    match at any depth: every suffix of the path is tried, so `*.log` finds
+    `build/out/x.log` and `.arbiter/cache.json` finds it in any subtree.
+    """
+    if anchored:
+        return fnmatch.fnmatchcase(path, pattern)
+    parts = path.split("/")
+    return any(fnmatch.fnmatchcase("/".join(parts[i:]), pattern) for i in range(len(parts)))
+
+
+def _gitignored(root: Path, rel: str, patterns: list[IgnorePattern] | None = None) -> bool:
+    """Would git ignore this path? The path and each parent directory are
+    tried against every pattern in order, the last match winning, which is
+    how git reads the file. A directory-only pattern matches parents alone,
+    since a path a document names with an extension is a file."""
+    if patterns is None:
+        patterns = _ignore_patterns(root)
+    if not patterns:
+        return False
+    parts = rel.split("/")
+    targets = [("/".join(parts[:i]), True) for i in range(1, len(parts))] + [(rel, False)]
+    ignored = False
+    for pattern, negated, dir_only, anchored in patterns:
+        for target, is_dir in targets:
+            if dir_only and not is_dir:
+                continue
+            if _ignore_match(target, pattern, anchored):
+                ignored = not negated
+                break
+    return ignored
+
+
+def _output_dirs(root: Path | None, config: dict, out_dir: str) -> set[str]:
+    """Where output lands, relative to the repository: the `out:` key of
+    arbiter.yaml, if set, and this run's own output directory when it sits
+    inside the tree being scanned."""
+    dirs: set[str] = set()
+    configured = (config or {}).get("out")
+    if isinstance(configured, str) and configured.strip():
+        norm = _normalize_relative(configured.strip().replace("\\", "/"))
+        if norm:
+            dirs.add(norm)
+    if out_dir and root is not None:
+        try:
+            dirs.add(Path(out_dir).resolve().relative_to(root.resolve()).as_posix())
+        except (ValueError, OSError):
+            pass
+    return dirs
+
+
+def _under_output(rel: str, out_dirs: set[str]) -> bool:
+    parents = rel.split("/")[:-1]
+    if _OUTPUT_SEGMENT in parents:
+        return True
+    return any(rel == d or rel.startswith(d + "/") for d in out_dirs)
+
+
+def _line_has_url(text: str, pos: int) -> bool:
+    """Does the line holding `pos`, or the line either side of it in the same
+    paragraph, carry an http(s) URL? Prose that names a file beside a link to
+    another repository or site is describing that place, not this one. The
+    neighbours count because documentation is hard-wrapped: the sentence that
+    put `docs/arbiter-integration.md` next to its URL broke between them. A
+    blank line ends the paragraph and the search with it."""
+    start = text.rfind("\n", 0, pos) + 1
+    end = text.find("\n", pos)
+    end = len(text) if end == -1 else end
+    window = [text[start:end]]
+    prev_end = start - 1
+    if prev_end > 0:
+        prev_start = text.rfind("\n", 0, prev_end) + 1
+        window.append(text[prev_start:prev_end])
+    if end < len(text):
+        next_end = text.find("\n", end + 1)
+        window.append(text[end + 1:len(text) if next_end == -1 else next_end])
+    return any(line.strip() and _URL_ON_LINE.search(line) for line in window)
+
+
+def _once_tracked(root: Path, rel: str, cache: dict[str, bool]) -> bool:
+    """Was this path ever committed? A changelog or decision log is right to
+    name a file that was deliberately removed; a README naming one that never
+    existed has a typo. Git can tell the two apart, and when there is no git
+    the answer is unknown, which reads as never."""
+    if rel in cache:
+        return cache[rel]
+    answer = False
+    try:
+        r = subprocess.run(
+            ["git", "-C", str(root), "log", "--all", "--diff-filter=A", "-1",
+             "--format=%H", "--", rel],
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
+        )
+        answer = r.returncode == 0 and bool(r.stdout.strip())
+    except (OSError, subprocess.TimeoutExpired):
+        answer = False
+    cache[rel] = answer
+    return answer
 
 
 def probe_doc_drift(ctx: ProbeContext) -> list[Finding]:
     out: list[Finding] = []
+    tracked_cache: dict[str, bool] = {}
+    # .gitignore is parsed once per repository, not once per document.
+    ignore_cache: dict[str, list[IgnorePattern]] = {}
     by_repo_paths: dict[str, set[str]] = {}
     for f in ctx.inventory.files:
         by_repo_paths.setdefault(f.repo_id, set()).add(f.path)
@@ -1203,10 +1630,14 @@ def probe_doc_drift(ctx: ProbeContext) -> list[Finding]:
     # missing. Existence is a question about disk.
     roots = {r.id: Path(r.path) for r in ctx.repos if getattr(r, "path", "")}
 
-    code_blobs: dict[str, str] = {}
+    # Joined once per repository. Concatenating file by file copied the whole
+    # blob for every file -- quadratic, 37 s on keycloak `services/` (ARB-076).
+    blob_parts: dict[str, list[str]] = {}
     for f in ctx.inventory.text_files():
         if f.role in ("source", "iac", "config", "ci"):
-            code_blobs[f.repo_id] = code_blobs.get(f.repo_id, "") + "\n" + _read(f)
+            blob_parts.setdefault(f.repo_id, []).append(_read(f))
+    code_blobs: dict[str, str] = {
+        rid: "".join("\n" + t for t in parts) for rid, parts in blob_parts.items()}
 
     for f in ctx.inventory.text_files():
         if f.language != "markdown":
@@ -1218,6 +1649,19 @@ def probe_doc_drift(ctx: ProbeContext) -> list[Finding]:
         base_dir = f.path.rsplit("/", 1)[0] if "/" in f.path else ""
 
         has_html = any(k.endswith(".html") for k in known)
+        repo_root = roots.get(f.repo_id)
+        if f.repo_id not in ignore_cache:
+            ignore_cache[f.repo_id] = _ignore_patterns(repo_root) if repo_root else []
+        ignore_patterns = ignore_cache[f.repo_id]
+        out_dirs = _output_dirs(repo_root, ctx.config, ctx.out_dir)
+
+        def not_ours(rel: str) -> bool:
+            # Generated output and git-ignored paths are not files the
+            # repository is missing: a document is right to name what a run
+            # writes or what a checkout never commits (ARB-048).
+            if _under_output(rel, out_dirs):
+                return True
+            return repo_root is not None and _gitignored(repo_root, rel, ignore_patterns)
 
         def on_disk(rel: str) -> bool:
             root = roots.get(f.repo_id)
@@ -1248,13 +1692,16 @@ def probe_doc_drift(ctx: ProbeContext) -> list[Finding]:
             if not cand or cand in seen:
                 continue
             seen.add(cand)
+            # `git://`, `ssh://` and the like name somewhere else entirely.
+            if "://" in cand:
+                continue
             norm = _normalize_relative(cand)
             if not norm:
                 continue
             stripped = norm.rstrip("/")
             if stripped in known or any(k.startswith(stripped + "/") for k in known):
                 continue
-            if on_disk(stripped):
+            if on_disk(stripped) or not_ours(stripped):
                 continue
             out.append(Finding(
                 rule_id="arbiter/drift.broken-doc-link",
@@ -1282,19 +1729,36 @@ def probe_doc_drift(ctx: ProbeContext) -> list[Finding]:
                 continue
             if cand in known or any(k.endswith("/" + cand) for k in known):
                 continue
-            if on_disk(cand):
+            if on_disk(cand) or not_ours(cand):
                 continue
+            # A path named beside a URL -- `docs/handbook.md` in the other
+            # repository (https://...) -- describes that repository, not this
+            # one, and hard wrapping may put the URL on the next line. Links
+            # are not excused this way: a relative link is a claim about this
+            # tree whatever else the line says.
+            if _line_has_url(text, m.start()):
+                continue
+            root = roots.get(f.repo_id)
+            removed = root is not None and _once_tracked(root, cand, tracked_cache)
             out.append(Finding(
                 rule_id="arbiter/drift.doc-references-missing-file",
-                title=f"Documentation describes `{cand}`, which is not in the repository",
-                dimension="drift", severity="low", confidence="medium",
+                title=(f"Documentation describes `{cand}`, which was removed from the repository"
+                       if removed else
+                       f"Documentation describes `{cand}`, which is not in the repository"),
+                dimension="drift", severity="info" if removed else "low", confidence="medium",
                 repo_id=f.repo_id, probe="doc_drift",
                 location=Location(path=f.path, repo_id=f.repo_id,
                                   start_line=_line_of(text, m.start())),
-                description="A file named in prose has no counterpart on disk — usually a rename the docs missed.",
-                remediation="Update the document, or confirm the file was intentionally removed.",
-                evidence=f"path={cand}",
-                tags=["docs"],
+                description=("The file was tracked once and is gone now. A changelog or decision "
+                             "record is right to name it; a guide that still points a reader at "
+                             "it is stale."
+                             if removed else
+                             "A file named in prose has no counterpart on disk — usually a rename the docs missed."),
+                remediation=("Confirm the text describes the removal, or drop the reference."
+                             if removed else
+                             "Update the document, or confirm the file was intentionally removed."),
+                evidence=f"path={cand}" + (" removed=true" if removed else ""),
+                tags=["docs"] + (["history"] if removed else []),
             ))
 
         # Environment-variable drift is only checked inside a section that is
@@ -1635,9 +2099,14 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
     for rec in ctx.inventory.files:
         paths_by_repo.setdefault(rec.repo_id, set()).add(rec.path)
 
+    # Globstar, not fnmatch (ARB-147): `**/*` must take a root file and
+    # `src/**/*.py` must take `src/a.py`, or a forbid rule is false-clean on
+    # the files it names; and the match must not depend on the OS's case
+    # folding.
+    from .globs import match as _glob
+
     def matching(glob_pat: str):
-        import fnmatch
-        return [f for f in files if fnmatch.fnmatch(f.path, glob_pat)]
+        return [f for f in files if _glob(f.path, glob_pat)]
 
     for rule in rules:
         rid = rule.get("id", "unnamed")
@@ -1646,9 +2115,8 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
 
         if rtype == "file_exists":
             for pat in rule.get("paths", []):
-                import fnmatch
                 for repo_id, paths in sorted(paths_by_repo.items()):
-                    if any(fnmatch.fnmatch(p, pat) for p in paths):
+                    if any(_glob(p, pat) for p in paths):
                         continue
                     out.append(Finding(
                         rule_id=f"house/{rid}",
@@ -1663,10 +2131,9 @@ def probe_house_rules(ctx: ProbeContext) -> list[Finding]:
 
         elif rtype == "file_absent":
             for pat in rule.get("paths", []):
-                import fnmatch
                 for repo_id, paths in sorted(paths_by_repo.items()):
                     for p in sorted(paths):
-                        if not fnmatch.fnmatch(p, pat):
+                        if not _glob(p, pat):
                             continue
                         out.append(Finding(
                             rule_id=f"house/{rid}",
@@ -1771,7 +2238,7 @@ def probe_house_rules_ast(ctx: ProbeContext) -> list[Finding]:
     wherever they are formatted, which a regex cannot promise.
     """
     from . import ast as ts
-    import fnmatch
+    from .globs import match as _glob
 
     rules = [r for r in (ctx.config.get("rules") or []) if r.get("type") == "ast_query"]
     if not rules:
@@ -1795,7 +2262,7 @@ def probe_house_rules_ast(ctx: ProbeContext) -> list[Finding]:
                 continue
             if not ts.ts_name(f.language):
                 continue
-            if glob_pat != "**/*" and not fnmatch.fnmatch(f.path, glob_pat):
+            if glob_pat != "**/*" and not _glob(f.path, glob_pat):
                 continue
             parsed = ts.parse_file(f.abspath, f.language)
             if parsed is None:
@@ -1838,8 +2305,131 @@ def probe_house_rules_ast(ctx: ProbeContext) -> list[Finding]:
 
 
 register(Probe(
-    name="house_rules_ast", scope="file", dimensions=["quality", "security"], checks=1,
-    run=probe_house_rules_ast, modules=["tree_sitter_language_pack"],
+    name="house_rules_ast", scope="file", cacheable=True, dimensions=["quality", "security"],
+    checks=1, run=probe_house_rules_ast, modules=["tree_sitter_language_pack"],
+))
+
+
+# ===========================================================================
+# governance: the failure ledger against the change (REQ-038)
+# ===========================================================================
+#
+# A repository that keeps a failure ledger has written down, per defect, which
+# files it lived in and which test guards against its return. That is a
+# contract the next change can break in two ways without any test failing:
+# touch an affected file of a still-open failure without touching its guard,
+# or let the guard of a fixed failure quietly disappear. Neither is visible
+# to a test runner, because the first is a test that was not run and the
+# second is a test that no longer exists.
+
+_LEDGER = ".ai/failures/failure-ledger.json"
+_OPEN_STATUSES = ("open", "mitigated")
+
+
+def _read_ledger(repo_path: str) -> list[dict]:
+    import json
+    try:
+        data = json.loads((Path(repo_path) / _LEDGER).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    entries = data.get("failures") if isinstance(data, dict) else None
+    return [e for e in (entries or []) if isinstance(e, dict)]
+
+
+def _test_file(ref: str) -> str:
+    """The file half of `tests/test_x.py::test_y`, as a posix path."""
+    return str(ref).split("::", 1)[0].strip().replace("\\", "/")
+
+
+def _has_failure_ledger(ctx: ProbeContext) -> tuple[bool, str]:
+    if any((Path(r.path) / _LEDGER).is_file() for r in ctx.repos):
+        return True, ""
+    return False, f"no failure ledger at {_LEDGER}; nothing to govern"
+
+
+def _open_failures_untested(repo, entries: list[dict], changed: set[str]) -> list[Finding]:
+    out: list[Finding] = []
+    for e in entries:
+        if str(e.get("status") or "").lower() not in _OPEN_STATUSES:
+            continue
+        fid = str(e.get("id") or "?")
+        tests = [_test_file(t) for t in (e.get("regression_tests") or [])]
+        if any(t in changed for t in tests):
+            # The guard moved with the change; that is the contract honoured.
+            continue
+        for raw in e.get("affected") or []:
+            path = str(raw).replace("\\", "/")
+            if path not in changed:
+                continue
+            out.append(Finding(
+                rule_id="arbiter/governance.open-failure-untested",
+                title=f"{fid} is {e.get('status')} and {path} changed without its regression test",
+                dimension="drift", severity="medium", confidence="high",
+                repo_id=repo.id, probe="governance",
+                location=Location(path=path, logical=fid, repo_id=repo.id),
+                description=(f"The failure ledger lists {path} as affected by {fid}, which is "
+                             f"still {e.get('status')}. This change touches the file and none of "
+                             f"the entry's regression tests ({', '.join(tests) or 'none recorded'})."),
+                remediation=(f"Change or add the regression test named by {fid} in the same "
+                             f"change, or close the entry if the failure is fixed."),
+                evidence=str(e.get("title") or fid),
+                tags=["governance"],
+            ))
+    return out
+
+
+def _regression_tests_missing(repo, entries: list[dict]) -> list[Finding]:
+    out: list[Finding] = []
+    for e in entries:
+        if str(e.get("status") or "").lower() != "fixed":
+            continue
+        fid = str(e.get("id") or "?")
+        for ref in e.get("regression_tests") or []:
+            file_part = _test_file(ref)
+            if not file_part or (Path(repo.path) / file_part).is_file():
+                continue
+            out.append(Finding(
+                rule_id="arbiter/governance.regression-test-missing",
+                title=f"{fid} is fixed but its regression test file {file_part} is gone",
+                dimension="drift", severity="medium", confidence="high",
+                repo_id=repo.id, probe="governance",
+                location=Location(path=_LEDGER, logical=fid, repo_id=repo.id),
+                description=(f"{fid} ({e.get('title') or 'untitled'}) names {ref} as the test "
+                             f"that keeps it fixed, and {file_part} is not in the tree. "
+                             "Nothing guards against the failure returning."),
+                remediation=("Restore or rename the test and point regression_tests at it, "
+                             "or record a no_test_reason in the ledger entry."),
+                evidence=str(ref),
+                tags=["governance"],
+            ))
+    return out
+
+
+def probe_governance(ctx: ProbeContext) -> list[Finding]:
+    """The failure ledger, held against the change.
+
+    Two checks. `open-failure-untested` needs the change set and is silent in
+    a full scan: the question is about what this change touched. `regression-
+    test-missing` is a fact about the tree and runs in both modes. The probe
+    is change-scoped because it reads only the ledger and the changed paths,
+    so a partial scan is a complete answer rather than a wrong one.
+    """
+    out: list[Finding] = []
+    for repo in ctx.repos:
+        entries = _read_ledger(repo.path)
+        if not entries:
+            continue
+        changed = {str(p).replace("\\", "/") for p in ctx.changed.get(repo.id, set())}
+        if changed:
+            out.extend(_open_failures_untested(repo, entries, changed))
+        out.extend(_regression_tests_missing(repo, entries))
+    return out
+
+
+register(Probe(
+    name="governance", scope="change", dimensions=["drift"], checks=2,
+    run=probe_governance, applies=_has_failure_ledger,
+    scope_reason="this check reads the failure ledger and the changed paths",
 ))
 
 
@@ -1857,7 +2447,7 @@ def probe_by_name(name: str) -> Probe | None:
 try:
     from .judgement import register_judgement as _register_judgement
     _register_judgement()
-except Exception:  # noqa: BLE001
+except Exception:  # noqa: BLE001 - an optional probe module must not break the registry import
     pass
 
 # Assurance asks whether the CHECKING is switched on, rather than whether the
@@ -1865,7 +2455,7 @@ except Exception:  # noqa: BLE001
 try:
     from .assurance import register_assurance as _register_assurance
     _register_assurance()
-except Exception:  # noqa: BLE001
+except Exception:  # noqa: BLE001 - an optional probe module must not break the registry import
     pass
 
 
@@ -1875,8 +2465,25 @@ except Exception:  # noqa: BLE001
 try:
     from .authored import register_authored as _register_authored
     _register_authored()
-except Exception:  # noqa: BLE001
+except Exception:  # noqa: BLE001 - an optional probe module must not break the registry import
     pass
+
+
+# Shared state touched by concurrent workers without a lock (ARB-053, ARB-054):
+# the race model-drafted worker code most often ships with.
+try:
+    from .concurrency import register_concurrency as _register_concurrency
+    _register_concurrency()
+except Exception:  # noqa: BLE001 - an optional probe module must not break the registry import
+    pass
+
+
+# Shipped per-language rule packs (packs/rules/ast/*.yaml), one probe per pack.
+# Not wrapped in a blanket except: a pack that fails its schema must fail
+# loudly, or a typo would silently switch a whole language's checks off.
+from .lang_rules import register_lang_rules as _register_lang_rules
+
+_register_lang_rules()
 
 
 # Contracts declared in one artifact and implemented in another: an OpenAPI
@@ -1886,5 +2493,15 @@ except Exception:  # noqa: BLE001
 try:
     from .contract import register_contract as _register_contract
     _register_contract()
-except Exception:  # noqa: BLE001
+except Exception:  # noqa: BLE001 - an optional probe module must not break the registry import
+    pass
+
+
+# App-level defects found in AI-written services (ARB-083): destructive or
+# mail-sending routes in an app that authenticates nobody, and per-request
+# stores that are never evicted.
+try:
+    from .aiapp import register_aiapp as _register_aiapp
+    _register_aiapp()
+except Exception:  # noqa: BLE001 - an optional probe module must not break the registry import
     pass

@@ -1,0 +1,1476 @@
+{
+  "manifest_version": 1,
+  "inventory_date": "2026-10-25",
+  "status": "inventory_baseline_not_certification",
+  "purpose": "Versioned inventory of accuracy benchmark sources, evidence roles, known baselines, and mandatory per-run metadata.",
+  "claim_policy": {
+    "target_metrics": [
+      "precision",
+      "recall"
+    ],
+    "confidence_level": 0.95,
+    "lower_bound_threshold": 0.99,
+    "claim_dimensions": [
+      "rule",
+      "weakness",
+      "language_framework",
+      "repository_population",
+      "operating_system",
+      "architecture"
+    ],
+    "allow_universal_claim": false,
+    "unmeasured_state": "unproven",
+    "promotion_state_until_evidence_bar": "advisory_or_not_assessed"
+  },
+  "metric_contract": {
+    "precision": "Independently confirmed true-positive findings divided by all adjudicated in-scope findings, weighted to the declared target population.",
+    "recall": "Independently confirmed in-scope benchmark defects detected by Arbiter divided by all independently confirmed in-scope benchmark defects.",
+    "matching": "Use the evaluator's versioned file, location-tolerance, weakness/category, and duplicate rules; record the evaluator revision with every run.",
+    "uncertainty": "Report a 95% lower confidence bound with a repository-cluster-aware method validated for the sampling design; do not treat findings from one repository as independent observations.",
+    "incomplete_label_or_applicability_coverage": "Report separately and never assume an unlabelled, unrun, or unsupported stratum passed."
+  },
+  "ordinary_repository_precision_pilot": {
+    "cohort_id": "ordinary-python-precision-feasibility-2026-10",
+    "status": "scanned_aggregate_only",
+    "accuracy_claim_eligible": false,
+    "sampling_frame": {
+      "source": "GitHub repository search metadata via gh search repos",
+      "retrieved_on": "2026-10-25",
+      "query_filters": [
+        "Python language",
+        "GitHub search license filter MIT",
+        "100 to 10000 stars",
+        "pushed after 2025-01-01",
+        "exclude forks",
+        "exclude archived repositories"
+      ],
+      "sort_order": "stargazers descending",
+      "result_limit": 100,
+      "result_count": 100,
+      "metadata_frame_sha256": "165e56a2e92b1f7f53226ccc56e3711d7dc82e547a7fb9e541d74fd4d6d14523",
+      "metadata_only": true
+    },
+    "eligibility_rules": [
+      "Require a non-empty repository description and a description or repository name indicating a Python library, framework, package, client, server, application, developer tool, parser, database, CLI, API, scheduler, inventory system, monitoring tool, or plotting library.",
+      "Exclude benchmark and dataset projects, tutorials and courseware, security-focused tools, AI/LLM and model projects, research projects, bots and consumer/social automation, and other non-ordinary software categories.",
+      "Apply these rules to repository names and public descriptions before drawing; retain the resulting eligible frame and its original popularity order."
+    ],
+    "eligible_frame": [
+      {
+        "repository": "sqlfluff/sqlfluff",
+        "stars": 9989
+      },
+      {
+        "repository": "tobymao/sqlglot",
+        "stars": 9717
+      },
+      {
+        "repository": "conan-io/conan",
+        "stars": 9545
+      },
+      {
+        "repository": "garrettj403/SciencePlots",
+        "stars": 9315
+      },
+      {
+        "repository": "vitalik/django-ninja",
+        "stars": 9217
+      },
+      {
+        "repository": "kivy/python-for-android",
+        "stars": 8940
+      },
+      {
+        "repository": "bottlepy/bottle",
+        "stars": 8797
+      },
+      {
+        "repository": "kellyjonbrazil/jc",
+        "stars": 8695
+      },
+      {
+        "repository": "pdm-project/pdm",
+        "stars": 8661
+      },
+      {
+        "repository": "houtianze/bypy",
+        "stars": 8582
+      },
+      {
+        "repository": "litestar-org/litestar",
+        "stars": 8529
+      },
+      {
+        "repository": "mherrmann/helium",
+        "stars": 8322
+      },
+      {
+        "repository": "graphql-python/graphene",
+        "stars": 8237
+      },
+      {
+        "repository": "PyMySQL/PyMySQL",
+        "stars": 7855
+      },
+      {
+        "repository": "inventree/InvenTree",
+        "stars": 7755
+      },
+      {
+        "repository": "agronholm/apscheduler",
+        "stars": 7670
+      },
+      {
+        "repository": "msiemens/tinydb",
+        "stars": 7574
+      }
+    ],
+    "selection": {
+      "method": "Python random.Random(seed).sample over the ordered eligible repository list",
+      "seed": 108,
+      "sample_size": 11,
+      "ordering": "Eligible repositories retain their order in the popularity-sorted GitHub metadata frame."
+    },
+    "overlap_screen": {
+      "metadata_sources": [
+        "tools/gold/repos.json public GitHub repository identifiers",
+        "selected repository identifiers in the RealVuln source entry of this manifest"
+      ],
+      "gold_repository_overlap": 0,
+      "realvuln_repository_overlap": 0,
+      "finding_labels_or_source_code_accessed": false
+    },
+    "repositories": [
+      {
+        "repository": "vitalik/django-ninja",
+        "source_url": "https://github.com/vitalik/django-ninja",
+        "source_commit": "3506fd47cca7f30e2a65b49833798ba18c8d7b9d",
+        "commit_date": "2026-10-20T09:48:26Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "2f962f52668db47cf082553f1aae197c73ff3e13",
+        "license_sha256": "9954b5d977b5b91eac7581ec1ab7c1a708d035e866da584f72fd37734135dbe9"
+      },
+      {
+        "repository": "conan-io/conan",
+        "source_url": "https://github.com/conan-io/conan",
+        "source_commit": "702f3b705a127096e23d0a522999521f714ac29d",
+        "commit_date": "2026-10-23T15:10:03Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE.md",
+        "license_blob_sha": "1ff9c588450dd066faa1e4f134587eb6c3f5439f",
+        "license_sha256": "cb0cfe10fad4eeb3ec0c1482474ddae67dcf2b2715cfd58655f6d18e5ce92aac"
+      },
+      {
+        "repository": "inventree/InvenTree",
+        "source_url": "https://github.com/inventree/InvenTree",
+        "source_commit": "c475e9bfcfa8e0f7e8ac1022477968cacfd84fce",
+        "commit_date": "2026-10-25T01:36:13Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "3a4626c1c4cd5afcd036830160c224a4027b6f0b",
+        "license_sha256": "70f21a7a9bb007581b06860ad76d623c95d5c92663a2326b5fa79a198aed55e0"
+      },
+      {
+        "repository": "litestar-org/litestar",
+        "source_url": "https://github.com/litestar-org/litestar",
+        "source_commit": "574e436d2a629a1a8775ea0bed11091a80f50703",
+        "commit_date": "2026-10-20T12:18:13Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "9d2bb0e452c6b99e5339a00794633349f3f8fd12",
+        "license_sha256": "04d3326998a4a1b52fee53c9d56d2ecca08b2c105e1fa032b0d87d5f1881de78"
+      },
+      {
+        "repository": "bottlepy/bottle",
+        "source_url": "https://github.com/bottlepy/bottle",
+        "source_commit": "aba0c1a7ee59ed851db001d100b6a792b54a94a3",
+        "commit_date": "2026-10-23T15:11:43Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "ca039803a39be9259c782cbe7d1c22ad967985bc",
+        "license_sha256": "43afd5c761e9359d3111aaecf4b85a72558d5c9be035c097f8f243f4ee725c2f"
+      },
+      {
+        "repository": "mherrmann/helium",
+        "source_url": "https://github.com/mherrmann/helium",
+        "source_commit": "571c272a01eb2606d436cda64f51fd4cc77aab94",
+        "commit_date": "2026-10-22T13:28:49Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE.txt",
+        "license_blob_sha": "4a74d050d895910dfd59e435ab0bdb0a93863e22",
+        "license_sha256": "45f76e9497de8370249292e4b2a21cff0b64f9f49643136143afcec8869b8722"
+      },
+      {
+        "repository": "msiemens/tinydb",
+        "source_url": "https://github.com/msiemens/tinydb",
+        "source_commit": "edff96aeb2616402e9489d46e90a592c05565621",
+        "commit_date": "2026-10-15T20:35:00Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "611d35661f933a4469c941e6c97578c22673b4ab",
+        "license_sha256": "b0e2a2d39271e3d96b717d7be8235ac413d74797bf7f742f0801cfaad6c8c912"
+      },
+      {
+        "repository": "graphql-python/graphene",
+        "source_url": "https://github.com/graphql-python/graphene",
+        "source_commit": "82903263080b3b7f22c2ad84319584d7a3b1a1f6",
+        "commit_date": "2024-11-09T20:43:17Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "ecf46fbaef4ff467eaa00f9304a6f00a1c9559a3",
+        "license_sha256": "db86a40528cfa3b991c41fd7ab7f1ce33dad25e328329cf93d375b6ad187d14d"
+      },
+      {
+        "repository": "garrettj403/SciencePlots",
+        "source_url": "https://github.com/garrettj403/SciencePlots",
+        "source_commit": "b9b16959570bd2fbc9ff5118bacc423c3bddd592",
+        "commit_date": "2026-06-23T07:44:37Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "2836bf3caa6bbe90069af47ae3a3d7f5e78e948d",
+        "license_sha256": "9e5d935909270a14c3e9dc5ede0bcfc73a69fc3411f70ddd9e05065602a46cdb"
+      },
+      {
+        "repository": "tobymao/sqlglot",
+        "source_url": "https://github.com/tobymao/sqlglot",
+        "source_commit": "78b24a744adb8d5dc0eb285f067087338b60f266",
+        "commit_date": "2026-10-23T18:37:38Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE",
+        "license_blob_sha": "aa0703d7fc80b4b0a7a9a115de50467013c7c219",
+        "license_sha256": "b0bf909b472ddf9bd4eab30f6e6fd8b33bf3997ce038b882fe0663f291958d2d"
+      },
+      {
+        "repository": "agronholm/apscheduler",
+        "source_url": "https://github.com/agronholm/apscheduler",
+        "source_commit": "bdaceb12792f104f25798dee2850d45f9e7d83f8",
+        "commit_date": "2026-10-12T22:23:08Z",
+        "source_license": "MIT",
+        "license_file_path": "LICENSE.txt",
+        "license_blob_sha": "238c0d34b273c9d5c32971dc5131fa0b329ead1c",
+        "license_sha256": "35ed0eb40a2f7c262156ccab94b731a697808fcdc1c69f9491c991af204c2eb6"
+      }
+    ],
+    "scan_status": "completed_aggregate_only",
+    "scan_run": {
+      "status": "completed_aggregate_only",
+      "requirement_id": "ARB-109",
+      "recorded_at_utc": "2026-10-25T06:06:58Z",
+      "accuracy_claim_eligible": false,
+      "general_99_percent_claim": false,
+      "source_code_executed": false,
+      "project_builds_run": false,
+      "arbiter": {
+        "version": "0.1.0",
+        "commit": "82ca64b5fc1c4fc8234daea1e8cd1b75051831b7",
+        "worktree_clean": false,
+        "scanner_sources_match_commit": true,
+        "configuration_sha256": "e001cd6a3677c208d28c85a4cd6364b25a467e23405e59d0f7de7b9ab95d34ea",
+        "profile": "offline",
+        "probe": "lang_python",
+        "adapters_enabled": false,
+        "cache_enabled": false,
+        "history_enabled": false,
+        "successful_invocations": 11,
+        "python_probe_assessed_repositories": 11,
+        "python_findings": 105,
+        "overall_coverage": 0.081,
+        "scorecards_withheld": 11
+      },
+      "semgrep": {
+        "version": "1.177.0",
+        "rules_repository": "https://github.com/semgrep/semgrep-rules",
+        "rules_commit": "40b8c63f75dc7c22c8a77482d73bfb864b146f7e",
+        "configuration_subtree": "python",
+        "telemetry_enabled": false,
+        "python_files_in_snapshots": 3662,
+        "python_files_scanned": 2146,
+        "all_files_scanned": 4040,
+        "findings": 2663,
+        "scan_errors": 8,
+        "scan_error_types": {
+          "Syntax error": 1,
+          "Timeout": 7
+        }
+      },
+      "codeql": {
+        "cli_version": "2.27.3",
+        "cli_archive_sha256": "845075a2fa2fdf72629adc6cbde6264691b698d1f294bd27f10c6b579cd750a4",
+        "query_pack": "codeql/python-queries@1.8.13",
+        "query_pack_build_sha": "a1575b98a8cc19bcfa7bb6cb41be688cb3dae65c",
+        "query_pack_lock_sha256": "682c4c9b757da6b62970eab87443a464019492d406fcefd3fb99897f02e383bd",
+        "build_mode": "none",
+        "python_files_in_snapshots": 3662,
+        "python_files_scanned": 3661,
+        "findings": 16,
+        "successful_invocations": 11,
+        "failed_invocations": 0,
+        "extractor_warning_lines": 189,
+        "extractor_warning_categories": {
+          "Failed to find dynload path": 187,
+          "Python module context unavailable": 2
+        }
+      },
+      "platform": {
+        "operating_system": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "architecture": "x86_64",
+        "python_version": "3.14.4"
+      },
+      "results": {
+        "findings_by_analyzer": {
+          "arbiter_native": 105,
+          "semgrep": 2663,
+          "codeql": 16
+        },
+        "pairwise_location_differential": [
+          {
+            "pair": "arbiter_native_vs_semgrep",
+            "left_findings": 105,
+            "right_findings": 2663,
+            "location_overlapping_pairs": 39,
+            "left_findings_with_counterpart": 31,
+            "right_findings_with_counterpart": 39,
+            "pairs_with_shared_cwe_tag": 31,
+            "pairs_without_shared_cwe_tag": 8
+          },
+          {
+            "pair": "arbiter_native_vs_codeql",
+            "left_findings": 105,
+            "right_findings": 16,
+            "location_overlapping_pairs": 0,
+            "left_findings_with_counterpart": 0,
+            "right_findings_with_counterpart": 0,
+            "pairs_with_shared_cwe_tag": 0,
+            "pairs_without_shared_cwe_tag": 0
+          },
+          {
+            "pair": "codeql_vs_semgrep",
+            "left_findings": 16,
+            "right_findings": 2663,
+            "location_overlapping_pairs": 0,
+            "left_findings_with_counterpart": 0,
+            "right_findings_with_counterpart": 0,
+            "pairs_with_shared_cwe_tag": 0,
+            "pairs_without_shared_cwe_tag": 0
+          }
+        ]
+      },
+      "per_repository": [
+        {
+          "repository": "vitalik/django-ninja",
+          "source_commit": "3506fd47cca7f30e2a65b49833798ba18c8d7b9d",
+          "source_archive_sha256": "d22e9bb238059614c17d8b151589b091f4da205d910699712eb04ae1f9a94f0a",
+          "python_files_in_snapshot": 152,
+          "arbiter_findings": 0,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 28,
+          "semgrep_python_files_scanned": 52,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 3,
+          "codeql_python_files_scanned": 152,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "conan-io/conan",
+          "source_commit": "702f3b705a127096e23d0a522999521f714ac29d",
+          "source_archive_sha256": "5c16395faf74a19cf94e6f220cf86932701728e7bd8c2e649cf969315168f5f9",
+          "python_files_in_snapshot": 1103,
+          "arbiter_findings": 42,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 160,
+          "semgrep_python_files_scanned": 352,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 2,
+          "codeql_python_files_scanned": 1103,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "inventree/InvenTree",
+          "source_commit": "c475e9bfcfa8e0f7e8ac1022477968cacfd84fce",
+          "source_archive_sha256": "f76273c989fd0250c0d381ce19403ba2758706fc59cd2b326caa4fb8b6f71f5d",
+          "python_files_in_snapshot": 694,
+          "arbiter_findings": 9,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 427,
+          "semgrep_python_files_scanned": 667,
+          "semgrep_scan_errors": 7,
+          "codeql_findings": 11,
+          "codeql_python_files_scanned": 693,
+          "codeql_extractor_warning_lines": 19
+        },
+        {
+          "repository": "litestar-org/litestar",
+          "source_commit": "574e436d2a629a1a8775ea0bed11091a80f50703",
+          "source_archive_sha256": "e14dae4b3f92a9c7c7c1a545bfd9831c68af7a5039bfcdcc8bac1b6d6ac05f43",
+          "python_files_in_snapshot": 1133,
+          "arbiter_findings": 6,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 238,
+          "semgrep_python_files_scanned": 726,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 1133,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "bottlepy/bottle",
+          "source_commit": "aba0c1a7ee59ed851db001d100b6a792b54a94a3",
+          "source_archive_sha256": "27348f50d27596b58f52ea4fe778cbb6c6b69387a9998dd5be89ff5fa4c5e327",
+          "python_files_in_snapshot": 30,
+          "arbiter_findings": 3,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 26,
+          "semgrep_python_files_scanned": 2,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 30,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "mherrmann/helium",
+          "source_commit": "571c272a01eb2606d436cda64f51fd4cc77aab94",
+          "source_archive_sha256": "67f63176297b1d81f22964db42cdd29b5e013bfcd8caf7e0cc10da9bf2239daa",
+          "python_files_in_snapshot": 56,
+          "arbiter_findings": 1,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 10,
+          "semgrep_python_files_scanned": 15,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 56,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "msiemens/tinydb",
+          "source_commit": "edff96aeb2616402e9489d46e90a592c05565621",
+          "source_archive_sha256": "99f6de856e39a5832a3e82fa75ec68150b4d20fb255dcffe82ede8597d725b6e",
+          "python_files_in_snapshot": 21,
+          "arbiter_findings": 0,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 4,
+          "semgrep_python_files_scanned": 12,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 21,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "graphql-python/graphene",
+          "source_commit": "82903263080b3b7f22c2ad84319584d7a3b1a1f6",
+          "source_archive_sha256": "dfe68bbb38f6ff9dcc1e5f15037673790fb9ddb27218e88f5b4d4bd4fb4ef4e7",
+          "python_files_in_snapshot": 139,
+          "arbiter_findings": 0,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 5,
+          "semgrep_python_files_scanned": 65,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 139,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "garrettj403/SciencePlots",
+          "source_commit": "b9b16959570bd2fbc9ff5118bacc423c3bddd592",
+          "source_archive_sha256": "ffc6edac982b664a1ff1207bfb579e54d679d8012cdd881e6c680750bff0dd85",
+          "python_files_in_snapshot": 7,
+          "arbiter_findings": 0,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 0,
+          "semgrep_python_files_scanned": 3,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 7,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "tobymao/sqlglot",
+          "source_commit": "78b24a744adb8d5dc0eb285f067087338b60f266",
+          "source_archive_sha256": "3f20ff7680f4b86855181ff8b50824a33dfd5bac4389fef29049f799f70e50fb",
+          "python_files_in_snapshot": 255,
+          "arbiter_findings": 43,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 1747,
+          "semgrep_python_files_scanned": 191,
+          "semgrep_scan_errors": 1,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 255,
+          "codeql_extractor_warning_lines": 17
+        },
+        {
+          "repository": "agronholm/apscheduler",
+          "source_commit": "bdaceb12792f104f25798dee2850d45f9e7d83f8",
+          "source_archive_sha256": "d77e01905f4f6266d0f19d52fa33ca227c818a98946414add7fe443877c626a6",
+          "python_files_in_snapshot": 72,
+          "arbiter_findings": 1,
+          "arbiter_probe_status": "ran",
+          "arbiter_overall_coverage": 0.081,
+          "arbiter_scorecard_withheld": true,
+          "semgrep_findings": 18,
+          "semgrep_python_files_scanned": 61,
+          "semgrep_scan_errors": 0,
+          "codeql_findings": 0,
+          "codeql_python_files_scanned": 72,
+          "codeql_extractor_warning_lines": 17
+        }
+      ],
+      "matching_contract": "Within each repository, normalize repository-relative paths and count findings as location-overlapping only when inclusive line spans intersect. Count CWE-tag intersection separately. A finding pair is counted once per pair of findings; one-to-many overlaps are possible. Do not infer vulnerability identity or correctness from location or CWE agreement.",
+      "limits": [
+        "This is descriptive differential coverage on a small popularity-biased convenience sample, not probability-sampled production accuracy.",
+        "Analyzer totals are not comparable correctness scores: the tools use different rules, categories, language coverage, ignore behavior, and extraction semantics.",
+        "Semgrep scanned 2,146 of 3,662 Python files, with 8 parser/rule errors (7 timeouts and 1 syntax error); its ignore rules exclude additional files.",
+        "CodeQL scanned 3,661 of 3,662 Python files. It emitted 189 extractor warning lines: repeated dynamic-library path warnings and two module-context warnings.",
+        "Arbiter ran only its lang_python probe, so all 11 overall scorecards were withheld at 8.1 percent total assessment coverage; this is not a low grade.",
+        "The location/CWE matcher is only a differential aid; 39 Arbiter/Semgrep location-overlap pairs and zero observed CodeQL overlaps do not establish true or false findings.",
+        "No precision-sample labels, independent human adjudication, repository miss audit, or rule tuning were performed."
+      ]
+    },
+    "review_prerequisites": [
+      "A coordinator independent of Arbiter rule authors must blind packets and select the review sample before labels are produced.",
+      "Independent human adjudication remains unavailable; model labels, if later used under the approved interim design, must be reported only as model-labelled conformance.",
+      "Finding precision sampling and the separate blind repository miss audit are distinct follow-up studies."
+    ],
+    "limits": [
+      "This is a seeded convenience sample drawn from a popularity-sorted, MIT-filtered top-100 GitHub search frame, not a probability sample of production repositories.",
+      "The cohort contains 11 repository clusters, all Python, and cannot support population-wide accuracy, recall, or 99 percent certification.",
+      "Pinned source archives were acquired and scanned without executing project code; raw archives, scan reports, databases, and case-level findings were kept in temporary storage and are not committed."
+    ]
+  },
+  "benchmark_inventory": [
+    {
+      "id": "planted-regression",
+      "path": "fixtures/planted",
+      "role": "regression_only",
+      "source_type": "maintainer-authored synthetic fixtures",
+      "languages": [
+        "go",
+        "java",
+        "python",
+        "ruby",
+        "typescript"
+      ],
+      "label_provenance": "Planted positive and safe twin examples authored for regression; not independent population ground truth.",
+      "sealed": false,
+      "human_adjudication": "not_applicable",
+      "license_status": "repository fixture terms; third-party snippet provenance is not separately inventoried here",
+      "accuracy_claim_eligible": false,
+      "limits": [
+        "Measures whether known planted shapes continue to trigger.",
+        "Does not estimate production-distribution precision or recall."
+      ]
+    },
+    {
+      "id": "ai-corpus-development",
+      "path": "fixtures/ai-corpus",
+      "role": "development_and_regression",
+      "source_type": "AI-generated applications",
+      "repository_count": 25,
+      "languages": [
+        "go",
+        "java",
+        "python",
+        "ruby",
+        "typescript"
+      ],
+      "tasks_per_language": 5,
+      "repository_count_by_language": {
+        "go": 5,
+        "java": 5,
+        "python": 5,
+        "ruby": 5,
+        "typescript": 5
+      },
+      "label_provenance": "One independent model reviewer per language, followed by reconciliation after Arbiter findings; labels are development evidence, not human-adjudicated truth.",
+      "sealed": false,
+      "human_adjudication": "not_recorded",
+      "accuracy_claim_eligible": false,
+      "baseline": {
+        "as_of": "2026-10-23",
+        "scanner_scope": "native_probes",
+        "code_defects_detected": 33,
+        "code_defects_labelled": 117,
+        "code_recall": 0.2821,
+        "reported_source": "docs/testing-harness.md"
+      },
+      "limits": [
+        "Rules have been tuned against this population.",
+        "Generated applications do not establish representativeness of production repositories.",
+        "The cited historical result does not record a reproducible run-level environment manifest."
+      ]
+    },
+    {
+      "id": "ai-corpus-sealed-heldout",
+      "path": "fixtures/ai-corpus-heldout",
+      "role": "sealed_evaluation",
+      "source_type": "AI-generated applications from separate generator models",
+      "repository_count": 40,
+      "languages": [
+        "go",
+        "java",
+        "python",
+        "ruby",
+        "typescript"
+      ],
+      "tasks_per_language": 8,
+      "repository_count_by_language": {
+        "go": 8,
+        "java": 8,
+        "python": 8,
+        "ruby": 8,
+        "typescript": 8
+      },
+      "sealed_on": "2026-10-23",
+      "label_provenance": "Independent model labelling per language, committed before Arbiter was run; no reconciliation. Not human-adjudicated.",
+      "access_policy": "Rule authors must not inspect labels, findings, or excerpts. Use only the approved aggregate-only scorer and guard.",
+      "approved_scoring_command": "python tools/ai_corpus_score.py --corpus fixtures/ai-corpus-heldout --aggregate-only",
+      "human_adjudication": "not_recorded",
+      "accuracy_claim_eligible": false,
+      "baseline": {
+        "as_of": "2026-10-23",
+        "scanner_scope": "native_probes",
+        "defects_detected": 6,
+        "defects_labelled": 142,
+        "recall": 0.0423,
+        "reported_source": "docs/testing-harness.md"
+      },
+      "limits": [
+        "Only aggregate scores are allowed; no per-rule or per-example inspection.",
+        "The benchmark is small and AI-generated.",
+        "The cited figure is a historical aggregate, not a cluster-aware confidence estimate."
+      ]
+    },
+    {
+      "id": "gold-public-repositories",
+      "path": "tools/gold/repos.json",
+      "role": "development_and_sealed_repository_split",
+      "source_type": "pinned public open-source repositories",
+      "repository_count": 24,
+      "languages": [
+        "go",
+        "java",
+        "python",
+        "ruby",
+        "typescript"
+      ],
+      "repository_count_by_language": {
+        "go": 5,
+        "java": 5,
+        "python": 5,
+        "ruby": 4,
+        "typescript": 5
+      },
+      "split": {
+        "definition": "tools/gold/heldout.json",
+        "sealed_repository_count": 7,
+        "development_repository_count": 17,
+        "heldout_repository_count_by_language": {
+          "go": 2,
+          "java": 2,
+          "python": 1,
+          "ruby": 1,
+          "typescript": 1
+        },
+        "heldout_fraction": 0.3,
+        "frozen_date": "2026-10-22",
+        "method": "Stratified by language, seeded split; see tools/ground_truth/heldout_split.py."
+      },
+      "label_provenance": "Public repositories with Arbiter-produced findings; precision labels include model-generated labels. A human-labelled sample sheet was documented as unlabelled in the latest harness report.",
+      "human_adjudication": "incomplete",
+      "license_status": {
+        "source": "tools/gold/repos.json",
+        "repositories_with_noassertion_license": 4,
+        "publication_gate": "Resolve each selected repository's license/provenance before redistribution or external benchmark publication."
+      },
+      "accuracy_claim_eligible": false,
+      "limits": [
+        "Public repositories are not a representative random sample of all repositories.",
+        "The sealed repositories and all ground-truth sources must not be opened while authoring rules.",
+        "Existing precision ledger bounds are not repository-cluster-aware."
+      ]
+    },
+    {
+      "id": "owasp-benchmark-java",
+      "path": "tools/gold/benchmarks.json",
+      "role": "sealed_ground_truth_source",
+      "source_type": "OWASP Benchmark Java",
+      "languages": [
+        "java"
+      ],
+      "cases": 2740,
+      "weakness_count": 11,
+      "license_status": "GPL-2.0; fetched at a pinned commit, not redistributed or built per tools/gold/benchmarks.json.",
+      "label_provenance": "Benchmark-provided expected results; this source is listed as held out in tools/gold/heldout.json.",
+      "sealed": true,
+      "human_adjudication": "benchmark_ground_truth_not_independently_audited_here",
+      "accuracy_claim_eligible": false,
+      "limits": [
+        "Synthetic benchmark cases do not represent arbitrary Java repositories.",
+        "Do not inspect its findings, labels, or excerpts while tuning rules."
+      ]
+    },
+    {
+      "id": "owasp-benchmark-python",
+      "path": "tools/gold/benchmarks.json",
+      "role": "sealed_ground_truth_source",
+      "source_type": "OWASP Benchmark Python",
+      "languages": [
+        "python"
+      ],
+      "cases": 1230,
+      "weakness_count": 14,
+      "license_status": "GPL-3.0; fetched at a pinned commit, not redistributed or run per tools/gold/benchmarks.json.",
+      "label_provenance": "Benchmark-provided expected results; this source is listed as held out in tools/gold/heldout.json.",
+      "sealed": true,
+      "human_adjudication": "benchmark_ground_truth_not_independently_audited_here",
+      "accuracy_claim_eligible": false,
+      "limits": [
+        "Synthetic benchmark cases do not represent arbitrary Python repositories.",
+        "Do not inspect its findings, labels, or excerpts while tuning rules."
+      ]
+    },
+    {
+      "id": "cve-fix-pairs",
+      "path": "tools/gold/heldout.json",
+      "role": "sealed_ground_truth_source",
+      "source_type": "CVE-associated before/after fix pairs",
+      "languages": [
+        "not inventoried in this manifest"
+      ],
+      "license_status": "Per-source licensing and redistribution status not inventoried; resolve before external publication.",
+      "label_provenance": "Patch-derived candidate labels; independently human-adjudicated coverage is not recorded here.",
+      "sealed": true,
+      "human_adjudication": "not_recorded",
+      "accuracy_claim_eligible": false,
+      "limits": [
+        "Fix patches can contain unrelated edits and do not necessarily define all vulnerable variants.",
+        "Do not inspect held-out source examples while tuning rules."
+      ]
+    },
+    {
+      "id": "juliet-java",
+      "path": "tools/gold/heldout.json",
+      "role": "sealed_ground_truth_source",
+      "source_type": "Juliet Java test cases",
+      "languages": [
+        "java"
+      ],
+      "license_status": "Not inventoried in this manifest; resolve before external publication.",
+      "label_provenance": "Benchmark-provided labels; human audit status is not recorded here.",
+      "sealed": true,
+      "human_adjudication": "not_recorded",
+      "accuracy_claim_eligible": false,
+      "limits": [
+        "Synthetic benchmark cases do not represent arbitrary Java repositories.",
+        "Do not inspect held-out source examples while tuning rules."
+      ]
+    },
+    {
+      "id": "ghsa-cve-fix-pairs-development",
+      "path": "tools/ground_truth/ghsa_pairs.json",
+      "role": "development_and_validation",
+      "source_type": "GitHub Advisory Database reviewed advisories with a GitHub fix commit (before/after fix pairs)",
+      "languages": [
+        "python",
+        "typescript",
+        "go",
+        "java",
+        "ruby"
+      ],
+      "selection": "tools/ground_truth/ghsa_select.py (ARB-121): predeclared, seeded, in-scope CWEs per language pack; criteria in ghsa_pairs.json; frozen before any scan",
+      "split": "repositories with split == development",
+      "license_status": "Advisory data CC-BY-4.0 (GitHub Advisory Database); source files are fetched at pinned commits outside the repository and never redistributed; each repository's SPDX licence is recorded per pair.",
+      "label_provenance": "Patch-derived: the advisory's CWE and the lines its fix commit changed.",
+      "sealed": false,
+      "human_adjudication": "not_performed",
+      "accuracy_claim_eligible": false,
+      "documentation": "docs/external-cve-benchmark.md",
+      "limits": [
+        "Labels are patch-derived from the advisory's fix commit, not human-adjudicated; report GHSA fix-pair benchmark conformance only.",
+        "A fix can contain unrelated edits and does not mark every vulnerable variant.",
+        "Only the files the fix changed are scanned, with native probes only; cross-file flow in the full project is not seen.",
+        "Fixed-side persistence is a false-positive or partial-fix signal, not proof."
+      ],
+      "freeze_commit": "02df982ac12bf734ccb9d47e890804666cfc4af1",
+      "results": "tools/gold/results/2026-10-24-ghsa-dev.json",
+      "baseline_run": {
+        "arbiter_commit": "02df982ac12bf734ccb9d47e890804666cfc4af1",
+        "arbiter_worktree_clean": true,
+        "benchmark_manifest_digest": null,
+        "benchmark_snapshot_or_pin": "tools/ground_truth/ghsa_pairs.json sha256 930690543d62363ea952a8d1b3fe42f86afda882a08e621b886e1db4c9b86542",
+        "evaluator_commit": "02df982ac12bf734ccb9d47e890804666cfc4af1",
+        "configuration_digest": "criteria sha256 b04dbf91e542e45a6d7638c7d3dd6504c218d5f6e4777e930a4272af4b5b5e25",
+        "analyzer_and_ruleset_versions": "native probes and language packs at arbiter_commit; no external analyzers",
+        "vulnerability_database_snapshot": "GitHub Advisory Database, reviewed advisories as read on 2026-10-24",
+        "operating_system_image": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "architecture": "x86_64",
+        "python_version": "3.14.4",
+        "profile": "native probes only (gt_common.scan_tree: use_adapters=False, use_cache=False)",
+        "cache_policy": "use_cache=False",
+        "started_at_utc": "2026-10-24T22:07:35Z",
+        "completed_at_utc": "2026-10-24T22:08:32Z",
+        "counts": {
+          "repositories": 224,
+          "clusters": 224,
+          "labelled_findings": null,
+          "unlabelled_findings": null,
+          "known_defects": 277,
+          "not_assessed_strata": 0
+        },
+        "metrics": {
+          "precision": null,
+          "precision_lower_95": null,
+          "recall": 0.0939,
+          "recall_lower_95": 0.0649,
+          "effective_sample_size": 261.5,
+          "method_and_version": "primary hunk-region recall (ghsa_pairs.py at arbiter_commit); Wilson 95% lower bound; repository-cluster bootstrap in results file"
+        }
+      }
+    },
+    {
+      "id": "ghsa-cve-fix-pairs-sealed",
+      "path": "tools/gold/heldout.json",
+      "role": "sealed_aggregate_evaluation",
+      "source_type": "GitHub Advisory Database reviewed advisories with a GitHub fix commit (before/after fix pairs)",
+      "languages": [
+        "python",
+        "typescript",
+        "go",
+        "java",
+        "ruby"
+      ],
+      "selection": "Same selection as ghsa-cve-fix-pairs-development; repositories with split == sealed, listed under held_out_ghsa_r1",
+      "license_status": "As ghsa-cve-fix-pairs-development.",
+      "label_provenance": "Patch-derived: the advisory's CWE and the lines its fix commit changed.",
+      "sealed": true,
+      "human_adjudication": "not_performed",
+      "accuracy_claim_eligible": false,
+      "documentation": "docs/external-cve-benchmark.md",
+      "limits": [
+        "Labels are patch-derived from the advisory's fix commit, not human-adjudicated; report GHSA fix-pair benchmark conformance only.",
+        "A fix can contain unrelated edits and does not mark every vulnerable variant.",
+        "Only the files the fix changed are scanned, with native probes only; cross-file flow in the full project is not seen.",
+        "Fixed-side persistence is a false-positive or partial-fix signal, not proof.",
+        "Aggregate-only: rule authors must not open per-pair outcomes, findings or code of the sealed repositories."
+      ],
+      "freeze_commit": "02df982ac12bf734ccb9d47e890804666cfc4af1",
+      "results": "tools/gold/results/2026-10-24-ghsa-sealed-aggregate.json",
+      "baseline_run": {
+        "arbiter_commit": "02df982ac12bf734ccb9d47e890804666cfc4af1",
+        "arbiter_worktree_clean": true,
+        "benchmark_manifest_digest": null,
+        "benchmark_snapshot_or_pin": "tools/ground_truth/ghsa_pairs.json sha256 930690543d62363ea952a8d1b3fe42f86afda882a08e621b886e1db4c9b86542",
+        "evaluator_commit": "02df982ac12bf734ccb9d47e890804666cfc4af1",
+        "configuration_digest": "criteria sha256 b04dbf91e542e45a6d7638c7d3dd6504c218d5f6e4777e930a4272af4b5b5e25",
+        "analyzer_and_ruleset_versions": "native probes and language packs at arbiter_commit; no external analyzers",
+        "vulnerability_database_snapshot": "GitHub Advisory Database, reviewed advisories as read on 2026-10-24",
+        "operating_system_image": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "architecture": "x86_64",
+        "python_version": "3.14.4",
+        "profile": "native probes only (gt_common.scan_tree: use_adapters=False, use_cache=False)",
+        "cache_policy": "use_cache=False",
+        "started_at_utc": "2026-10-24T22:07:35Z",
+        "completed_at_utc": "2026-10-24T22:08:32Z",
+        "counts": {
+          "repositories": 188,
+          "clusters": 188,
+          "labelled_findings": null,
+          "unlabelled_findings": null,
+          "known_defects": 223,
+          "not_assessed_strata": 0
+        },
+        "metrics": {
+          "precision": null,
+          "precision_lower_95": null,
+          "recall": 0.0807,
+          "recall_lower_95": 0.0517,
+          "effective_sample_size": 221.1,
+          "method_and_version": "primary hunk-region recall (ghsa_pairs.py at arbiter_commit); Wilson 95% lower bound; repository-cluster bootstrap in results file"
+        }
+      }
+    }
+  ],
+  "candidate_sources": [
+    {
+      "id": "cvefixes-v1.0.8",
+      "source_url": "https://github.com/secureIT-project/CVEfixes",
+      "dataset_doi": "https://doi.org/10.5281/zenodo.13118970",
+      "concept_doi": "https://doi.org/10.5281/zenodo.4476563",
+      "published_version": "v1.0.8",
+      "published_dataset_license": "CC BY 4.0",
+      "reported_coverage": {
+        "cves": 11873,
+        "fixing_commits": 12107,
+        "projects": 4249,
+        "cwe_types": 272
+      },
+      "archive_bytes": 12708711268,
+      "status": "candidate_not_downloaded_or_ingested",
+      "selection_gates": [
+        "Confirm a sufficiently large Python CWE-89 subset using metadata only.",
+        "Review licenses and provenance of every selected source repository and code excerpt.",
+        "Keep development examples separate from the final benchmark population.",
+        "Treat automatically derived patch labels as noisy; report only CVEfixes benchmark conformance, not general detection accuracy."
+      ],
+      "limits": [
+        "The dataset is automatically collected from CVE records and fixes, not independently human-adjudicated.",
+        "A fix may include unrelated changes and does not necessarily identify every vulnerable variant.",
+        "The published dataset archive is large; do not download it before confirming a usable subset and license path."
+      ]
+    },
+    {
+      "id": "realvuln-3.1.0-python-cwe89-licensed-subset",
+      "source_url": "https://github.com/kolega-ai/Real-Vuln-Benchmark",
+      "published_version": "3.1.0",
+      "ground_truth_version": "3.0.0",
+      "benchmark_commit": "7a710251f55c17d32d3adcb13d37468e2e3b9e4a",
+      "published_dataset_license": "Apache-2.0",
+      "status": "approved_for_aggregate_only_pilot",
+      "accuracy_claim_eligible": false,
+      "license_method": "GitHub license metadata queried at each selected source commit; only MIT and Unlicense source repositories are included.",
+      "label_provenance": "All 60 selected CWE-89 entries have evidence.source=manual_review; 5 explicitly set manually_verified=true and 55 omit that flag. The labels are benchmark-maintainer evidence, not an independently audited or multi-reviewer ground truth.",
+      "matching_contract": "Case-level classification by repository-relative file, acceptable CWE (including CWE-89), and line-span overlap within the benchmark's +/-10-line tolerance. Unmatched CWE-89 findings remain unassessed and are excluded from labelled-case precision.",
+      "uncertainty_method": "Seeded repository-cluster bootstrap percentile intervals; descriptive stability within this curated subset only, not production-population confidence bounds.",
+      "aggregate_metadata": {
+        "screened_python_cwe89_repositories": 49,
+        "screened_vulnerable_cases": 46,
+        "screened_safe_traps": 84,
+        "excluded_gpl3_repositories": 3,
+        "excluded_noassertion_repositories": 35,
+        "selected_repositories": 11,
+        "selected_vulnerable_cases": 26,
+        "selected_safe_trap_cases": 34,
+        "selected_entries_manual_review": 60,
+        "selected_entries_explicitly_manually_verified": 5
+      },
+      "selected_repositories": [
+        {
+          "repo_id": "realvuln-damn-vulnerable-graphql-application",
+          "ground_truth_repo_id": "dvga",
+          "source_url": "https://github.com/dolevf/Damn-Vulnerable-GraphQL-Application",
+          "source_commit": "a961308c02d1fb462b192681c336b0739e432da7",
+          "source_license": "MIT",
+          "vulnerable_cases": 1,
+          "safe_trap_cases": 2
+        },
+        {
+          "repo_id": "realvuln-djangoat",
+          "ground_truth_repo_id": "djangoat",
+          "source_url": "https://github.com/Contrast-Security-OSS/DjanGoat",
+          "source_commit": "082c88bfefced508ae083b92b459c808f95e905e",
+          "source_license": "MIT",
+          "vulnerable_cases": 2,
+          "safe_trap_cases": 3
+        },
+        {
+          "repo_id": "realvuln-dsvpwa",
+          "ground_truth_repo_id": "dsvpwa",
+          "source_url": "https://github.com/sgabe/DSVPWA",
+          "source_commit": "a06abb306ed3699bb2f073e3f41d3d9c57012819",
+          "source_license": "MIT",
+          "vulnerable_cases": 2,
+          "safe_trap_cases": 6
+        },
+        {
+          "repo_id": "realvuln-dsvw",
+          "ground_truth_repo_id": "dsvw",
+          "source_url": "https://github.com/stamparm/DSVW",
+          "source_commit": "7d40f4b7939c901610ed9b85724552d60e7d63fa",
+          "source_license": "Unlicense",
+          "vulnerable_cases": 3,
+          "safe_trap_cases": 3
+        },
+        {
+          "repo_id": "realvuln-dvpwa",
+          "ground_truth_repo_id": "dvpwa",
+          "source_url": "https://github.com/anxolerd/dvpwa",
+          "source_commit": "a1d8f89fac2e57093189853c6527c2b01fc1d9c1",
+          "source_license": "MIT",
+          "vulnerable_cases": 1,
+          "safe_trap_cases": 3
+        },
+        {
+          "repo_id": "realvuln-pygoat",
+          "ground_truth_repo_id": "pygoat",
+          "source_url": "https://github.com/kolega-ai-dev/realvuln-pygoat",
+          "source_commit": "2fb0c600245f50670e8b9233c784afe61e8b340b",
+          "source_license": "MIT",
+          "vulnerable_cases": 2,
+          "safe_trap_cases": 2
+        },
+        {
+          "repo_id": "realvuln-threatbyte",
+          "ground_truth_repo_id": "threatbyte",
+          "source_url": "https://github.com/anotherik/ThreatByte",
+          "source_commit": "c4db46f72586c4ecb65859051ea037018dbf0e5e",
+          "source_license": "MIT",
+          "vulnerable_cases": 1,
+          "safe_trap_cases": 4
+        },
+        {
+          "repo_id": "realvuln-vampi",
+          "ground_truth_repo_id": "vampi",
+          "source_url": "https://github.com/erev0s/VAmPI",
+          "source_commit": "1713b54b601ad29582581eeda4b31fceb1319874",
+          "source_license": "MIT",
+          "vulnerable_cases": 1,
+          "safe_trap_cases": 2
+        },
+        {
+          "repo_id": "realvuln-vfapi",
+          "ground_truth_repo_id": "vfapi",
+          "source_url": "https://github.com/naryal2580/vfapi",
+          "source_commit": "f36f177e1a32aa49272f4eb52f8be0af3e8f6bc3",
+          "source_license": "MIT",
+          "vulnerable_cases": 4,
+          "safe_trap_cases": 1
+        },
+        {
+          "repo_id": "realvuln-vulnpy",
+          "ground_truth_repo_id": "vulnpy",
+          "source_url": "https://github.com/Contrast-Security-OSS/vulnpy",
+          "source_commit": "d1d0f64c06f038fe59a049e0e6001bfaf9839697",
+          "source_license": "MIT",
+          "vulnerable_cases": 3,
+          "safe_trap_cases": 3
+        },
+        {
+          "repo_id": "realvuln-vulpy",
+          "ground_truth_repo_id": "vulpy",
+          "source_url": "https://github.com/fportantier/vulpy",
+          "source_commit": "5249cc8b05a1c37f6b2f757b1cf16a509c327122",
+          "source_license": "MIT",
+          "vulnerable_cases": 6,
+          "safe_trap_cases": 5
+        }
+      ],
+      "evaluation_run": {
+        "status": "completed_aggregate_only",
+        "recorded_at_utc": "2026-10-24T20:05:37Z",
+        "arbiter_commit": "b227c38741b5eafc8672aee1ad679795aa7cce1b",
+        "arbiter_worktree_clean": false,
+        "scanner_sources_match_commit": true,
+        "input_manifest_sha256": "fce317a3048e2aea43a3aa9f371a1f6eb545e48aa2136f88599e9377346d25ac",
+        "evaluator_path": "tools/ground_truth/realvuln_conformance.py",
+        "evaluator_sha256": "e1da0dc8914687f272fb49cc55d8268d6c71f07847388ee1f47bb0434f75a3b8",
+        "configuration_sha256": "f9389dfcbe564569f5989c5d1e5cc540ffbb4b205edfc62b79411e5a196aedb9",
+        "scan_command_template": "PYTHONPATH=src uv run --no-project --with PyYAML --with tree-sitter-language-pack==1.22.1 python -c 'from arbiter.cli import main; main()' scan <source> --config <offline-config> --profile offline --only lang_python --no-adapters --no-cache --no-history --no-open --format json --out <reports>/<repo-id>",
+        "arbiter_version": "0.1.0",
+        "python_version": "3.13.15",
+        "operating_system": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "architecture": "x86_64",
+        "runtime_packages": {
+          "PyYAML": "6.0.3",
+          "tree-sitter-language-pack": "1.22.1",
+          "tree-sitter": "0.26.0"
+        },
+        "source_archive_bytes": 18466994,
+        "probe": "lang_python",
+        "profile": "offline",
+        "adapters_enabled": false,
+        "cache_enabled": false,
+        "history_enabled": false,
+        "source_code_executed": false,
+        "repositories_scanned": 11,
+        "python_probe_assessed_repositories": 11,
+        "scorecards_withheld": 11,
+        "labelled_cases": {
+          "positive": 26,
+          "safe_traps": 34,
+          "total": 60
+        },
+        "label_provenance_counts": {
+          "manual_review": 60,
+          "manually_verified": 5
+        },
+        "case_level_confusion": {
+          "tp": 21,
+          "fn": 5,
+          "fp": 6,
+          "tn": 28
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "numerator": 21,
+            "denominator": 27,
+            "value": 0.7777777777777778
+          },
+          "labelled_case_recall": {
+            "numerator": 21,
+            "denominator": 26,
+            "value": 0.8076923076923077
+          },
+          "safe_trap_false_positive_rate": {
+            "numerator": 6,
+            "denominator": 34,
+            "value": 0.17647058823529413
+          },
+          "cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "method": "repository-cluster bootstrap; percentile interval",
+            "replicates": 10000,
+            "seed": 0,
+            "precision_interval": [
+              0.6428571428571429,
+              0.9090909090909091
+            ],
+            "recall_interval": [
+              0.5,
+              1.0
+            ],
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification."
+          }
+        },
+        "unmatched_cwe89_findings_unassessed": 1,
+        "claim_scope": "RealVuln 3.1.0 approved Python CWE-89 case-level conformance only; not Arbiter finding precision or production-population accuracy.",
+        "general_99_percent_claim": false
+      },
+      "multi_cwe_label_inventory": {
+        "available_label_count": 502,
+        "distinct_primary_cwes_across_available_labels": 65,
+        "evidence_source_counts": {
+          "manual_review": 408,
+          "gt_expansion_verification_2026_04_29": 13,
+          "our-scanner": 75,
+          "snyk": 5,
+          "walkthrough": 1
+        },
+        "included_label_source": "manual_review",
+        "included_label_count": 408,
+        "included_primary_cwe_count": 53,
+        "included_manually_verified_flag_count": 66,
+        "excluded_cases_by_source": {
+          "gt_expansion_verification_2026_04_29": 13,
+          "our-scanner": 75,
+          "snyk": 5,
+          "walkthrough": 1
+        },
+        "explicit_non_scoring_entries": 0,
+        "scoring_field": "absent from all 502 pinned entries",
+        "label_limit": "Benchmark-maintainer evidence; manual_review is not independent multi-reviewer adjudication."
+      },
+      "multi_cwe_evaluation_run": {
+        "status": "completed_aggregate_only",
+        "report_path": "accuracy-realvuln-multicwe-run.json",
+        "report_sha256": "4776a16f16677cce401a9033db78fa91dc723c1b7859671d4bb9a2814332dd00",
+        "input_manifest_sha256": "88e15366a2e15c952054c72ebe40b6d4a633a04e4db546d00c357f74db8367f6",
+        "arbiter_commit": "3a72985ff516e80850b0ffe0c7c2e1ba26418153",
+        "arbiter_worktree_clean": false,
+        "scanner_sources_match_commit": true,
+        "evaluator_sha256": "f7505eef88ed4b54dfc0c8e480631e62f973078d965ad7b33d3565cfe07e2a00",
+        "configuration_sha256": "e001cd6a3677c208d28c85a4cd6364b25a467e23405e59d0f7de7b9ab95d34ea",
+        "started_at_utc": "2026-10-24T22:18:54.900770Z",
+        "completed_at_utc": "2026-10-24T22:19:03.652162Z",
+        "scanner_python_version": "3.13.15",
+        "evaluator_python_version": "3.14.4",
+        "operating_system": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "architecture": "x86_64",
+        "runtime_packages": {
+          "PyYAML": "6.0.3",
+          "tree-sitter": "0.26.0",
+          "tree-sitter-language-pack": "1.22.1"
+        },
+        "profile": "offline",
+        "probe": "lang_python",
+        "adapters_enabled": false,
+        "cache_enabled": false,
+        "history_enabled": false,
+        "source_code_executed": false,
+        "repositories_scanned": 11,
+        "python_probe_assessed_repositories": 11,
+        "scorecards_withheld": 11,
+        "labelled_cases": {
+          "positive": 341,
+          "safe_traps": 67,
+          "total": 408
+        },
+        "case_level_confusion": {
+          "tp": 62,
+          "fn": 279,
+          "fp": 7,
+          "tn": 60
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "numerator": 62,
+            "denominator": 69,
+            "value": 0.8985507246376812
+          },
+          "labelled_case_recall": {
+            "numerator": 62,
+            "denominator": 341,
+            "value": 0.18181818181818182
+          },
+          "safe_trap_false_positive_rate": {
+            "numerator": 7,
+            "denominator": 67,
+            "value": 0.1044776119402985
+          },
+          "precision_cluster_bootstrap_interval": [
+            0.8448275862068966,
+            0.9473684210526315
+          ],
+          "recall_cluster_bootstrap_interval": [
+            0.13002952262854045,
+            0.23837305559833666
+          ],
+          "cluster_bootstrap_replicates": 10000,
+          "cluster_bootstrap_seed": 0
+        },
+        "primary_cwe_count": 53,
+        "unmatched_findings_unassessed": 25,
+        "accuracy_claim_eligible": false,
+        "general_99_percent_claim": false,
+        "claim_scope": "Curated RealVuln 3.1.0 11-repository Python manual-review case conformance; not independently adjudicated truth, finding-level precision, or production-population accuracy."
+      },
+      "analyzer_differential_run": {
+        "status": "completed_aggregate_only",
+        "requirement_id": "ARB-107",
+        "recorded_at_utc": "2026-10-24T22:56:53Z",
+        "interpretation": "differential_coverage_only",
+        "accuracy_claim_eligible": false,
+        "general_99_percent_claim": false,
+        "source_code_executed": false,
+        "benchmark_commit": "7a710251f55c17d32d3adcb13d37468e2e3b9e4a",
+        "ground_truth_version": "3.0.0",
+        "repository_count": 11,
+        "source_archive_sha256": {
+          "realvuln-damn-vulnerable-graphql-application": "ce16094a23fffb5d9726a3b0684cabf1fda5888e1ba8bc8b105592c3c86604b8",
+          "realvuln-djangoat": "474fa41a799745f7a7af94500e2041ac7e98130c6ae2ababbbe7b470a2e6c864",
+          "realvuln-dsvpwa": "9dec4092898ce7bae7d4ffd854a6a577eeeadd209f7d01053787384935dd1bad",
+          "realvuln-dsvw": "8a9e0d07755bedf2c73c856c88573cb1cfa37ba810231b23ab2113a1a1473b4e",
+          "realvuln-dvpwa": "902ddd5e78673bdbc771e43f89e5b7f7af2f7c3da2544fd9c530d0f571506673",
+          "realvuln-pygoat": "d36746c1537963ba62ad124dcf6eb392e1dc347853f8a578aacd40a048e10cd5",
+          "realvuln-threatbyte": "b0f511d99a2a238a078f46b16a1b1148d135758a577e63a48ddb3dd9e2ac660f",
+          "realvuln-vampi": "42f45bb0612383c57c3f1cfb2c446e742c2104f7766337199de766b6dc5c3e37",
+          "realvuln-vfapi": "eb9fcc598e84643df34f5687eb0855e4f0821a21613d2b8d67f8cfb98ae7be2a",
+          "realvuln-vulnpy": "81c56c7579128db681018d04dbd64bab6a5d2d4a6564bcad35eac48ee2779b6a",
+          "realvuln-vulpy": "a0087359a38d52e977cbc6493bb949629add4038413b52af4372c7ad88f3a091"
+        },
+        "arbiter": {
+          "version": "0.1.0",
+          "commit": "f766cecbb679009f069aebbec6ff56c61a4c0c1a",
+          "worktree_clean": false,
+          "scanner_sources_match_commit": true,
+          "configuration_sha256": "e001cd6a3677c208d28c85a4cd6364b25a467e23405e59d0f7de7b9ab95d34ea",
+          "profile": "offline",
+          "probe_scope": "native_probes_only",
+          "adapters_enabled": false,
+          "cache_enabled": false,
+          "history_enabled": false,
+          "python_security_findings": 102,
+          "scorecard_probe_coverage_range": [
+            0.969,
+            0.984
+          ],
+          "scan_errors": 0
+        },
+        "semgrep": {
+          "version": "1.177.0",
+          "rules_repository": "https://github.com/semgrep/semgrep-rules",
+          "rules_commit": "40b8c63f75dc7c22c8a77482d73bfb864b146f7e",
+          "configuration_subtree": "python",
+          "semgrepignore_applied": true,
+          "python_files_scanned": 360,
+          "non_python_files_scanned": 558,
+          "python_security_findings": 236,
+          "scan_errors": 0
+        },
+        "codeql": {
+          "cli_version": "2.27.3",
+          "cli_archive_sha256": "845075a2fa2fdf72629adc6cbde6264691b698d1f294bd27f10c6b579cd750a4",
+          "query_pack": "codeql/python-queries@1.8.13",
+          "query_pack_build_sha": "a1575b98a8cc19bcfa7bb6cb41be688cb3dae65c",
+          "query_pack_lock_sha256": "682c4c9b757da6b62970eab87443a464019492d406fcefd3fb99897f02e383bd",
+          "query_suite": "codeql-suites/python-code-scanning.qls",
+          "query_dependencies": {
+            "codeql/concepts": "0.0.34",
+            "codeql/controlflow": "2.0.44",
+            "codeql/dataflow": "2.1.16",
+            "codeql/mad": "1.0.60",
+            "codeql/python-all": "7.2.8",
+            "codeql/regex": "1.0.60",
+            "codeql/ssa": "2.0.36",
+            "codeql/suite-helpers": "1.0.60",
+            "codeql/threat-models": "1.1.0",
+            "codeql/tutorial": "1.0.60",
+            "codeql/typetracking": "2.0.44",
+            "codeql/util": "2.0.47",
+            "codeql/xml": "1.0.60",
+            "codeql/yaml": "1.0.60"
+          },
+          "build_mode": "none",
+          "python_files_scanned": 459,
+          "python_files_discovered": 459,
+          "python_security_findings": 96,
+          "successful_invocations": 11,
+          "failed_invocations": 0,
+          "error_notifications": 0,
+          "warning_notifications": 0
+        },
+        "platform": {
+          "operating_system": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+          "architecture": "x86_64",
+          "python_version": "3.14.4"
+        },
+        "coverage": {
+          "same_pinned_source_snapshots": true,
+          "effective_file_sets_identical": false,
+          "file_set_difference": "CodeQL extracted 459/459 Python files. Semgrep scanned 360 Python and 558 non-Python files while applying each source repository's .semgrepignore; tool-level file sets therefore differ."
+        },
+        "results": {
+          "python_security_findings_by_analyzer": {
+            "arbiter_native": 102,
+            "semgrep": 236,
+            "codeql": 96
+          },
+          "pairwise_location_differential": [
+            {
+              "pair": "arbiter_native_vs_semgrep",
+              "left_findings": 102,
+              "right_findings": 236,
+              "line_overlapping_pairs": 224,
+              "left_findings_with_location_counterpart": 75,
+              "right_findings_with_location_counterpart": 121,
+              "left_unmatched_by_location": 27,
+              "right_unmatched_by_location": 115,
+              "pairs_with_shared_cwe_tag": 91,
+              "pairs_without_shared_cwe_tag": 133
+            },
+            {
+              "pair": "arbiter_native_vs_codeql",
+              "left_findings": 102,
+              "right_findings": 96,
+              "line_overlapping_pairs": 78,
+              "left_findings_with_location_counterpart": 30,
+              "right_findings_with_location_counterpart": 40,
+              "left_unmatched_by_location": 72,
+              "right_unmatched_by_location": 56,
+              "pairs_with_shared_cwe_tag": 25,
+              "pairs_without_shared_cwe_tag": 53
+            },
+            {
+              "pair": "semgrep_vs_codeql",
+              "left_findings": 236,
+              "right_findings": 96,
+              "line_overlapping_pairs": 95,
+              "left_findings_with_location_counterpart": 89,
+              "right_findings_with_location_counterpart": 61,
+              "left_unmatched_by_location": 147,
+              "right_unmatched_by_location": 35,
+              "pairs_with_shared_cwe_tag": 73,
+              "pairs_without_shared_cwe_tag": 22
+            }
+          ]
+        },
+        "matching_contract": "Within each repository, normalize repository-relative Python paths and count findings as location-overlapping only when their inclusive line spans intersect. Report pairwise finding pairs and the number of findings with at least one counterpart; count CWE-tag intersection separately. Matching is not deduplicated to vulnerabilities, and one-to-many overlaps are possible.",
+        "limits": [
+          "The cohort is the intentionally vulnerable RealVuln benchmark subset, not ordinary or representative production repositories.",
+          "Differential overlap, unmatched findings, and CWE-tag concordance are not ground truth, precision, recall, or false-positive rates.",
+          "The tools use different rule semantics and effective file sets; Semgrep applied source .semgrepignore files.",
+          "Arbiter was run with native probes only to keep its own Semgrep adapter from duplicating the separately pinned Semgrep scan.",
+          "Only aggregate results are committed. Source archives, databases, and case-level analyzer reports were temporary and are not included.",
+          "No rules were tuned on these evaluation snapshots; no human or model labels were produced for this differential run.",
+          "This does not measure ordinary-repository precision, missed-defect recall, or cross-platform accuracy."
+        ]
+      },
+      "selection_gates": [
+        "Use only the 11 selected Python source repositories whose license metadata is MIT or Unlicense at the exact pinned source commit; exclude GPL-3.0 and NOASSERTION repositories.",
+        "The benchmark manifest and ground-truth metadata are pinned to commit 7a710251f55c17d32d3adcb13d37468e2e3b9e4a.",
+        "Run only offline lang_python scans with adapters, network, cache, and history disabled; retain no source code or per-example report in the repository.",
+        "Emit aggregate-only case-level metrics; do not tune rules on this public benchmark or claim production-population accuracy."
+      ],
+      "limits": [
+        "All targets are intentionally vulnerable applications, not a representative production-repository sample.",
+        "The selected subset has only 11 repository clusters and 60 labels; it cannot establish a general 99 percent precision or recall claim.",
+        "Labels use manual_review evidence, but only 5 of 60 selected entries are explicitly flagged manually_verified; independent multi-reviewer audit is not documented.",
+        "Only labelled cases contribute to case-level precision; unmatched CWE-89 alerts are reported as unassessed, not assumed false positives.",
+        "The 35 NOASSERTION and 3 GPL-3.0 source repositories are excluded."
+      ]
+    }
+  ],
+  "human_review_status": {
+    "workflow": "tools/label_sample.py",
+    "documented_pilot": {
+      "repository_count": 5,
+      "finding_sample_size": 60,
+      "strata": 41,
+      "status_as_documented": "sheet described as unlabelled; no completed human adjudication result recorded"
+    },
+    "required_review": [
+      "Two independent blind reviewers for sampled findings.",
+      "Blind repository audits for false negatives.",
+      "Documented adjudication of disagreements and reviewer abstentions.",
+      "Record reviewer agreement, sampling frame, inclusion probabilities, and repository clusters."
+    ]
+  },
+  "execution_platform_evidence": {
+    "ci_source": ".github/workflows/pr-check.yml",
+    "fast_ci_operating_systems": [
+      "ubuntu-latest",
+      "windows-latest"
+    ],
+    "analyzer_and_self_gate_operating_systems": [
+      "ubuntu-latest"
+    ],
+    "slow_tier_operating_systems": [
+      "ubuntu-latest"
+    ],
+    "macos_status": "planned_in_pending_ARB-063_not_currently_in_pr_check_matrix",
+    "architecture_matrix": "not_declared",
+    "source_language_recall_by_operating_system": "not_measured",
+    "compatibility_note": "Fast CI verifies core test behavior on Ubuntu and Windows; it does not establish analyzer coverage or equivalent detection accuracy on both hosts."
+  },
+  "run_record_template": {
+    "arbiter_commit": null,
+    "arbiter_worktree_clean": null,
+    "benchmark_manifest_digest": null,
+    "benchmark_snapshot_or_pin": null,
+    "evaluator_commit": null,
+    "configuration_digest": null,
+    "analyzer_and_ruleset_versions": null,
+    "vulnerability_database_snapshot": null,
+    "operating_system_image": null,
+    "architecture": null,
+    "python_version": null,
+    "profile": null,
+    "cache_policy": null,
+    "started_at_utc": null,
+    "completed_at_utc": null,
+    "counts": {
+      "repositories": null,
+      "clusters": null,
+      "labelled_findings": null,
+      "unlabelled_findings": null,
+      "known_defects": null,
+      "not_assessed_strata": null
+    },
+    "metrics": {
+      "precision": null,
+      "precision_lower_95": null,
+      "recall": null,
+      "recall_lower_95": null,
+      "effective_sample_size": null,
+      "method_and_version": null
+    }
+  }
+}

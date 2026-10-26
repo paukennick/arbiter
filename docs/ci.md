@@ -24,16 +24,55 @@
     baseline: .arbiter/baseline.json
 ```
 
-The action uploads SARIF so findings render inline on the pull request, and
-posts the Markdown report as a comment.
+The action runs `arbiter gate --github`, so one run reaches the pull request
+three ways:
+
+| Where | What | How |
+|---|---|---|
+| the job log and the diff | one annotation per finding: `::error` for what failed the gate, `::notice` for findings in files the change did not touch, `::warning` for the rest | workflow commands on stdout, on automatically when `GITHUB_ACTIONS=true` |
+| the job summary | the pull-request comment: verdict, reasons, grade, what was not assessed | appended to `$GITHUB_STEP_SUMMARY` |
+| the Security tab | the active findings at or above `--sarif-min-severity` (pr-check passes `medium`; the action passes no flag, so it uploads every active finding), with rule and remediation | `report.sarif` uploaded with `github/codeql-action/upload-sarif` |
+
+The SARIF upload needs `permissions: security-events: write` (and `contents:
+read`) on the job or the workflow; the annotations and the summary need
+nothing beyond the default token. In the action the upload step runs with
+`if: always()`, because a failed gate is exactly the run whose findings should
+be visible. It does not set `continue-on-error`, so where code scanning is off
+(some forks and mirrors) a refused upload fails the step; pr-check and the
+example workflow in `examples/pull-request-gate/` set `continue-on-error: true`
+on their own upload steps for that reason. Annotations never carry evidence, only the rule id, the
+title and the location, so the log is not where a credential gets reprinted.
+
+Action inputs (`ci/github-action/action.yml`):
+
+| Input | Default | Meaning |
+|---|---|---|
+| `target` | `.` | path to scan |
+| `system` | `""` | an `arbiter-system.yaml`; overrides `target` |
+| `profile` | `ci` | capability profile |
+| `baseline` | `""` | baseline JSON for new/existing labelling |
+| `fail` | `"true"` | `"false"` makes the step exit 0 whatever the gate returned |
+
+The output `report` is the path to `report.json`. Three things the action does
+not do: it installs Arbiter without extras, so the external analyzers and the
+tree-sitter language packs (the `ast` extra) are reported as not assessed
+unless an earlier step installs them; it has no `--changed` input, so it
+always scans the whole tree; and `uses: ./ci/github-action` works only inside
+a checkout of Arbiter itself — from another repository, refer to the action by
+`OWNER/arbiter/ci/github-action@<ref>`, or copy the workflow in
+`examples/pull-request-gate/`.
 
 ## GitLab CI
 
-A template is in `ci/gitlab/arbiter.gitlab-ci.yml`.
+A template is in `ci/gitlab/arbiter.gitlab-ci.yml`. It keeps `arbiter-out/` as
+a job artifact. GitLab's `reports: sast` reads GitLab's own report schema, not
+SARIF, so treat the SARIF file there as a download rather than expecting it
+in the Security widget.
 
 ## Any other runner
 
-Arbiter is a Python package with one runtime dependency, and the gate is an exit
+Arbiter is a Python package whose only runtime dependency is PyYAML (plus
+`tomli` on Python 3.10), and the gate is an exit
 code:
 
 ```bash
@@ -57,26 +96,35 @@ analysis is.
 So `--changed` reads less.
 
 ```bash
-arbiter gate . --changed origin/main --baseline .arbiter/baseline.json
+arbiter gate . --changed origin/main --baseline .arbiter/baseline.json --config arbiter.yaml
 ```
+
+`--config arbiter.yaml` names the repository's own file as the operator's:
+without it the file is the target's, and its `suppress` and
+`severity_overrides` blocks are ignored and reported as such
+([configuration.md](configuration.md#which-config-is-trusted)).
 
 Every probe declares a scope. **file** means every finding depends only on the
 file it is in — a hardcoded secret is a secret whether or not the rest of the
 tree was read. **repo** means the answer depends on relationships between
-files, and a subset-based answer is not weaker, it is false.
+files, and a subset-based answer is not weaker, it is false. **change** means
+the probe reads a few files it names itself plus the changed paths — the
+`governance` probe, which holds the failure ledger against the change — so a
+partial scan is the question it was built for, and it runs in both modes.
 
-In a partial scan the file-scoped probes run, and the repo-scoped ones are
-recorded as skipped with the partial scan named as the reason — so they stay in
-the coverage denominator as not-assessed rather than vanishing. The files read
+In a partial scan the file-scoped and change-scoped probes run, and the
+repo-scoped ones are recorded as skipped with the partial scan named as the
+reason — so they stay in the coverage denominator as not-assessed rather than
+vanishing. The files read
 are the changed ones plus dependency manifests, lockfiles, CI workflows and
 Terraform, which is where a rule genuinely reasons about a file it is not
 reporting on.
 
-**All five external analyzers are repo-scoped, so a partial scan does not run
-them.** ruff, bandit, checkov, semgrep and gitleaks each declare `scope = "repo"`
-in their manifest, and a `--changed` run records all five as not assessed. The
+**All six external analyzers are repo-scoped, so a partial scan does not run
+them.** ruff, bandit, checkov, semgrep, gitleaks and Trivy each declare
+`scope = "repo"` in their manifest, and a `--changed` run records all six as not assessed. The
 reason is different from the one that holds back a native repo probe: those
-genuinely reason across files, whereas nobody has measured whether these five
+genuinely reason across files, whereas nobody has measured whether these six
 return the same findings from a subset. Until someone does, claiming they do
 would be a guess printed as a fact. The practical consequence is worth stating
 plainly — **a pull-request gate runs Arbiter's own probes and no third-party
@@ -105,11 +153,31 @@ the files. Fixed at the source rather than exempted.
 
 A ref that does not exist refuses rather than scanning nothing. An empty diff
 and a failed diff look identical downstream, and the second would produce a
-green gate that read no files at all.
+green gate that read no files at all. `--only-files` holds to the same rule:
+a path that names no file the scan can read (a typo, a path under an ignored
+directory) is an error, and so is a request that ends with zero files read
+(ARB-145).
+
+An external analyzer that fails inside its accepted exit codes is an error,
+not a clean run (ARB-146): nothing on stdout, output that is not JSON, JSON
+without the key the manifest reads findings from, or a tool-reported error
+list (bandit's and semgrep's `errors[]`) each record the adapter as `error`
+with the tool's own message, and its checks count as not assessed. gitleaks
+exits 1 both for "leaks found" and for a fatal config error, so the exit code
+alone was never enough.
 
 Findings that land in a context file the branch did not touch are tagged
 `outside-this-change`, so a pull request is not blamed for a lockfile it never
 opened. The baseline is what keeps them out of the gate.
+
+Findings in the change are tagged `req:<ID>` for the requirement ids the
+commits since the base that touched their file cite (the prefix comes from
+the registry's `requirement_id_prefix`, `REQ` by default; old ids resolve
+through `id_aliases`), marked `req-scope:commits`. A file no such commit cited
+carries every id the range cites and `req-scope:open` instead, so the tags
+read as context rather than attribution. The Markdown report and the
+pull-request comment summarise them in a **By requirement** table that names
+the scope.
 
 ## A ready-made workflow
 
@@ -152,6 +220,36 @@ baseline.
 barely ran. Without it, an analyzer that failed to install looks identical to an
 analyzer that found nothing.
 
+`gate.tier_mode` decides which findings `fail_on` reads. `tiered` (the
+default) reads only findings whose precision tier is in `gate.tiers`
+(default `[verified]`) and records what it set aside as `excluded_by_tier`.
+`legacy` reads every active finding. Today one rule is declared verified,
+`supply.unpinned-action` (ARB-101), so a tiered gate reads only those
+findings; set `legacy` if you want the severity gate over every finding
+until the rules you care about are admitted
+([configuration.md](configuration.md#precision-tiers),
+[precision.md](precision.md#tiers)).
+
+What can block and what is shown are separate settings. The comment, the
+annotations and the SARIF upload list **every** finding by default, verified
+first: the comment's summary line reads `2 verified (can block the gate) ·
+71 advisory (shown, not gating) · 0 inferred` and its table marks each
+unverified row `advisory (not gating)`; each annotation of a finding that
+cannot block starts `[advisory: not gating]`; in the SARIF a result that
+cannot block a tiered gate is at most a `warning`, never an `error` the gate
+ignores. `--verified-only` or `report.show: verified` lists the verified
+tier only and then says how many it left out (`no verified findings; N
+advisory findings not shown` when there are none), so an empty comment never
+reads as a clean one ([configuration.md](configuration.md#what-the-report-shows)).
+
+The `assisted` profile is `ci` plus a model check of each finding at or above
+`verify.min_severity` (default `medium`). It needs `ANTHROPIC_API_KEY` as a
+secret; without one every candidate is recorded `not_verified`, and the
+verdicts change tiers, not whether a `legacy` gate fails. Verdicts are cached
+by excerpt, so an unchanged commit reproduces them, but this is not the
+byte-for-byte determinism `ci` gives. See
+[configuration.md](configuration.md#model-verification).
+
 Refresh the baseline deliberately, never automatically:
 
 ```bash
@@ -165,16 +263,24 @@ Two workflows, split by how long they take rather than by what they cover.
 | | `pr-check.yml` | `train.yml` |
 |---|---|---|
 | when | every pull request | 08:00 UTC nightly |
-| what | the test suite, then `tools/integrity.py` | the full measurement cycle |
-| how long | about a minute | about two hours |
-| platforms | ubuntu-latest **and** windows-latest | ubuntu-latest |
-| writes to the repo | no | yes — the five accumulating files |
+| what | the fast tier of the test suite (`-m "not slow"`), `tools/integrity.py`, `tools/precision_guard.py check`, `tools/mutate_tests.py`, `python omni doctor`, `python omni gate`; on Linux also the six analyzers, the `api` extra, and `arbiter gate . --github --no-cache --sarif-min-severity medium`; and, in a parallel `slow-tier` job, the slow tier (`-m slow`) with the analyzers installed, then the regression guards over pinned gold repositories (`tools/regression_guard.py fetch` / `check`) | the full measurement cycle |
+| how long | Windows about two minutes; the Linux cell is dominated by the self-gate's semgrep pass (about six minutes over this tree) now that the adapter tests have moved to the slow tier; the slow tier is about five minutes locally, most of it one full scan through every analyzer | about two hours |
+| platforms | ubuntu-latest (Python 3.11 and 3.10) **and** windows-latest (3.11); the slow tier on ubuntu-latest only | ubuntu-latest |
+| writes to the repo | no | yes — `.arbiter/` and `training/` |
 
-**Why the pull-request check runs on two platforms.** REQ-006 was a crash on
+**Held-out guard.** `tests/test_regression_guard.py` compares an
+aggregate-only snapshot of the held-out AI corpus (`fixtures/ai-corpus-heldout/`;
+counts and a digest, never individual findings); a change that moves it fails.
+It needs tree-sitter, and pr-check's fast tier installs no `ast` extra while
+the slow-tier job runs only `-m slow`, so today it runs locally and is skipped
+in pr-check. See
+[testing-harness.md](testing-harness.md#held-out-batch-fixturesai-corpus-heldout).
+
+**Why the pull-request check runs on two platforms.** ARB-006 was a crash on
 every adapter timeout on Windows: `os.killpg` does not exist there, so the
 process-group kill path raised `AttributeError` and the analyzer outlived the
 timeout meant to stop it. It was found by hand, months later, because no
-automation had ever run on Windows. UTF-8 decoding (REQ-007) and path handling
+automation had ever run on Windows. UTF-8 decoding and path handling
 are sensitive the same way, and a developer's machine is not a control.
 
 The matrix is on this workflow and not the nightly one deliberately. Running a
@@ -185,6 +291,36 @@ sensitive — the code paths around them are.
 `fail-fast: false`, because cancelling the Windows job when Linux fails hides
 precisely the class of defect the matrix was added to find. Neither job carries
 `continue-on-error`: an advisory check is a check nobody reads.
+
+**Arbiter evaluates itself.** The Linux job ends with `arbiter gate .` under
+this repository's own `arbiter.yaml`: fail on any critical, fail on any new
+high, and with no baseline every finding is new. It runs after
+`tools/install_tools.sh`, so the external analyzers are present and the
+self-gate cannot pass by failing to run half its probes. The first time it ran
+it reported three high findings: the `authored` probe matching the TLS-off
+patterns listed in its own module docstring (ARB-032). The Windows job does
+not run the self-gate, because not every analyzer installs there and a gate at
+lower coverage would answer a different question. The same job installs the
+`api` extra, so the sixteen hosted-API tests run on every pull request instead
+of skipping (ARB-034).
+
+**The tool lock is enforced after provisioning.** The Linux pull-request job
+and nightly training job run `arbiter tools verify .arbiter/tooling.lock.json`
+immediately after `tools/install_tools.sh`. The lock requires the six pinned
+analyzers and Semgrep rules revision; a missing or mismatched version, rules
+checkout, or catalog digest fails CI. This verification step does not install
+or update tools. The Windows matrix cell does not verify the analyzer lock
+because it does not provision those tools.
+
+**Two tiers (ARB-046).** The suite's wall clock was almost entirely the tests
+that run a real analyzer through the adapters or scan something larger than
+the fixtures, and none of those says anything about the platform. They carry
+the `slow` marker (registered in `pyproject.toml`); the matrix runs
+`-m "not slow"` on every cell and the `slow-tier` job runs `-m slow` once, on
+Linux, alongside the matrix, so the pull request waits for the slower of the
+two rather than their sum. `.ai/test-suites.json` registers the fast tier as
+the gate's suite and the slow tier as an integration suite the gate does not
+run. Locally the fast tier takes about two minutes and the slow tier about five, measured on a loaded four-core machine where the whole suite took eleven minutes before the split.
 
 **Skips are printed, not counted.** The pull-request check runs `pytest -rs`,
 so every skip appears in the log with its reason. Windows legitimately skips
@@ -205,7 +341,7 @@ tests answer different questions and neither replaces the other.
 
 `.github/workflows/train.yml` runs the measurement cycle nightly on GitHub's
 runners and commits the results back. **It never edits a rule. It only
-measures.** A run takes about ten minutes.
+measures.** A nightly run takes about two hours (20,000 injection trials).
 
 Each run:
 

@@ -27,9 +27,14 @@ Every probe declares a `scope`:
                 these can be answered from a subset, and a subset-based answer
                 is not a weaker answer, it is a false one.
 
-In a partial scan, file-scoped probes run against the selected files and
-repo-scoped probes are recorded as **skipped, with the partial scan named as
-the reason**. They are not run against a subset and they are not quietly
+  * `"change"` — the probe reads a small, fixed set of files it names itself
+                (the failure ledger, the requirement registry) and the set of
+                changed paths. A partial scan is its natural habitat; a full
+                scan is answered with the empty change. It runs in both modes.
+
+In a partial scan, file-scoped and change-scoped probes run against the
+selected files and repo-scoped probes are recorded as **skipped, with the
+partial scan named as the reason**. They are not run against a subset and they are not quietly
 dropped: they land in the coverage denominator as not-assessed, which is
 exactly what they are.
 
@@ -64,14 +69,30 @@ abstention flows into the gate claim, the grade, and every dimension, so:
 
 A green partial scan therefore cannot be quoted as a green repository, which is
 the whole point.
+
+## Which requirement a finding belongs to
+
+The commits since the base cite requirement ids ("(REQ-038)" in a subject).
+One `git log --name-only` over the range gives, per path, the ids cited by
+the commits that touched it (`requirement_ids_by_path`), and
+`attribute_requirements` tags every finding in the change with `req:<ID>`
+for exactly the ids its own file's commits cite, marked `req-scope:commits`.
+A file no commit cites falls back to every id the range cites, marked
+`req-scope:open` so a reader knows those tags are context rather than
+attribution; a full scan has no range and carries only that marker
+(ARB-052). The prefix comes from the registry's `requirement_id_prefix` when
+the repository keeps one, and an old id in `id_aliases` resolves to the
+current one.
 """
 from __future__ import annotations
 
+import json
 import os
+import re
 import subprocess
 from pathlib import Path
 
-from .inventory import Inventory, FileInfo
+from .inventory import FileInfo, Inventory
 
 # Files always kept in a partial scan regardless of whether they changed.
 # These are what the file-scoped probes need in order not to lie: a manifest
@@ -135,7 +156,7 @@ def git_changed(repo_path: str, ref: str) -> tuple[set[str], str]:
         try:
             r = subprocess.run(["git", "-C", repo_path, *args],
                                capture_output=True, text=True, timeout=120)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:  # noqa: BLE001 - no git, or a hung one: the caller treats both as a failed comparison
             return 1, str(exc)
         return r.returncode, r.stdout
 
@@ -168,6 +189,182 @@ def git_changed(repo_path: str, ref: str) -> tuple[set[str], str]:
     return paths, ""
 
 
+def git_deleted(repo_path: str, ref: str) -> set[str]:
+    """Paths the change deleted (committed since `ref`, staged, or in the
+    working tree). `git_changed` filters deletions out because there is
+    nothing to read; this names them so a delete-only change can say so
+    instead of reading as "nothing changed" (ARB-151)."""
+    def run(*args: str) -> tuple[int, str]:
+        try:
+            r = subprocess.run(["git", "-C", repo_path, *args],
+                               capture_output=True, text=True, timeout=120)
+        except Exception as exc:  # noqa: BLE001 - same contract as git_changed: a failed git is no deletions
+            return 1, str(exc)
+        return r.returncode, r.stdout
+
+    out: set[str] = set()
+    code, text = run("diff", "--name-only", "--diff-filter=D", f"{ref}...HEAD")
+    if code != 0:
+        code, text = run("diff", "--name-only", "--diff-filter=D", ref)
+    if code == 0:
+        out.update(p.strip() for p in text.split("\n") if p.strip())
+    for args in (("diff", "--name-only", "--diff-filter=D"),
+                 ("diff", "--name-only", "--diff-filter=D", "--cached")):
+        code, text = run(*args)
+        if code == 0:
+            out.update(p.strip() for p in text.split("\n") if p.strip())
+    return out
+
+
+REGISTRY_PATH = ".ai/requirements/requirements.json"
+
+# How a finding's `req:` tags were chosen (ARB-052). `commits`: from the
+# commits since the base that touched the finding's own file, so the tags are
+# attribution. `open`: no such commit cited a requirement, so the tags are the
+# requirements the range cites as a whole (or nothing, in a full scan) --
+# context a reader may use, never a claim about which requirement introduced
+# the finding.
+REQ_SCOPE_COMMITS = "req-scope:commits"
+REQ_SCOPE_OPEN = "req-scope:open"
+
+# An id as the registries write them: a prefix of capitals, a dash, a number.
+_ID_TOKEN = re.compile(r"\b[A-Z][A-Z0-9]*-\d+\b")
+
+# Record and field separators for the one git log the attribution runs.
+# Commit bodies are free text, so a line that looks like a path or a blank
+# line that looks like the end of the message cannot be trusted; two control
+# characters no commit message contains can.
+_RS, _FS = "\x1e", "\x1f"
+
+
+def requirement_registry(repo_path: str, default: str = "REQ") -> tuple[str, dict[str, str]]:
+    """The id prefix and the `id_aliases` the repository's registry declares.
+
+    Reads only the two top-level keys; the registry itself is never loaded
+    into a finding. Without a registry the prefix is the default and there
+    are no aliases.
+    """
+    try:
+        data = json.loads((Path(repo_path) / REGISTRY_PATH).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return default, {}
+    if not isinstance(data, dict):
+        return default, {}
+    prefix = data.get("requirement_id_prefix")
+    raw = data.get("id_aliases")
+    aliases = {str(k): str(v) for k, v in raw.items() if k and v} if isinstance(raw, dict) else {}
+    return (str(prefix) if prefix else default), aliases
+
+
+def requirement_prefix(repo_path: str, default: str = "REQ") -> str:
+    """The id prefix the repository's requirement registry declares, or the default."""
+    return requirement_registry(repo_path, default)[0]
+
+
+def cited_ids(text: str, prefix: str = "REQ", aliases: dict[str, str] | None = None) -> set[str]:
+    """Requirement ids a commit message cites, resolved through the aliases.
+
+    An id with the registry's prefix is kept as written; an id listed in
+    `id_aliases` (an old `REQ-038` after a renumbering to `ARB`) becomes the
+    id it maps to; anything else is some other project's number and is
+    dropped, because a tag Arbiter cannot resolve is a tag it must not make.
+    """
+    aliases = aliases or {}
+    out: set[str] = set()
+    for tok in _ID_TOKEN.findall(text):
+        if tok in aliases:
+            out.add(aliases[tok])
+        elif tok.startswith(prefix + "-"):
+            out.add(tok)
+    return out
+
+
+def requirement_ids_by_path(repo_path: str, ref: str, prefix: str = "REQ",
+                            aliases: dict[str, str] | None = None,
+                            ) -> tuple[dict[str, set[str]], set[str]]:
+    """Per path, the requirement ids cited by the commits in `ref..HEAD` that
+    touched it; and every id the range cites at all.
+
+    One git invocation for the whole range, however many files changed: a
+    log per file was the first design and costs a subprocess per finding.
+    Both results are empty when git is unavailable, the path is not a
+    repository or the ref is unknown: an attribution the tool cannot make is
+    left unmade, never guessed. Uncommitted work cites nothing, which is
+    right -- it has no commit message yet.
+    """
+    by_path: dict[str, set[str]] = {}
+    all_ids: set[str] = set()
+    if not (Path(repo_path) / ".git").exists():
+        return by_path, all_ids
+    try:
+        r = subprocess.run(["git", "-C", repo_path, "log", f"{ref}..HEAD", "--name-only",
+                            f"--format={_RS}%H{_FS}%B{_FS}"],
+                           capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=120)
+    except (OSError, subprocess.SubprocessError):  # no git, or a hung one: both mean "unknown"
+        return by_path, all_ids
+    if r.returncode != 0:
+        return by_path, all_ids
+    for record in r.stdout.split(_RS):
+        parts = record.split(_FS, 2)
+        if len(parts) < 3:
+            continue
+        body, names = parts[1], parts[2]
+        ids = cited_ids(body, prefix, aliases)
+        all_ids.update(ids)
+        if not ids:
+            continue
+        for line in names.split("\n"):
+            path = line.strip().replace("\\", "/")
+            if path:
+                by_path.setdefault(path, set()).update(ids)
+    return by_path, all_ids
+
+
+def requirement_ids_since(repo_path: str, ref: str, prefix: str = "REQ",
+                          aliases: dict[str, str] | None = None) -> list[str]:
+    """Requirement ids cited by the commits in `ref..HEAD`, sorted and unique.
+
+    The whole-range view of `requirement_ids_by_path`, kept for callers that
+    want the round rather than the file.
+    """
+    return sorted(requirement_ids_by_path(repo_path, ref, prefix, aliases)[1])
+
+
+def attribute_requirements(findings: list, repos: list, changed: dict[str, set[str]],
+                           changed_since: str | None) -> None:
+    """Tag each finding in the change with the requirements its file's
+    commits cite, and say how the tags were chosen (ARB-052).
+
+    `req:<ID>` for exactly the ids cited by the commits since the base that
+    touched the finding's path, plus `req-scope:commits`. A path no such
+    commit cited gets every id the range cites plus `req-scope:open`: the
+    requirements open in this round are context for the reader, not a claim
+    about which one introduced the finding. Findings in context files are
+    not tagged at all -- they were not introduced under any of these ids.
+    A full scan has no range: every finding carries `req-scope:open` and no
+    `req:` tag, which is what the marker means.
+    """
+    if not changed_since:
+        for f in findings:
+            f.tags.append(REQ_SCOPE_OPEN)
+        return
+    for r in repos:
+        prefix, aliases = requirement_registry(r.path)
+        by_path, all_ids = requirement_ids_by_path(r.path, changed_since, prefix, aliases)
+        in_change = changed.get(r.id, set())
+        for f in findings:
+            if f.repo_id != r.id or f.location.path not in in_change:
+                continue
+            cited = by_path.get(f.location.path)
+            if cited:
+                f.tags.extend(f"req:{i}" for i in sorted(cited))
+                f.tags.append(REQ_SCOPE_COMMITS)
+            else:
+                f.tags.extend(f"req:{i}" for i in sorted(all_ids))
+                f.tags.append(REQ_SCOPE_OPEN)
+
+
 def narrow(inv: Inventory, selected: dict[str, set[str]]) -> tuple[Inventory, dict]:
     """Restrict an inventory to the selected paths plus context files.
 
@@ -178,32 +375,62 @@ def narrow(inv: Inventory, selected: dict[str, set[str]]) -> tuple[Inventory, di
     """
     kept: list[FileInfo] = []
     changed_kept = 0
+    changed_read = 0
     context_kept = 0
+    # A changed file the probes will not look at -- binary, over the size
+    # cap, or in a generated role such as dist/ -- used to count as read
+    # because it was in the inventory (FAIL-128). It is kept, so a reader
+    # can see it was changed, and listed here with why it was not read.
+    not_read: list[dict] = []
+    skip_reasons = {(s["repo_id"], s["path"]): s["reason"]
+                    for s in inv.skipped if s["kind"] == "file"}
     for f in inv.files:
         want = f.path in selected.get(f.repo_id, set())
         if want:
             changed_kept += 1
+            why = unread_reason(f, skip_reasons)
+            if why:
+                not_read.append({"path": f.path, "reason": why})
+            else:
+                changed_read += 1
         elif is_context(f):
             context_kept += 1
             want = True
         if want:
             kept.append(f)
 
-    out = Inventory(files=kept, stacks=set(inv.stacks))
+    out = Inventory(files=kept, stacks=set(inv.stacks), whole=inv.whole or inv,
+                    skipped=list(inv.skipped))
     for f in kept:
         out.by_repo.setdefault(f.repo_id, []).append(f)
     for rid in inv.by_repo:
         out.by_repo.setdefault(rid, [])
 
     total_lines = sum(f.lines for f in inv.files)
-    kept_lines = sum(f.lines for f in kept)
+    read = [f for f in kept if not unread_reason(f, skip_reasons)]
+    kept_lines = sum(f.lines for f in read)
     stats = {
         "files_total": len(inv.files),
-        "files_read": len(kept),
+        "files_read": len(read),
         "files_changed": changed_kept,
+        "files_changed_read": changed_read,
+        "files_changed_not_read": len(not_read),
+        "changed_not_read": not_read[:50],
         "files_context": context_kept,
         "lines_total": total_lines,
         "lines_read": kept_lines,
         "fraction_read": round(kept_lines / total_lines, 4) if total_lines else 1.0,
     }
     return out, stats
+
+
+def unread_reason(f: FileInfo, skip_reasons: dict[tuple[str, str], str] | None = None) -> str:
+    """Why a file in the inventory is one no probe reads, or "" when the
+    probes do read it. Binary covers the size cap and the NUL test
+    (inventory.walk_repo records the precise reason); `generated` is a role
+    every language and quality probe skips."""
+    if f.binary:
+        return (skip_reasons or {}).get((f.repo_id, f.path)) or "binary or over the size cap"
+    if f.role == "generated":
+        return "generated (dist/, build/, minified or lock file): no probe reads it"
+    return ""

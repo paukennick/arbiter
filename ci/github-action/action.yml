@@ -21,6 +21,10 @@ inputs:
     description: Fail the job when the gate fails
     required: false
     default: "true"
+  config:
+    description: The arbiter.yaml to trust in full (ARB-148); a path that does not exist means the defaults
+    required: false
+    default: "arbiter.yaml"
 outputs:
   report:
     description: Path to report.json
@@ -34,8 +38,9 @@ runs:
       shell: bash
       run: |
         set +e
-        ARGS="--profile ${{ inputs.profile }} --out arbiter-out --format json,sarif,markdown"
+        ARGS="--profile ${{ inputs.profile }} --out arbiter-out --format json,sarif,markdown --github"
         if [ -n "${{ inputs.baseline }}" ]; then ARGS="$ARGS --baseline ${{ inputs.baseline }}"; fi
+        if [ -n "${{ inputs.config }}" ]; then ARGS="$ARGS --config ${{ inputs.config }}"; fi
         if [ -n "${{ inputs.system }}" ]; then
           arbiter gate --system "${{ inputs.system }}" $ARGS
         else
@@ -47,6 +52,6 @@ runs:
         if [ "${{ inputs.fail }}" = "true" ]; then exit $CODE; fi
         exit 0
     - if: always()
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@9f759ee644a3e7c15c1390abf49868036c00067b # v3
       with:
         sarif_file: arbiter-out/report.sarif

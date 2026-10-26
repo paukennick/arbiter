@@ -19,8 +19,8 @@ drifting underneath you. Three further limits keep the adaptation honest:
   1. Learning adjusts CONFIDENCE, never SEVERITY. How sure we are is
      measurable from feedback; how much a defect matters is a judgement that
      belongs to the policy file.
-  2. Learning never changes a gate outcome unless `gate.use_calibration` is
-     explicitly set.
+  2. Learning never changes a gate outcome: the gate reads severity, and
+     learning moves only confidence.
   3. A rule with too few observations reports as unproven rather than
      inheriting a flattering estimate from a handful of samples.
 """
@@ -30,7 +30,7 @@ import datetime as _dt
 import hashlib
 import json
 import statistics
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -267,7 +267,7 @@ class Knowledge:
             return Knowledge()
         try:
             return Knowledge.from_dict(json.loads(p.read_text(encoding="utf-8")))
-        except Exception:
+        except Exception:  # noqa: BLE001 - a corrupt knowledge file starts fresh rather than blocking every scan
             return Knowledge()
 
     def save(self, path: str | None = None) -> str:
@@ -485,7 +485,7 @@ def metrics_from_inventory(inventory, graph=None) -> dict:
                     complexities.append(float(fn.complexity))
             out["function_lines"] = build_profile(lengths)
             out["complexity"] = build_profile(complexities)
-    except Exception:
+    except Exception:  # noqa: BLE001 - profiles are advisory; a parser failure leaves them absent
         pass
     return out
 

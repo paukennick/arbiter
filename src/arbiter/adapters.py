@@ -15,16 +15,48 @@ import re
 import shutil
 import subprocess
 import tempfile
-import time
-import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from . import cwe as _cwe
 from .core import Finding, Location
 from .probes import Probe, ProbeContext, register
 
 PACKS = Path(__file__).parent / "packs" / "adapters"
+
+
+def _toml_loads(text: str) -> dict:
+    """Parse TOML with the standard library where it has a parser (3.11+)
+    and with `tomli`, the same code published separately, below that. This
+    is the one place either module is imported, so Python 3.10 support is
+    decided here and nowhere else (REQ-040)."""
+    try:
+        import tomllib
+    except ModuleNotFoundError:  # pragma: no cover - exercised on 3.10 only
+        import tomli as tomllib  # type: ignore[no-redef] - the 3.10 fallback rebinds the same name on purpose
+    return tomllib.loads(text)
+
+
+class AdapterOutputError(RuntimeError):
+    """The tool's output could not be read as the manifest says it should:
+    nothing written, not JSON, or JSON without the key the findings live
+    under. Not an empty result: an answer that cannot be read is no answer
+    (ARB-146)."""
+
+
+class AnalyzerErrors(RuntimeError):
+    """The tool reported errors of its own (`map.errors`, bandit's and
+    semgrep's `errors[]`): files it could not parse, rules it could not
+    load. The run is recorded as an error, not as the tool's answer for
+    the tree: the files it skipped were not checked, and invariant CI-7
+    says an errored probe reports no findings, so the ones it did produce
+    are set aside and counted in the reason. Fix what the tool could not
+    read and rerun; the findings come back with the status."""
+
+    def __init__(self, message: str, findings: list[Finding]):
+        super().__init__(message)
+        self.findings = findings
 
 
 def cache_dir() -> Path:
@@ -42,6 +74,80 @@ def cache_dir() -> Path:
     """
     base = os.environ.get("ARBITER_CACHE_DIR")
     return Path(base) if base else Path.home() / ".cache" / "arbiter"
+
+
+# ---------------------------------------------------------------------------
+# Tool-version memo (ARB-045)
+# ---------------------------------------------------------------------------
+
+VERSION_MEMO_FILE = "tool-versions.json"
+VERSION_MEMO_SCHEMA = 1
+_SEP = "\x1f"
+
+
+def version_memo_path() -> Path:
+    return cache_dir() / VERSION_MEMO_FILE
+
+
+def _version_stamp(version_argv: list[str]) -> list[list]:
+    """What the memo is keyed on: the path, mtime and size of the resolved
+    executable, and of any other argument that is itself a file.
+
+    The second part is for a tool invoked through an interpreter
+    (`python script.py --version`): the interpreter is argv[0], but the
+    version is the script's, and replacing the script must re-probe. A
+    manifest that names a bare binary gets one stamp, the binary's.
+    """
+    stamp: list[list] = []
+    for i, arg in enumerate(version_argv):
+        if i and not os.path.isabs(arg):
+            continue
+        try:
+            st = os.stat(arg)
+        except OSError:
+            if i == 0:
+                return []
+            continue
+        if i and not os.path.isfile(arg):
+            continue
+        stamp.append([arg, st.st_mtime_ns, st.st_size])
+    return stamp
+
+
+def _read_version_memo() -> dict:
+    """A missing, corrupt or unreadable memo is an empty one: the cost is one
+    probe per tool, never an error."""
+    try:
+        doc = json.loads(version_memo_path().read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(doc, dict) or doc.get("schema_version") != VERSION_MEMO_SCHEMA:
+        return {}
+    tools = doc.get("tools")
+    return tools if isinstance(tools, dict) else {}
+
+
+def _write_version_memo(memo_key: str, entry: dict) -> bool:
+    """Read-merge-write the memo whole, to a temporary name and then renamed
+    into place, so a concurrent reader sees the old file or the new one. A
+    directory that cannot be written costs nothing but the next probe."""
+    tools = _read_version_memo()
+    tools[memo_key] = entry
+    path = version_memo_path()
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(prefix=".tool-versions-", suffix=".tmp", dir=str(path.parent))
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
+                json.dump({"schema_version": VERSION_MEMO_SCHEMA, "tools": tools}, fh,
+                          sort_keys=True, indent=1)
+            os.replace(tmp, path)
+        finally:
+            if os.path.exists(tmp):
+                os.unlink(tmp)
+    except OSError:
+        return False
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -125,6 +231,7 @@ class Adapter:
     dimensions: list[str] = field(default_factory=lambda: ["quality"])
     stacks: list[str] | None = None
     binaries: list[str] = field(default_factory=list)
+    files: list[str] = field(default_factory=list)
     network: bool = False
     timeout: int = 300
     argv: list[str] = field(default_factory=list)
@@ -143,18 +250,72 @@ class Adapter:
     raw: dict = field(default_factory=dict)
 
     # -- lifecycle ---------------------------------------------------------
-    def missing_binaries(self) -> list[str]:
-        return [b for b in self.binaries if shutil.which(b) is None]
+    def missing_binaries(self, ctx: ProbeContext | None = None) -> list[str]:
+        if ctx is None:
+            return [binary for binary in self.binaries if shutil.which(binary) is None]
+        missing: list[str] = []
+        for binary in self.binaries:
+            for repo in ctx.repos:
+                from .tooling import resolve_locked_binary
+                locked, executable = resolve_locked_binary(repo.path, binary)
+                if (locked and executable is None) or (not locked and shutil.which(binary) is None):
+                    missing.append(binary)
+                    break
+        return missing
+
+
+    def missing_files(self, ctx: ProbeContext) -> tuple[bool, str]:
+        from .tooling import locked_cache_dir
+
+        for repo in ctx.repos:
+            locked_cache = locked_cache_dir(repo.path)
+            cache = locked_cache or cache_dir()
+            for spec in self.files:
+                path = Path(spec.replace("{cache}", str(cache)))
+                if not path.exists():
+                    install = "arbiter tools install" if locked_cache else "tools/install_tools.sh"
+                    return True, f"missing required file: {path} (run {install})"
+        return False, ""
 
     def tool_version(self) -> str:
+        """The analyzer's own version string, probed once per installed binary.
+
+        Every `arbiter` invocation registers every adapter, and registering
+        meant running each tool's `--version`: 27.5 s on one machine, paid
+        even by a partial scan that never runs an adapter (ARB-045). The
+        answer only changes when the binary does, so it is memoised at
+        `cache_dir()/tool-versions.json` under the resolved executable's
+        path, mtime and size (see `_version_stamp`). A binary that is not
+        installed is never probed: there is nothing to ask. `--no-cache`
+        leaves this alone -- it is not a result cache -- and
+        `ARBITER_NO_VERSION_MEMO=1` switches it off.
+        """
         if not self.version_argv:
             return ""
+        version_argv = list(self.version_argv)
+        resolved = shutil.which(version_argv[0])
+        if resolved is None:
+            return ""
+        version_argv[0] = resolved
+        memo_on = os.environ.get("ARBITER_NO_VERSION_MEMO", "") != "1"
+        stamp = _version_stamp(version_argv) if memo_on else []
+        memo_key = _SEP.join(version_argv)
+        if memo_on:
+            entry = _read_version_memo().get(memo_key)
+            if isinstance(entry, dict) and entry.get("stamp") == stamp \
+                    and isinstance(entry.get("version"), str):
+                return entry["version"]
+        version = self._probe_version(version_argv)
+        if memo_on:
+            _write_version_memo(memo_key, {"stamp": stamp, "version": version})
+        return version
+
+    @staticmethod
+    def _probe_version(version_argv: list[str]) -> str:
         try:
-            version_argv = list(self.version_argv)
-            version_argv[0] = shutil.which(version_argv[0]) or version_argv[0]
             r = subprocess.run(version_argv, capture_output=True, text=True, timeout=20)
             return (r.stdout or r.stderr).strip().split("\n")[0][:60]
-        except Exception:
+        except (OSError, subprocess.SubprocessError, ValueError):
             return ""
 
     def invoke(self, workdir: str) -> tuple[str, int]:
@@ -186,7 +347,9 @@ class Adapter:
         if any("{report_file}" in a for a in self.argv):
             fd, report_file = tempfile.mkstemp(prefix="arbiter-report-", suffix=".json")
             os.close(fd)
-        argv = [a.replace("{workdir}", workdir).replace("{cache}", str(cache_dir()))
+        from .tooling import locked_cache_dir
+        cache = locked_cache_dir(workdir) or cache_dir()
+        argv = [a.replace("{workdir}", workdir).replace("{cache}", str(cache))
                 .replace("{report_file}", report_file or "")
                 for a in self.argv]
         if argv:
@@ -197,8 +360,13 @@ class Adapter:
             # missing_binaries() but then fails every invocation with
             # WinError 2. Resolving to the full, extensioned path here makes
             # invocation match the availability check.
-            argv[0] = shutil.which(argv[0]) or argv[0]
-        cwd = (self.cwd.replace("{workdir}", workdir).replace("{cache}", str(cache_dir()))
+            from .tooling import resolve_locked_binary
+            binary = Path(argv[0]).name
+            locked, executable = resolve_locked_binary(workdir, binary)
+            if locked and executable is None:
+                raise FileNotFoundError(f"locked analyzer {binary} is missing or has the wrong version in its cache")
+            argv[0] = executable if locked else (shutil.which(argv[0]) or argv[0])
+        cwd = (self.cwd.replace("{workdir}", workdir).replace("{cache}", str(cache))
                if self.cwd else None)
         env = dict(os.environ)
         env.setdefault("PYTHONIOENCODING", "utf-8")
@@ -226,14 +394,17 @@ class Adapter:
             cwd=cwd, env=env, **popen_kwargs,
         )
         try:
-            out, _err = proc.communicate(timeout=self.timeout)
+            out, err = proc.communicate(timeout=self.timeout)
+            # The tool's own account of a failed run lives on stderr; kept so
+            # an unreadable result can say why (gitleaks: `FTL ... toml`).
+            self.last_stderr = (err or "").strip()[-400:]
             if report_file:
                 try:
                     out = Path(report_file).read_text(encoding="utf-8", errors="replace")
                 except OSError:
                     pass  # tool crashed before writing it; stdout/stderr already tell that story
             return out, proc.returncode
-        except BaseException:
+        except BaseException:  # KeyboardInterrupt included: the tool's process group dies with us, then re-raised
             self._kill_group(proc)
             raise
         finally:
@@ -291,9 +462,20 @@ class Adapter:
 
     # -- normalize ---------------------------------------------------------
     def parse_output(self, out: str) -> list[Any]:
+        """The finding rows in `out`. Raises `AdapterOutputError` when the
+        output is not what the manifest describes; an empty list means the
+        tool answered and found nothing."""
+        return self.rows_of(self.decode(out))
+
+    def decode(self, out: str) -> Any:
+        """The tool's output as a JSON document (a list of documents under
+        `parse = "jsonlines"`). Empty, non-JSON, and a banner with nothing
+        readable after it are all `AdapterOutputError` (ARB-146): before
+        that, each of them parsed as "ran, found nothing", and a gitleaks
+        that died on a malformed `.gitleaks.toml` read as a clean repository."""
         out = out.strip()
         if not out:
-            return []
+            raise AdapterOutputError(f"{self.name} wrote no output")
         if self.parse == "jsonlines":
             rows = []
             for line in out.split("\n"):
@@ -302,21 +484,88 @@ class Adapter:
                     continue
                 try:
                     rows.append(json.loads(line))
-                except Exception:
+                except ValueError:
                     continue
+            if not rows:
+                raise AdapterOutputError(f"{self.name} wrote no JSON line that could be read")
             return rows
         try:
-            doc = json.loads(out)
-        except Exception:
+            return json.loads(out)
+        except ValueError:
             # tools sometimes emit a banner before the JSON body
             m = re.search(r"[\[{]", out)
-            if not m:
-                return []
-            try:
-                doc = json.loads(out[m.start():])
-            except Exception:
-                return []
+            if m:
+                try:
+                    return json.loads(out[m.start():])
+                except ValueError:
+                    pass
+        raise AdapterOutputError(f"{self.name} output is not JSON: {out[:120]!r}")
+
+    def rows_of(self, doc: Any) -> list[Any]:
+        """The finding rows of a decoded document, by the manifest's
+        `map.findings` selector. A document without the key the selector
+        starts at is `AdapterOutputError`: a tool whose schema moved under
+        us must not read as one that found nothing."""
+        if self.parse == "trivy":
+            document = doc
+            if not isinstance(document, dict):
+                raise AdapterOutputError(f"{self.name} output is not a JSON object")
+            results = document.get("Results", [])
+            if not isinstance(results, list):
+                raise AdapterOutputError(f"{self.name} output has no `Results` list")
+            rows: list[dict[str, Any]] = []
+            for result in results:
+                if not isinstance(result, dict):
+                    continue
+                target = str(result.get("Target") or "")
+                if not target:
+                    continue
+                for vulnerability in result.get("Vulnerabilities") or []:
+                    if not isinstance(vulnerability, dict):
+                        continue
+                    identifier = str(vulnerability.get("VulnerabilityID") or "")
+                    if not identifier:
+                        continue
+                    package = str(vulnerability.get("PkgName") or "")
+                    installed = str(vulnerability.get("InstalledVersion") or "")
+                    fixed = str(vulnerability.get("FixedVersion") or "")
+                    logical = "@".join(part for part in (package, installed) if part)
+                    remediation = f"Upgrade {package} to {fixed}." if package and fixed else ""
+                    rows.append({
+                        "rule_id": f"vulnerability:{identifier}",
+                        "title": str(vulnerability.get("Title") or f"{identifier} in {package}"),
+                        "path": target,
+                        "line": 0,
+                        "logical": logical,
+                        "severity": str(vulnerability.get("Severity") or "unknown"),
+                        "description": str(vulnerability.get("Description") or ""),
+                        "remediation": remediation,
+                    })
+                for misconfiguration in result.get("Misconfigurations") or []:
+                    if not isinstance(misconfiguration, dict):
+                        continue
+                    if str(misconfiguration.get("Status") or "").upper() != "FAIL":
+                        continue
+                    identifier = str(misconfiguration.get("ID") or "")
+                    if not identifier:
+                        continue
+                    cause = misconfiguration.get("CauseMetadata")
+                    line = cause.get("StartLine", 0) if isinstance(cause, dict) else 0
+                    rows.append({
+                        "rule_id": f"misconfiguration:{identifier}",
+                        "title": str(misconfiguration.get("Title") or identifier),
+                        "path": target,
+                        "line": line,
+                        "logical": str(misconfiguration.get("Resource") or ""),
+                        "severity": str(misconfiguration.get("Severity") or "unknown"),
+                        "description": str(misconfiguration.get("Message") or ""),
+                        "remediation": str(misconfiguration.get("Resolution") or ""),
+                    })
+            return rows
+        if self.parse == "jsonlines":
+            return list(doc) if isinstance(doc, list) else [doc]
         expr = self.mapping.get("findings", "$")
+        self._check_shape(doc, expr)
         rows = select(doc, expr)
         # Some tools (checkov with several frameworks) emit a LIST of result
         # objects rather than one. Fan the selector across the elements.
@@ -324,6 +573,49 @@ class Adapter:
             for element in doc:
                 rows.extend(select(element, expr))
         return rows
+
+    def _check_shape(self, doc: Any, expr: str) -> None:
+        """`$` needs a list; `$.key...` needs `key` in the object (or in at
+        least one object of a list of them, the checkov shape)."""
+        if expr == "$":
+            if not isinstance(doc, list):
+                raise AdapterOutputError(f"{self.name} output is not the JSON list its manifest expects")
+            return
+        if not expr.startswith("$."):
+            return
+        first = re.split(r"[.\[]", expr[2:], maxsplit=1)[0]
+        if not first:
+            return
+        if isinstance(doc, dict):
+            if first not in doc:
+                raise AdapterOutputError(f"{self.name} output has no `{first}` key; "
+                                         "the tool's output format may have changed")
+            return
+        if isinstance(doc, list):
+            if not any(isinstance(d, dict) and first in d for d in doc):
+                raise AdapterOutputError(f"{self.name} output has no `{first}` key in any element")
+            return
+        raise AdapterOutputError(f"{self.name} output is not a JSON object")
+
+    def reported_errors(self, doc: Any) -> list[str]:
+        """The tool's own error reports, one message each, read from the
+        manifest's `map.errors` selector. An entry whose `level` is `warn`
+        or `warning` is advice, not a failure, and is not counted."""
+        expr = self.mapping.get("errors")
+        if not expr or isinstance(doc, list) and self.parse == "jsonlines":
+            return []
+        out: list[str] = []
+        for row in select(doc, expr):
+            if isinstance(row, dict):
+                if str(row.get("level") or "").lower() in ("warn", "warning"):
+                    continue
+                message = str(row.get("message") or row.get("reason") or row.get("msg") or "").strip()
+                where = str(row.get("path") or row.get("filename") or "").strip()
+                text = ": ".join(p for p in (where, message) if p) or json.dumps(row)[:120]
+            else:
+                text = str(row)
+            out.append(text[:200])
+        return out
 
     def _dig_remediation(self, row: Any, m: dict, field_key: str, format_key: str) -> tuple[str, str]:
         """Returns (text, source). source is "link" whenever the dug value is
@@ -403,26 +695,95 @@ class Adapter:
                 confidence=m.get("confidence", "high"),
                 repo_id=repo_id,
                 probe=self.name,
-                location=Location(path=path, start_line=line, logical=logical),
+                location=Location(path=path, start_line=line, logical=logical, repo_id=repo_id),
                 description=desc[:1000],
                 remediation=remediation[:500],
                 remediation_source=remediation_source,
                 evidence=f"{rule}@{path}:{logical}" if logical else f"{rule}@{path}",
+                cwe=_cwe.normalise(m["cwe_const"]) if m.get("cwe_const")
+                else _cwe.normalise(dig(row, m.get("cwe", ""), []) if m.get("cwe") else []),
                 tags=["external-tool", self.name],
             ))
         return out
 
     def run(self, ctx: ProbeContext) -> list[Finding]:
         findings: list[Finding] = []
+        errors: list[str] = []
         for repo in ctx.repos:
             try:
                 out, code = self.invoke(repo.path)
             except subprocess.TimeoutExpired:
                 raise RuntimeError(f"{self.name} timed out after {self.timeout}s")
-            if code not in self.ok_exit and not out.strip():
-                raise RuntimeError(f"{self.name} exited {code}")
-            findings.extend(self.to_findings(self.parse_output(out), repo.id, repo.path))
+            # Output that cannot be read as the manifest describes is a
+            # failed run whatever the exit code (ARB-146): gitleaks exits 1
+            # both for "leaks found" and for a fatal config error, ruff
+            # `--exit-zero` still exits 1 and writes nothing when its own
+            # config is bad, and a renamed results key is not an empty one.
+            try:
+                doc = self.decode(out)
+                rows = self.rows_of(doc)
+            except AdapterOutputError as exc:
+                detail = str(exc).removeprefix(f"{self.name} ")
+                if code not in self.ok_exit:
+                    raise RuntimeError(f"{self.name} exited {code}: {detail}{self._stderr_detail()}") from None
+                raise RuntimeError(f"{self.name} {detail} (exit {code}){self._stderr_detail()}") from None
+            # An exit outside ok_exit is a failed run unless the tool still
+            # handed back findings. Checking only for empty output let semgrep's
+            # "unable to find a config" (exit 7, a JSON body of errors and no
+            # results) be recorded as a clean run with nothing found (ARB-059).
+            if code not in self.ok_exit and not rows:
+                raise RuntimeError(f"{self.name} exited {code}{_error_detail(out)}{self._stderr_detail()}")
+            produced = self.to_findings(rows, repo.id, repo.path)
+            known = {f.path for f in ctx.inventory.by_repo.get(repo.id, [])}
+            findings.extend(in_scope(produced, known))
+            errors.extend(self.reported_errors(doc))
+        if errors:
+            more = f" (+{len(errors) - 1} more)" if len(errors) > 1 else ""
+            kept = (f"; {len(findings)} finding(s) from the files it did read are set aside "
+                    "until the run is clean" if findings else "")
+            raise AnalyzerErrors(
+                f"{self.name} reported {len(errors)} error(s) of its own, so part of the tree "
+                f"was not checked: {errors[0]}{more}{kept}", findings)
         return findings
+
+    def _stderr_detail(self) -> str:
+        err = getattr(self, "last_stderr", "")
+        return f"; stderr: {err.splitlines()[-1][:200]}" if err else ""
+
+
+def _error_detail(out: str) -> str:
+    """The tool's own first error message, when it reported one as JSON."""
+    try:
+        doc = json.loads(out)
+    except ValueError:
+        return ""
+    errors = doc.get("errors") if isinstance(doc, dict) else None
+    if isinstance(errors, list) and errors and isinstance(errors[0], dict):
+        message = str(errors[0].get("message") or "").strip()
+        if message:
+            return f": {message[:200]}"
+    return ""
+
+
+def in_scope(findings: list[Finding], known_paths: set[str]) -> list[Finding]:
+    """Keep only findings on files the inventory decided to scan.
+
+    Every external analyzer walks the tree itself, and each one has its own
+    idea of what to skip. The inventory is Arbiter's single answer to that
+    question -- SKIP_DIRS, git-ignored paths, generated roles -- and REQ-026
+    and REQ-029 taught bandit, checkov and semgrep to honour it through their
+    own exclusion flags. gitleaks was not taught, and the first self-gate
+    reported four critical secrets: fixture token shapes it found in a
+    git-ignored graph file and in __pycache__. Rather than teach each tool
+    separately and miss the next one, the boundary is enforced once, here,
+    on the way in. A finding with no path (a tool-level verdict) is kept.
+    """
+    out: list[Finding] = []
+    for f in findings:
+        path = f.location.path
+        if not path or path in known_paths:
+            out.append(f)
+    return out
 
 
 SCOPE_REASON = ("no measurement establishes that this external analyzer returns "
@@ -444,7 +805,7 @@ def _scope_of(data: dict) -> str:
 
 
 def load_adapter(path: Path) -> Adapter:
-    data = tomllib.loads(path.read_text(encoding="utf-8"))
+    data = _toml_loads(path.read_text(encoding="utf-8"))
     req = data.get("requires", {})
     inv = data.get("invoke", {})
     sel = data.get("selects", {})
@@ -453,6 +814,7 @@ def load_adapter(path: Path) -> Adapter:
         dimensions=data.get("dimensions", ["quality"]),
         stacks=sel.get("stacks"),
         binaries=req.get("binaries", []),
+        files=req.get("files", []),
         network=req.get("network", False),
         timeout=int(req.get("timeout", 300)),
         argv=inv.get("argv", []),
@@ -478,7 +840,7 @@ def load_all(extra_dirs: list[str] | None = None) -> list[Adapter]:
         for p in sorted(d.glob("*.adapter.toml")):
             try:
                 out.append(load_adapter(p))
-            except Exception:
+            except Exception:  # noqa: BLE001 - one malformed manifest must not take the other adapters down
                 continue
     return out
 
@@ -503,9 +865,13 @@ def register_adapters(extra_dirs: list[str] | None = None) -> list[Adapter]:
             run=a.run,
             stacks=a.stacks,
             binaries=a.binaries,
+            binary_checker=a.missing_binaries,
+            dependency_checker=a.missing_files,
+            files=a.files,
             network=a.network,
             scope=a.scope,
             scope_reason=SCOPE_REASON,
             version=a.tool_version() or "",
+            external=True,
         ))
     return adapters

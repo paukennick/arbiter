@@ -127,6 +127,67 @@ MUTATIONS = [
         new="            severity = record.get(\"severity\")\n            if True:",
         test="tests/test_measurement.py::test_a_measured_severity_reaches_a_scan",
     ),
+    Mutation(
+        name="config-not-in-cache-key",
+        defect="The result cache stops keying on the configuration, so a changed "
+               "threshold or house rule is answered from the previous scan's findings.",
+        path="src/arbiter/cache.py",
+        old='    return _sha(cfg, getattr(probe, "version", ""), ARBITER_VERSION, code_digest(), context)',
+        new='    return _sha("", getattr(probe, "version", ""), ARBITER_VERSION, code_digest(), context)',
+        test="tests/test_cache.py::test_a_config_change_invalidates_the_cache",
+    ),
+    Mutation(
+        name="governance-ignores-status",
+        defect="The open-failure rule stops reading the ledger entry's status, so "
+               "a fixed failure whose affected file changed is reported as if it "
+               "were still open and every change to a once-broken file is noise.",
+        path="src/arbiter/probes.py",
+        old='        if str(e.get("status") or "").lower() not in _OPEN_STATUSES:\n'
+            '            continue\n        fid = str(e.get("id") or "?")\n'
+            '        tests = [_test_file(t)',
+        new='        fid = str(e.get("id") or "?")\n'
+            '        tests = [_test_file(t)',
+        test="tests/test_governance.py::test_a_changed_affected_file_without_its_regression_test_is_reported",
+    ),
+    Mutation(
+        name="adapter-memo-ignores-the-tree",
+        defect="The adapter memo stops keying on the inventory digest, so an "
+               "analyzer's findings from the previous tree are replayed after a "
+               "file changed.",
+        path="src/arbiter/cache.py",
+        old='    return _sha("adapter", name, version, rules, inputs)',
+        new='    return _sha("adapter", name, version, rules, "")',
+        test="tests/test_adapter_cache.py::test_one_changed_file_reruns_every_adapter",
+    ),
+    Mutation(
+        name="quoted-uses-ref",
+        defect="The workflow `uses:` line pattern lets the ref run over a closing "
+               "quote again, so a quoted SHA pin reads as `<sha>\"` and is "
+               "reported unpinned (FAIL-100).",
+        path="src/arbiter/supply.py",
+        old='_USES_LINE = re.compile(r"""^[ \\t]*-?[ \\t]*uses:[ \\t]*(["\']?)([^\\s"\'#]+)\\1""", re.M)',
+        new='_USES_LINE = re.compile(r"""^[ \\t]*-?[ \\t]*uses:[ \\t]*()([^\\s#]+)\\1""", re.M)',
+        test="tests/test_supply_pinning.py::test_the_fallback_reader_handles_quotes_too",
+    ),
+    Mutation(
+        name="docker-uses-read-as-action",
+        defect="A `uses: docker://image@sha256:...` digest is judged as an action "
+               "again, so its `sha256:` ref fails the 40-hex test (FAIL-100).",
+        path="src/arbiter/supply.py",
+        old='        if value.startswith("./") or value.startswith("docker://") or "@" not in value:',
+        new='        if value.startswith("./") or "@" not in value:',
+        test="tests/test_supply_pinning.py::test_a_docker_digest_is_not_an_unpinned_action",
+    ),
+    Mutation(
+        name="version-memo-ignores-the-binary",
+        defect="The tool-version memo stops comparing the executable's stamp, so a "
+               "reinstalled analyzer keeps reporting the old version string.",
+        path="src/arbiter/adapters.py",
+        old='            if isinstance(entry, dict) and entry.get("stamp") == stamp \\\n'
+            '                    and isinstance(entry.get("version"), str):',
+        new='            if isinstance(entry, dict) and isinstance(entry.get("version"), str):',
+        test="tests/test_tool_version_memo.py::test_touching_the_executable_invalidates_its_entry",
+    ),
 ]
 
 

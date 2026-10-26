@@ -30,7 +30,9 @@
       "CHANGELOG.md",
       "README.md",
       "SETUP.md",
-      "NOTICE.md"
+      "NOTICE.md",
+      "docs/",
+      ".ai/failures/failure-ledger.json"
     ],
     "branching_or_pr_standard": "main branch main; remote github.com/paukennick/arbiter; no PR template in-repo",
     "comment_style": "minimal; comments only for non-obvious WHY, matching existing src/arbiter style",
@@ -39,7 +41,29 @@
     "allow_dependency_changes": false,
     "allow_schema_changes": false,
     "allow_destructive_data_changes": false,
-    "require_user_confirmation_for_destructive_actions": true
+    "require_user_confirmation_for_destructive_actions": true,
+    "classification_banner": "",
+    "allowed_root_paths": [
+      ".arbiter",
+      ".dockerignore",
+      ".githooks",
+      ".claude",
+      ".mcp.json",
+      "HANDOFF.md",
+      "NOTICE.md",
+      "RUNNING-ON-YOUR-OWN-CODE.md",
+      "SETUP.md",
+      "arbiter.yaml",
+      "ci",
+      "deploy",
+      "docs",
+      "examples",
+      "fixtures",
+      "src",
+      "tools",
+      "training"
+    ],
+    "defect_category_pattern": "defect|bug|fix|regress|incident|failure"
   },
   "global_operating_principles": {
     "targeted_access_only": {
@@ -320,7 +344,7 @@
   },
   "required_output_after_each_task": {
     "requirement_id": "REQ-###",
-    "status": "completed | pending | proposed | blocked | needs_review",
+    "status": "completed | pending | proposed | blocked | needs_review | withdrawn",
     "minimum_access_scope_used": [
       "<specific file/module/component/table/config/test/doc accessed>"
     ],

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -237,7 +237,7 @@ class Resource:
     def flat_text(self) -> str:
         try:
             return json.dumps(self.properties, default=str).lower()
-        except Exception:
+        except (TypeError, ValueError):
             return str(self.properties).lower()
 
 
@@ -564,7 +564,7 @@ def _tf_provider(provider_name: str, native: str) -> str:
 def parse_tfplan(path: Path, rel: str, repo_id: str) -> list[Resource]:
     try:
         doc = json.loads(path.read_text(encoding="utf-8", errors="replace"))
-    except Exception:
+    except (OSError, ValueError):
         return []
     if not is_plan_document(doc):
         return []
@@ -684,13 +684,13 @@ def parse_cfn(path: Path, rel: str, repo_id: str) -> list[Resource]:
     if rel.endswith(".json"):
         try:
             doc = json.loads(raw)
-        except Exception:
+        except ValueError:
             return []
     else:
+        import yaml
         try:
-            import yaml  # type: ignore
             doc = yaml.safe_load(raw)
-        except Exception:
+        except yaml.YAMLError:
             return []
     if not isinstance(doc, dict) or not isinstance(doc.get("Resources"), dict):
         return []
@@ -739,10 +739,10 @@ def parse_cfn(path: Path, rel: str, repo_id: str) -> list[Resource]:
 
 
 def parse_k8s(path: Path, rel: str, repo_id: str) -> list[Resource]:
+    import yaml
     try:
-        import yaml  # type: ignore
         docs = list(yaml.safe_load_all(path.read_text(encoding="utf-8", errors="replace")))
-    except Exception:
+    except (OSError, yaml.YAMLError):
         return []
     out: list[Resource] = []
     for doc in docs:

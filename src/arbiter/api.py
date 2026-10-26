@@ -83,11 +83,12 @@ import hmac
 import json
 import os
 import secrets
+import sqlite3
 import stat
 import sys
 import threading
 import time
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -373,9 +374,10 @@ class RateLimiter:
 
     Held in memory, which is the honest scope of it: the counts do not survive a
     restart and are not shared between processes. For a manually distributed
-    pilot on one machine that is sufficient, and it is stated here rather than
-    implied so that running several instances is a known gap rather than a
-    surprise.
+    pilot served by one process that is sufficient. Several processes serving
+    the same keys -- uvicorn workers, or two instances behind one address --
+    want `FileRateLimiter` below (`--limiter file`), which counts in SQLite
+    beside the key file so the budget is one budget.
     """
 
     def __init__(self, requests: int = RATE_LIMIT_REQUESTS,
@@ -435,8 +437,164 @@ class RateLimiter:
                 self._total_running = max(0, self._total_running - 1)
 
 
-# One limiter per process, shared by every request.
-LIMITER = RateLimiter()
+def default_limiter_path(key_path: Path | None = None) -> Path:
+    """Where the shared counts live: `limiter.db` beside the key file, so the
+    processes that share one set of keys share one budget."""
+    return (key_path or default_key_path()).parent / "limiter.db"
+
+
+# A slot a process took and never gave back -- because it was killed mid-scan
+# -- is treated as released once it is older than this. The hosted scan has a
+# 900 s ceiling (`service.DEFAULT_TIMEOUT`); a slot older than the ceiling
+# plus a minute belongs to nobody who is still running.
+SLOT_TTL_SECONDS = DEFAULT_TIMEOUT + 60
+
+
+class FileRateLimiter:
+    """The same caps as `RateLimiter`, counted in SQLite so that every process
+    serving the same keys shares one budget.
+
+    Each decision is one `BEGIN IMMEDIATE` transaction: SQLite hands the write
+    lock to one process at a time, so two workers cannot both read "one slot
+    left" and both take it. A connection is opened per decision rather than
+    held, which keeps the object safe to share between threads and between
+    forked workers alike.
+
+    A slot is a row stamped with the time it was taken; `slot()` deletes it on
+    exit whether the body returned or raised. A process killed while holding
+    one cannot delete its row, so rows older than `slot_ttl` are swept as
+    released by whichever decision comes next.
+    """
+
+    def __init__(self, path: Path | None = None,
+                 requests: int = RATE_LIMIT_REQUESTS,
+                 window: int = RATE_LIMIT_WINDOW_SECONDS,
+                 concurrent: int = MAX_CONCURRENT_SCANS,
+                 total: int = MAX_TOTAL_SCANS,
+                 slot_ttl: int = SLOT_TTL_SECONDS) -> None:
+        self.path = Path(path) if path else default_limiter_path()
+        self.requests = requests
+        self.window = window
+        self.concurrent = concurrent
+        self.total = total
+        self.slot_ttl = slot_ttl
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        with closing(self._connect()) as db:
+            db.executescript(
+                "CREATE TABLE IF NOT EXISTS calls ("
+                "  key_id TEXT NOT NULL, at REAL NOT NULL);"
+                "CREATE INDEX IF NOT EXISTS calls_by_key ON calls (key_id, at);"
+                "CREATE TABLE IF NOT EXISTS slots ("
+                "  token TEXT PRIMARY KEY, key_id TEXT NOT NULL,"
+                "  pid INTEGER NOT NULL, taken REAL NOT NULL);")
+
+    def _connect(self) -> sqlite3.Connection:
+        # isolation_level=None: no implicit transactions, so `BEGIN IMMEDIATE`
+        # below is the only transaction and it starts where it says it does.
+        # The timeout is how long a process waits for another's lock, which is
+        # milliseconds per decision; thirty seconds is a stuck disk, not a queue.
+        return sqlite3.connect(self.path, timeout=30, isolation_level=None)
+
+    def check(self, key_id: str, now: float | None = None) -> None:
+        """Record one request, or refuse it if the key is over its hourly cap."""
+        now = time.time() if now is None else now
+        with closing(self._connect()) as db:
+            db.execute("BEGIN IMMEDIATE")
+            try:
+                db.execute("DELETE FROM calls WHERE at <= ?", (now - self.window,))
+                recent = [row[0] for row in db.execute(
+                    "SELECT at FROM calls WHERE key_id = ? AND at > ?",
+                    (key_id, now - self.window))]
+                if len(recent) >= self.requests:
+                    wait = int(self.window - (now - min(recent))) + 1
+                    db.execute("COMMIT")
+                    raise RateLimited(
+                        f"this key has made {self.requests} requests in the last "
+                        f"{self.window // 60} minutes; try again in {wait}s", wait)
+                db.execute("INSERT INTO calls (key_id, at) VALUES (?, ?)", (key_id, now))
+                db.execute("COMMIT")
+            except sqlite3.Error:
+                db.execute("ROLLBACK")
+                raise
+
+    def _acquire(self, key_id: str, now: float | None = None) -> str:
+        """Take one slot and return its token. Split out from `slot()` so a
+        test can leave one behind, the way a killed process would."""
+        now = time.time() if now is None else now
+        token = secrets.token_hex(8)
+        with closing(self._connect()) as db:
+            db.execute("BEGIN IMMEDIATE")
+            try:
+                db.execute("DELETE FROM slots WHERE taken <= ?", (now - self.slot_ttl,))
+                running = db.execute("SELECT COUNT(*) FROM slots WHERE key_id = ?",
+                                     (key_id,)).fetchone()[0]
+                if running >= self.concurrent:
+                    db.execute("COMMIT")
+                    raise RateLimited(
+                        f"this key already has {running} scans running; "
+                        "wait for one to finish", 30)
+                total = db.execute("SELECT COUNT(*) FROM slots").fetchone()[0]
+                if total >= self.total:
+                    db.execute("COMMIT")
+                    raise RateLimited(
+                        f"the service is running its limit of {self.total} scans; "
+                        "try again shortly", 30)
+                db.execute("INSERT INTO slots (token, key_id, pid, taken) "
+                           "VALUES (?, ?, ?, ?)", (token, key_id, os.getpid(), now))
+                db.execute("COMMIT")
+            except sqlite3.Error:
+                db.execute("ROLLBACK")
+                raise
+        return token
+
+    def _release(self, token: str) -> None:
+        with closing(self._connect()) as db:
+            db.execute("DELETE FROM slots WHERE token = ?", (token,))
+
+    def running(self, key_id: str | None = None, now: float | None = None) -> int:
+        """How many slots are held right now, by one key or in total. Expired
+        rows are not counted, so the answer matches what `slot()` would see."""
+        now = time.time() if now is None else now
+        with closing(self._connect()) as db:
+            if key_id is None:
+                row = db.execute("SELECT COUNT(*) FROM slots WHERE taken > ?",
+                                 (now - self.slot_ttl,)).fetchone()
+            else:
+                row = db.execute("SELECT COUNT(*) FROM slots WHERE key_id = ? AND taken > ?",
+                                 (key_id, now - self.slot_ttl)).fetchone()
+        return int(row[0])
+
+    @contextmanager
+    def slot(self, key_id: str):
+        """Hold a concurrent scan slot, both the key's and the server's, with the
+        same two refusals and the same order as `RateLimiter.slot`."""
+        token = self._acquire(key_id)
+        try:
+            yield
+        finally:
+            self._release(token)
+
+
+# One limiter per process, shared by every request. The request paths read this
+# name at call time rather than binding it at import, so `configure_limiter`
+# (and a test's monkeypatch) can replace it without touching any call site.
+LIMITER: RateLimiter | FileRateLimiter = RateLimiter()
+
+LIMITER_KINDS = ("memory", "file")
+
+
+def configure_limiter(kind: str = "memory", key_path: Path | None = None,
+                      **caps: int) -> RateLimiter | FileRateLimiter:
+    """Install the process-wide limiter: `memory` for one process, `file` for
+    several processes serving the same keys. Returns what was installed."""
+    global LIMITER
+    if kind == "memory":
+        LIMITER = RateLimiter(**caps)
+    elif kind == "file":
+        LIMITER = FileRateLimiter(default_limiter_path(key_path), **caps)
+    else:
+        raise ServiceError(f"unknown limiter {kind!r}; choose one of {', '.join(LIMITER_KINDS)}")
+    return LIMITER
 
 
 # --------------------------------------------------------------------------
@@ -533,8 +691,12 @@ def handle_scan(upload: bytes | str | Path, profile: str = "offline", only: str 
     """Scan an uploaded archive and return the report. Keeps nothing."""
     with Workspace() as ws:
         source = _ingest(ws, upload)
+        # The hosted API is a machine surface: report.json travels as written,
+        # every finding plus the view the scan recorded, and the client's own
+        # renderers apply that view (`arbiter remote scan` shows every tier by
+        # default and the verified tier with --verified-only; ARB-100, ARB-103).
         result = scan(str(source), str(ws.output), profile=profile, only=only,
-                      skip=skip, timeout=timeout)
+                      skip=skip, timeout=timeout, show=None)
         # Deliberately not returning report_path: it names a directory that is
         # about to stop existing, and a caller should not learn server paths.
         return {"report": result["report"], "finding_count": result["finding_count"]}
@@ -667,7 +829,7 @@ def create_app(key_path: Path | None = None,
         except ServiceError as exc:
             audit.record(event, key, status=400, bytes_in=size, started=started)
             raise HTTPException(status_code=400, detail=str(exc)) from exc
-        except Exception:
+        except Exception:  # audited as a 500, then re-raised unchanged
             audit.record(event, key, status=500, bytes_in=size, started=started)
             raise
         audit.record(event, key, status=200, bytes_in=size, started=started)
@@ -722,17 +884,22 @@ def create_app(key_path: Path | None = None,
 
 def serve(host: str = "127.0.0.1", port: int = 8443, key_path: Path | None = None,
           certfile: str | None = None, keyfile: str | None = None,
-          audit_path: str | None = None, audit: bool = True) -> int:
+          audit_path: str | None = None, audit: bool = True,
+          limiter: str = "memory") -> int:
     """Run the API over TLS. There is no plaintext mode, and no plaintext port.
 
     This process holds the certificate. A proxy may sit in front of it, but the
     hop from that proxy to here is TLS too; nothing here opens a bare socket.
+
+    `limiter` is `memory` for one process or `file` for several processes that
+    serve the same key file and should share one budget (`FileRateLimiter`).
     """
     # The TLS check comes first deliberately. An operator whose install is
     # missing the extra should still be told plainly that their arrangement
     # would have served plaintext, rather than fixing the dependency and
     # meeting that refusal only on the second attempt.
     check_tls_config(certfile, keyfile)
+    configure_limiter(limiter, key_path)
 
     try:
         import uvicorn
@@ -748,6 +915,8 @@ def serve(host: str = "127.0.0.1", port: int = 8443, key_path: Path | None = Non
               "(who called and how it ended; never their code)")
     else:
         print("arbiter: auditing is off; no record of who called will be kept")
+    if limiter == "file":
+        print(f"arbiter: rate limits are shared through {LIMITER.path}")
     app = create_app(key_path, audit=log)
 
     # uvicorn builds its own SSL context and exposes no minimum-version hook, so

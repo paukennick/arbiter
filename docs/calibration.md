@@ -48,12 +48,18 @@ hundred thousand generated cases drown out ten real ones.
 
 - **Confidence moves, severity never does.** How often a rule is right is
   measurable; how much it matters when it is right is a policy judgement.
-- **Learning never changes a gate outcome** unless `gate.use_calibration` is set.
+- **Learning never changes a gate outcome.** The gate reads severity, and learning moves only confidence.
 - **One finding moves the statistics once.** Re-adjudicating a fingerprint is
   refused.
 
 A rule under 20 adjudicated observations reports as **unproven** rather than
 inheriting a flattering estimate from a handful of samples.
+
+This ledger (`.arbiter/knowledge.json`, human verdicts on your repository) is
+not the precision ledger. Gate-facing precision tiers read
+`tools/gold/precision.json`, built from ground truth and model labels
+([precision.md](precision.md#ledger)). The knowledge file shipped in this
+repository holds 0 human adjudications as of 2026-10-23.
 
 ## Adjudication
 
@@ -105,6 +111,20 @@ one.
 Verdicts recorded before this existed migrate with the reviewer
 `unattributed`. They are real evidence and are kept, but they are not given a
 plausible name on the way through — an invented one would read as a fact later.
+
+### A true positive can open a failure-ledger entry
+
+`arbiter review --apply FILE --ledger .ai/failures/failure-ledger.json` drafts
+one `open` entry in the OmniEngineering failure ledger for every verdict it
+records as a true positive: the finding's title, severity, rule and location,
+and a `how_detected` naming the finding id so applying the same marks twice
+adds nothing. Root cause, fix and regression test are left for the person who
+fixes it (`omni failure update FAIL-### ...`); the bridge records what the
+scanner knows and nothing it does not. The file it writes passes
+`omni failure check`, and `omni graph why <path>` then shows the finding
+beside the requirements and tests already attached to that file; the finding
+node itself is `recorded_as` that ledger entry, and `omni graph why f:<id>`
+walks from it to the rule, CWE, requirement and introducing commit (ARB-064).
 
 ### Adjudicating needs a terminal
 

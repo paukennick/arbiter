@@ -33,3 +33,6 @@ arbiter-out/
 arbiter-ab/
 training/*/
 *.egg-info/
+
+# OmniEngineering graph viewer bundle (vendored JS, large)
+.ai/graph-viewer/

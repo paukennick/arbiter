@@ -48,6 +48,9 @@ ok_exit = [0, 1]
 
 [map]
 findings = "$.results[*]"
+# The tool's own failures (files it could not parse, rules it could not
+# load). Any entry here makes the run an error, findings kept (ARB-146).
+errors = "$.errors[*]"
 rule_id = "test_id"
 title = "issue_text"
 path = "filename"
@@ -55,6 +58,8 @@ line = "line_number"
 severity = "issue_severity"
 severity_default = "medium"
 dimension = "security"
+# The tool's own weakness classification, normalised by arbiter.cwe.
+cwe = "issue_cwe.id"
 remediation = "more_info"
 remediation_default = "Review Bandit check {rule_id}'s trigger at this line and apply the standard fix for that class of issue (bandit.readthedocs.io, plugin listing) -- no specific fix text is catalogued for this check id yet."
 

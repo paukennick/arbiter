@@ -1,0 +1,41 @@
+{
+  "catalog_sha256": "dfd3ecf84665712f97f6ab2eba06699cb3c6c09b051d956ead9bf885b49c7bfa",
+  "grammars": [],
+  "schema_version": 1,
+  "semgrep_rules": {
+    "ref": "40b8c63f75dc7c22c8a77482d73bfb864b146f7e",
+    "required": true
+  },
+  "tools": [
+    {
+      "name": "checkov",
+      "required": true,
+      "version": "3.3.17"
+    },
+    {
+      "name": "semgrep",
+      "required": true,
+      "version": "1.177.0"
+    },
+    {
+      "name": "bandit",
+      "required": true,
+      "version": "1.9.4"
+    },
+    {
+      "name": "ruff",
+      "required": true,
+      "version": "0.15.11"
+    },
+    {
+      "name": "trivy",
+      "required": true,
+      "version": "0.76.1"
+    },
+    {
+      "name": "gitleaks",
+      "required": true,
+      "version": "8.21.2"
+    }
+  ]
+}

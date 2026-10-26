@@ -343,8 +343,8 @@ def main() -> int:
         lt, lh = loc_by_lang(tuned), loc_by_lang(held)
         if lt and lh:
             a, b = wt / (lt / 1000), wh / (lh / 1000)
-            print(f"\n    Weighted by what each finding is worth, which is the "
-                  f"number that\n    decides anybody's grade:")
+            print("\n    Weighted by what each finding is worth, which is the "
+                  "number that\n    decides anybody's grade:")
             print(f"      tuned {a:>6.2f}   held out {b:>6.2f}   "
                   f"{b / a if a else 0:.2f}x")
 

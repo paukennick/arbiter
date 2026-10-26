@@ -49,6 +49,13 @@ There is no tool that records a verdict, here or in `service.py`. `review
 the calibration ledger with the model's opinion of the model's output, and
 `learn.record()` refuses to re-adjudicate a fingerprint, so those marks would be
 permanent. The server generates queues. A person marks them.
+
+`arbiter_review_draft` proposes marks, and that is as far as any tool goes: it
+writes the queue with an assistant's marks and reasons filled in, as a file
+under `output_dir` that a person reads, and records nothing. The draft reaches
+the ledger only through `arbiter review --apply` run by a person who names
+themselves. Over HTTPS the tool writes under the caller's confined directory
+like every other, so it is as safe there as `arbiter_review_queue`.
 """
 from __future__ import annotations
 
@@ -67,6 +74,7 @@ from .service import (
     ServiceError,
     gate,
     resolve_within,
+    review_draft,
     review_queue,
     scan,
 )
@@ -80,7 +88,13 @@ TOOLS: list[dict[str, Any]] = [
     {
         "name": "arbiter_scan",
         "description": "Analyse a repository for security, compliance, quality "
-                       "and drift findings. Returns the full report JSON.",
+                       "and drift findings. Returns the report JSON with every "
+                       "finding, each labelled by tier (verified: measured at "
+                       "least 99% precise and can block the gate; advisory and "
+                       "inferred: not confirmed, shown, not gating) and a summary "
+                       "counting each tier; show: verified cuts the findings to "
+                       "the verified tier and says how many were left out. "
+                       "report_path names the complete report on disk.",
         "inputSchema": {
             "type": "object",
             "required": ["target", "output_dir"],
@@ -92,6 +106,10 @@ TOOLS: list[dict[str, Any]] = [
                             "description": "both run with the network off"},
                 "only": {"type": "string", "description": "comma-separated probes to run"},
                 "skip": {"type": "string", "description": "comma-separated probes to skip"},
+                "show": {"type": "string", "enum": ["verified", "all"], "default": "all",
+                         "description": "all (default): every tier, each finding labelled "
+                                        "by its tier; verified: only findings whose rule is "
+                                        "measured at least 99% precise"},
             },
         },
     },
@@ -127,12 +145,49 @@ TOOLS: list[dict[str, Any]] = [
             },
         },
     },
+    {
+        "name": "arbiter_review_draft",
+        "description": "Propose a mark and a reason for findings in the review "
+                       "queue, written as review-draft.md for a person to read. "
+                       "Nothing is recorded: only a person running the CLI with "
+                       "their name records a mark, after reading the draft.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["report_path", "output_dir", "verdicts"],
+            "properties": {
+                "report_path": {"type": "string", "description": "path to a report.json"},
+                "output_dir": {"type": "string",
+                               "description": "directory for review-draft.md; nothing is "
+                                              "written outside it"},
+                "verdicts": {
+                    "type": "array",
+                    "description": "proposed marks; a finding not listed stays blank",
+                    "items": {
+                        "type": "object",
+                        "required": ["id", "mark"],
+                        "properties": {
+                            "id": {"type": "string", "description": "finding id, f:..."},
+                            "mark": {"type": "string", "enum": ["y", "n", "?"],
+                                     "description": "y a real problem, n not one, ? unsure"},
+                            "reason": {"type": "string",
+                                       "description": "why; required for y and n, read by "
+                                                      "the person before they decide"},
+                        },
+                    },
+                },
+                "limit": {"type": "integer", "default": 20},
+                "rule": {"type": "string",
+                         "description": "only findings whose rule id contains this"},
+            },
+        },
+    },
 ]
 
 HANDLERS = {
     "arbiter_scan": scan,
     "arbiter_gate": gate,
     "arbiter_review_queue": review_queue,
+    "arbiter_review_draft": review_draft,
 }
 
 # Every argument naming a place on disk. Listed rather than guessed at from the
@@ -209,7 +264,7 @@ def dispatch(name: str, arguments: dict, caller: dict | None = None,
     except ServiceError:
         log.record(event, caller, status=400, started=started)
         raise
-    except Exception:
+    except Exception:  # audited as a 500, then re-raised unchanged
         log.record(event, caller, status=500, started=started)
         raise
     log.record(event, caller, status=200, started=started)
@@ -265,7 +320,7 @@ def _build_server(audit: Any = None, root: str | Path | None = None):
             return await asyncio.to_thread(
                 dispatch_call_tool, params.name, params.arguments)
 
-        return Server("arbiter", version=__version__,  # type: ignore[call-arg]
+        return Server("arbiter", version=__version__,  # type: ignore[call-arg] - mcp 2.2 takes the handlers here; older stubs do not know them
                       on_list_tools=on_list_tools, on_call_tool=on_call_tool)
 
     server = Server("arbiter", version=__version__)
@@ -498,11 +553,15 @@ def serve_http(host: str = "127.0.0.1", port: int = 8444,
                certfile: str | None = None, keyfile: str | None = None,
                audit_path: str | None = None,
                audit: bool = True, path: str = "/mcp",
-               allowed_hosts: list[str] | None = None) -> int:
+               allowed_hosts: list[str] | None = None,
+               limiter: str = "memory") -> int:
     """Serve the MCP tools over TLS to more than one caller.
 
     Like the hosted API, there is no plaintext mode and no plaintext port: this
     process holds the certificate, including when a proxy sits in front of it.
+
+    `limiter` is `memory` for one process or `file` for several processes that
+    serve the same key file and should share one budget (`api.FileRateLimiter`).
     """
     from . import api
 
@@ -510,6 +569,7 @@ def serve_http(host: str = "127.0.0.1", port: int = 8444,
     # arrangement would have served plaintext should be told that, not told it
     # only after they have fixed an unrelated install.
     api.check_tls_config(certfile, keyfile)
+    api.configure_limiter(limiter, key_path)
 
     try:
         import uvicorn
@@ -535,6 +595,8 @@ def serve_http(host: str = "127.0.0.1", port: int = 8444,
               "(who called and how it ended; never their code)")
     else:
         print("arbiter: auditing is off; no record of who called will be kept")
+    if limiter == "file":
+        print(f"arbiter: rate limits are shared through {api.LIMITER.path}")
 
     # The cipher list matches `api.serve`, and for the same reason: uvicorn
     # builds its own SSL context and exposes no minimum-version hook, so

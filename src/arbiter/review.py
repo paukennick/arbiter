@@ -49,7 +49,6 @@ from __future__ import annotations
 import datetime as _dt
 import re
 from collections import defaultdict
-from pathlib import Path
 
 from .core import Finding
 from .learn import MIN_OBSERVATIONS, Knowledge
@@ -259,6 +258,7 @@ def apply(
     by_id = {f.id: f for f in findings}
     recorded, repeated, unknown = 0, 0, []
     per_rule: dict[str, dict[str, int]] = defaultdict(lambda: {"true": 0, "false": 0})
+    recorded_ids: dict[str, list[str]] = {"true_positive": [], "false_positive": []}
     for fid, verdict in marks.items():
         target = by_id.get(fid)
         if target is None:
@@ -268,12 +268,16 @@ def apply(
                   reviewer=reviewer, entry_point=entry_point):
             recorded += 1
             per_rule[target.rule_id]["true" if verdict == "true_positive" else "false"] += 1
+            recorded_ids.setdefault(verdict, []).append(target.id)
         else:
             repeated += 1
     return {
         "marked": len(marks), "recorded": recorded,
         "already_adjudicated": repeated, "unknown": unknown,
         "per_rule": {k: dict(v) for k, v in per_rule.items()},
+        # Only verdicts recorded THIS time: a repeat is refused by record(),
+        # so a ledger drafted from this list never duplicates an earlier one.
+        "recorded_ids": recorded_ids,
     }
 
 

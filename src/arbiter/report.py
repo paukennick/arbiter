@@ -13,7 +13,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-from .core import SARIF_LEVEL, Finding, Report
+from .core import SARIF_LEVEL, Finding, Report, sev_at_least
 
 SEV_ORDER = ["critical", "high", "medium", "low", "info"]
 
@@ -27,6 +27,195 @@ GROUP_LOCATION_CAP = 8
 
 def _remediation_text(f: Finding) -> str:
     return f.remediation or NO_REMEDIATION
+
+
+TIER_ORDER = ["verified", "advisory", "inferred"]
+
+
+def tier_counts(findings: list[Finding]) -> dict[str, int]:
+    out = {t: 0 for t in TIER_ORDER}
+    for f in findings:
+        t = f.tier or "advisory"
+        out[t] = out.get(t, 0) + 1
+    return out
+
+
+def tier_summary(report: Report) -> str:
+    """'tiers: 3 verified · 40 advisory · 0 inferred (gate: legacy)'. The
+    mode is part of the line: under legacy every tier can fail the gate."""
+    counts = tier_counts(report.active())
+    line = "tiers: " + " · ".join(f"{counts[t]} {t}" for t in TIER_ORDER)
+    mode = (report.gate or {}).get("tier_mode")
+    if not mode:
+        return line   # no gate was evaluated for this report; say nothing about one
+    gate = ("gate reads every tier" if mode == "legacy"
+            else "gate reads " + ", ".join((report.gate or {}).get("tiers") or ["verified"]))
+    return line + f" (tier_mode {mode}: {gate})"
+
+
+def _tiered(report: Report) -> bool:
+    return (report.gate or {}).get("tier_mode") == "tiered"
+
+
+# ---------------------------------------------------------------------------
+# The view: which tiers a rendering lists (ARB-100)
+# ---------------------------------------------------------------------------
+
+HINT_CLI = "run with --advisory to include them"
+HINT_CONFIG = "run with --advisory, or set report.show: all, to include them"
+
+
+def view_of(report: Report) -> str:
+    """`verified` or `all`: the view the scan recorded in `report.tiers`.
+
+    Every scan records one (the default is `all` since ARB-103). A report with none
+    -- written before views existed, or a `Report` built in memory -- renders
+    every finding: no view was decided for it, and a renderer must not
+    invent one and quietly drop findings from a file that never said to.
+    """
+    return str((report.tiers or {}).get("shown") or "all")
+
+
+def _failing_ids(report: Report) -> set[str]:
+    return set((report.gate or {}).get("failing_ids") or [])
+
+
+def _is_shown(report: Report, f: Finding, listed: tuple[str, ...], failing: set[str]) -> bool:
+    # A finding that failed the gate is shown whatever its tier: the gate's
+    # reasons name it, and a FAIL whose cause the reader cannot see is worse
+    # than an advisory line. Under the default tiered gate this adds nothing
+    # (only verified findings can fail it); it matters for `legacy`.
+    return (f.tier or "advisory") in listed or f.id in failing
+
+
+def _tier_rank(f: Finding) -> int:
+    t = f.tier or "advisory"
+    return TIER_ORDER.index(t) if t in TIER_ORDER else len(TIER_ORDER)
+
+
+def shown_findings(report: Report) -> list[Finding]:
+    """The active findings this report's view lists: verified first, then
+    advisory, then inferred (ARB-103), report order within a tier. Every
+    rendering lists in this order, so a console cut at `--limit` or a PR
+    comment's first ten rows never drop a verified finding for an advisory
+    one."""
+    from .precision import shown_tiers
+    listed = shown_tiers(view_of(report))
+    failing = _failing_ids(report)
+    return sorted((f for f in report.active() if _is_shown(report, f, listed, failing)),
+                  key=_tier_rank)
+
+
+def _gating(report: Report) -> tuple[str, ...]:
+    from .precision import gating_tiers
+    return gating_tiers(report.gate)
+
+
+def not_shown(report: Report) -> dict[str, int]:
+    """Active findings the view leaves out, by tier, zeros dropped."""
+    from .precision import shown_tiers
+    listed = shown_tiers(view_of(report))
+    failing = _failing_ids(report)
+    out: dict[str, int] = {}
+    for f in report.active():
+        if not _is_shown(report, f, listed, failing):
+            t = f.tier or "advisory"
+            out[t] = out.get(t, 0) + 1
+    return {t: out[t] for t in TIER_ORDER if out.get(t)}
+
+
+def view_summary(report: Report, hint: str = HINT_CLI) -> str:
+    """One line on what the rendering shows and what it leaves out.
+
+    Under `all` (the default): the count per tier and whether each can block
+    the gate, `2 verified (can block the gate) · 71 advisory (shown, not
+    gating) · 0 inferred`. Under `verified`: `12 verified findings shown;
+    340 advisory and 3 inferred findings not shown (run with --advisory to
+    include them)`, and when nothing is verified it says `no verified
+    findings; ...` rather than nothing: a report that lists no findings
+    because none passed the bar must not read like a report that found none.
+    """
+    from .precision import tier_line
+    counts = tier_counts(report.active())
+    if view_of(report) == "all":
+        return tier_line(counts, _gating(report))
+    n = counts["verified"]
+    head = (f"{n} verified finding{'s' if n != 1 else ''} shown" if n
+            else "no verified findings")
+    failing = sum(1 for f in shown_findings(report) if (f.tier or "advisory") != "verified")
+    if failing:
+        head += f", plus {failing} that failed the gate"
+    hidden = [f"{k} {t}" for t, k in not_shown(report).items()]
+    if not hidden:
+        return head
+    return f"{head}; {' and '.join(hidden)} findings not shown ({hint})"
+
+
+def _sections(report: Report, findings: list[Finding]) -> list[tuple[str, str, list[Finding]]]:
+    """(name, note, findings) per section, in tier order, for a rendering
+    that shows every tier: labelled sections whose note says what the tier
+    means and whether it can block the gate, so a reader never mistakes an
+    advisory finding for a verified one. Under the verified view: one
+    section."""
+    from .precision import tier_note
+    gating = _gating(report)
+    if view_of(report) != "all":
+        if not findings:
+            return []
+        if all((f.tier or "advisory") == "verified" for f in findings):
+            return [("verified", tier_note("verified", gating), findings)]
+        return [("verified, and gate failures", "", findings)]
+    out = []
+    for t in TIER_ORDER:
+        group = [f for f in findings if (f.tier or "advisory") == t]
+        if group:
+            out.append((t, tier_note(t, gating), group))
+    return out
+
+
+def _sarif_level(report: Report, f: Finding) -> str:
+    """Severity's level, except that under a tiered gate a finding that
+    cannot block it (advisory and inferred, by default) is at most a
+    `warning`: an `error` the gate ignores teaches people to ignore errors
+    (ARB-065), and a `note` buries a finding Arbiter means to show (ARB-103:
+    ARB-100 made every advisory result a note). So an advisory critical or
+    high is a warning, a medium stays a warning, a low or info stays a note.
+    Under legacy every finding can block, so the level stays the
+    severity's."""
+    level = SARIF_LEVEL.get(f.severity, "warning")
+    if _tiered(report) and (f.tier or "advisory") not in _gating(report) and level == "error":
+        return "warning"
+    return level
+
+
+def _verification_text(f: Finding) -> str:
+    """'model: rejected -- <reason>' when the verification pass looked; ''
+    when it did not run. `not_verified` is spelled out: it is not a pass."""
+    v = f.verification or {}
+    verdict = v.get("verdict")
+    if not verdict:
+        return ""
+    label = "not model-verified" if verdict == "not_verified" else f"model: {verdict}"
+    reason = v.get("reason") or ""
+    cached = " (cached)" if v.get("cached") else ""
+    return f"{label}{cached}" + (f" -- {reason}" if reason else "")
+
+
+def _verification_tally(members: list[Finding]) -> str:
+    counts: dict[str, int] = {}
+    for m in members:
+        verdict = (m.verification or {}).get("verdict")
+        if verdict:
+            counts[verdict] = counts.get(verdict, 0) + 1
+    if not counts:
+        return ""
+    order = ["confirmed", "rejected", "unsure", "not_verified"]
+    return "model: " + ", ".join(f"{counts[k]} {k.replace('_', ' ')}" for k in order if k in counts)
+
+
+def _verification_summary(report: Report) -> str:
+    from .verify import summary_line
+    return summary_line((report.scan_scope or {}).get("verification") or {})
 
 
 def _grouped(findings: list[Finding], key) -> list[list[Finding]]:
@@ -78,6 +267,144 @@ def counts_by_severity(findings: list[Finding]) -> dict[str, int]:
     return out
 
 
+REQ_TAG = "req:"
+UNATTRIBUTED = "unattributed"
+# How the `req:` tags were chosen, from incremental.attribute_requirements
+# (ARB-052): spelled out under the table so a reader never mistakes the
+# round's open requirements for the one that introduced a finding.
+REQ_SCOPE_COMMITS = "req-scope:commits"
+REQ_SCOPE_OPEN = "req-scope:open"
+
+
+def requirement_rows(findings: list[Finding]) -> list[tuple[str, dict[str, int], list[str]]]:
+    """Findings grouped by the requirement their commits cited (REQ-038).
+
+    One row per `req:<ID>` tag, counts by severity and the first three titles.
+    Findings in the change that carry no requirement tag land in an
+    `unattributed` row; findings tagged outside-this-change are not in the
+    change and are left out. Empty unless some finding carries a tag, so a
+    report with no attribution to make prints nothing. Titles only -- a
+    summary table is read by people who may not be cleared for the evidence.
+    """
+    if not any(t.startswith(REQ_TAG) for f in findings for t in f.tags):
+        return []
+    groups: dict[str, list[Finding]] = defaultdict(list)
+    for f in findings:
+        ids = [t[len(REQ_TAG):] for t in f.tags if t.startswith(REQ_TAG)]
+        if ids:
+            for rid in ids:
+                groups[rid].append(f)
+        elif "outside-this-change" not in f.tags:
+            groups[UNATTRIBUTED].append(f)
+    rows = []
+    ordered = sorted(k for k in groups if k != UNATTRIBUTED)
+    if UNATTRIBUTED in groups:
+        ordered.append(UNATTRIBUTED)
+    for key in ordered:
+        members = groups[key]
+        counts = counts_by_severity(members)
+        titles = list(dict.fromkeys(m.title for m in members))[:3]
+        rows.append((key, counts, titles))
+    return rows
+
+
+def requirement_scope_note(findings: list[Finding], base: str | None = None) -> str:
+    """Which scope the `req:` tags came from, in one line, or nothing.
+
+    Counts the tagged findings by their `req-scope:` marker. `commits` means
+    the ids came from the commits since the base that touched the file:
+    attribution. `open` means no such commit cited one, so the ids are the
+    requirements open when the scan ran: context. Both can appear in one
+    report, and the reader is told which rows are which kind of claim.
+    """
+    tagged = [f for f in findings if any(t.startswith(REQ_TAG) for t in f.tags)]
+    from_commits = sum(1 for f in tagged if REQ_SCOPE_COMMITS in f.tags)
+    from_open = sum(1 for f in tagged if REQ_SCOPE_OPEN in f.tags)
+    since = f"since `{base}`" if base else "since the base"
+    parts = []
+    if from_commits:
+        parts.append(f"{from_commits} from the commits {since} that touched the file "
+                     f"(`{REQ_SCOPE_COMMITS}`)")
+    if from_open:
+        parts.append(f"{from_open} from the requirements open when the scan ran, because no "
+                     f"commit {since} touching the file cited one -- context, not attribution "
+                     f"(`{REQ_SCOPE_OPEN}`)")
+    if not parts:
+        return ""
+    return "Scope of the `req:` tags: " + "; ".join(parts) + "."
+
+
+def requirement_block(findings: list[Finding], heading: str = "## By requirement",
+                      base: str | None = None) -> list[str]:
+    """The Markdown rendering of `requirement_rows`, or nothing.
+
+    `base` is the ref the scan was changed-since, named in the scope note
+    under the table so the reader knows which commits the tags were read
+    from.
+    """
+    rows = requirement_rows(findings)
+    if not rows:
+        return []
+    L = [heading, "", "| Requirement | " + " | ".join(s.capitalize() for s in SEV_ORDER) + " | First titles |",
+         "|---|" + "---|" * len(SEV_ORDER) + "---|"]
+    for key, counts, titles in rows:
+        shown = "; ".join(t.replace("|", "\\|") for t in titles)
+        L.append(f"| `{key}` | " + " | ".join(str(counts[s]) for s in SEV_ORDER) + f" | {shown} |")
+    L.append("")
+    note = requirement_scope_note(findings, base)
+    if note:
+        L.extend([note, ""])
+    return L
+
+
+def config_ignored_line(report: Report) -> str:
+    """What the target's own arbiter.yaml tried to set and the scan refused
+    (ARB-143): printed wherever the report is read, so a dropped
+    `precision:` block is never a silent drop."""
+    cfg = (report.scan_scope or {}).get("config") or {}
+    ignored = cfg.get("ignored") or []
+    if not ignored:
+        return ""
+    where = cfg.get("path") or "the target's arbiter.yaml"
+    return (f"{len(ignored)} key(s) in {where} were ignored because a target's own config "
+            f"may not set them ({'; '.join(ignored)}). Pass the file with --config to apply them.")
+
+
+def skipped_lines(report: Report) -> list[str]:
+    """What the walk saw and did not read (ARB-150), and the changed files
+    a partial scan did not read (ARB-151): one line each, or none."""
+    ss = report.scan_scope or {}
+    sk = ss.get("skipped") or {}
+    out: list[str] = []
+    if sk.get("files"):
+        reasons = ", ".join(f"{n} {r}" for r, n in (sk.get("by_reason") or {}).items())
+        named = sk.get("source_like_files", 0)
+        out.append(
+            f"{sk['files']} file(s) were not read ({reasons}); "
+            + (f"{named} of them look like source and count as not assessed."
+               if named else "none of them looks like source.")
+        )
+    dirs = sk.get("dirs") or []
+    if dirs:
+        shown = ", ".join(
+            f"{d['path']}/ ({d['files']}{'+' if d['files'] >= 500 else ''} files)"
+            for d in dirs[:6])
+        more = f", and {len(dirs) - 6} more" if len(dirs) > 6 else ""
+        out.append(f"{len(dirs)} directory(ies) were not walked: {shown}{more}.")
+    if ss.get("mode") == "partial":
+        unread = ss.get("files_changed_not_read", 0)
+        deleted = ss.get("files_changed_deleted", 0)
+        if unread:
+            why = ss.get("changed_not_read") or []
+            names = ", ".join(w["path"] for w in why[:5]) + (", ..." if unread > 5 else "")
+            out.append(f"{unread} changed file(s) were not read ({names}): "
+                       + "; ".join(sorted({w["reason"] for w in why})) + ".")
+        if deleted and not ss.get("files_changed_read"):
+            out.append(f"Delete-only change: {deleted} changed path(s) no longer exist and "
+                       "nothing was read; the gate had nothing to judge.")
+    return out
+
+
 def _bluf_lines(report: Report) -> list[str]:
     """What this report can and cannot claim, worst news first.
 
@@ -97,6 +424,10 @@ def _bluf_lines(report: Report) -> list[str]:
         )
     if sc.withheld:
         lines.append(f"Grade withheld -- {sc.withheld_reason}")
+    note = config_ignored_line(report)
+    if note:
+        lines.append(note)
+    lines.extend(skipped_lines(report))
     skipped = [p for p in report.probes if p.status != "ran"]
     if skipped:
         lines.append(f"{len(skipped)} probe(s) not assessed: {', '.join(p.name for p in skipped)}.")
@@ -106,6 +437,16 @@ def _bluf_lines(report: Report) -> list[str]:
             f"{noted} finding(s) below carry a scope note from this repo's own docs, "
             "marked unverified -- a doc's claim, not a check that ran."
         )
+    vs = (report.scan_scope or {}).get("verification") or {}
+    if vs.get("not_verified"):
+        lines.append(
+            f"{vs['not_verified']} of {vs.get('candidates', 0)} finding(s) at or above "
+            f"{vs.get('min_severity', 'medium')} were not model-verified"
+            + (f" ({vs['reason']})" if vs.get("reason") else "")
+            + " -- no verdict, which is not a confirmation."
+        )
+    if not_shown(report):
+        lines.append(view_summary(report, HINT_CONFIG).capitalize() + ".")
     no_fix = sum(1 for f in report.active() if f.remediation_source == "default")
     if no_fix:
         lines.append(
@@ -122,10 +463,14 @@ def write_json(report: Report, path: str) -> None:
     Path(path).write_text(json.dumps(report.to_dict(), indent=2), encoding="utf-8")
 
 
-def write_sarif(report: Report, path: str) -> None:
+def write_sarif(report: Report, path: str, min_severity: str | None = None) -> None:
+    """SARIF 2.1.0 of the active findings. `min_severity` drops everything below it: a code-scanning
+    upload of every low and info finding buries the ones a reviewer should see."""
     rules: dict[str, dict] = {}
     results = []
-    for f in report.active():
+    for f in shown_findings(report):
+        if min_severity and not sev_at_least(f.severity, min_severity):
+            continue
         if f.rule_id not in rules:
             rules[f.rule_id] = {
                 "id": f.rule_id,
@@ -135,7 +480,10 @@ def write_sarif(report: Report, path: str) -> None:
                 "properties": {
                     "dimension": f.dimension,
                     "provenance": f.provenance,
-                    "tags": f.tags + f.controls,
+                    "tags": f.tags + f.controls
+                    + [f"external/cwe/{c.lower()}" for c in f.cwe],
+                    **({"cwe": list(f.cwe)} if f.cwe else {}),
+                    **({"requirements": list(f.requirements)} if f.requirements else {}),
                 },
             }
         loc = {
@@ -148,7 +496,7 @@ def write_sarif(report: Report, path: str) -> None:
             loc["logicalLocations"] = [{"fullyQualifiedName": f.location.logical}]
         results.append({
             "ruleId": f.rule_id,
-            "level": SARIF_LEVEL.get(f.severity, "warning"),
+            "level": _sarif_level(report, f),
             "message": {"text": f.title},
             "locations": [loc],
             "fingerprints": {"arbiter/v1": f.id},
@@ -160,6 +508,10 @@ def write_sarif(report: Report, path: str) -> None:
                 "remediation": _remediation_text(f),
                 "remediation_source": f.remediation_source,
                 "scope_note": f.scope_note,
+                "tier": f.tier or "advisory",
+                "tier_reason": f.tier_reason,
+                **({"requirements": list(f.requirements)} if f.requirements else {}),
+                **({"verification": f.verification} if f.verification else {}),
             },
         })
     doc = {
@@ -178,6 +530,11 @@ def write_sarif(report: Report, path: str) -> None:
                 "properties": {
                     "profile": report.profile,
                     "coverage": report.scorecard.coverage,
+                    "tier_mode": (report.gate or {}).get("tier_mode", ""),
+                    "tiers": tier_counts(report.active()),
+                    "shown": view_of(report),
+                    "not_shown": not_shown(report),
+                    "summary": view_summary(report, HINT_CONFIG),
                     "bluf": _bluf_lines(report),
                     "skipped_probes": [
                         {"name": p.name, "reason": p.reason}
@@ -192,6 +549,53 @@ def write_sarif(report: Report, path: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# GitHub workflow commands
+# ---------------------------------------------------------------------------
+
+def _wc_message(text: str) -> str:
+    """Escape a workflow-command message the way the runner expects."""
+    return text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
+def _wc_property(text: str) -> str:
+    """Property values additionally escape the separators of the syntax."""
+    return _wc_message(text).replace(":", "%3A").replace(",", "%2C")
+
+
+def render_annotations(report: Report) -> str:
+    """One GitHub workflow command per finding the report's view shows.
+
+    `::error` for the findings that failed the gate (`gate.failing_ids`),
+    `::notice` for findings in files the change did not touch (tagged
+    `outside-this-change`), `::warning` for everything else. Verified first,
+    then advisory, then inferred; a finding whose tier cannot block the gate
+    says so at the start of its message (`[advisory: not gating]`). Only the
+    rule id, the title and the location are printed: never evidence or a
+    snippet, so the build log is not where a credential gets reprinted.
+    """
+    failing = set((report.gate or {}).get("failing_ids") or [])
+    gating = _gating(report)
+    lines: list[str] = []
+    for f in shown_findings(report):
+        tier = f.tier or "advisory"
+        label = "" if tier in gating or f.id in failing else f"[{tier}: not gating] "
+        if f.id in failing:
+            level = "error"
+        elif "outside-this-change" in f.tags:
+            level = "notice"
+        else:
+            level = "warning"
+        props = []
+        if f.location.path:
+            props.append(f"file={_wc_property(f.location.path)}")
+            if f.location.start_line:
+                props.append(f"line={f.location.start_line}")
+        props.append(f"title={_wc_property(f.rule_id)}")
+        lines.append(f"::{level} {','.join(props)}::{_wc_message(label + f.title)}")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
 
 def render_console(report: Report, color: bool | None = None, limit: int = 40) -> str:
     if color is None:
@@ -199,7 +603,8 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
     L: list[str] = []
     sc = report.scorecard
     active = report.active()
-    counts = counts_by_severity(active)
+    listed = shown_findings(report)
+    counts = counts_by_severity(listed)
 
     L.append("")
     L.append(_color(color, "bold", f"  arbiter {report.arbiter_version}  ·  {report.system}  ·  profile={report.profile}"))
@@ -208,6 +613,10 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
     if report.stacks:
         L.append(_color(color, "dim", f"  stacks: {', '.join(report.stacks)}"))
     ss = report.scan_scope or {}
+    note = config_ignored_line(report)
+    if note:
+        L.append("")
+        L.append(_color(color, "medium", f"  CONFIG — {note}"))
     if ss.get("mode") == "partial":
         # Loud, and above the findings. Somebody scrolling to the counts must
         # not be able to reach them without passing this line.
@@ -223,13 +632,22 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
             L.append(_color(color, "dim",
                             f"  {outside} finding(s) are in context files this change did "
                             "not touch (tagged outside-this-change)"))
+    for line in skipped_lines(report):
+        L.append(_color(color, "medium", f"  NOT READ — {line}"))
     L.append("")
 
     head = "  " + "  ".join(
         _color(color, s, f"{counts[s]} {s}") for s in SEV_ORDER if counts[s]
     )
-    L.append(head.rstrip() or _color(color, "green", "  no findings"))
-
+    if listed:
+        L.append(head.rstrip())
+    elif not active:
+        L.append(_color(color, "green", "  no findings"))
+    if active:
+        # What this view leaves out comes before anything that could read as
+        # a clean result; never green, because it is not one.
+        L.append(_color(color, "dim" if listed else "medium", "  " + view_summary(report)))
+        L.append(_color(color, "dim", "  " + tier_summary(report)))
     if sc.withheld:
         L.append("  " + _color(color, "medium", f"grade withheld — {sc.withheld_reason}"))
     elif sc.overall is not None:
@@ -255,26 +673,37 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
                 L.append(_color(color, "dim", f"    {name}: {desc}"))
         L.append("")
 
-    shown = [f for f in active][:limit]
-    if shown:
-        L.append(_color(color, "bold", "  FINDINGS"))
-        for f in shown:
+    shown = listed[:limit]
+    for section, note, members in _sections(report, shown):
+        L.append(_color(color, "bold", f"  FINDINGS ({section})") + (f" — {note}" if note else ""))
+        for f in members:
             tag = _color(color, f.severity, f"{f.severity:<8}")
             conf = "" if f.confidence == "high" else _color(color, "dim", f" [{f.confidence} confidence]")
             # short() already carries the repo on cross-repo findings
             prefix = "" if (f.location.repo_id or len(report.repos) == 1) else f"{f.repo_id}:"
             where = prefix + f.location.short()
             L.append(f"  {tag} {where}  {f.title}{conf}")
-            L.append(_color(color, "dim", f"           {f.rule_id}  {f.id}"))
-        if len(active) > limit:
-            L.append(_color(color, "dim", f"  … {len(active) - limit} more (see the JSON report)"))
+            L.append(_color(color, "dim", f"           {f.rule_id}  {f.id}  [{f.tier or 'advisory'}]"
+                                          + (f" {f.tier_reason}" if f.tier_reason else "")))
+            vt = _verification_text(f)
+            if vt:
+                L.append(_color(color, "dim", f"           {vt}"))
+        L.append("")
+    if len(listed) > limit:
+        L.append(_color(color, "dim", f"  … {len(listed) - limit} more (see the JSON report)"))
+        L.append("")
+
+    vsum = _verification_summary(report)
+    if vsum:
+        L.append("  " + vsum)
         L.append("")
 
     skipped = [p for p in report.probes if p.status != "ran"]
     if skipped:
         L.append(_color(color, "bold", "  NOT ASSESSED"))
         for p in skipped:
-            mark = "error" if p.status == "error" else "skip "
+            mark = ("error" if p.status == "error"
+                    else "n/a  " if not getattr(p, "applicable", True) else "skip ")
             L.append(f"  {mark}  {p.name:<18} {p.reason}")
         L.append("")
 
@@ -297,7 +726,8 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
 def render_markdown(report: Report) -> str:
     sc = report.scorecard
     active = report.active()
-    counts = counts_by_severity(active)
+    listed = shown_findings(report)
+    counts = counts_by_severity(listed)
     L: list[str] = []
     L.append(f"# Arbiter report — {report.system}")
     L.append("")
@@ -320,6 +750,15 @@ def render_markdown(report: Report) -> str:
     L.append("|" + "---|" * len(SEV_ORDER))
     L.append("| " + " | ".join(str(counts[s]) for s in SEV_ORDER) + " |")
     L.append("")
+    if active:
+        L.append(f"**Shown:** {view_summary(report, HINT_CONFIG)}  ")
+        L.append(tier_summary(report).replace("tiers: ", "**Tiers:** ", 1))
+        L.append("")
+    L.extend(requirement_block(listed, base=(report.scan_scope or {}).get("changed_since")))
+    vsum = _verification_summary(report)
+    if vsum:
+        L.append(vsum[0].upper() + vsum[1:] + ".")
+        L.append("")
 
     if sc.dimensions:
         gaps: dict[str, list[str]] = defaultdict(list)
@@ -346,11 +785,11 @@ def render_markdown(report: Report) -> str:
             L.append(" · ".join(legend))
             L.append("")
 
-    if active:
-        L.append("## Findings")
+    for section, note, members in _sections(report, listed):
+        L.append(f"## Findings ({section}, {len(members)})" + (f" — {note}" if note else ""))
         L.append("")
         for sev in SEV_ORDER:
-            group = [f for f in active if f.severity == sev]
+            group = [f for f in members if f.severity == sev]
             if not group:
                 continue
             L.append(f"### {sev.capitalize()} ({len(group)})")
@@ -359,12 +798,17 @@ def render_markdown(report: Report) -> str:
                 f = members[0]
                 if len(members) == 1:
                     repo = f"`{f.repo_id}` " if len(report.repos) > 1 else ""
-                    L.append(f"- {repo}**{f.title}**  \n  `{f.location.short()}` · `{f.rule_id}` · {f.id}")
+                    L.append(f"- {repo}**{f.title}**  \n  `{f.location.short()}` · `{f.rule_id}` · {f.id}"
+                             f" · {f.tier or 'advisory'}"
+                             + (f" ({f.tier_reason})" if f.tier_reason else ""))
                     if f.description:
                         L.append(f"  \n  {f.description}")
                     L.append(f"  \n  Fix: {_remediation_text(f)}")
                     if f.scope_note:
                         L.append(f"  \n  ⚠ {f.scope_note}")
+                    vt = _verification_text(f)
+                    if vt:
+                        L.append(f"  \n  ⚖ {vt}")
                     continue
 
                 files = {m.location.path for m in members}
@@ -373,14 +817,25 @@ def render_markdown(report: Report) -> str:
                 if len(locs) > GROUP_LOCATION_CAP:
                     loc_text += f", … {len(locs) - GROUP_LOCATION_CAP} more"
                 remediations = dict.fromkeys(_remediation_text(m) for m in members)
+                tiers = tier_counts(members)
+                tier_text = ", ".join(f"{tiers[t]} {t}" for t in TIER_ORDER if tiers[t])
+                reasons = list(dict.fromkeys(m.tier_reason for m in members if m.tier_reason))
                 L.append(
                     f"- **{f.title}** (×{len(members)} across {len(files)} file(s))  \n"
-                    f"  `{f.rule_id}`  \n  {loc_text}"
+                    f"  `{f.rule_id}` · {tier_text}"
+                    + (f" ({' / '.join(reasons[:3])})" if reasons else "")
+                    + f"  \n  {loc_text}"
                 )
                 L.append(f"  \n  Fix: {' / '.join(remediations)}")
                 scope_notes = dict.fromkeys(m.scope_note for m in members if m.scope_note)
                 if scope_notes:
                     L.append(f"  \n  ⚠ {' / '.join(scope_notes)}")
+                tally = _verification_tally(members)
+                if tally:
+                    L.append(f"  \n  ⚖ {tally}")
+                    for m in members:
+                        if (m.verification or {}).get("verdict") not in (None, "confirmed"):
+                            L.append(f"  \n  ⚖ `{m.location.short()}` {_verification_text(m)}")
             L.append("")
 
     skipped = [p for p in report.probes if p.status != "ran"]
@@ -435,10 +890,111 @@ a.muted{color:var(--mut)}
 """
 
 
+def _html_rows_findings(active: list[Finding], loc_cell) -> str:
+    """One row per finding, or per (severity, rule) group; loc_cell renders a location."""
+    e = html.escape
+    out = []
+    for members in _grouped(active, lambda f: (f.severity, f.rule_id)):
+        f = members[0]
+        if len(members) == 1:
+            related = ""
+            if f.related:
+                related = "<br><span class='muted mono'>also: " + e(
+                    ", ".join(r.short() for r in f.related)
+                ) + "</span>"
+            fix = f"<br><span class='muted'>Fix: {e(_remediation_text(f))}</span>"
+            scope = f"<br><span class='muted'>&#9888; {e(f.scope_note)}</span>" if f.scope_note else ""
+            vt = _verification_text(f)
+            if vt:
+                scope += f"<br><span class='muted'>&#9878; {e(vt)}</span>"
+            out.append(
+                f"<tr><td><span class='pill s-{f.severity}'>{f.severity}</span></td>"
+                f"<td>{e(f.title)}<br><span class='muted mono'>{e(f.rule_id)} · {e(f.id)}"
+                f"{'' if f.confidence == 'high' else ' · ' + f.confidence + ' confidence'}</span>{fix}{scope}</td>"
+                f"<td class='mono'>{e(f.repo_id)}</td>"
+                f"<td class='mono'>{loc_cell(f)}{related}</td>"
+                f"<td class='mono'>{e(f.dimension)}</td></tr>"
+            )
+            continue
+
+        files = {m.location.path for m in members}
+        repo_ids = dict.fromkeys(m.repo_id for m in members)
+        remediations = dict.fromkeys(_remediation_text(m) for m in members)
+        fix = f"<br><span class='muted'>Fix: {e(' / '.join(remediations))}</span>"
+        scope_notes = dict.fromkeys(m.scope_note for m in members if m.scope_note)
+        scope = f"<br><span class='muted'>&#9888; {e(' / '.join(scope_notes))}</span>" if scope_notes else ""
+        tally = _verification_tally(members)
+        if tally:
+            scope += f"<br><span class='muted'>&#9878; {e(tally)}</span>"
+        locs = [f"{loc_cell(m)} <span class='muted'>({e(m.repo_id)})</span>" for m in members]
+        loc_html = "<br>".join(locs[:GROUP_LOCATION_CAP])
+        if len(locs) > GROUP_LOCATION_CAP:
+            loc_html += f"<br><span class='muted'>… {len(locs) - GROUP_LOCATION_CAP} more</span>"
+        out.append(
+            f"<tr><td><span class='pill s-{f.severity}'>{f.severity}</span></td>"
+            f"<td>{e(f.title)} <span class='muted'>(×{len(members)} across {len(files)} file(s))</span>"
+            f"<br><span class='muted mono'>{e(f.rule_id)}</span>{fix}{scope}</td>"
+            f"<td class='mono'>{e(', '.join(repo_ids))}</td>"
+            f"<td class='mono'>{loc_html}</td>"
+            f"<td class='mono'>{e(f.dimension)}</td></tr>"
+        )
+    return "\n".join(out) or "<tr><td colspan='5' class='muted'>No active findings.</td></tr>"
+
+
+def _html_rows_dims(report: Report) -> str:
+    e = html.escape
+    sc = report.scorecard
+    # Checks_run/checks_applicable is a gap with no reason attached to
+    # it in the row itself -- "compliance 28/148" doesn't say why the
+    # other 120 didn't run. The probes that declared this dimension and
+    # didn't run (skipped or errored) are why; show them right here
+    # instead of making the reader hunt for the Probe outcomes table.
+    gaps: dict[str, list[str]] = defaultdict(list)
+    for p in report.probes:
+        if p.status == "ran":
+            continue
+        for d_name in p.dimensions:
+            gaps[d_name].append(f"{p.name}: {p.reason}" if p.reason else p.name)
+
+    out = []
+    for name, d in sorted(sc.dimensions.items()):
+        desc = DIMENSION_DESC.get(name, "")
+        why = gaps.get(name) or []
+        why_html = (
+            "<br><span class='muted' style='font-size:11px'>" + e("; ".join(why)) + "</span>"
+            if why else ""
+        )
+        out.append(
+            f"<tr><td title='{e(desc)}'>{e(name)}</td><td class='mono'>{d.score}</td>"
+            f"<td><div class='bar'><i style='width:{d.coverage*100:.0f}%'></i></div>"
+            f"<span class='mono muted'>{d.coverage:.0%}</span></td>"
+            f"<td class='mono'>{d.checks_run}/{d.checks_applicable}{why_html}</td>"
+            f"<td class='mono'>{d.findings}</td></tr>"
+        )
+    return "\n".join(out)
+
+
+def _html_rows_probes(report: Report) -> str:
+    e = html.escape
+    out = []
+    for p in report.probes:
+        mark = {"ran": "ran", "skipped": "skipped", "error": "error"}[p.status]
+        cls = "s-low" if p.status == "ran" else ("s-high" if p.status == "error" else "s-info")
+        out.append(
+            f"<tr><td><span class='pill {cls}'>{mark}</span></td>"
+            f"<td class='mono'>{e(p.name)}</td>"
+            f"<td class='mono'>{p.finding_count if p.status == 'ran' else '—'}</td>"
+            f"<td class='mono'>{p.duration_s:.2f}s</td>"
+            f"<td class='muted'>{e(p.reason)}</td></tr>"
+        )
+    return "\n".join(out)
+
+
 def render_html(report: Report) -> str:
     sc = report.scorecard
     active = report.active()
-    counts = counts_by_severity(active)
+    listed = shown_findings(report)
+    counts = counts_by_severity(listed)
     e = html.escape
 
     repo_roots = {r.id: r.path for r in report.repos}
@@ -461,98 +1017,12 @@ def render_html(report: Report) -> str:
             f" <a class='muted' href='{file_href}' title='Open the file'>&#8599;</a>"
         )
 
-    def rows_findings() -> str:
-        out = []
-        for members in _grouped(active, lambda f: (f.severity, f.rule_id)):
-            f = members[0]
-            if len(members) == 1:
-                related = ""
-                if f.related:
-                    related = "<br><span class='muted mono'>also: " + e(
-                        ", ".join(r.short() for r in f.related)
-                    ) + "</span>"
-                fix = f"<br><span class='muted'>Fix: {e(_remediation_text(f))}</span>"
-                scope = f"<br><span class='muted'>&#9888; {e(f.scope_note)}</span>" if f.scope_note else ""
-                out.append(
-                    f"<tr><td><span class='pill s-{f.severity}'>{f.severity}</span></td>"
-                    f"<td>{e(f.title)}<br><span class='muted mono'>{e(f.rule_id)} · {e(f.id)}"
-                    f"{'' if f.confidence == 'high' else ' · ' + f.confidence + ' confidence'}</span>{fix}{scope}</td>"
-                    f"<td class='mono'>{e(f.repo_id)}</td>"
-                    f"<td class='mono'>{loc_cell(f)}{related}</td>"
-                    f"<td class='mono'>{e(f.dimension)}</td></tr>"
-                )
-                continue
-
-            files = {m.location.path for m in members}
-            repo_ids = dict.fromkeys(m.repo_id for m in members)
-            remediations = dict.fromkeys(_remediation_text(m) for m in members)
-            fix = f"<br><span class='muted'>Fix: {e(' / '.join(remediations))}</span>"
-            scope_notes = dict.fromkeys(m.scope_note for m in members if m.scope_note)
-            scope = f"<br><span class='muted'>&#9888; {e(' / '.join(scope_notes))}</span>" if scope_notes else ""
-            locs = [f"{loc_cell(m)} <span class='muted'>({e(m.repo_id)})</span>" for m in members]
-            loc_html = "<br>".join(locs[:GROUP_LOCATION_CAP])
-            if len(locs) > GROUP_LOCATION_CAP:
-                loc_html += f"<br><span class='muted'>… {len(locs) - GROUP_LOCATION_CAP} more</span>"
-            out.append(
-                f"<tr><td><span class='pill s-{f.severity}'>{f.severity}</span></td>"
-                f"<td>{e(f.title)} <span class='muted'>(×{len(members)} across {len(files)} file(s))</span>"
-                f"<br><span class='muted mono'>{e(f.rule_id)}</span>{fix}{scope}</td>"
-                f"<td class='mono'>{e(', '.join(repo_ids))}</td>"
-                f"<td class='mono'>{loc_html}</td>"
-                f"<td class='mono'>{e(f.dimension)}</td></tr>"
-            )
-        return "\n".join(out) or "<tr><td colspan='5' class='muted'>No active findings.</td></tr>"
-
-    def rows_dims() -> str:
-        # Checks_run/checks_applicable is a gap with no reason attached to
-        # it in the row itself -- "compliance 28/148" doesn't say why the
-        # other 120 didn't run. The probes that declared this dimension and
-        # didn't run (skipped or errored) are why; show them right here
-        # instead of making the reader hunt for the Probe outcomes table.
-        gaps: dict[str, list[str]] = defaultdict(list)
-        for p in report.probes:
-            if p.status == "ran":
-                continue
-            for d_name in p.dimensions:
-                gaps[d_name].append(f"{p.name}: {p.reason}" if p.reason else p.name)
-
-        out = []
-        for name, d in sorted(sc.dimensions.items()):
-            desc = DIMENSION_DESC.get(name, "")
-            why = gaps.get(name) or []
-            why_html = (
-                "<br><span class='muted' style='font-size:11px'>" + e("; ".join(why)) + "</span>"
-                if why else ""
-            )
-            out.append(
-                f"<tr><td title='{e(desc)}'>{e(name)}</td><td class='mono'>{d.score}</td>"
-                f"<td><div class='bar'><i style='width:{d.coverage*100:.0f}%'></i></div>"
-                f"<span class='mono muted'>{d.coverage:.0%}</span></td>"
-                f"<td class='mono'>{d.checks_run}/{d.checks_applicable}{why_html}</td>"
-                f"<td class='mono'>{d.findings}</td></tr>"
-            )
-        return "\n".join(out)
-
     def dims_legend() -> str:
         parts = [
             f"<b>{e(name)}</b> {e(DIMENSION_DESC[name])}"
             for name in sorted(sc.dimensions) if name in DIMENSION_DESC
         ]
         return " · ".join(parts)
-
-    def rows_probes() -> str:
-        out = []
-        for p in report.probes:
-            mark = {"ran": "ran", "skipped": "skipped", "error": "error"}[p.status]
-            cls = "s-low" if p.status == "ran" else ("s-high" if p.status == "error" else "s-info")
-            out.append(
-                f"<tr><td><span class='pill {cls}'>{mark}</span></td>"
-                f"<td class='mono'>{e(p.name)}</td>"
-                f"<td class='mono'>{p.finding_count if p.status == 'ran' else '—'}</td>"
-                f"<td class='mono'>{p.duration_s:.2f}s</td>"
-                f"<td class='muted'>{e(p.reason)}</td></tr>"
-            )
-        return "\n".join(out)
 
     gate = report.gate or {}
     gate_cls = "pass" if gate.get("passed") else "fail"
@@ -574,6 +1044,16 @@ def render_html(report: Report) -> str:
         for s in SEV_ORDER
     )
     repos = ", ".join(f"{e(r.id)} ({r.loc:,} loc{', ' + e(r.commit) if r.commit else ''})" for r in report.repos)
+    view_html = (f"<p class='sub' style='margin:8px 0 0'>{e(view_summary(report, HINT_CONFIG))}"
+                 f" · {e(tier_summary(report))}</p>") if active else ""
+    findings_html = "".join(
+        f"<h2>Findings ({e(section)}, {len(members)})</h2>"
+        + (f"<p class='sub'>{e(note)}</p>" if note else "")
+        + "<div class=\"tw\"><table>"
+        "<thead><tr><th>Severity</th><th>Finding</th><th>Repo</th><th>Location</th><th>Dimension</th></tr></thead>"
+        f"<tbody>{_html_rows_findings(members, loc_cell)}</tbody></table></div>"
+        for section, note, members in _sections(report, listed)
+    ) or f"<h2>Findings (0)</h2><p class='sub'>{e(view_summary(report, HINT_CONFIG)) if active else 'No findings.'}</p>"
 
     return f"""<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -583,29 +1063,29 @@ def render_html(report: Report) -> str:
  · stacks: {e(', '.join(report.stacks) or 'none detected')} · {report.duration_s:.1f}s · {e(report.started_at)}</p>
 <div class="banner {gate_cls}"><b>{gate_txt}</b></div>
 {grade}
+{bluf_html}
 <div class="cards">{cards}</div>
+{view_html}
 <h2>Dimensions</h2><div class="tw"><table>
 <thead><tr><th>Dimension</th><th>Score</th><th>Coverage</th><th>Checks</th><th>Findings</th></tr></thead>
-<tbody>{rows_dims()}</tbody></table></div>
+<tbody>{_html_rows_dims(report)}</tbody></table></div>
 <p class="sub" style="margin-top:6px">{dims_legend()}</p>
-<h2>Findings ({len(active)})</h2><div class="tw"><table>
-<thead><tr><th>Severity</th><th>Finding</th><th>Repo</th><th>Location</th><th>Dimension</th></tr></thead>
-<tbody>{rows_findings()}</tbody></table></div>
+{findings_html}
 <h2>Probe outcomes</h2><div class="tw"><table>
 <thead><tr><th>Status</th><th>Probe</th><th>Findings</th><th>Time</th><th>Reason</th></tr></thead>
-<tbody>{rows_probes()}</tbody></table></div>
+<tbody>{_html_rows_probes(report)}</tbody></table></div>
 <p class="sub" style="margin-top:28px">Absence of findings from a skipped probe is not a pass.
 Coverage above counts only checks that actually ran.</p>
 </div></body></html>"""
 
 
-def write_all(report: Report, outdir: str, formats: list[str]) -> dict[str, str]:
+def write_all(report: Report, outdir: str, formats: list[str], sarif_min_severity: str | None = None) -> dict[str, str]:
     Path(outdir).mkdir(parents=True, exist_ok=True)
     written: dict[str, str] = {}
     if "json" in formats:
         p = str(Path(outdir) / "report.json"); write_json(report, p); written["json"] = p
     if "sarif" in formats:
-        p = str(Path(outdir) / "report.sarif"); write_sarif(report, p); written["sarif"] = p
+        p = str(Path(outdir) / "report.sarif"); write_sarif(report, p, sarif_min_severity); written["sarif"] = p
     if "html" in formats:
         p = str(Path(outdir) / "report.html")
         Path(p).write_text(render_html(report), encoding="utf-8"); written["html"] = p
@@ -616,4 +1096,10 @@ def write_all(report: Report, outdir: str, formats: list[str]) -> dict[str, str]
         from .diff import render_pr_comment
         p = str(Path(outdir) / "pr-comment.md")
         Path(p).write_text(render_pr_comment(report), encoding="utf-8"); written["pr-comment"] = p
+    if "annotations" in formats:
+        # The CLI also prints these to stdout, which is where the runner reads
+        # them; the file is the same text kept with the other outputs.
+        p = str(Path(outdir) / "annotations.txt")
+        Path(p).write_text(render_annotations(report) + "\n", encoding="utf-8")
+        written["annotations"] = p
     return written

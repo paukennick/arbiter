@@ -30,6 +30,14 @@ into the tool's opinion of itself, at machine speed and irreversibly. So
 `review_queue` writes a queue with every mark blank and stops there. A person
 marks it and runs `arbiter review --apply` locally.
 
+`review_draft` is the one step past that, and it stays on the right side of the
+line: it writes the same queue with marks an assistant proposed and a reason
+under each, as a file a person reads, and nothing else. No ledger is opened,
+the knowledge file is never saved, and the draft is a verdict only once a
+person has read it and run `arbiter review --apply` with their name on it. The
+difference between proposing and recording is the difference between a file
+and the ledger, and only the CLI, in a person's hands, crosses it.
+
 ## Custody, which is the part hosting actually changes
 
 Running the scan somewhere the customer does not control means their source
@@ -328,12 +336,69 @@ def _read_report(out_dir: Path) -> dict:
 # Operations
 # --------------------------------------------------------------------------
 
+SHOW_MODES = ("verified", "all")
+
+
+def _view(report: dict, show: str) -> dict:
+    """The report as a caller sees it under `show` (ARB-100): under
+    `all` (the default since ARB-103), the report as written; under
+    `verified`, a copy whose `findings` are the verified tier only. Every other key is left as it is, and the
+    file at `report_path` always holds every finding."""
+    if show not in SHOW_MODES:
+        raise ServiceError(f"show is one of {SHOW_MODES}, got {show!r}")
+    from .precision import shown_tiers, view_block
+    findings = [f for f in (report.get("findings") or []) if isinstance(f, dict)]
+    listed = shown_tiers(show)
+    failing = set((report.get("gate") or {}).get("failing_ids") or [])
+    kept = [f for f in findings
+            if not f.get("suppressed")
+            and ((f.get("tier") or "advisory") in listed or f.get("id") in failing)]
+    block = view_block([_Row(f) for f in findings], show, failing)
+    out = dict(report)
+    out["tiers"] = block
+    if show != "all":
+        out["findings"] = kept
+    return out
+
+
+class _Row:
+    """Just enough of a Finding for `view_block` to count a JSON row."""
+    def __init__(self, d: dict) -> None:
+        self.suppressed = bool(d.get("suppressed"))
+        self.tier = d.get("tier") or ""
+        self.id = d.get("id") or ""
+
+
+def _summary(block: dict, gate: dict | None = None,
+             hint: str = "pass show: all to include them") -> str:
+    """The same line the console prints (report.view_summary), from JSON:
+    under `all`, the count per tier and whether it can block `gate`."""
+    from .precision import gating_tiers, tier_line
+    counts = block.get("counts") or {}
+    if block.get("shown") == "all":
+        return tier_line(counts, gating_tiers(gate))
+    n = counts.get("verified", 0)
+    head = f"{n} verified finding{'s' if n != 1 else ''} shown" if n else "no verified findings"
+    hidden = [f"{k} {t}" for t, k in (block.get("not_shown") or {}).items()]
+    if not hidden:
+        return head
+    return f"{head}; {' and '.join(hidden)} findings not shown ({hint})"
+
+
 def scan(target: str, output_dir: str, profile: str = "offline", only: str = "",
          skip: str = "", allow_network: bool = False,
-         timeout: int = DEFAULT_TIMEOUT) -> dict:
+         timeout: int = DEFAULT_TIMEOUT, show: str | None = "all") -> dict:
     """Analyse a repository and return the report.
 
     `output_dir` is required and is the sandbox: nothing is written outside it.
+    `show` is what the answer lists (ARB-100, ARB-103): `all` (the default)
+    returns every finding and a `tiers` block that says so, with `summary`
+    counting each tier and whether it can block the gate; `verified` returns
+    the report with `findings` cut to the verified tier and `summary` saying
+    what was left out. `None` returns report.json exactly as written -- every finding,
+    and the `tiers` block the scan itself recorded -- for a machine surface
+    (the hosted API) whose client applies the view with its own renderers.
+    `report_path` names the complete report in every case.
     """
     profile = check_profile(profile, allow_network)
     out = resolve_within("report", output_dir, "output_dir")
@@ -341,11 +406,23 @@ def scan(target: str, output_dir: str, profile: str = "offline", only: str = "",
     proc = _run(["scan"] + _scan_argv(target, out, profile, only, skip), timeout)
     if proc.returncode == EXIT_ERROR:
         raise ServiceError(f"scan failed: {(proc.stderr or proc.stdout).strip()[:800]}")
-    report = _read_report(out)
+    full = _read_report(out)
+    if show is None:
+        report = full
+        # Every scan records a view; a report without one (pre-view Arbiter)
+        # renders every finding, which is what `all` describes.
+        block = report.get("tiers") or _view(full, "all")["tiers"]
+    else:
+        report = _view(full, show)
+        block = report["tiers"]
     return {
         "report": report,
         "report_path": str(out / "report.json"),
         "finding_count": len(report.get("findings") or []),
+        "findings_total": len(full.get("findings") or []),
+        "shown": block.get("shown") or "all",
+        "tiers": block,
+        "summary": _summary(block, full.get("gate")),
     }
 
 
@@ -364,12 +441,15 @@ def gate(target: str, output_dir: str, profile: str = "ci", only: str = "",
     if proc.returncode == EXIT_ERROR:
         raise ServiceError(f"gate failed: {(proc.stderr or proc.stdout).strip()[:800]}")
     report = _read_report(out)
+    block = _view(report, "all")["tiers"]
     return {
         "passed": bool((report.get("gate") or {}).get("passed")),
         "exit_code": proc.returncode,
         "gate": report.get("gate") or {},
         "claims": report.get("claims") or [],
         "report_path": str(out / "report.json"),
+        "tiers": block,
+        "summary": _summary(block, report.get("gate")),
     }
 
 
@@ -415,6 +495,149 @@ def review_queue(report_path: str, output_dir: str, limit: int = 20, rule: str =
     }
 
 
+# --------------------------------------------------------------------------
+# A draft is a file a person reads, not a verdict
+# --------------------------------------------------------------------------
+
+DRAFT_FILE = "review-draft.md"
+DRAFT_MARKS = ("y", "n", "?")
+
+# The first line is the whole warning, so a person who reads nothing else
+# still reads that.
+DRAFT_HEADER = """\
+# Review draft: every mark below was proposed by an assistant and nothing has been recorded.
+
+An assistant drew this queue and proposed each mark, with its reason on the
+line beneath. No verdict exists yet, and this file cannot create one. The only
+way to record a mark is for a person to read every entry and then run:
+
+    arbiter review {report} --apply {path} --reviewer <your name>
+
+Change any mark you disagree with first. The reviewer named on that command
+answers for every mark it records, and the ledger refuses re-adjudication, so
+a wrong mark is permanent.
+
+    [y]  a real problem — I would act on this
+    [n]  not a real problem — the rule is wrong here
+    [?]  the assistant could not tell; decide, or leave it and it is skipped
+    [ ]  skip; nothing is recorded
+
+---
+"""
+
+
+def _proposals(verdicts: object) -> dict[str, tuple[str, str]]:
+    """Validate the proposed marks. Malformed input is refused outright; an id
+    that is not in the queue is not an error, and is reported instead."""
+    if not isinstance(verdicts, list):
+        raise ServiceError("verdicts must be a list of {id, mark, reason} objects")
+    out: dict[str, tuple[str, str]] = {}
+    for i, item in enumerate(verdicts):
+        if not isinstance(item, dict):
+            raise ServiceError(f"verdicts[{i}] is not an object")
+        fid = str(item.get("id") or "").strip()
+        mark = str(item.get("mark") or "").strip().lower()
+        # One line, so the reason can never read as a mark line itself.
+        reason = " ".join(str(item.get("reason") or "").split())
+        if not fid:
+            raise ServiceError(f"verdicts[{i}] has no id")
+        if mark not in DRAFT_MARKS:
+            raise ServiceError(f"verdicts[{i}] ({fid}): mark must be y, n or ?, not {mark!r}")
+        if mark != "?" and not reason:
+            raise ServiceError(f"verdicts[{i}] ({fid}): a {mark} mark needs a reason; a person reads it")
+        if fid in out:
+            raise ServiceError(f"{fid} is listed twice")
+        out[fid] = (mark, reason)
+    return out
+
+
+def _load_report(report_path: str):
+    from .core import Report
+
+    path = Path(report_path)
+    if not path.is_file():
+        raise ServiceError(f"no report at {path}")
+    try:
+        return Report.from_dict(json.loads(path.read_text(encoding="utf-8")))
+    except (ValueError, TypeError) as exc:
+        raise ServiceError(f"report at {path} is not a report: {exc}") from exc
+
+
+def review_draft(report_path: str, output_dir: str, verdicts: list[dict],
+                 limit: int = 20, rule: str | None = None) -> dict:
+    """Write the review queue with marks an assistant proposed, for a person to read.
+
+    The queue is the one `review_queue` draws -- same report, same selection,
+    same knowledge read from the same place -- written to `output_dir` in the
+    format `arbiter review --apply` reads, with each proposed mark filled in and
+    its reason on the line beneath. Findings the proposals do not name stay
+    blank. The result also carries, as text, the failure-ledger entries the `y`
+    marks would draft, so the person sees what applying would set in motion.
+
+    Nothing is recorded. The knowledge file is read and never saved, no ledger
+    is written, and the draft's first line says so. A person records the marks,
+    after reading them, with the CLI and their name.
+    """
+    from .learn import Knowledge
+    from .ledger import preview_entries
+    from .review import MARK, render, select
+
+    proposals = _proposals(verdicts)
+    out = resolve_within(DRAFT_FILE, output_dir, "output_dir")
+    report = _load_report(report_path)
+    # Read from where `arbiter review` reads it, and only read.
+    knowledge = Knowledge.load(None)
+    picked = select(report.findings, knowledge, limit=limit, rule=rule or None)
+    if not picked:
+        return {
+            "draft_path": "", "draft_markdown": "", "entry_count": 0,
+            "proposed": {"y": 0, "n": 0, "?": 0}, "unknown_ids": sorted(proposals),
+            "ledger_entries_text": "", "recorded": False,
+            "note": ("Nothing to review: this report has no findings, or every "
+                     "finding in it has already been adjudicated. No draft was written."),
+        }
+
+    queue = render(picked, knowledge, str(out))
+    # One renderer and one parser: the draft is the queue with its header
+    # swapped and the marks filled, never a second format.
+    body = queue.split("---\n", 1)[1]
+    filled: dict[str, str] = {}
+    lines: list[str] = []
+    for line in body.split("\n"):
+        m = MARK.match(line)
+        if m and m.group(2) in proposals:
+            mark, reason = proposals[m.group(2)]
+            lines.append(line[:m.start(1)] + mark + line[m.end(1):])
+            if reason:
+                lines.append(f"    reason: {reason}")
+            filled[m.group(2)] = mark
+        else:
+            lines.append(line)
+    draft = DRAFT_HEADER.format(report=report_path, path=str(out)) + "\n".join(lines)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(draft, encoding="utf-8")
+
+    proposed = {mark: sum(1 for v in filled.values() if v == mark) for mark in DRAFT_MARKS}
+    would_draft = preview_entries(picked, [fid for fid, v in filled.items() if v == "y"])
+    return {
+        "draft_path": str(out),
+        "draft_markdown": draft,
+        "entry_count": len(picked),
+        "proposed": proposed,
+        "unknown_ids": sorted(fid for fid in proposals if fid not in filled),
+        "ledger_entries_text": (json.dumps(would_draft, indent=2, ensure_ascii=False)
+                                if would_draft else ""),
+        "recorded": False,
+        "note": ("Nothing has been recorded. A person reads the draft and runs "
+                 "`arbiter review <report> --apply <draft> --reviewer <name>` locally; "
+                 "that is the only way a mark reaches the ledger. The ledger entries "
+                 "above are what the y marks would draft with --ledger, numbered from "
+                 "an empty ledger; none has been written. An unknown id is one that "
+                 "is not in this queue, and the draft carries no mark for it."),
+    }
+
+
 # Named so a test can assert on it: these are every operation either front door
 # may expose, and nothing here writes to the calibration ledger.
-OPERATIONS = {"scan": scan, "gate": gate, "review_queue": review_queue}
+OPERATIONS = {"scan": scan, "gate": gate, "review_queue": review_queue,
+              "review_draft": review_draft}

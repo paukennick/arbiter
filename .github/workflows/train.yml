@@ -41,9 +41,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 480
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.11"
 
@@ -59,7 +59,7 @@ jobs:
       # if this starts evicting, lower DEPTH in fetch_corpus.sh rather than
       # removing the cache.
       - name: Cache practice repositories
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: /tmp/corpus
           key: corpus-${{ hashFiles('tools/fetch_corpus.sh') }}-${{ github.run_number }}
@@ -76,7 +76,12 @@ jobs:
       # install the same way here, on a laptop, and in the sandbox. An
       # analyzer that changes underneath you changes your findings.
       - name: External analyzers
-        run: ./tools/install_tools.sh
+        run: |
+          ./tools/install_tools.sh
+          arbiter tools install .   # the lock-keyed cache scans read (FAIL-136)
+
+      - name: Verify locked tooling
+        run: arbiter tools verify .arbiter/tooling.lock.json
 
       # Before the expensive part, not after it. Run 1 measured everything and
       # committed nothing: `training/` matched a gitignore entry, `git add -A`
@@ -111,7 +116,7 @@ jobs:
       # measurements somewhere readable.
       - name: Keep the results even if something failed
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: training-${{ github.run_number }}
           path: |

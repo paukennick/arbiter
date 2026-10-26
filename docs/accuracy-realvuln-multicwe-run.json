@@ -1,0 +1,2740 @@
+{
+  "evaluation": {
+    "accuracy_claim_eligible": false,
+    "benchmark": {
+      "commit": "7a710251f55c17d32d3adcb13d37468e2e3b9e4a",
+      "ground_truth_version": "3.0.0",
+      "id": "realvuln-3.1.0-python-cwe89-licensed-subset",
+      "scope": "all primary CWEs with evidence.source=manual_review",
+      "version": "3.1.0"
+    },
+    "by_primary_cwe": {
+      "CWE-1004": {
+        "case_level_confusion": {
+          "fn": 4,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 4,
+          "safe_traps": 0,
+          "total": 4
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 4,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 9929,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 4
+      },
+      "CWE-1021": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6543,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-113": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6598,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-117": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6492,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-1333": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 1,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 1,
+          "total": 2
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6417,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-16": {
+        "case_level_confusion": {
+          "fn": 11,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 11,
+          "safe_traps": 0,
+          "total": 11
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 11,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 10000,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 7
+      },
+      "CWE-200": {
+        "case_level_confusion": {
+          "fn": 10,
+          "fp": 0,
+          "tn": 1,
+          "tp": 1
+        },
+        "labelled_cases": {
+          "positive": 11,
+          "safe_traps": 1,
+          "total": 12
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 1,
+            "numerator": 1,
+            "value": 1.0
+          },
+          "labelled_case_recall": {
+            "denominator": 11,
+            "numerator": 1,
+            "value": 0.09090909090909091
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              1.0,
+              1.0
+            ],
+            "precision_valid_replicates": 6467,
+            "recall_interval": [
+              0.0,
+              0.36363636363636365
+            ],
+            "recall_valid_replicates": 10000,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 7
+      },
+      "CWE-204": {
+        "case_level_confusion": {
+          "fn": 3,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 3,
+          "safe_traps": 0,
+          "total": 3
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 3,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 8883,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 2
+      },
+      "CWE-209": {
+        "case_level_confusion": {
+          "fn": 8,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 8,
+          "safe_traps": 0,
+          "total": 8
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 8,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 9996,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 6
+      },
+      "CWE-215": {
+        "case_level_confusion": {
+          "fn": 3,
+          "fp": 0,
+          "tn": 0,
+          "tp": 3
+        },
+        "labelled_cases": {
+          "positive": 6,
+          "safe_traps": 0,
+          "total": 6
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 3,
+            "numerator": 3,
+            "value": 1.0
+          },
+          "labelled_case_recall": {
+            "denominator": 6,
+            "numerator": 3,
+            "value": 0.5
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              1.0,
+              1.0
+            ],
+            "precision_valid_replicates": 8879,
+            "recall_interval": [
+              0.0,
+              1.0
+            ],
+            "recall_valid_replicates": 9710,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 3
+      },
+      "CWE-22": {
+        "case_level_confusion": {
+          "fn": 17,
+          "fp": 0,
+          "tn": 4,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 17,
+          "safe_traps": 4,
+          "total": 21
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 17,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 10000,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 4,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 8
+      },
+      "CWE-235": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6598,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-256": {
+        "case_level_confusion": {
+          "fn": 5,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 5,
+          "safe_traps": 0,
+          "total": 5
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 5,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 9936,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 4
+      },
+      "CWE-287": {
+        "case_level_confusion": {
+          "fn": 4,
+          "fp": 0,
+          "tn": 1,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 4,
+          "safe_traps": 1,
+          "total": 5
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 4,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 8915,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 2
+      },
+      "CWE-306": {
+        "case_level_confusion": {
+          "fn": 8,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 8,
+          "safe_traps": 0,
+          "total": 8
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 8,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 9990,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 5
+      },
+      "CWE-307": {
+        "case_level_confusion": {
+          "fn": 4,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 4,
+          "safe_traps": 0,
+          "total": 4
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 4,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 9713,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 3
+      },
+      "CWE-312": {
+        "case_level_confusion": {
+          "fn": 6,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 6,
+          "safe_traps": 0,
+          "total": 6
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 6,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 9992,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 5
+      },
+      "CWE-319": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6455,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-321": {
+        "case_level_confusion": {
+          "fn": 4,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 4,
+          "safe_traps": 0,
+          "total": 4
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 4,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 9927,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 4
+      },
+      "CWE-326": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6543,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-328": {
+        "case_level_confusion": {
+          "fn": 6,
+          "fp": 0,
+          "tn": 1,
+          "tp": 2
+        },
+        "labelled_cases": {
+          "positive": 8,
+          "safe_traps": 1,
+          "total": 9
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 2,
+            "numerator": 2,
+            "value": 1.0
+          },
+          "labelled_case_recall": {
+            "denominator": 8,
+            "numerator": 2,
+            "value": 0.25
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              1.0,
+              1.0
+            ],
+            "precision_valid_replicates": 8899,
+            "recall_interval": [
+              0.0,
+              0.8
+            ],
+            "recall_valid_replicates": 9946,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 4
+      },
+      "CWE-330": {
+        "case_level_confusion": {
+          "fn": 7,
+          "fp": 0,
+          "tn": 0,
+          "tp": 1
+        },
+        "labelled_cases": {
+          "positive": 8,
+          "safe_traps": 0,
+          "total": 8
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 1,
+            "numerator": 1,
+            "value": 1.0
+          },
+          "labelled_case_recall": {
+            "denominator": 8,
+            "numerator": 1,
+            "value": 0.125
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              1.0,
+              1.0
+            ],
+            "precision_valid_replicates": 6543,
+            "recall_interval": [
+              0.0,
+              0.6
+            ],
+            "recall_valid_replicates": 9980,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 5
+      },
+      "CWE-347": {
+        "case_level_confusion": {
+          "fn": 0,
+          "fp": 0,
+          "tn": 0,
+          "tp": 1
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 1,
+            "numerator": 1,
+            "value": 1.0
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 1,
+            "value": 1.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              1.0,
+              1.0
+            ],
+            "precision_valid_replicates": 6492,
+            "recall_interval": [
+              1.0,
+              1.0
+            ],
+            "recall_valid_replicates": 6492,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-352": {
+        "case_level_confusion": {
+          "fn": 8,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 8,
+          "safe_traps": 0,
+          "total": 8
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 8,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 9997,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 6
+      },
+      "CWE-384": {
+        "case_level_confusion": {
+          "fn": 2,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 2,
+          "safe_traps": 0,
+          "total": 2
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 2,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 8902,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 2
+      },
+      "CWE-400": {
+        "case_level_confusion": {
+          "fn": 17,
+          "fp": 0,
+          "tn": 1,
+          "tp": 1
+        },
+        "labelled_cases": {
+          "positive": 18,
+          "safe_traps": 1,
+          "total": 19
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 1,
+            "numerator": 1,
+            "value": 1.0
+          },
+          "labelled_case_recall": {
+            "denominator": 18,
+            "numerator": 1,
+            "value": 0.05555555555555555
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              1.0,
+              1.0
+            ],
+            "precision_valid_replicates": 6598,
+            "recall_interval": [
+              0.0,
+              1.0
+            ],
+            "recall_valid_replicates": 9690,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 3
+      },
+      "CWE-434": {
+        "case_level_confusion": {
+          "fn": 0,
+          "fp": 0,
+          "tn": 0,
+          "tp": 1
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 1,
+            "numerator": 1,
+            "value": 1.0
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 1,
+            "value": 1.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              1.0,
+              1.0
+            ],
+            "precision_valid_replicates": 6467,
+            "recall_interval": [
+              1.0,
+              1.0
+            ],
+            "recall_valid_replicates": 6467,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-489": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6417,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-502": {
+        "case_level_confusion": {
+          "fn": 0,
+          "fp": 1,
+          "tn": 1,
+          "tp": 10
+        },
+        "labelled_cases": {
+          "positive": 10,
+          "safe_traps": 2,
+          "total": 12
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 11,
+            "numerator": 10,
+            "value": 0.9090909090909091
+          },
+          "labelled_case_recall": {
+            "denominator": 10,
+            "numerator": 10,
+            "value": 1.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              0.8235294117647058,
+              1.0
+            ],
+            "precision_valid_replicates": 9988,
+            "recall_interval": [
+              1.0,
+              1.0
+            ],
+            "recall_valid_replicates": 9988,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 2,
+            "numerator": 1,
+            "value": 0.5
+          }
+        },
+        "repositories_with_labels": 5
+      },
+      "CWE-521": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6472,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-525": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6476,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-532": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6479,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-565": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6472,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-598": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6543,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-601": {
+        "case_level_confusion": {
+          "fn": 4,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 4,
+          "safe_traps": 0,
+          "total": 4
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 4,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 9714,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 3
+      },
+      "CWE-611": {
+        "case_level_confusion": {
+          "fn": 5,
+          "fp": 0,
+          "tn": 2,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 5,
+          "safe_traps": 2,
+          "total": 7
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 5,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 9680,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 2,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 3
+      },
+      "CWE-614": {
+        "case_level_confusion": {
+          "fn": 3,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 3,
+          "safe_traps": 0,
+          "total": 3
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 3,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 8892,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 2
+      },
+      "CWE-639": {
+        "case_level_confusion": {
+          "fn": 13,
+          "fp": 0,
+          "tn": 1,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 13,
+          "safe_traps": 1,
+          "total": 14
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 13,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 9997,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 6
+      },
+      "CWE-643": {
+        "case_level_confusion": {
+          "fn": 4,
+          "fp": 0,
+          "tn": 1,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 4,
+          "safe_traps": 1,
+          "total": 5
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 4,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 8886,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 2
+      },
+      "CWE-674": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6492,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-693": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6492,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-73": {
+        "case_level_confusion": {
+          "fn": 3,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 3,
+          "safe_traps": 0,
+          "total": 3
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 3,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6479,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-78": {
+        "case_level_confusion": {
+          "fn": 3,
+          "fp": 0,
+          "tn": 3,
+          "tp": 11
+        },
+        "labelled_cases": {
+          "positive": 14,
+          "safe_traps": 3,
+          "total": 17
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 11,
+            "numerator": 11,
+            "value": 1.0
+          },
+          "labelled_case_recall": {
+            "denominator": 14,
+            "numerator": 11,
+            "value": 0.7857142857142857
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              1.0,
+              1.0
+            ],
+            "precision_valid_replicates": 9988,
+            "recall_interval": [
+              0.3333333333333333,
+              1.0
+            ],
+            "recall_valid_replicates": 9998,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 3,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 7
+      },
+      "CWE-79": {
+        "case_level_confusion": {
+          "fn": 37,
+          "fp": 0,
+          "tn": 8,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 37,
+          "safe_traps": 8,
+          "total": 45
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 37,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 10000,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 8,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 9
+      },
+      "CWE-798": {
+        "case_level_confusion": {
+          "fn": 21,
+          "fp": 0,
+          "tn": 2,
+          "tp": 1
+        },
+        "labelled_cases": {
+          "positive": 22,
+          "safe_traps": 2,
+          "total": 24
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 1,
+            "numerator": 1,
+            "value": 1.0
+          },
+          "labelled_case_recall": {
+            "denominator": 22,
+            "numerator": 1,
+            "value": 0.045454545454545456
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              1.0,
+              1.0
+            ],
+            "precision_valid_replicates": 6479,
+            "recall_interval": [
+              0.0,
+              0.09803921568627451
+            ],
+            "recall_valid_replicates": 10000,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 2,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 7
+      },
+      "CWE-807": {
+        "case_level_confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 0,
+          "total": 1
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 6492,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 1
+      },
+      "CWE-862": {
+        "case_level_confusion": {
+          "fn": 12,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 12,
+          "safe_traps": 0,
+          "total": 12
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 12,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 10000,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 7
+      },
+      "CWE-89": {
+        "case_level_confusion": {
+          "fn": 5,
+          "fp": 6,
+          "tn": 28,
+          "tp": 21
+        },
+        "labelled_cases": {
+          "positive": 26,
+          "safe_traps": 34,
+          "total": 60
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 27,
+            "numerator": 21,
+            "value": 0.7777777777777778
+          },
+          "labelled_case_recall": {
+            "denominator": 26,
+            "numerator": 21,
+            "value": 0.8076923076923077
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              0.6428571428571429,
+              0.9090909090909091
+            ],
+            "precision_valid_replicates": 10000,
+            "recall_interval": [
+              0.5,
+              1.0
+            ],
+            "recall_valid_replicates": 10000,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 34,
+            "numerator": 6,
+            "value": 0.17647058823529413
+          }
+        },
+        "repositories_with_labels": 11
+      },
+      "CWE-915": {
+        "case_level_confusion": {
+          "fn": 3,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 3,
+          "safe_traps": 0,
+          "total": 3
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 3,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 9689,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 3
+      },
+      "CWE-916": {
+        "case_level_confusion": {
+          "fn": 3,
+          "fp": 0,
+          "tn": 0,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 3,
+          "safe_traps": 0,
+          "total": 3
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 3,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 9710,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          }
+        },
+        "repositories_with_labels": 3
+      },
+      "CWE-918": {
+        "case_level_confusion": {
+          "fn": 18,
+          "fp": 0,
+          "tn": 3,
+          "tp": 0
+        },
+        "labelled_cases": {
+          "positive": 18,
+          "safe_traps": 3,
+          "total": 21
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "value": null
+          },
+          "labelled_case_recall": {
+            "denominator": 18,
+            "numerator": 0,
+            "value": 0.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              null,
+              null
+            ],
+            "precision_valid_replicates": 0,
+            "recall_interval": [
+              0.0,
+              0.0
+            ],
+            "recall_valid_replicates": 10000,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 3,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 6
+      },
+      "CWE-94": {
+        "case_level_confusion": {
+          "fn": 2,
+          "fp": 0,
+          "tn": 1,
+          "tp": 8
+        },
+        "labelled_cases": {
+          "positive": 10,
+          "safe_traps": 1,
+          "total": 11
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 8,
+            "numerator": 8,
+            "value": 1.0
+          },
+          "labelled_case_recall": {
+            "denominator": 10,
+            "numerator": 8,
+            "value": 0.8
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              1.0,
+              1.0
+            ],
+            "precision_valid_replicates": 9931,
+            "recall_interval": [
+              0.5384615384615384,
+              1.0
+            ],
+            "recall_valid_replicates": 9931,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 4
+      },
+      "CWE-943": {
+        "case_level_confusion": {
+          "fn": 0,
+          "fp": 0,
+          "tn": 1,
+          "tp": 1
+        },
+        "labelled_cases": {
+          "positive": 1,
+          "safe_traps": 1,
+          "total": 2
+        },
+        "metrics": {
+          "labelled_case_precision": {
+            "denominator": 1,
+            "numerator": 1,
+            "value": 1.0
+          },
+          "labelled_case_recall": {
+            "denominator": 1,
+            "numerator": 1,
+            "value": 1.0
+          },
+          "repository_cluster_bootstrap": {
+            "confidence_level": 0.95,
+            "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+            "method": "repository-cluster bootstrap; percentile interval",
+            "precision_interval": [
+              1.0,
+              1.0
+            ],
+            "precision_valid_replicates": 6451,
+            "recall_interval": [
+              1.0,
+              1.0
+            ],
+            "recall_valid_replicates": 6451,
+            "replicates": 10000,
+            "seed": 0
+          },
+          "safe_trap_false_positive_rate": {
+            "denominator": 1,
+            "numerator": 0,
+            "value": 0.0
+          }
+        },
+        "repositories_with_labels": 1
+      }
+    },
+    "case_level_confusion": {
+      "fn": 279,
+      "fp": 7,
+      "tn": 60,
+      "tp": 62
+    },
+    "claim_scope": "RealVuln 3.1.0 approved 11-repository Python manual-review case conformance; not independently adjudicated truth, finding-level precision, or production-population accuracy.",
+    "general_99_percent_claim": false,
+    "label_provenance": {
+      "available_cases_by_source": {
+        "gt_expansion_verification_2026_04_29": 13,
+        "manual_review": 408,
+        "our-scanner": 75,
+        "snyk": 5,
+        "walkthrough": 1
+      },
+      "available_label_count": 502,
+      "excluded_cases_by_source": {
+        "gt_expansion_verification_2026_04_29": 13,
+        "our-scanner": 75,
+        "snyk": 5,
+        "walkthrough": 1
+      },
+      "included_cases_with_manually_verified_flag": 66,
+      "included_source": "manual_review"
+    },
+    "labelled_cases": {
+      "positive": 341,
+      "safe_traps": 67,
+      "total": 408
+    },
+    "metrics": {
+      "labelled_case_precision": {
+        "denominator": 69,
+        "numerator": 62,
+        "value": 0.8985507246376812
+      },
+      "labelled_case_recall": {
+        "denominator": 341,
+        "numerator": 62,
+        "value": 0.18181818181818182
+      },
+      "repository_cluster_bootstrap": {
+        "confidence_level": 0.95,
+        "interpretation": "Descriptive stability within this curated 11-repository benchmark subset only; not an interval for production repositories or a 99% certification.",
+        "method": "repository-cluster bootstrap; percentile interval",
+        "precision_interval": [
+          0.8448275862068966,
+          0.9473684210526315
+        ],
+        "precision_valid_replicates": 10000,
+        "recall_interval": [
+          0.13002952262854045,
+          0.23837305559833666
+        ],
+        "recall_valid_replicates": 10000,
+        "replicates": 10000,
+        "seed": 0
+      },
+      "safe_trap_false_positive_rate": {
+        "denominator": 67,
+        "numerator": 7,
+        "value": 0.1044776119402985
+      }
+    },
+    "run": {
+      "arbiter_version": "0.1.0",
+      "cache_policy": "disabled by the pinned scan command; each scan uses --no-cache",
+      "line_tolerance": 10,
+      "manifest_sha256": "7035fe3ac0c84f46627229eb572b8a09d7d5b824790a15efaf030f36f76179fe",
+      "overall_scorecards_withheld": 11,
+      "probe": "lang_python",
+      "profile": "offline",
+      "python_probe_assessed_repositories": 11,
+      "repositories": 11
+    },
+    "unmatched_findings_unassessed": 25
+  },
+  "execution": {
+    "adapters_enabled": false,
+    "arbiter_commit": "3a72985ff516e80850b0ffe0c7c2e1ba26418153",
+    "arbiter_versions": [
+      "0.1.0"
+    ],
+    "arbiter_worktree_clean": false,
+    "architecture": "x86_64",
+    "cache_enabled": false,
+    "completed_at_utc": "2026-10-24T22:19:03.652162Z",
+    "configuration_sha256": "e001cd6a3677c208d28c85a4cd6364b25a467e23405e59d0f7de7b9ab95d34ea",
+    "evaluator_python_version": "3.14.4",
+    "evaluator_sha256": "f7505eef88ed4b54dfc0c8e480631e62f973078d965ad7b33d3565cfe07e2a00",
+    "ground_truth_sha256_by_repo": {
+      "realvuln-damn-vulnerable-graphql-application": "6767d0217da27dadead50f496a7ab8083df3627cb41c83579aa6b623008ded43",
+      "realvuln-djangoat": "f6b35022a86b3a17f2cd602af238238fce242fc71deb3de4f08015d8c4415016",
+      "realvuln-dsvpwa": "f5dbaff8575847ce8346ea5ef610db52bfe98197b2c9db4aa2755cb0488ff88c",
+      "realvuln-dsvw": "3e9cf36a55c6d0fe57b2d0bbe8575a1ad23ae34b8ca0c61c345b4ada3c998c95",
+      "realvuln-dvpwa": "1a948c47ce0c264f030c2423cd1fd25d5e5e227cf848454c74ed9cb0cf86b13a",
+      "realvuln-pygoat": "b8291f099388a61c06ba7ce360fe8e806c2f4284699ac5771d8ec7ec1be6cb16",
+      "realvuln-threatbyte": "6667f698d017217342a91ba6f44646cd8fb0c2cf51b6e0e2e84d1285104ef04d",
+      "realvuln-vampi": "9dd52ceebff72a7cbb027051e5d17433efa9cf40bee6889e824839606dba3bab",
+      "realvuln-vfapi": "28bcedd21d400889f4428bba9c8eca9922dd74ea06ac66319f6c4b0439f19990",
+      "realvuln-vulnpy": "a379d01db4d8fc2a291f7ddf929eb4a58c1041ba9ccad2f653599d353863a3db",
+      "realvuln-vulpy": "8b6dd0b06cb307b1c5d1b115e8f30bb31ae8e0534b955988e854547c4a7c7ba5"
+    },
+    "historical_cwe89_confusion_preserved": {
+      "fn": 5,
+      "fp": 6,
+      "tn": 28,
+      "tp": 21
+    },
+    "history_enabled": false,
+    "input_manifest_sha256": "88e15366a2e15c952054c72ebe40b6d4a633a04e4db546d00c357f74db8367f6",
+    "operating_system": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+    "probe": "lang_python",
+    "profile": "offline",
+    "python_probe_assessed_repositories": 11,
+    "report_sha256_by_repo": {
+      "realvuln-damn-vulnerable-graphql-application": "ff4c91fbe05b48246ecc351a0e08953fb0c8929f134608fed3d186e054c07b4f",
+      "realvuln-djangoat": "be09f33aff091bea193269ae0e76a0ec0985f93218b2f5842699f3339b9f5c27",
+      "realvuln-dsvpwa": "c9bbbb8d0dc72936deca5a61acc9c33d743b12b70142b5331647ad3e89a856c8",
+      "realvuln-dsvw": "02816fb227c90c4bc4d1a75955827239463fccf6085c4ada0a6b8dff8a180fb2",
+      "realvuln-dvpwa": "3e6b0084c4d2c83cc64a74fed73f9104f0aef8b7a3c9c08c9760497e1e0d1d82",
+      "realvuln-pygoat": "28bb32d19d49ff1b488d09304b549ad4abd3ff1887b1f806bfa267f225d495a2",
+      "realvuln-threatbyte": "8e7d52a814ad3fca5b5a91d46eca64f3284fb910276c8fea7300a56b3408dc8f",
+      "realvuln-vampi": "a5a5c0b69568cf49e59b316cf38a716638e7a38f2c1e8094560923940801be87",
+      "realvuln-vfapi": "a678eb3cff352070678e4f00f599ab31591fcea575a3f53e78f0958daf07327b",
+      "realvuln-vulnpy": "5f23dc3551886aea5aba56c6308d850c1e53c747493610431082abbb7d961369",
+      "realvuln-vulpy": "405196c0d09102ca08d4dfa2574c2328da31b1bc6cbed8c51b0a5e680a6252b6"
+    },
+    "repositories_scanned": 11,
+    "runtime_packages": {
+      "PyYAML": "6.0.3",
+      "tree-sitter": "0.26.0",
+      "tree-sitter-language-pack": "1.22.1"
+    },
+    "scan_command_template": "PYTHONPATH=src uv run --no-project --with PyYAML --with tree-sitter-language-pack==1.22.1 python -c \"from arbiter.cli import main; main()\" scan <source> --config arbiter.yaml --profile offline --only lang_python --no-adapters --no-cache --no-history --no-open --format json --out <reports>/<repo-id>",
+    "scanner_python_version": "3.13.15",
+    "scanner_sources_match_commit": true,
+    "scorecards_withheld": 11,
+    "source_archive_bytes": 18468371,
+    "source_archive_sha256_by_repo": {
+      "realvuln-damn-vulnerable-graphql-application": "ce16094a23fffb5d9726a3b0684cabf1fda5888e1ba8bc8b105592c3c86604b8",
+      "realvuln-djangoat": "474fa41a799745f7a7af94500e2041ac7e98130c6ae2ababbbe7b470a2e6c864",
+      "realvuln-dsvpwa": "9dec4092898ce7bae7d4ffd854a6a577eeeadd209f7d01053787384935dd1bad",
+      "realvuln-dsvw": "8a9e0d07755bedf2c73c856c88573cb1cfa37ba810231b23ab2113a1a1473b4e",
+      "realvuln-dvpwa": "902ddd5e78673bdbc771e43f89e5b7f7af2f7c3da2544fd9c530d0f571506673",
+      "realvuln-pygoat": "d36746c1537963ba62ad124dcf6eb392e1dc347853f8a578aacd40a048e10cd5",
+      "realvuln-threatbyte": "b0f511d99a2a238a078f46b16a1b1148d135758a577e63a48ddb3dd9e2ac660f",
+      "realvuln-vampi": "42f45bb0612383c57c3f1cfb2c446e742c2104f7766337199de766b6dc5c3e37",
+      "realvuln-vfapi": "eb9fcc598e84643df34f5687eb0855e4f0821a21613d2b8d67f8cfb98ae7be2a",
+      "realvuln-vulnpy": "81c56c7579128db681018d04dbd64bab6a5d2d4a6564bcad35eac48ee2779b6a",
+      "realvuln-vulpy": "a0087359a38d52e977cbc6493bb949629add4038413b52af4372c7ad88f3a091"
+    },
+    "started_at_utc": "2026-10-24T22:18:54.900770Z",
+    "target_code_executed": false,
+    "total_report_findings": 107
+  },
+  "label_inventory": {
+    "available_label_count": 502,
+    "distinct_primary_cwes_across_available_labels": 65,
+    "evidence_source_counts": {
+      "gt_expansion_verification_2026_04_29": 13,
+      "manual_review": 408,
+      "our-scanner": 75,
+      "snyk": 5,
+      "walkthrough": 1
+    },
+    "excluded_cases_by_source": {
+      "gt_expansion_verification_2026_04_29": 13,
+      "our-scanner": 75,
+      "snyk": 5,
+      "walkthrough": 1
+    },
+    "explicit_non_scoring_entries": 0,
+    "included_label_count": 408,
+    "included_label_source": "manual_review",
+    "included_manually_verified_flag_count": 66,
+    "included_primary_cwe_count": 53,
+    "limitation": "Benchmark-maintainer evidence; manual_review is not independent multi-reviewer adjudication.",
+    "scoring_field": "absent from all 502 pinned entries"
+  },
+  "report_schema_version": 1,
+  "status": "completed_aggregate_only"
+}

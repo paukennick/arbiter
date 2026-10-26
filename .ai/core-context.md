@@ -73,10 +73,8 @@ project-specific requirements using the ruleset requirement template.
 1. Confirm the active requirement ID. If none is provided, create the next
    sequential requirement ID using the configured prefix.
 2. State the minimum access scope before inspecting files.
-3. Read `.ai/project-map.md` before broad traversal when it exists. This
-   project has `./omni` installed but never runs `./omni map` against it
-   (see `.ai/project-configuration.md`) — update it by hand when the
-   structure changed or the map is stale.
+3. Read `.ai/project-map.md` before broad traversal when it exists. Regenerate
+   it with `./omni map` when the structure changed or the map is stale.
 4. Inspect only the identified scope. Expand only when necessary and state why.
 5. Implement the smallest safe maintainable change.
 6. Add or update tests when behavior, validation, data handling, access control,
@@ -96,9 +94,8 @@ route to `.ai/entrypoints/`. The underlying rules stay the same regardless of
 the assistant, editor, or framework being used.
 
 **This project follows that pattern**: `CLAUDE.md` at the repo root is a
-thin routing shim to `.ai/entrypoints/claude.md`. Project-specific history
-and decisions live in `.ai/project-context.md` — read that file, not just
-this one, before making implementation decisions; where the two disagree,
-`.ai/project-context.md` wins for anything project-specific. Only Claude
-Code is used on this project, so the non-Claude assistant shims and
-adapters were not installed here.
+thin routing shim to `.ai/entrypoints/claude.md`, and the other assistant
+shims route to the same `.ai/` tree. Project-specific history and decisions
+live in `.ai/project-context.md` — read that file, not just this one, before
+making implementation decisions; where the two disagree,
+`.ai/project-context.md` wins for anything project-specific.
