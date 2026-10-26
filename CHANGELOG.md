@@ -7,6 +7,12 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-158 | CI scans now use the analyzers CI installs. Since the tooling
+  lock (2026-10-23) scans read analyzers from the lock-keyed cache that only
+  `arbiter tools install` fills, while CI ran `install_tools.sh` alone, so the
+  self-gate skipped all six analyzers and withheld its grade at 44% coverage
+  (FAIL-136). `arbiter tools install` also works on Windows, where it looked
+  for `trivy` instead of `trivy.exe` in the release archive (FAIL-135).
 - ARB-157 | PR checks pass on every matrix cell again. Windows CI downloads
   every default tree-sitter grammar up front, so the TypeScript pack no longer
   depends on test order for `tsx` (FAIL-132). `authored.undeclared-import`

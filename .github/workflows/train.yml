@@ -76,7 +76,9 @@ jobs:
       # install the same way here, on a laptop, and in the sandbox. An
       # analyzer that changes underneath you changes your findings.
       - name: External analyzers
-        run: ./tools/install_tools.sh
+        run: |
+          ./tools/install_tools.sh
+          arbiter tools install .   # the lock-keyed cache scans read (FAIL-136)
 
       - name: Verify locked tooling
         run: arbiter tools verify .arbiter/tooling.lock.json

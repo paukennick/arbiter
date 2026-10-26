@@ -100,6 +100,11 @@ jobs:
         run: |
           pip install -e .[api]
           ./tools/install_tools.sh
+          # Scans read analyzers from the lock-keyed cache that only
+          # `arbiter tools install` fills; install_tools.sh puts them on PATH,
+          # which is what `tools verify` checks. Without this the self-gate
+          # found no analyzers and withheld its grade at 44% coverage (FAIL-136).
+          arbiter tools install .
 
       # The installer may report a missing tool without failing so local
       # installs can continue with honest partial coverage. CI treats this

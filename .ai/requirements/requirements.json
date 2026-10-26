@@ -3551,6 +3551,32 @@
         "CHANGELOG.md"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-158",
+      "category": "developer-tooling",
+      "title": "CI scans use the analyzers CI installs",
+      "description": "Since 2687e9a scans read analyzers from the lock-keyed cache that arbiter tools install fills, but CI only ran install_tools.sh, so every self-gate since 2026-10-23 skipped all six analyzers and withheld its grade at 44% coverage (FAIL-136). Both workflows now run arbiter tools install. arbiter tools install also works on Windows, where it looked for trivy instead of trivy.exe (FAIL-135).",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        ".github/workflows/pr-check.yml",
+        ".github/workflows/train.yml",
+        "src/arbiter/tooling.py",
+        "tests/test_tooling.py"
+      ],
+      "acceptance_criteria": [
+        "the CI self-gate runs all six analyzers",
+        "the self-gate grade is not withheld for coverage",
+        "_release_asset returns trivy.exe on Windows"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/test_tooling.py -q"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
     }
   ]
 }

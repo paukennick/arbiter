@@ -2441,6 +2441,53 @@
       "prevention_rules": [],
       "prevention_notes": "Composite actions under ci/ are pinned like workflows",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-135",
+      "date": "2026-10-25",
+      "title": "arbiter tools install failed on Windows: looked for trivy instead of trivy.exe in the release zip",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "arbiter tools install . on Windows: KeyError: \"There is no item named 'trivy' in the archive\"",
+      "how_detected": "running arbiter tools install while diagnosing PR #21's self-gate",
+      "root_cause": "_release_asset returned the catalog's binary name, 'trivy', for every platform. Trivy's Windows zip holds trivy.exe. gitleaks has its own asset helper that adds .exe, so only release-catalog tools were affected",
+      "requirement": "",
+      "affected": [
+        "src/arbiter/tooling.py"
+      ],
+      "fix_summary": "On Windows, _release_asset appends .exe to the binary name it extracts",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_tooling.py::test_trivy_release_asset_selection_is_platform_aware"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Platform-specific asset tests assert the extracted member name, not only the archive name",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-136",
+      "date": "2026-10-25",
+      "title": "CI verified analyzers on PATH but scans read the empty lock-keyed cache, so the self-gate saw none",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "Self-gate exited 1 on every PR since 2026-10-23: grade withheld, assessment coverage 44% below 60%; gitleaks, checkov, semgrep, ruff, trivy and bandit all skipped although tools verify reported every one ready",
+      "how_detected": "PR #21 CI self-gate, reproduced locally from report.json",
+      "root_cause": "2687e9a moved scans to analyzers in a lock-keyed cache (tooling.tool_cache_root) that only 'arbiter tools install' fills. CI kept running install_tools.sh, which installs onto PATH, and 'arbiter tools verify' with no target checks PATH. Verify passed while the scan found nothing and recorded six analyzers as not assessed",
+      "requirement": "",
+      "affected": [
+        ".github/workflows/pr-check.yml",
+        ".github/workflows/train.yml"
+      ],
+      "fix_summary": "Both workflows run 'arbiter tools install .' after install_tools.sh",
+      "fix_commits": [],
+      "regression_tests": [
+        "pr-check.yml Arbiter self-gate step"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Verification must check the same location scans read; a verify that passes while the scan skips is a false clean",
+      "recurrence_of": ""
     }
   ]
 }
