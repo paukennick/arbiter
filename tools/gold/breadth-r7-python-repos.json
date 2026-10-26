@@ -1,0 +1,2829 @@
+{
+  "_about": "Breadth set r7, Python (ARB-163), frozen before any scan. Python applications drawn from GitHub topics ['self-hosted', 'django-application', 'flask-application', 'fastapi', 'web-application', 'webapp', 'dashboard', 'home-automation', 'chatbot', 'discord-bot', 'telegram-bot', 'crawler', 'scraper', 'automation', 'monitoring', 'cms', 'erp', 'saas', 'api-server', 'rag', 'llm-app', 'workflow', 'media-server', 'download-manager', 'bot'], each with >= 1000 stars, pushed since 2026-08-26, not archived/fork/template, an OSI licence, Python >= 60% of bytes, size <= 400000 KB, a .github/workflows directory, no path Windows cannot check out, and not named anywhere in Arbiter's tools, packs, docs or fixtures (r5 and r7 held-out, gold repos, ground-truth sources). Chosen from metadata and file names only; candidates shuffled with seed 20261026, then split with seed 20261027 into 'dev' (45: rule fixes may read these) and 'heldout' (measurement only, never used for tuning). Each repo is pinned to its default-branch HEAD at freeze time.",
+  "frozen": "2026-10-26",
+  "seed": 20261026,
+  "repos": {
+    "py-s-tui": {
+      "github": "amanusk/s-tui",
+      "url": "https://github.com/amanusk/s-tui.git",
+      "sha": "010729638386e0a453d088df8446e4f07e3f77c3",
+      "branch": "master",
+      "stars": 5113,
+      "license": "GPL-2.0",
+      "python_share": 0.996,
+      "description": "Terminal-based CPU stress and monitoring utility",
+      "slice": "heldout"
+    },
+    "py-bbot": {
+      "github": "blacklanternsecurity/bbot",
+      "url": "https://github.com/blacklanternsecurity/bbot.git",
+      "sha": "a6fb827bb144cdb85b52e142a4d6e14ed5f94b69",
+      "branch": "stable",
+      "stars": 10868,
+      "license": "AGPL-3.0",
+      "python_share": 0.999,
+      "description": "The recursive internet scanner for hackers. 🧡",
+      "slice": "dev"
+    },
+    "py-typesafe-computer-use": {
+      "github": "awlevin/typesafe-computer-use",
+      "url": "https://github.com/awlevin/typesafe-computer-use.git",
+      "sha": "44ca11f0935b021b73020825da054b5c92cc1288",
+      "branch": "main",
+      "stars": 1266,
+      "license": "MIT",
+      "python_share": 0.915,
+      "description": "Computer use for about $0.0002 a step: OCR the screen, classify the next action with TypeSafe, click. macOS.",
+      "slice": "heldout"
+    },
+    "py-bub": {
+      "github": "bubbuild/bub",
+      "url": "https://github.com/bubbuild/bub.git",
+      "sha": "c14941a3d5079c1054d7d5117d8fd08564fbe20e",
+      "branch": "main",
+      "stars": 1689,
+      "license": "Apache-2.0",
+      "python_share": 0.691,
+      "description": "Bub it. Build it. A tiny agent runtime, composable with plugins.",
+      "slice": "heldout"
+    },
+    "py-kirara-ai": {
+      "github": "lss233/kirara-ai",
+      "url": "https://github.com/lss233/kirara-ai.git",
+      "sha": "36249e4a0aa8e3d8930acdfe4e14ec2be6484f63",
+      "branch": "master",
+      "stars": 19200,
+      "license": "AGPL-3.0",
+      "python_share": 0.997,
+      "description": "🤖 可 DIY 的 多模态 AI 聊天机器人 | 🚀 快速接入 微信、 QQ、Telegram、等聊天平台 | 🦈支持DeepSeek、Grok、Claude、Ollama、Gemini、OpenAI | 工作流系统、网页搜索、AI画图、人设调教、虚拟女仆、语音对话 | ",
+      "slice": "heldout"
+    },
+    "py-linkding": {
+      "github": "sissbruecker/linkding",
+      "url": "https://github.com/sissbruecker/linkding.git",
+      "sha": "27b7303baf41bb28babc610ac8eaa486e1ddfab5",
+      "branch": "master",
+      "stars": 11350,
+      "license": "MIT",
+      "python_share": 0.836,
+      "description": "Self-hosted bookmark manager that is designed be to be minimal, fast, and easy to set up using Docker.",
+      "slice": "dev"
+    },
+    "py-sage": {
+      "github": "ZHangZHengEric/Sage",
+      "url": "https://github.com/ZHangZHengEric/Sage.git",
+      "sha": "00c5a4758f4263a4e25820bcc5518ec2ae2619d8",
+      "branch": "main",
+      "stars": 1214,
+      "license": "MIT",
+      "python_share": 0.681,
+      "description": "An RSI Agent Harness for running, evaluating, and evolving agents—with tools, skills, MCP, stateful execution, and multi-agent workflows.",
+      "slice": "heldout"
+    },
+    "py-moondownloader": {
+      "github": "LeyckerS/moondownloader",
+      "url": "https://github.com/LeyckerS/moondownloader.git",
+      "sha": "cdc84e8aeb8eb02af9ed5d723431f39168d479b1",
+      "branch": "main",
+      "stars": 1596,
+      "license": "MIT",
+      "python_share": 0.663,
+      "description": "Bulk file downloader for datanodes.to and fuckingfast.co — real-Chrome extraction over CDP, pure-HTTP extraction with a Chrome TLS fingerprint, aiohttp streaming, WebView2 GUI and a headless CLI. Windows, Python 3.10+, MIT.",
+      "slice": "heldout"
+    },
+    "py-open-duet": {
+      "github": "Anil-matcha/open-duet",
+      "url": "https://github.com/Anil-matcha/open-duet.git",
+      "sha": "a066ae9853087510de4ef34882455ff23f278354",
+      "branch": "main",
+      "stars": 6192,
+      "license": "Apache-2.0",
+      "python_share": 0.77,
+      "description": "Open-source, self-hosted alternative to Claude Duet: AI coworkers (named agents) with instructions, memory, routines, their own isolated computer, and your approval before they act. Also an alternative to OpenAI Dots, Meta Muse, Grok Bot, Manus Cue and ChatGPT agent.",
+      "slice": "heldout"
+    },
+    "py-aisoc": {
+      "github": "beenuar/AiSOC",
+      "url": "https://github.com/beenuar/AiSOC.git",
+      "sha": "21f0799557042a1aad0b27e454c2be49feff3224",
+      "branch": "main",
+      "stars": 3917,
+      "license": "MIT",
+      "python_share": 0.794,
+      "description": "Open-source AI Security Operations Center: alert fusion, LLM-agent triage, MITRE ATT&CK investigation, and a replayable decision ledger for every agent step. Self-hostable, runs with no API keys, MIT licensed. Ships an MCP server for Claude, Cursor and Continue.",
+      "slice": "heldout"
+    },
+    "py-tutor": {
+      "github": "overhangio/tutor",
+      "url": "https://github.com/overhangio/tutor.git",
+      "sha": "ec1b76fc27aea8949c785b754ef5e6fd93ffa777",
+      "branch": "release",
+      "stars": 1131,
+      "license": "AGPL-3.0",
+      "python_share": 0.935,
+      "description": "The Docker-based Open edX distribution designed for peace of mind",
+      "slice": "heldout"
+    },
+    "py-presence_simulation": {
+      "github": "slashback100/presence_simulation",
+      "url": "https://github.com/slashback100/presence_simulation.git",
+      "sha": "fea828c436ce48eb438bc0b0610653512049e2f2",
+      "branch": "main",
+      "stars": 1088,
+      "license": "MIT",
+      "python_share": 1.0,
+      "description": "Home Assistant Presence Simulation",
+      "slice": "dev"
+    },
+    "py-titiler": {
+      "github": "developmentseed/titiler",
+      "url": "https://github.com/developmentseed/titiler.git",
+      "sha": "a93d5dcb921c34542e159d78ad36ff6ed5fb8be0",
+      "branch": "main",
+      "stars": 1196,
+      "license": "MIT",
+      "python_share": 0.704,
+      "description": "Build your own Raster dynamic map tile services",
+      "slice": "heldout"
+    },
+    "py-langbot": {
+      "github": "langbot-app/LangBot",
+      "url": "https://github.com/langbot-app/LangBot.git",
+      "sha": "1d3c47c4394b71afa61eaadcf1deccc5e321f099",
+      "branch": "master",
+      "stars": 18502,
+      "license": "Apache-2.0",
+      "python_share": 0.667,
+      "description": "Production-grade platform for building agentic IM bots - 生产级多平台智能机器人开发平台/ Agent、知识库编排、插件系统 / Bots for Discord / Slack / LINE / Telegram / WeChat(企业微信, 企微智能机器人, 公众号) / 飞书 / 钉钉 / QQ / Matrix e.g. Integrated with ChatGPT(GPT), DeepSeek, Dify, n8n, Langflow, Coze, Claude, Gemini, GLM, Ollama, SiliconFlow, Kimi, openclaw / hermes agent, deerflow",
+      "slice": "dev"
+    },
+    "py-lazyllm": {
+      "github": "LazyAGI/LazyLLM",
+      "url": "https://github.com/LazyAGI/LazyLLM.git",
+      "sha": "ff44994c661d1a8e7b58e8b451f3b71eaff7cc95",
+      "branch": "main",
+      "stars": 3888,
+      "license": "Apache-2.0",
+      "python_share": 0.989,
+      "description": "Easiest and laziest way for  building multi-agent LLMs applications.",
+      "slice": "heldout"
+    },
+    "py-hive": {
+      "github": "aden-hive/hive",
+      "url": "https://github.com/aden-hive/hive.git",
+      "sha": "3ee47a3384ea5b3da0bed9a8e9284c7e9ebf987a",
+      "branch": "main",
+      "stars": 11121,
+      "license": "Apache-2.0",
+      "python_share": 0.804,
+      "description": "Multi-Agent Harness for Production AI",
+      "slice": "heldout"
+    },
+    "py-omagent": {
+      "github": "om-ai-lab/OmAgent",
+      "url": "https://github.com/om-ai-lab/OmAgent.git",
+      "sha": "3073b634c58ff2e63e8ec41be00a6d2a65e66420",
+      "branch": "main",
+      "stars": 2669,
+      "license": "Apache-2.0",
+      "python_share": 1.0,
+      "description": "[EMNLP-2024] Build multimodal language agents for fast prototype and production",
+      "slice": "heldout"
+    },
+    "py-nvitop": {
+      "github": "XuehaiPan/nvitop",
+      "url": "https://github.com/XuehaiPan/nvitop.git",
+      "sha": "2c15e0b05e9b59e06eb1873ae1db2b3e64455d41",
+      "branch": "main",
+      "stars": 7227,
+      "license": "Apache-2.0",
+      "python_share": 0.962,
+      "description": "An interactive NVIDIA-GPU process viewer and beyond, the one-stop solution for GPU process management.",
+      "slice": "dev"
+    },
+    "py-claude-workflow-v2": {
+      "github": "CloudAI-X/claude-workflow-v2",
+      "url": "https://github.com/CloudAI-X/claude-workflow-v2.git",
+      "sha": "3b5a89ec1c106dd387e372aec073f9401336382a",
+      "branch": "main",
+      "stars": 1421,
+      "license": "MIT",
+      "python_share": 0.72,
+      "description": "Universal Claude Code workflow plugin with agents, skills, hooks, and commands",
+      "slice": "heldout"
+    },
+    "py-tracecat": {
+      "github": "TracecatHQ/tracecat",
+      "url": "https://github.com/TracecatHQ/tracecat.git",
+      "sha": "882fb5881c77057537c9dcd4fe283dafb59da07c",
+      "branch": "main",
+      "stars": 3867,
+      "license": "AGPL-3.0",
+      "python_share": 0.678,
+      "description": "Open-source security automation platform for teams and AI agents",
+      "slice": "dev"
+    },
+    "py-justhireme": {
+      "github": "vasu-devs/JustHireMe",
+      "url": "https://github.com/vasu-devs/JustHireMe.git",
+      "sha": "accdcdb537ff7e59997857b98482ff42d5198bf4",
+      "branch": "main",
+      "stars": 2261,
+      "license": "AGPL-3.0",
+      "python_share": 0.634,
+      "description": "Local-first AI job intelligence workbench for scraping roles, ranking fit, and generating tailored application materials.",
+      "slice": "heldout"
+    },
+    "py-memory-os": {
+      "github": "ClaudioDrews/memory-os",
+      "url": "https://github.com/ClaudioDrews/memory-os.git",
+      "sha": "e03db1f1c83e94fdb2007c90d232c6c852c0f274",
+      "branch": "main",
+      "stars": 1381,
+      "license": "MIT",
+      "python_share": 0.83,
+      "description": "A 7-layer memory operating system for Hermes Agent — persistent memory with Qdrant, structured facts, fabric recall, auto-curated wiki, and surgical context injection. Runs locally, any LLM provider.",
+      "slice": "heldout"
+    },
+    "py-gpustat": {
+      "github": "wookayin/gpustat",
+      "url": "https://github.com/wookayin/gpustat.git",
+      "sha": "968d9241896d6ef7ae8e1f202bfd645a17233c40",
+      "branch": "master",
+      "stars": 4390,
+      "license": "MIT",
+      "python_share": 1.0,
+      "description": "📊 A simple command-line utility for querying and monitoring GPU status",
+      "slice": "heldout"
+    },
+    "py-codex-autoresearch": {
+      "github": "leo-lilinxiao/codex-autoresearch",
+      "url": "https://github.com/leo-lilinxiao/codex-autoresearch.git",
+      "sha": "0f54c571707487f59486ba7c50d405edfc746c19",
+      "branch": "main",
+      "stars": 3034,
+      "license": "MIT",
+      "python_share": 0.931,
+      "description": "Codex Autoresearch Skill — A self-directed iterative system for Codex that continuously cycles through: modify, verify, retain or discard, and repeat indefinitely. Inspired by Karpathy’s autoresearch concept.",
+      "slice": "dev"
+    },
+    "py-androidviewclient": {
+      "github": "dtmilano/AndroidViewClient",
+      "url": "https://github.com/dtmilano/AndroidViewClient.git",
+      "sha": "5daab71bf79b727bdeb393664fe42fd92917b87d",
+      "branch": "master",
+      "stars": 1721,
+      "license": "Apache-2.0",
+      "python_share": 0.989,
+      "description": "Android ViewServer and ADB client",
+      "slice": "heldout"
+    },
+    "py-nicegui": {
+      "github": "zauberzeug/nicegui",
+      "url": "https://github.com/zauberzeug/nicegui.git",
+      "sha": "844c3760cbcdf8c9cb58f6eb5fb86238996b41ef",
+      "branch": "main",
+      "stars": 16317,
+      "license": "MIT",
+      "python_share": 0.902,
+      "description": "Create web-based user interfaces with Python. The nice way.",
+      "slice": "heldout"
+    },
+    "py-reme": {
+      "github": "agentscope-ai/ReMe",
+      "url": "https://github.com/agentscope-ai/ReMe.git",
+      "sha": "363e497ae96733271414ea4224e274e5de5e5253",
+      "branch": "main",
+      "stars": 3693,
+      "license": "Apache-2.0",
+      "python_share": 0.853,
+      "description": "ReMe: Memory Management Kit for Agents - Remember Me, Refine Me.",
+      "slice": "dev"
+    },
+    "py-portainer-templates": {
+      "github": "lissy93/portainer-templates",
+      "url": "https://github.com/lissy93/portainer-templates.git",
+      "sha": "54da95bb1a1e13fba6e90b0f4e97cd68b4260d8a",
+      "branch": "main",
+      "stars": 2923,
+      "license": "MIT",
+      "python_share": 0.96,
+      "description": "🚢 800+ 1-click Portainer app templates",
+      "slice": "dev"
+    },
+    "py-ormar": {
+      "github": "ormar-orm/ormar",
+      "url": "https://github.com/ormar-orm/ormar.git",
+      "sha": "ed07f46ba56e9a64145fc56b7754135cb0fdf349",
+      "branch": "master",
+      "stars": 1799,
+      "license": "MIT",
+      "python_share": 0.999,
+      "description": "python async orm with fastapi in mind and pydantic validation",
+      "slice": "heldout"
+    },
+    "py-gh-action-pypi-publish": {
+      "github": "pypa/gh-action-pypi-publish",
+      "url": "https://github.com/pypa/gh-action-pypi-publish.git",
+      "sha": "2442bad8f54b06a326f3030ef5e6a7a674118557",
+      "branch": "unstable/v1",
+      "stars": 1185,
+      "license": "BSD-3-Clause",
+      "python_share": 0.711,
+      "description": "The blessed :octocat: GitHub Action, for publishing your :package: distribution files to PyPI, the tokenless way: https://github.com/marketplace/actions/pypi-publish",
+      "slice": "heldout"
+    },
+    "py-skill_seekers": {
+      "github": "yusufkaraaslan/Skill_Seekers",
+      "url": "https://github.com/yusufkaraaslan/Skill_Seekers.git",
+      "sha": "5b5d8dfca263fa76e6daae9f292890b311ef36aa",
+      "branch": "development",
+      "stars": 15225,
+      "license": "MIT",
+      "python_share": 0.919,
+      "description": "Convert documentation websites, GitHub repositories, and PDFs into Claude AI skills with automatic conflict detection",
+      "slice": "heldout"
+    },
+    "py-openoutreach": {
+      "github": "eracle/OpenOutreach",
+      "url": "https://github.com/eracle/OpenOutreach.git",
+      "sha": "05ce1fa28b09c48aa95a59532cfb1896097e638c",
+      "branch": "main",
+      "stars": 3417,
+      "license": "GPL-3.0",
+      "python_share": 0.931,
+      "description": "Open-source AI agent for B2B lead generation — describe your product, it finds the people who fit, explains why each one does, and emails them from your mailbox. Self-hosted CLI, one install.",
+      "slice": "heldout"
+    },
+    "py-pywinauto": {
+      "github": "pywinauto/pywinauto",
+      "url": "https://github.com/pywinauto/pywinauto.git",
+      "sha": "ecd3276df6093a6e1adbb115af55c532cad7ebab",
+      "branch": "master",
+      "stars": 6231,
+      "license": "BSD-3-Clause",
+      "python_share": 0.995,
+      "description": "Windows GUI Automation with Python (based on text properties)",
+      "slice": "heldout"
+    },
+    "py-pdm": {
+      "github": "pdm-project/pdm",
+      "url": "https://github.com/pdm-project/pdm.git",
+      "sha": "301ca8c8745fd552a6b4df5734c5a5c071ced362",
+      "branch": "main",
+      "stars": 8661,
+      "license": "MIT",
+      "python_share": 0.982,
+      "description": "A modern Python package and dependency manager supporting the latest PEP standards",
+      "slice": "heldout"
+    },
+    "py-supabase-py": {
+      "github": "supabase/supabase-py",
+      "url": "https://github.com/supabase/supabase-py.git",
+      "sha": "da062ba31cdbf83a01cd7576abad56c764d9be8b",
+      "branch": "main",
+      "stars": 2611,
+      "license": "MIT",
+      "python_share": 0.979,
+      "description": "Python Client for Supabase. Query Postgres from Flask, Django, FastAPI. Python user authentication, security policies, edge functions, file storage, and realtime data streaming. Good first issue.",
+      "slice": "heldout"
+    },
+    "py-flagsmith": {
+      "github": "Flagsmith/flagsmith",
+      "url": "https://github.com/Flagsmith/flagsmith.git",
+      "sha": "d031dbe740f99e723ecbd7d97b219cc72111606c",
+      "branch": "main",
+      "stars": 6622,
+      "license": "BSD-3-Clause",
+      "python_share": 0.634,
+      "description": "Flagsmith is an open-source feature flag platform with remote config, experimentation, and self-hosted or cloud deployment options.",
+      "slice": "dev"
+    },
+    "py-open-wearables": {
+      "github": "the-momentum/open-wearables",
+      "url": "https://github.com/the-momentum/open-wearables.git",
+      "sha": "8adbd0ae519dad59391ebf914fb61364df02823e",
+      "branch": "main",
+      "stars": 2717,
+      "license": "MIT",
+      "python_share": 0.835,
+      "description": "Self-hosted platform to unify wearable health data through one AI-ready API.",
+      "slice": "heldout"
+    },
+    "py-nox": {
+      "github": "wntrblm/nox",
+      "url": "https://github.com/wntrblm/nox.git",
+      "sha": "afa3983bbac3143bab5c8406244327581f76a3d7",
+      "branch": "main",
+      "stars": 1561,
+      "license": "Apache-2.0",
+      "python_share": 0.999,
+      "description": "Flexible test automation for Python",
+      "slice": "heldout"
+    },
+    "py-pipeshub-ai": {
+      "github": "pipeshub-ai/pipeshub-ai",
+      "url": "https://github.com/pipeshub-ai/pipeshub-ai.git",
+      "sha": "e5b87d283c5dd72d1b49fbacb0488d6cd2858d56",
+      "branch": "main",
+      "stars": 3850,
+      "license": "Apache-2.0",
+      "python_share": 0.794,
+      "description": "The open-source context layer for AI agents. PipesHub turns your company's knowledge (Slack, Drive, Jira, GitHub, Microsoft 365 and 40+ connectors) into a permission-aware workspace that agents can search, grep, navigate and cite. MCP, SDKs and built-in agents. Self-hosted.",
+      "slice": "heldout"
+    },
+    "py-fastapi-code-generator": {
+      "github": "koxudaxi/fastapi-code-generator",
+      "url": "https://github.com/koxudaxi/fastapi-code-generator.git",
+      "sha": "7fd4ee281c71d41a5610ddeb3b053806a7129ba3",
+      "branch": "main",
+      "stars": 1406,
+      "license": "MIT",
+      "python_share": 0.969,
+      "description": "This code generator creates FastAPI app from an openapi file.",
+      "slice": "heldout"
+    },
+    "py-docetl": {
+      "github": "ucbepic/docetl",
+      "url": "https://github.com/ucbepic/docetl.git",
+      "sha": "4bb086253767e2fd5a708776f9a1db1bdf79a2e0",
+      "branch": "main",
+      "stars": 4143,
+      "license": "MIT",
+      "python_share": 0.687,
+      "description": "A system for agentic LLM-powered data processing and ETL",
+      "slice": "dev"
+    },
+    "py-homeassistant-tapo-control": {
+      "github": "JurajNyiri/HomeAssistant-Tapo-Control",
+      "url": "https://github.com/JurajNyiri/HomeAssistant-Tapo-Control.git",
+      "sha": "6d2c8adb81f3551070ec62fd9590f26254df145a",
+      "branch": "main",
+      "stars": 2033,
+      "license": "Apache-2.0",
+      "python_share": 1.0,
+      "description": "Control for Tapo cameras as a Home Assistant component",
+      "slice": "heldout"
+    },
+    "py-botright": {
+      "github": "vinyzu-archive/Botright",
+      "url": "https://github.com/vinyzu-archive/Botright.git",
+      "sha": "09cd9c010098e059043f84b73ba9ffff4ceda9d0",
+      "branch": "main",
+      "stars": 1041,
+      "license": "GPL-3.0",
+      "python_share": 0.963,
+      "description": "Botright, the most advance undetected, fingerprint-changing, captcha-solving, open-source automation framework. Build on Playwright, its as easy to use as it is to extend your code. Solving your Captchas for free with AI.",
+      "slice": "dev"
+    },
+    "py-mlrun": {
+      "github": "mlrun/mlrun",
+      "url": "https://github.com/mlrun/mlrun.git",
+      "sha": "eda0b452d3f8351a1fd4999760284158b3617767",
+      "branch": "development",
+      "stars": 1704,
+      "license": "Apache-2.0",
+      "python_share": 0.984,
+      "description": "MLRun is an open source MLOps platform for quickly building and managing continuous ML applications across their lifecycle. MLRun integrates into your development and CI/CD environment and automates the delivery of production data, ML pipelines, and online applications.",
+      "slice": "heldout"
+    },
+    "py-excel-mcp-server": {
+      "github": "haris-musa/excel-mcp-server",
+      "url": "https://github.com/haris-musa/excel-mcp-server.git",
+      "sha": "c3d3adb76217b92124081878ff360d509fd0dad8",
+      "branch": "main",
+      "stars": 4268,
+      "license": "MIT",
+      "python_share": 1.0,
+      "description": "Excel MCP server: let AI (Claude, Cursor, Codex) create and edit Excel files with charts, PivotTables, slicers and formulas. No Excel required.",
+      "slice": "heldout"
+    },
+    "py-tox": {
+      "github": "tox-dev/tox",
+      "url": "https://github.com/tox-dev/tox.git",
+      "sha": "d7ea3f58aa47ac60e56ff8b61ad90be5c947f345",
+      "branch": "main",
+      "stars": 3976,
+      "license": "MIT",
+      "python_share": 1.0,
+      "description": "Command line driven CI frontend and development task automation tool.",
+      "slice": "dev"
+    },
+    "py-memsearch": {
+      "github": "zilliztech/memsearch",
+      "url": "https://github.com/zilliztech/memsearch.git",
+      "sha": "926ba5b7c3d53ae0f424fba9029c29e88718b687",
+      "branch": "main",
+      "stars": 2797,
+      "license": "MIT",
+      "python_share": 0.63,
+      "description": "A persistent, unified memory layer for all your AI agents (e.g. Claude Code, Codex, DSH), backed by Markdown and Milvus.",
+      "slice": "dev"
+    },
+    "py-testzeus-hercules": {
+      "github": "test-zeus-ai/testzeus-hercules",
+      "url": "https://github.com/test-zeus-ai/testzeus-hercules.git",
+      "sha": "269c053fbf6a4a33b5a94c3f71b6333bd6c476f7",
+      "branch": "main",
+      "stars": 1201,
+      "license": "AGPL-3.0",
+      "python_share": 0.98,
+      "description": "Hercules is the world’s first open-source testing agent, enabling UI, API, Security, Accessibility, and Visual validations – all without code or maintenance. Automate testing effortlessly and let Hercules handle the heavy lifting! ⚡",
+      "slice": "dev"
+    },
+    "py-observal": {
+      "github": "Observal/Observal",
+      "url": "https://github.com/Observal/Observal.git",
+      "sha": "b3835ea1fd7c139752b9b65080e53c79f41af151",
+      "branch": "main",
+      "stars": 4533,
+      "license": "Apache-2.0",
+      "python_share": 0.813,
+      "description": "Observal is self-hosted registry for your coding agent extensions with a built in insight engine.  Setup Observal, define the scope and share your Skills, MCPs and Agents with your peers.",
+      "slice": "heldout"
+    },
+    "py-gpt4free": {
+      "github": "xtekky/gpt4free",
+      "url": "https://github.com/xtekky/gpt4free.git",
+      "sha": "54925a907e583c954d1bd5c85d62959e1900186a",
+      "branch": "main",
+      "stars": 66935,
+      "license": "GPL-3.0",
+      "python_share": 0.862,
+      "description": "The official gpt4free repository | various collection of powerful language models | opus 4.6 gpt 5.3 kimi 2.5 deepseek v3.2 gemini 3",
+      "slice": "heldout"
+    },
+    "py-mouser": {
+      "github": "TomBadash/Mouser",
+      "url": "https://github.com/TomBadash/Mouser.git",
+      "sha": "b2925920601815a85c2e24bfe391bdbc703b7494",
+      "branch": "master",
+      "stars": 5314,
+      "license": "MIT",
+      "python_share": 0.845,
+      "description": "A lightweight, open-source, fully local alternative to Logitech Options+ for remapping Logitech HID++ mice.",
+      "slice": "dev"
+    },
+    "py-rss-to-telegram-bot": {
+      "github": "Rongronggg9/RSS-to-Telegram-Bot",
+      "url": "https://github.com/Rongronggg9/RSS-to-Telegram-Bot.git",
+      "sha": "4a4fc39e39d6033d11dccb532d95532b01e17932",
+      "branch": "dev",
+      "stars": 2174,
+      "license": "AGPL-3.0",
+      "python_share": 0.99,
+      "description": "A Telegram RSS bot that cares about your reading experience (calling for new maintainers: https://github.com/Rongronggg9/RSS-to-Telegram-Bot/issues/747)",
+      "slice": "heldout"
+    },
+    "py-scrapy-redis": {
+      "github": "rmax/scrapy-redis",
+      "url": "https://github.com/rmax/scrapy-redis.git",
+      "sha": "931336e7e3e8435f498e0d454b85f02e2217929b",
+      "branch": "master",
+      "stars": 5648,
+      "license": "MIT",
+      "python_share": 0.959,
+      "description": "Redis-based components for Scrapy.",
+      "slice": "dev"
+    },
+    "py-prometheus-fastapi-instrumentator": {
+      "github": "trallnag/prometheus-fastapi-instrumentator",
+      "url": "https://github.com/trallnag/prometheus-fastapi-instrumentator.git",
+      "sha": "2fca3e8dcbc11f520332d94181022ceb85a1b721",
+      "branch": "master",
+      "stars": 1489,
+      "license": "ISC",
+      "python_share": 1.0,
+      "description": "Instrument your FastAPI with Prometheus metrics.",
+      "slice": "heldout"
+    },
+    "py-reflex": {
+      "github": "reflex-dev/reflex",
+      "url": "https://github.com/reflex-dev/reflex.git",
+      "sha": "656e8c7e9a243c8597e29e4d858966800d459e40",
+      "branch": "main",
+      "stars": 28978,
+      "license": "Apache-2.0",
+      "python_share": 0.972,
+      "description": "🕸️ Web apps in pure Python 🐍",
+      "slice": "heldout"
+    },
+    "py-ha-mcp": {
+      "github": "homeassistant-ai/ha-mcp",
+      "url": "https://github.com/homeassistant-ai/ha-mcp.git",
+      "sha": "9f5460e3355f39eaa97c02d690d71360f4bf2f28",
+      "branch": "master",
+      "stars": 5265,
+      "license": "MIT",
+      "python_share": 0.964,
+      "description": "The Unofficial and Awesome Home Assistant MCP Server",
+      "slice": "heldout"
+    },
+    "py-phone-harness": {
+      "github": "ShawnPana/phone-harness",
+      "url": "https://github.com/ShawnPana/phone-harness.git",
+      "sha": "a80f8845e125269545bbf462967fe7b620691422",
+      "branch": "main",
+      "stars": 3952,
+      "license": "MIT",
+      "python_share": 1.0,
+      "description": "let your agent control your phone",
+      "slice": "dev"
+    },
+    "py-agentscope": {
+      "github": "agentscope-ai/agentscope",
+      "url": "https://github.com/agentscope-ai/agentscope.git",
+      "sha": "44b5d5208f093ae2f5309f42653813801c2ea8cf",
+      "branch": "main",
+      "stars": 34178,
+      "license": "Apache-2.0",
+      "python_share": 1.0,
+      "description": "Build and run agents you can see, understand and trust.",
+      "slice": "dev"
+    },
+    "py-aegra": {
+      "github": "aegra/aegra",
+      "url": "https://github.com/aegra/aegra.git",
+      "sha": "9012768f6e13da81771164daf88dbf74c63f471b",
+      "branch": "main",
+      "stars": 1285,
+      "license": "Apache-2.0",
+      "python_share": 0.997,
+      "description": "Open source alternative to LangGraph Platform (now LangSmith Deployments) - Self-hosted AI agent backend with FastAPI and PostgreSQL. Zero vendor lock-in, full control over your agent infrastructure.",
+      "slice": "heldout"
+    },
+    "py-spook": {
+      "github": "frenck/spook",
+      "url": "https://github.com/frenck/spook.git",
+      "sha": "60043a18eb9815a9eb4debd174a033361a9b8cff",
+      "branch": "main",
+      "stars": 1740,
+      "license": "MIT",
+      "python_share": 1.0,
+      "description": "A scary 👻 powerful toolbox 🧰 for Home Assistant 🏡",
+      "slice": "heldout"
+    },
+    "py-paper-qa": {
+      "github": "Future-House/paper-qa",
+      "url": "https://github.com/Future-House/paper-qa.git",
+      "sha": "c692d0dfeac4a0296599f7fe21a253a58b7ac12a",
+      "branch": "main",
+      "stars": 9470,
+      "license": "Apache-2.0",
+      "python_share": 0.863,
+      "description": "High accuracy RAG for answering questions from scientific documents with citations",
+      "slice": "heldout"
+    },
+    "py-better_thermostat": {
+      "github": "KartoffelToby/better_thermostat",
+      "url": "https://github.com/KartoffelToby/better_thermostat.git",
+      "sha": "b86561f61e5ba1259fc63e590f4847e9ac743d7f",
+      "branch": "master",
+      "stars": 1526,
+      "license": "AGPL-3.0",
+      "python_share": 0.991,
+      "description": "This custom component for Home Assistant will add crucial features to your climate-controlling TRV (Thermostatic Radiator Valves) to save you the work of creating automations to make it smart. It combines a room-temperature sensor, window/door sensors, weather forecasts, or an ambient temperature probe to decide when it should call for heat and automatically calibrate your TRVs to fix the imprecise measurements taken in the radiator's vicinity.",
+      "slice": "dev"
+    },
+    "py-ufo": {
+      "github": "microsoft/UFO",
+      "url": "https://github.com/microsoft/UFO.git",
+      "sha": "eae3c0a8d168c47cb10df0652e293e092eda1078",
+      "branch": "main",
+      "stars": 10093,
+      "license": "MIT",
+      "python_share": 0.951,
+      "description": "UFO³: Weaving the Digital Agent Galaxy",
+      "slice": "heldout"
+    },
+    "py-kikit": {
+      "github": "yaqwsx/KiKit",
+      "url": "https://github.com/yaqwsx/KiKit.git",
+      "sha": "958abd031e3d254d9777f6c192badbdb1c1c3757",
+      "branch": "master",
+      "stars": 2048,
+      "license": "MIT",
+      "python_share": 0.961,
+      "description": "Automation tools for KiCAD",
+      "slice": "dev"
+    },
+    "py-wger": {
+      "github": "wger-project/wger",
+      "url": "https://github.com/wger-project/wger.git",
+      "sha": "f7af925d0690bac12dc229d30a6cd0281a34224f",
+      "branch": "master",
+      "stars": 7185,
+      "license": "AGPL-3.0",
+      "python_share": 0.921,
+      "description": "Self hosted FLOSS fitness/workout, nutrition and weight tracker",
+      "slice": "heldout"
+    },
+    "py-bluehood": {
+      "github": "dannymcc/bluehood",
+      "url": "https://github.com/dannymcc/bluehood.git",
+      "sha": "0ba19f9b99e9da66970b5f059f2410890f7f213b",
+      "branch": "master",
+      "stars": 1166,
+      "license": "MIT",
+      "python_share": 0.966,
+      "description": "Monitor your local neighbourhood's bluetooth activity",
+      "slice": "heldout"
+    },
+    "py-django-health-check": {
+      "github": "codingjoe/django-health-check",
+      "url": "https://github.com/codingjoe/django-health-check.git",
+      "sha": "4ab1956944fef4007d8c9947525f6530f5d17a67",
+      "branch": "main",
+      "stars": 1425,
+      "license": "MIT",
+      "python_share": 0.988,
+      "description": "Pluggable health checks for Django applications",
+      "slice": "heldout"
+    },
+    "py-uwsgi-nginx-flask-docker": {
+      "github": "tiangolo/uwsgi-nginx-flask-docker",
+      "url": "https://github.com/tiangolo/uwsgi-nginx-flask-docker.git",
+      "sha": "682f0390bf920a883c4d1a775d1f6ebd38b39ef9",
+      "branch": "master",
+      "stars": 3002,
+      "license": "Apache-2.0",
+      "python_share": 0.797,
+      "description": "Docker image with uWSGI and Nginx for Flask applications in Python running in a single container.",
+      "slice": "heldout"
+    },
+    "py-zato": {
+      "github": "zatosource/zato",
+      "url": "https://github.com/zatosource/zato.git",
+      "sha": "e7447ad5f1887b58d0a12ec46196c9a568b30771",
+      "branch": "main",
+      "stars": 1017,
+      "license": "AGPL-3.0",
+      "python_share": 0.831,
+      "description": "ESB, SOA, REST, APIs and Cloud Integrations in Python",
+      "slice": "heldout"
+    },
+    "py-opencompany": {
+      "github": "zeenie-ai/OpenCompany",
+      "url": "https://github.com/zeenie-ai/OpenCompany.git",
+      "sha": "4f73cb10f368b62ebef5e3d5fbf58fa1e0dcff5c",
+      "branch": "main",
+      "stars": 1037,
+      "license": "MIT",
+      "python_share": 0.73,
+      "description": "Self-improving AI Employees for everyone",
+      "slice": "heldout"
+    },
+    "py-loggifly": {
+      "github": "clemcer/LoggiFly",
+      "url": "https://github.com/clemcer/LoggiFly.git",
+      "sha": "86302c3bfbbe0a9e256e79cf601658866d72a4d4",
+      "branch": "main",
+      "stars": 1779,
+      "license": "MIT",
+      "python_share": 0.997,
+      "description": "Get Alerts from your Docker Container Logs",
+      "slice": "dev"
+    },
+    "py-openapi-python-client": {
+      "github": "openapi-generators/openapi-python-client",
+      "url": "https://github.com/openapi-generators/openapi-python-client.git",
+      "sha": "0a283fe21eeaa23046faf622d4ff4b2c826d2edb",
+      "branch": "main",
+      "stars": 1997,
+      "license": "MIT",
+      "python_share": 0.952,
+      "description": "Generate modern Python clients from OpenAPI",
+      "slice": "dev"
+    },
+    "py-loushang": {
+      "github": "zhnt/loushang",
+      "url": "https://github.com/zhnt/loushang.git",
+      "sha": "d495fdca6ef893b129810e4f2e55710c7e0ef987",
+      "branch": "main",
+      "stars": 1879,
+      "license": "Apache-2.0",
+      "python_share": 0.999,
+      "description": "AI-native agent harness for coding workflows by python: multi-model LLM orchestration, stateful sessions, tool governance,   traceable delivery, and provider routing for GPT, Claude, DeepSeek, Qwen, Kimi, GLM, and MiniMax.",
+      "slice": "dev"
+    },
+    "py-sqladmin": {
+      "github": "smithyhq/sqladmin",
+      "url": "https://github.com/smithyhq/sqladmin.git",
+      "sha": "235a0a7066cbd435279985288a3ee47c332c0c98",
+      "branch": "main",
+      "stars": 2847,
+      "license": "BSD-3-Clause",
+      "python_share": 0.918,
+      "description": "SQLAlchemy Admin for FastAPI and Starlette",
+      "slice": "heldout"
+    },
+    "py-historyhub": {
+      "github": "LifeArchiveProject/HistoryHub",
+      "url": "https://github.com/LifeArchiveProject/HistoryHub.git",
+      "sha": "0458b86020c44c4bf9c498f669ede2492eea679a",
+      "branch": "master",
+      "stars": 1228,
+      "license": "MIT",
+      "python_share": 0.654,
+      "description": "HistoryHub：个人多平台历史记录中心，Chrome 扩展连接本地或自托管后端，支持网页历史与 B 站观看记录。",
+      "slice": "heldout"
+    },
+    "py-boss-zhipin-scraper": {
+      "github": "eatmoreduck/boss-zhipin-scraper",
+      "url": "https://github.com/eatmoreduck/boss-zhipin-scraper.git",
+      "sha": "f18edaa8fd2f419275868215ab1086639e28f4b3",
+      "branch": "master",
+      "stars": 1649,
+      "license": "MIT",
+      "python_share": 0.99,
+      "description": "Boss直聘爬虫 / BOSS直聘职位数据抓取工具，基于 Chrome CDP 协议复用真实登录态，绕过字体反爬，输出明文薪资 JSON/CSV + 薪资技能分析。A Chrome-CDP-based BOSS Zhipin job scraper/crawler.",
+      "slice": "heldout"
+    },
+    "py-local-deep-research": {
+      "github": "LearningCircuit/local-deep-research",
+      "url": "https://github.com/LearningCircuit/local-deep-research.git",
+      "sha": "e3353ce822e463213c188acc3b697d0ec4af4c2a",
+      "branch": "main",
+      "stars": 9417,
+      "license": "MIT",
+      "python_share": 0.825,
+      "description": " ~95% on SimpleQA (e.g. Qwen3.6-27B on a 3090). Supports all local and cloud LLMs (llama.cpp, Ollama, Google, ...). 10+ search engines - arXiv, PubMed, your private documents. Everything Local & Encrypted.",
+      "slice": "heldout"
+    },
+    "py-opyrator": {
+      "github": "ml-tooling/opyrator",
+      "url": "https://github.com/ml-tooling/opyrator.git",
+      "sha": "3f443f05b6b21f00685c2b9bba16cf080edf2385",
+      "branch": "main",
+      "stars": 3138,
+      "license": "MIT",
+      "python_share": 0.846,
+      "description": "🪄 Turns your machine learning code into microservices with web API, interactive GUI, and more.",
+      "slice": "heldout"
+    },
+    "py-codex-lb": {
+      "github": "Soju06/codex-lb",
+      "url": "https://github.com/Soju06/codex-lb.git",
+      "sha": "72630bbfeee9e3b0d9acfb95e2b1e706b8b0188e",
+      "branch": "main",
+      "stars": 3388,
+      "license": "MIT",
+      "python_share": 0.882,
+      "description": "Codex/ChatGPT multiple account load balancer & proxy with usage tracking, dashboard, and OpenCode-compatible endpoints",
+      "slice": "heldout"
+    },
+    "py-openbiliclaw": {
+      "github": "whiteguo233/OpenBiliClaw",
+      "url": "https://github.com/whiteguo233/OpenBiliClaw.git",
+      "sha": "3dc0e9a4fcd71ccefb7f46bde63d07dc5d3671ce",
+      "branch": "main",
+      "stars": 3593,
+      "license": "MIT",
+      "python_share": 0.781,
+      "description": "本地私有、开源的自进化跨平台 AI 内容发现 Agent：先理解你，再主动从 B站、小红书、抖音、YouTube、X、知乎、Reddit、微博等平台与开放 Web 寻找内容。（支持 deepseek harness 插件） | Local-first open-source cross-platform AI content discovery agent: understands you, then proactively finds content across Bilibili, Xiaohongshu, Douyin, YouTube, X, Zhihu, Reddit, Weibo and the open web.（support deepseek harness plugin）",
+      "slice": "heldout"
+    },
+    "py-panwatch": {
+      "github": "TNT-Likely/PanWatch",
+      "url": "https://github.com/TNT-Likely/PanWatch.git",
+      "sha": "ec3e87ea843c2da8b2863aaf64bfb17718d1cab1",
+      "branch": "main",
+      "stars": 2231,
+      "license": "MIT",
+      "python_share": 0.638,
+      "description": "PanWatch — AI stock monitoring for A-shares, HK & US markets, powered by TradingAgents. Portfolio insights, real-time alerts & automated reports.｜盯盘侠：覆盖 A股/港股/美股的 AI 盯盘、持仓分析、实时提醒与自动报告。",
+      "slice": "heldout"
+    },
+    "py-quantdinger": {
+      "github": "OpenByteInc/QuantDinger",
+      "url": "https://github.com/OpenByteInc/QuantDinger.git",
+      "sha": "78f3573034ae47265e7d6a05256e48d786ba3399",
+      "branch": "main",
+      "stars": 13135,
+      "license": "Apache-2.0",
+      "python_share": 0.862,
+      "description": "Open-source AI Trading OS, agent trading, and vibe trading, with Jev System One integration. Research, build Python strategies, backtest, and paper/live trade across crypto, stocks, and forex. Launch your own multi-tenant trading SaaS with built-in user management, billing, payments, and settlement.",
+      "slice": "heldout"
+    },
+    "py-protonup-qt": {
+      "github": "DavidoTek/ProtonUp-Qt",
+      "url": "https://github.com/DavidoTek/ProtonUp-Qt.git",
+      "sha": "d5d63bb452656008820cd4161803211803dee5de",
+      "branch": "main",
+      "stars": 2064,
+      "license": "GPL-3.0",
+      "python_share": 0.975,
+      "description": "Install and manage GE-Proton, Luxtorpeda & more for Steam and Wine-GE & more for Lutris with this graphical user interface.",
+      "slice": "heldout"
+    },
+    "py-awesome-agentic-ai-zh": {
+      "github": "WenyuChiou/awesome-agentic-ai-zh",
+      "url": "https://github.com/WenyuChiou/awesome-agentic-ai-zh.git",
+      "sha": "c4307d776bdd17bf12f1935215845206755648aa",
+      "branch": "main",
+      "stars": 8005,
+      "license": "MIT",
+      "python_share": 0.988,
+      "description": "A trilingual (繁中 / English / 简中) learning roadmap for agentic AI: from LLM basics to multi-agent systems, with 240+ curated resources and hands-on examples. 中文 AI agent 學習地圖。",
+      "slice": "heldout"
+    },
+    "py-tautulli": {
+      "github": "Tautulli/Tautulli",
+      "url": "https://github.com/Tautulli/Tautulli.git",
+      "sha": "acffae57d8db23f42b8be08a0e9530fba1d46829",
+      "branch": "nightly",
+      "stars": 6619,
+      "license": "GPL-3.0",
+      "python_share": 0.924,
+      "description": "A Python based monitoring and tracking tool for Plex Media Server.",
+      "slice": "heldout"
+    },
+    "py-gpt-researcher": {
+      "github": "assafelovic/gpt-researcher",
+      "url": "https://github.com/assafelovic/gpt-researcher.git",
+      "sha": "3582a6841fe7dc801e2a34e34ee408641aea9bce",
+      "branch": "main",
+      "stars": 30300,
+      "license": "Apache-2.0",
+      "python_share": 0.706,
+      "description": "An autonomous agent that conducts deep research on any data using any LLM providers",
+      "slice": "dev"
+    },
+    "py-vibe-skills": {
+      "github": "foryourhealth111-pixel/Vibe-Skills",
+      "url": "https://github.com/foryourhealth111-pixel/Vibe-Skills.git",
+      "sha": "5200420c1992508a2d69952b9f02babf232a21ac",
+      "branch": "main",
+      "stars": 3770,
+      "license": "Apache-2.0",
+      "python_share": 0.649,
+      "description": "Intelligent Skill routing and workflow orchestration for AI agents — +21.12 pp reward, −29.6% tokens on SkillsBench with DeepSeekV4Flash-VE.",
+      "slice": "heldout"
+    },
+    "py-mirobody": {
+      "github": "thetahealth/mirobody",
+      "url": "https://github.com/thetahealth/mirobody.git",
+      "sha": "b166176a8417a798067cc6b0c9146e274ffa95b5",
+      "branch": "main",
+      "stars": 1393,
+      "license": "Apache-2.0",
+      "python_share": 0.963,
+      "description": "Turn scattered health data into answers you can trace. Self-hosted AI health data engine for lab reports, wearables and genetics, with a built-in MCP server. Run it with Docker and one LLM key, or keep every model local on llama.cpp.",
+      "slice": "heldout"
+    },
+    "py-jesse": {
+      "github": "jesse-ai/jesse",
+      "url": "https://github.com/jesse-ai/jesse.git",
+      "sha": "063baa041355d320b0c4f6e16aaf80a223771f59",
+      "branch": "master",
+      "stars": 8706,
+      "license": "MIT",
+      "python_share": 0.992,
+      "description": "An advanced crypto trading bot written in Python",
+      "slice": "dev"
+    },
+    "py-uvicorn-gunicorn-fastapi-docker": {
+      "github": "tiangolo/uvicorn-gunicorn-fastapi-docker",
+      "url": "https://github.com/tiangolo/uvicorn-gunicorn-fastapi-docker.git",
+      "sha": "c93bb25d29df09a5a19ebaa4ea533aa6c63b637e",
+      "branch": "master",
+      "stars": 2915,
+      "license": "MIT",
+      "python_share": 0.814,
+      "description": "Docker image with Uvicorn managed by Gunicorn for high-performance FastAPI web applications in Python with performance auto-tuning.",
+      "slice": "dev"
+    },
+    "py-whatsapp-osint": {
+      "github": "jasperan/whatsapp-osint",
+      "url": "https://github.com/jasperan/whatsapp-osint.git",
+      "sha": "950ff741ac468a936045c76b315982b3d9551bed",
+      "branch": "master",
+      "stars": 1587,
+      "license": "MIT",
+      "python_share": 0.751,
+      "description": "WhatsApp spy - logs online/offline events from ANYONE in the world",
+      "slice": "heldout"
+    },
+    "py-psutil": {
+      "github": "giampaolo/psutil",
+      "url": "https://github.com/giampaolo/psutil.git",
+      "sha": "f8b0a6191085f55dc71f7a877c55dce0e4b6feb9",
+      "branch": "master",
+      "stars": 11312,
+      "license": "BSD-3-Clause",
+      "python_share": 0.62,
+      "description": "Cross-platform lib for process and system monitoring in Python",
+      "slice": "heldout"
+    },
+    "py-roxy-wi": {
+      "github": "roxy-wi/roxy-wi",
+      "url": "https://github.com/roxy-wi/roxy-wi.git",
+      "sha": "d6c19a865d97bc6196dadf3f6d5c82b91c863492",
+      "branch": "master",
+      "stars": 1830,
+      "license": "Apache-2.0",
+      "python_share": 0.604,
+      "description": "Web interface for managing Haproxy, Nginx, Apache and Keepalived servers",
+      "slice": "heldout"
+    },
+    "py-babybuddy": {
+      "github": "babybuddy/babybuddy",
+      "url": "https://github.com/babybuddy/babybuddy.git",
+      "sha": "09629cf633cf3a2059a21ade4cea7ea4d846422f",
+      "branch": "master",
+      "stars": 2930,
+      "license": "BSD-2-Clause",
+      "python_share": 0.814,
+      "description": "A :baby: buddy to help caregivers track sleep, feedings, diaper changes, tummy time and more to learn about and predict baby's needs without (as much) guess work.",
+      "slice": "heldout"
+    },
+    "py-dolphie": {
+      "github": "charles-001/dolphie",
+      "url": "https://github.com/charles-001/dolphie.git",
+      "sha": "7522dd539390a71653a22ca0b197ed9bc8512e18",
+      "branch": "main",
+      "stars": 1202,
+      "license": "GPL-3.0",
+      "python_share": 0.987,
+      "description": "Your single pane of glass for real-time analytics into MySQL/MariaDB & ProxySQL",
+      "slice": "heldout"
+    },
+    "py-nettacker": {
+      "github": "OWASP/Nettacker",
+      "url": "https://github.com/OWASP/Nettacker.git",
+      "sha": "14ef2b4ca9494670e882d7a68aeb62c9092a549a",
+      "branch": "master",
+      "stars": 5688,
+      "license": "Apache-2.0",
+      "python_share": 0.729,
+      "description": "Automated Penetration Testing Framework - Open-Source Vulnerability Scanner - Vulnerability Management",
+      "slice": "dev"
+    },
+    "py-dynaconf": {
+      "github": "dynaconf/dynaconf",
+      "url": "https://github.com/dynaconf/dynaconf.git",
+      "sha": "455ee38569d76cd3707c73209b660cf60bd97b29",
+      "branch": "master",
+      "stars": 4335,
+      "license": "MIT",
+      "python_share": 0.972,
+      "description": "Configuration Management for Python ⚙",
+      "slice": "dev"
+    },
+    "py-authx": {
+      "github": "yezz123/authx",
+      "url": "https://github.com/yezz123/authx.git",
+      "sha": "06bdce443a6b39982de62a02d4dac159607f903c",
+      "branch": "main",
+      "stars": 1204,
+      "license": "MIT",
+      "python_share": 0.996,
+      "description": "Ready-to-use and customizable Authentications and Oauth2 management for FastAPI ✨",
+      "slice": "dev"
+    },
+    "py-logfire": {
+      "github": "pydantic/logfire",
+      "url": "https://github.com/pydantic/logfire.git",
+      "sha": "723f5d6ba924f63ba44f403d4c9843d73e3e1151",
+      "branch": "main",
+      "stars": 4523,
+      "license": "MIT",
+      "python_share": 0.999,
+      "description": "AI observability platform for production LLM and agent systems.",
+      "slice": "heldout"
+    },
+    "py-book-to-skill": {
+      "github": "virgiliojr94/book-to-skill",
+      "url": "https://github.com/virgiliojr94/book-to-skill.git",
+      "sha": "a24e62f4d8caf2ee433f6e48d9073800f56f906e",
+      "branch": "master",
+      "stars": 36161,
+      "license": "MIT",
+      "python_share": 0.995,
+      "description": "Turn any technical book PDF into a Claude Code skill — ready to study, reference, and use while you work.",
+      "slice": "heldout"
+    },
+    "py-doit": {
+      "github": "pydoit/doit",
+      "url": "https://github.com/pydoit/doit.git",
+      "sha": "0d8135a20e754db5472c8852d95f0f7cb720a948",
+      "branch": "master",
+      "stars": 2095,
+      "license": "MIT",
+      "python_share": 0.999,
+      "description": "CLI task management & automation tool",
+      "slice": "heldout"
+    },
+    "py-scaletail": {
+      "github": "tailscale-dev/ScaleTail",
+      "url": "https://github.com/tailscale-dev/ScaleTail.git",
+      "sha": "53e6684315573ddf401bc18de87d81eeab641820",
+      "branch": "main",
+      "stars": 2179,
+      "license": "MIT",
+      "python_share": 1.0,
+      "description": "Ready-to-run Docker Compose stacks for 120+ self-hosted apps, each with a Tailscale sidecar and automatic HTTPS",
+      "slice": "heldout"
+    },
+    "py-tick-stock-panel": {
+      "github": "shy3130/tick-stock-panel",
+      "url": "https://github.com/shy3130/tick-stock-panel.git",
+      "sha": "b08a267a874472eb3e93357b6db8034a75587a4c",
+      "branch": "main",
+      "stars": 6345,
+      "license": "MIT",
+      "python_share": 0.616,
+      "description": "TSP自托管、零运维的 A 股「自建策略 + 监控 + 回测」量化工作台  | LLM能力驱使策略定制+个股分析+复盘 | 自由接入第三方数据源与个性化扩展数据 | 个人开源",
+      "slice": "heldout"
+    },
+    "py-scrapling": {
+      "github": "D4Vinci/Scrapling",
+      "url": "https://github.com/D4Vinci/Scrapling.git",
+      "sha": "063feb0cd37025a5127e83f54e055b8bc50b095a",
+      "branch": "main",
+      "stars": 89834,
+      "license": "BSD-3-Clause",
+      "python_share": 0.998,
+      "description": "🕷️ The BEST Web Scraping framework that handles everything from a single request to a full-scale crawl! Don't be shy, join here: https://discord.gg/EMgGbDceNQ and follow here for daily tips and tricks: https://x.com/Scrapling_dev",
+      "slice": "heldout"
+    },
+    "py-13ft": {
+      "github": "wasi-master/13ft",
+      "url": "https://github.com/wasi-master/13ft.git",
+      "sha": "d03b120c41d2558d3ce2a45e049ccbea8785ff7a",
+      "branch": "main",
+      "stars": 4344,
+      "license": "MIT",
+      "python_share": 0.965,
+      "description": "My own custom 12ft.io replacement",
+      "slice": "heldout"
+    },
+    "py-yamtrack": {
+      "github": "FuzzyGrim/Yamtrack",
+      "url": "https://github.com/FuzzyGrim/Yamtrack.git",
+      "sha": "5cd5343cf4866703157e2cb9ee0bb958ed83f276",
+      "branch": "dev",
+      "stars": 3736,
+      "license": "AGPL-3.0",
+      "python_share": 0.793,
+      "description": "A self hosted media tracker.",
+      "slice": "heldout"
+    },
+    "py-crawl4ai": {
+      "github": "unclecode/crawl4ai",
+      "url": "https://github.com/unclecode/crawl4ai.git",
+      "sha": "888299fb5f0b82181897dc0e61bfb4b036f0aea5",
+      "branch": "main",
+      "stars": 86298,
+      "license": "Apache-2.0",
+      "python_share": 0.988,
+      "description": "Open-source web crawler and scraper for LLMs and AI agents: any website into clean, LLM-ready Markdown. Run it yourself, or use Crawl4AI Cloud with one key. Join our Discord https://discord.gg/VuxzM8mtf",
+      "slice": "heldout"
+    },
+    "py-grok-register": {
+      "github": "AaronL725/grok-register",
+      "url": "https://github.com/AaronL725/grok-register.git",
+      "sha": "f48c7f5c0f47689882761bd5d6fae4c92fbaf65a",
+      "branch": "main",
+      "stars": 2369,
+      "license": "MIT",
+      "python_share": 0.938,
+      "description": "批量稳定注册 Grok 账号，支持 WebUI/GUI/CLI、多邮箱服务、多线程并发、账号级多协议代理池、grok2api 入池、SSO 风控筛查与CPA OIDC 凭证导出。",
+      "slice": "heldout"
+    },
+    "py-webai-to-api": {
+      "github": "Amm1rr/WebAI-to-API",
+      "url": "https://github.com/Amm1rr/WebAI-to-API.git",
+      "sha": "006a08d64a990407ffe8d13782835c43ffa404b6",
+      "branch": "master",
+      "stars": 1402,
+      "license": "MIT",
+      "python_share": 0.962,
+      "description": "Webchat to API",
+      "slice": "heldout"
+    },
+    "py-lichess-bot": {
+      "github": "lichess-bot-devs/lichess-bot",
+      "url": "https://github.com/lichess-bot-devs/lichess-bot.git",
+      "sha": "aae99c944846a163d3ee35937fdc28d42631c87d",
+      "branch": "master",
+      "stars": 1103,
+      "license": "AGPL-3.0",
+      "python_share": 0.996,
+      "description": "A bridge between Lichess bots and chess engines",
+      "slice": "heldout"
+    },
+    "py-tinystatus": {
+      "github": "harsxv/tinystatus",
+      "url": "https://github.com/harsxv/tinystatus.git",
+      "sha": "0d19e124c9c0dc7f5bb96b735c0010cbac5400da",
+      "branch": "master",
+      "stars": 1587,
+      "license": "MIT",
+      "python_share": 0.982,
+      "description": "Tiny status page generated by a Python script",
+      "slice": "heldout"
+    },
+    "py-peach": {
+      "github": "peach-mitao/peach",
+      "url": "https://github.com/peach-mitao/peach.git",
+      "sha": "de22796c04919aaa057d77930c33c81313765569",
+      "branch": "master",
+      "stars": 12070,
+      "license": "AGPL-3.0",
+      "python_share": 0.638,
+      "description": "Peach 蜜桃：单用户、本地优先的个人媒体系统 · Single-user, local-first personal media system",
+      "slice": "heldout"
+    },
+    "py-metube": {
+      "github": "alexta69/metube",
+      "url": "https://github.com/alexta69/metube.git",
+      "sha": "f85df38b178c85212991f432d50a18c12cf8a786",
+      "branch": "master",
+      "stars": 15099,
+      "license": "AGPL-3.0",
+      "python_share": 0.697,
+      "description": "Self-hosted video downloader for YouTube and other sites (web UI for yt-dlp)",
+      "slice": "heldout"
+    },
+    "py-red-discordbot": {
+      "github": "Cog-Creators/Red-DiscordBot",
+      "url": "https://github.com/Cog-Creators/Red-DiscordBot.git",
+      "sha": "8c726ff446960a0bf7857b6b94f4a2e05c16c31b",
+      "branch": "V3/develop",
+      "stars": 5748,
+      "license": "GPL-3.0",
+      "python_share": 0.99,
+      "description": "A multi-function Discord bot",
+      "slice": "heldout"
+    },
+    "py-ha-wyzeapi": {
+      "github": "SecKatie/ha-wyzeapi",
+      "url": "https://github.com/SecKatie/ha-wyzeapi.git",
+      "sha": "2dc653c38c171a24f4d239c99fbc1795dbd8603b",
+      "branch": "main",
+      "stars": 1004,
+      "license": "Apache-2.0",
+      "python_share": 0.995,
+      "description": "Home Assistant Integration for Wyze devices.",
+      "slice": "dev"
+    },
+    "py-douyin_tiktok_download_api": {
+      "github": "Evil0ctal/Douyin_TikTok_Download_API",
+      "url": "https://github.com/Evil0ctal/Douyin_TikTok_Download_API.git",
+      "sha": "3d540dbf3783449e638403b65d81c882c4a99575",
+      "branch": "main",
+      "stars": 20910,
+      "license": "Apache-2.0",
+      "python_share": 0.731,
+      "description": "🚀 自托管的抖音、TikTok、B 站数据采集与无水印视频下载 API，支持 AI agent 通过 MCP 调用与离线语音转文字，Docker 一键部署。| Self-hosted TikTok, Douyin & Bilibili scraper and no-watermark video downloader — async REST API, MCP server for AI agents, CLI and web console, plus offline speech-to-text for downloaded videos. Self-healing identity pool, PostgreSQL archive, one docker compose up.",
+      "slice": "heldout"
+    },
+    "py-rpaframework": {
+      "github": "robocorp/rpaframework",
+      "url": "https://github.com/robocorp/rpaframework.git",
+      "sha": "7a419fb7a7bdc02ac7531328a3d8e308ef2bcc0c",
+      "branch": "master",
+      "stars": 1575,
+      "license": "Apache-2.0",
+      "python_share": 0.925,
+      "description": "Collection of open-source libraries and tools for Robotic Process Automation (RPA), designed to be used with both Robot Framework and Python",
+      "slice": "heldout"
+    },
+    "py-django-prometheus": {
+      "github": "django-commons/django-prometheus",
+      "url": "https://github.com/django-commons/django-prometheus.git",
+      "sha": "c04929aac027bde8410bde20af6ca864a1e6929d",
+      "branch": "master",
+      "stars": 1675,
+      "license": "Apache-2.0",
+      "python_share": 0.948,
+      "description": "Export Django monitoring metrics for Prometheus.io",
+      "slice": "heldout"
+    },
+    "py-adaptive-lighting": {
+      "github": "basnijholt/adaptive-lighting",
+      "url": "https://github.com/basnijholt/adaptive-lighting.git",
+      "sha": "b2ca188df30cb51c5215bec7ef0686000e537efe",
+      "branch": "main",
+      "stars": 3525,
+      "license": "Apache-2.0",
+      "python_share": 0.99,
+      "description": "Adaptive Lighting custom component for Home Assistant",
+      "slice": "heldout"
+    },
+    "py-langroid": {
+      "github": "langroid/langroid",
+      "url": "https://github.com/langroid/langroid.git",
+      "sha": "32ae2ccd780ac6d8a0310a682c98bf1c890f8f78",
+      "branch": "main",
+      "stars": 4120,
+      "license": "MIT",
+      "python_share": 0.996,
+      "description": "Harness LLMs with Multi-Agent Programming",
+      "slice": "heldout"
+    },
+    "py-kodiak": {
+      "github": "chdsbd/kodiak",
+      "url": "https://github.com/chdsbd/kodiak.git",
+      "sha": "4aff5fcd5d6446eb273e21ed0a6c6037243a240b",
+      "branch": "master",
+      "stars": 1116,
+      "license": "AGPL-3.0",
+      "python_share": 0.817,
+      "description": "🔮 A bot to automatically update and merge GitHub PRs",
+      "slice": "heldout"
+    },
+    "py-harnessrouter": {
+      "github": "HarnessRouter/harnessrouter",
+      "url": "https://github.com/HarnessRouter/harnessrouter.git",
+      "sha": "b4d53a10d0882d6fe7edfce0d59a03ce2e61a2d6",
+      "branch": "main",
+      "stars": 3677,
+      "license": "Apache-2.0",
+      "python_share": 0.663,
+      "description": "HarnessRouter Community Edition: the self-hosted, Apache-2.0 edition of the unified interface for agent harnesses. Run Codex, Claude Code, Hermes, PI, DSH, and more through one API, with sessions, streaming, files, cancellation, and failure handling. Implements the Unified Harness Protocol (UHP), an open standard. Your keys, your infrastructure.",
+      "slice": "heldout"
+    },
+    "py-peewee": {
+      "github": "coleifer/peewee",
+      "url": "https://github.com/coleifer/peewee.git",
+      "sha": "79dcac3e08ee0fcb788e28aecf616db9d2746410",
+      "branch": "master",
+      "stars": 11997,
+      "license": "MIT",
+      "python_share": 0.995,
+      "description": "a small, expressive orm -- supports postgresql, mysql, sqlite, now with asyncio",
+      "slice": "heldout"
+    },
+    "py-graphify": {
+      "github": "Graphify-Labs/graphify",
+      "url": "https://github.com/Graphify-Labs/graphify.git",
+      "sha": "92741d162b2094ffc2fed58cfbd8ee823e9da62c",
+      "branch": "v8",
+      "stars": 135843,
+      "license": "Apache-2.0",
+      "python_share": 0.997,
+      "description": "Turn any codebase, with its docs, SQL schemas, configs, and PDFs, into a queryable knowledge graph. A /graphify skill for Claude Code, Cursor, Codex, and Gemini CLI: local deterministic AST parsing, every edge explained, no vector store.",
+      "slice": "heldout"
+    },
+    "py-alerta": {
+      "github": "alerta/alerta",
+      "url": "https://github.com/alerta/alerta.git",
+      "sha": "4ac0106300cd428b26ad4b373cf4a78f55f6b542",
+      "branch": "master",
+      "stars": 2530,
+      "license": "Apache-2.0",
+      "python_share": 0.99,
+      "description": "Alerta monitoring system",
+      "slice": "heldout"
+    },
+    "py-nonebot2": {
+      "github": "nonebot/nonebot2",
+      "url": "https://github.com/nonebot/nonebot2.git",
+      "sha": "6e1efbea0e0341b461c5ace5ecc794e302b3eac6",
+      "branch": "master",
+      "stars": 7768,
+      "license": "MIT",
+      "python_share": 0.636,
+      "description": "跨平台 Python 异步聊天机器人框架 / Asynchronous multi-platform chatbot framework written in Python",
+      "slice": "dev"
+    },
+    "py-omnibox": {
+      "github": "import-ai/omnibox",
+      "url": "https://github.com/import-ai/omnibox.git",
+      "sha": "94ca68c69f2ce6d78580fe0e70446c658514e1e1",
+      "branch": "main",
+      "stars": 1537,
+      "license": "Apache-2.0",
+      "python_share": 0.916,
+      "description": "Anywhere, anything to memory, memory to anything.",
+      "slice": "heldout"
+    },
+    "py-piccolo": {
+      "github": "piccolo-orm/piccolo",
+      "url": "https://github.com/piccolo-orm/piccolo.git",
+      "sha": "295820d45c9924ac3411d6bb71693766473933e1",
+      "branch": "master",
+      "stars": 1951,
+      "license": "MIT",
+      "python_share": 0.974,
+      "description": "A fast, user friendly ORM and query builder which supports asyncio.",
+      "slice": "dev"
+    },
+    "py-oterm": {
+      "github": "ggozad/oterm",
+      "url": "https://github.com/ggozad/oterm.git",
+      "sha": "48c6f29e1d4f8b2efe8d9c7b6023e3d3eb5fbd5a",
+      "branch": "main",
+      "stars": 2447,
+      "license": "MIT",
+      "python_share": 0.997,
+      "description": "the terminal client for LLMs",
+      "slice": "heldout"
+    },
+    "py-graphiti": {
+      "github": "getzep/graphiti",
+      "url": "https://github.com/getzep/graphiti.git",
+      "sha": "5c27edfa8d3e0f49b2571bcebb4261bcc89ee037",
+      "branch": "main",
+      "stars": 32239,
+      "license": "Apache-2.0",
+      "python_share": 0.994,
+      "description": "Build Real-Time Knowledge Graphs for AI Agents",
+      "slice": "heldout"
+    },
+    "py-jmcomic-crawler-python": {
+      "github": "hect0x7/JMComic-Crawler-Python",
+      "url": "https://github.com/hect0x7/JMComic-Crawler-Python.git",
+      "sha": "fd8953025db5b844f1b7f025d063f544e61a2dbd",
+      "branch": "master",
+      "stars": 7780,
+      "license": "MIT",
+      "python_share": 1.0,
+      "description": "Python API for JMComic | 提供Python API访问禁漫天堂，同时支持网页端和移动端 | 禁漫天堂GitHub Actions下载器🚀",
+      "slice": "heldout"
+    },
+    "py-steamauto": {
+      "github": "Steamauto/Steamauto",
+      "url": "https://github.com/Steamauto/Steamauto.git",
+      "sha": "ce4fb1f5c4b8af0caeda9d8b6357046cee208827",
+      "branch": "master",
+      "stars": 1307,
+      "license": "AGPL-3.0",
+      "python_share": 1.0,
+      "description": "免费开源的网易BUFF、悠悠有品、ECOsteam、C5Game、Steam的全自动收发货解决方案",
+      "slice": "heldout"
+    },
+    "py-autoswarm-shadow-adapter": {
+      "github": "AhmadHassan-BTed/AutoSwarm-Shadow-Adapter",
+      "url": "https://github.com/AhmadHassan-BTed/AutoSwarm-Shadow-Adapter.git",
+      "sha": "69d27ddcd626b93566261d8363f99f79731a36a7",
+      "branch": "main",
+      "stars": 3628,
+      "license": "MIT",
+      "python_share": 0.766,
+      "description": "Zero-modification Human-in-the-Loop adapter for OpenOPC's agentic DAG runtime.",
+      "slice": "dev"
+    },
+    "py-auto-cpufreq": {
+      "github": "AdnanHodzic/auto-cpufreq",
+      "url": "https://github.com/AdnanHodzic/auto-cpufreq.git",
+      "sha": "8944240f70d1b9264432c09ee475a5dcc393adec",
+      "branch": "master",
+      "stars": 7861,
+      "license": "GPL-3.0",
+      "python_share": 0.732,
+      "description": "Automatic CPU speed & power optimizer for Linux",
+      "slice": "heldout"
+    },
+    "py-semantic-router": {
+      "github": "aurelio-labs/semantic-router",
+      "url": "https://github.com/aurelio-labs/semantic-router.git",
+      "sha": "1fa1937e390fe57fb85ee3bbb8b3db593a4145db",
+      "branch": "main",
+      "stars": 3978,
+      "license": "MIT",
+      "python_share": 0.998,
+      "description": "Superfast AI decision making and intelligent processing of multi-modal data.",
+      "slice": "heldout"
+    },
+    "py-dograh": {
+      "github": "dograh-hq/dograh",
+      "url": "https://github.com/dograh-hq/dograh.git",
+      "sha": "06384016b8dedf2e77ad38d5044b317d628075a0",
+      "branch": "main",
+      "stars": 5954,
+      "license": "BSD-2-Clause",
+      "python_share": 0.672,
+      "description": "Open source voice AI platform. Self-hosted alternative to Vapi and Retell. On Prem, BYOK across  Speech to Speech or LLM/STT/TTS, with a visual workflow builder, MCP native and telephony support.",
+      "slice": "dev"
+    },
+    "py-st2": {
+      "github": "StackStorm/st2",
+      "url": "https://github.com/StackStorm/st2.git",
+      "sha": "05d45db810a056a780986c2c7a3da68de9aa08e3",
+      "branch": "master",
+      "stars": 6550,
+      "license": "Apache-2.0",
+      "python_share": 0.94,
+      "description": "StackStorm (aka \"IFTTT for Ops\") is event-driven automation for auto-remediation, incident responses, troubleshooting, deployments, and more for DevOps and SREs. Includes rules engine, workflow, 160 integration packs with 6000+ actions (see https://exchange.stackstorm.org) and ChatOps. Installer at https://docs.stackstorm.com/install/index.html",
+      "slice": "heldout"
+    },
+    "py-activitywatch": {
+      "github": "ActivityWatch/activitywatch",
+      "url": "https://github.com/ActivityWatch/activitywatch.git",
+      "sha": "c8b9203be894b690c00d317e59d7fb3ab6658af4",
+      "branch": "master",
+      "stars": 19371,
+      "license": "MPL-2.0",
+      "python_share": 0.96,
+      "description": "The best free and open-source automated time tracker. Cross-platform, extensible, privacy-focused.",
+      "slice": "heldout"
+    },
+    "py-airecon": {
+      "github": "pikpikcu/airecon",
+      "url": "https://github.com/pikpikcu/airecon.git",
+      "sha": "3d44a0947fd871146a4ffa255285c3932fcf137b",
+      "branch": "main",
+      "stars": 1079,
+      "license": "MIT",
+      "python_share": 0.982,
+      "description": "AIRecon is an autonomous cybersecurity agent that combines a self-hosted Large Language Model (Ollama) with a Kali Linux Docker sandbox and a Textual TUI. It is designed to automate security assessments, penetration testing, and bug bounty reconnaissance — without any API keys or cloud dependency.",
+      "slice": "heldout"
+    },
+    "py-datamodel-code-generator": {
+      "github": "datamodel-code-generator/datamodel-code-generator",
+      "url": "https://github.com/datamodel-code-generator/datamodel-code-generator.git",
+      "sha": "89096e99cad13ba963758970af00dd6a52d33ca4",
+      "branch": "main",
+      "stars": 4043,
+      "license": "MIT",
+      "python_share": 0.991,
+      "description": "Generate Pydantic v2 models, dataclasses, TypedDict, and msgspec.Struct from OpenAPI, JSON Schema, GraphQL, Avro, Protobuf, and raw JSON/YAML/CSV.",
+      "slice": "heldout"
+    },
+    "py-graphrag": {
+      "github": "microsoft/graphrag",
+      "url": "https://github.com/microsoft/graphrag.git",
+      "sha": "c600ff80b77b9b62c47d539a3ac9569e95d8949b",
+      "branch": "main",
+      "stars": 36454,
+      "license": "MIT",
+      "python_share": 0.883,
+      "description": "A modular graph-based Retrieval-Augmented Generation (RAG) system",
+      "slice": "heldout"
+    },
+    "py-trustgraph": {
+      "github": "trustgraph-ai/trustgraph",
+      "url": "https://github.com/trustgraph-ai/trustgraph.git",
+      "sha": "1d081cd9e52ff0bd3afab9214ec0cc1011812fee",
+      "branch": "master",
+      "stars": 2834,
+      "license": "Apache-2.0",
+      "python_share": 0.984,
+      "description": "The Semantic Agent Governance Platform",
+      "slice": "heldout"
+    },
+    "py-pixelrag": {
+      "github": "StarTrail-org/PixelRAG",
+      "url": "https://github.com/StarTrail-org/PixelRAG.git",
+      "sha": "ae1f4108c2e76832dcd9be3b264767137df4eb4d",
+      "branch": "main",
+      "stars": 10355,
+      "license": "Apache-2.0",
+      "python_share": 0.798,
+      "description": "https://arxiv.org/abs/2606.28344. The end of web parsing. The beginning of scalable pixel-native search. link: https://pixelrag.ai/",
+      "slice": "heldout"
+    },
+    "py-trafilatura": {
+      "github": "adbar/trafilatura",
+      "url": "https://github.com/adbar/trafilatura.git",
+      "sha": "6096de4fcf94753fa320287fe105198901a2c050",
+      "branch": "master",
+      "stars": 7026,
+      "license": "Apache-2.0",
+      "python_share": 1.0,
+      "description": "Python & Command-line tool to gather text and metadata on the Web: Crawling, scraping, extraction, output as CSV, JSON, HTML, MD, TXT, XML",
+      "slice": "heldout"
+    },
+    "py-openakita": {
+      "github": "openakita/openakita",
+      "url": "https://github.com/openakita/openakita.git",
+      "sha": "5f5b38da728274f0fd06461a481851be7c0bca6a",
+      "branch": "main",
+      "stars": 2004,
+      "license": "AGPL-3.0",
+      "python_share": 0.784,
+      "description": "An open-source AI assistant framework with skills and agent architecture",
+      "slice": "dev"
+    },
+    "py-pixeltable": {
+      "github": "pixeltable/pixeltable",
+      "url": "https://github.com/pixeltable/pixeltable.git",
+      "sha": "b10e5045ef07988ace3d5a4a98357ddb6f5c7f36",
+      "branch": "main",
+      "stars": 1649,
+      "license": "Apache-2.0",
+      "python_share": 0.911,
+      "description": "The backend agents build with - Multimodal database, orchestration, and serving in one file",
+      "slice": "heldout"
+    },
+    "py-full-stack-ai-agent-template": {
+      "github": "vstorm-co/full-stack-ai-agent-template",
+      "url": "https://github.com/vstorm-co/full-stack-ai-agent-template.git",
+      "sha": "475f799f7df02738f804fa350f2de244d7331a94",
+      "branch": "main",
+      "stars": 1957,
+      "license": "MIT",
+      "python_share": 0.606,
+      "description": "Full-stack AI app generator — FastAPI + Next.js with AI Agents, RAG, streaming, auth, and 20+ integrations out of the box.",
+      "slice": "heldout"
+    },
+    "py-world-intel-mcp": {
+      "github": "marc-shade/world-intel-mcp",
+      "url": "https://github.com/marc-shade/world-intel-mcp.git",
+      "sha": "fdebf9a8de6e00ed688053dd647cafedc179708b",
+      "branch": "main",
+      "stars": 1036,
+      "license": "MIT",
+      "python_share": 0.95,
+      "description": "160-tool MCP server for real-time global intelligence from free public APIs: markets, liquidity, prediction markets, SEC filings, conflict, military, aircraft-cohort early warning, migration and border flows, cyber, climate, news and more. Dated observation history, 29 research prompts, cited briefs, geofences, SSE dashboard. MIT, no paid API keys.",
+      "slice": "heldout"
+    },
+    "py-payloadsallthethings": {
+      "github": "swisskyrepo/PayloadsAllTheThings",
+      "url": "https://github.com/swisskyrepo/PayloadsAllTheThings.git",
+      "sha": "3ac27901c711bdf3f5b65a7b1d1820a1f65bd09a",
+      "branch": "master",
+      "stars": 82086,
+      "license": "MIT",
+      "python_share": 0.762,
+      "description": "A list of useful payloads and bypass for Web Application Security and Pentest/CTF",
+      "slice": "heldout"
+    },
+    "py-spiffworkflow": {
+      "github": "sartography/SpiffWorkflow",
+      "url": "https://github.com/sartography/SpiffWorkflow.git",
+      "sha": "902055aa5c214581c4ca01bbe7dbed79c985c65f",
+      "branch": "main",
+      "stars": 1929,
+      "license": "LGPL-3.0",
+      "python_share": 0.998,
+      "description": "A powerful workflow engine implemented in pure Python",
+      "slice": "dev"
+    },
+    "py-ruia": {
+      "github": "howie6879/ruia",
+      "url": "https://github.com/howie6879/ruia.git",
+      "sha": "f9e6a9c39b55eae3433dfbc239b70b25f69c01df",
+      "branch": "master",
+      "stars": 1739,
+      "license": "Apache-2.0",
+      "python_share": 0.945,
+      "description": "Async Python 3.6+ web scraping micro-framework based on asyncio",
+      "slice": "heldout"
+    },
+    "py-repobrain": {
+      "github": "study8677/repobrain",
+      "url": "https://github.com/study8677/repobrain.git",
+      "sha": "064e6a1ee1a3364dbc34389c95bea5d8087f31e6",
+      "branch": "main",
+      "stars": 1355,
+      "license": "MIT",
+      "python_share": 0.984,
+      "description": "🧠 RepoBrain (formerly Antigravity) — Give your repo a brain. ChatGPT for your codebase: works in Claude Code, Cursor, Codex, Windsurf & more.",
+      "slice": "heldout"
+    },
+    "py-bolt-python": {
+      "github": "slackapi/bolt-python",
+      "url": "https://github.com/slackapi/bolt-python.git",
+      "sha": "d1bd9549fe1e526d8ffa7153d3e8c72f1ee2f239",
+      "branch": "main",
+      "stars": 1329,
+      "license": "MIT",
+      "python_share": 0.998,
+      "description": "A framework to build Slack apps using Python",
+      "slice": "heldout"
+    },
+    "py-leann": {
+      "github": "StarTrail-org/LEANN",
+      "url": "https://github.com/StarTrail-org/LEANN.git",
+      "sha": "b51ddc0b1f8085eefe6d4c3209d5cdb71ddecba1",
+      "branch": "main",
+      "stars": 13147,
+      "license": "MIT",
+      "python_share": 0.991,
+      "description": "[MLsys2026 Best Paper]: https://arxiv.org/abs/2506.08276. RAG on Everything with LEANN. Enjoy 97% storage savings while running a fast, accurate, and 100% private RAG application on your personal device.",
+      "slice": "heldout"
+    },
+    "py-modmail": {
+      "github": "modmail-dev/Modmail",
+      "url": "https://github.com/modmail-dev/Modmail.git",
+      "sha": "49330b4a0eb1004af3085c0683e8d09608109277",
+      "branch": "master",
+      "stars": 1697,
+      "license": "AGPL-3.0",
+      "python_share": 0.998,
+      "description": "A Discord bot that functions as a shared inbox between staff and members, similar to Reddit's Modmail.",
+      "slice": "heldout"
+    },
+    "py-yuxi": {
+      "github": "xerrors/Yuxi",
+      "url": "https://github.com/xerrors/Yuxi.git",
+      "sha": "a5ac16dd11fd2eed7381960f7130321782eea206",
+      "branch": "main",
+      "stars": 7504,
+      "license": "MIT",
+      "python_share": 0.64,
+      "description": "可私有部署的多租户知识智能体平台：统一 RAG、知识图谱、多智能体、MCP/Skills、沙盒与权限管理。Yuxi = Cloud Agents + Knowledge RAG, Self-hosted knowledge agent platform for RAG, knowledge graphs and multi-agent workflows.",
+      "slice": "heldout"
+    },
+    "py-xianyu-auto-reply-fix": {
+      "github": "GuDong2003/xianyu-auto-reply-fix",
+      "url": "https://github.com/GuDong2003/xianyu-auto-reply-fix.git",
+      "sha": "7dd8597fdfbaeb4c1ecb251c7b0466a62b9162a5",
+      "branch": "main",
+      "stars": 2829,
+      "license": "AGPL-3.0",
+      "python_share": 0.648,
+      "description": "闲鱼智能客服系统，支持多账号管理、AI自动回复、自动发货确认、多渠道消息通知，提供完整的 Web 管理后台",
+      "slice": "heldout"
+    },
+    "py-tracely-ai": {
+      "github": "jwuthri-cloud/Tracely-ai",
+      "url": "https://github.com/jwuthri-cloud/Tracely-ai.git",
+      "sha": "128a5d806704ca88fca03dff0a0215c8a557b779",
+      "branch": "main",
+      "stars": 1183,
+      "license": "MIT",
+      "python_share": 0.646,
+      "description": "Trace-native CI/CD for AI agents: grade production traces, cluster failures, freeze them into replayable regression tests, and block PRs that regress. Self-hostable.",
+      "slice": "heldout"
+    },
+    "py-homeassistant-octopusenergy": {
+      "github": "BottlecapDave/HomeAssistant-OctopusEnergy",
+      "url": "https://github.com/BottlecapDave/HomeAssistant-OctopusEnergy.git",
+      "sha": "fb6c839f740d2d3c641737602757e8bc160ce12a",
+      "branch": "develop",
+      "stars": 1030,
+      "license": "MIT",
+      "python_share": 0.977,
+      "description": "Unofficial Home Assistant integration for interacting with Octopus Energy",
+      "slice": "heldout"
+    },
+    "py-atlas": {
+      "github": "inferstep/ATLAS",
+      "url": "https://github.com/inferstep/ATLAS.git",
+      "sha": "d57d259b5cef37771ea76ef5df49b5a79ecb3e7f",
+      "branch": "main",
+      "stars": 2108,
+      "license": "AGPL-3.0",
+      "python_share": 0.613,
+      "description": "Adaptive Test-time Learning and Autonomous Specialization",
+      "slice": "dev"
+    },
+    "py-nocturne_memory": {
+      "github": "Dataojitori/nocturne_memory",
+      "url": "https://github.com/Dataojitori/nocturne_memory.git",
+      "sha": "1858957bf797722a9b731fb197bd9530f7ae67e4",
+      "branch": "main",
+      "stars": 1409,
+      "license": "MIT",
+      "python_share": 0.741,
+      "description": "A lightweight, rollbackable, and visual Long-Term Memory Server for MCP Agents. Say goodbye to Vector RAG and amnesia. Empower your AI with persistent, graph-like structured memory across any model, session, or tool. Drop-in replacement for OpenClaw.",
+      "slice": "dev"
+    },
+    "py-app-store-connect-cli-skills": {
+      "github": "rorkai/app-store-connect-cli-skills",
+      "url": "https://github.com/rorkai/app-store-connect-cli-skills.git",
+      "sha": "0915e9da1016a6cc953659d43906dcf7839a4c52",
+      "branch": "main",
+      "stars": 1105,
+      "license": "MIT",
+      "python_share": 1.0,
+      "description": "Skills to automate app store deployed and everything related to it using the asc cli",
+      "slice": "heldout"
+    },
+    "py-brightbean-studio": {
+      "github": "brightbeanxyz/brightbean-studio",
+      "url": "https://github.com/brightbeanxyz/brightbean-studio.git",
+      "sha": "1d11c52007a3f714979ff1b071d153e69a8c274a",
+      "branch": "main",
+      "stars": 2578,
+      "license": "AGPL-3.0",
+      "python_share": 0.731,
+      "description": "Open-source, self-hostable social media management platform. Schedule, publish, and manage content across 10+ platforms from a single dashboard. Free alternative to Buffer, Sendible, and SocialPilot.",
+      "slice": "dev"
+    },
+    "py-fastapi-pagination": {
+      "github": "uriyyo/fastapi-pagination",
+      "url": "https://github.com/uriyyo/fastapi-pagination.git",
+      "sha": "4c7d1e34ef0596c2efa51885ffa301860d5ee170",
+      "branch": "main",
+      "stars": 1685,
+      "license": "MIT",
+      "python_share": 0.988,
+      "description": "FastAPI pagination 📖 ",
+      "slice": "dev"
+    },
+    "py-yubal": {
+      "github": "guillevc/yubal",
+      "url": "https://github.com/guillevc/yubal.git",
+      "sha": "78d63846712178ded0b5f3c2552a80e952451c3c",
+      "branch": "master",
+      "stars": 1727,
+      "license": "MIT",
+      "python_share": 0.833,
+      "description": "Self-hosted YouTube Music downloader. Tags, organizes, and keeps playlists in sync.",
+      "slice": "heldout"
+    },
+    "py-self-operating-computer": {
+      "github": "OthersideAI/self-operating-computer",
+      "url": "https://github.com/OthersideAI/self-operating-computer.git",
+      "sha": "eb8165a2efb1b34d66a28ecebf8ca97ae67cbb79",
+      "branch": "main",
+      "stars": 10292,
+      "license": "MIT",
+      "python_share": 1.0,
+      "description": "A framework to enable a multimodal model to operate a computer.",
+      "slice": "heldout"
+    },
+    "py-cuga-agent": {
+      "github": "cuga-project/cuga-agent",
+      "url": "https://github.com/cuga-project/cuga-agent.git",
+      "sha": "13ce812640b4f03308c5b567ddf5f51266fcbe98",
+      "branch": "main",
+      "stars": 1050,
+      "license": "Apache-2.0",
+      "python_share": 0.809,
+      "description": "CUGA is an open-source generalist agent harness for the enterprise, supporting complex task execution on web and APIs, OpenAPI/MCP integrations, composable architecture, reasoning modes, and policy-aware features.",
+      "slice": "heldout"
+    },
+    "py-cangjie-skill": {
+      "github": "kangarooking/cangjie-skill",
+      "url": "https://github.com/kangarooking/cangjie-skill.git",
+      "sha": "a28de55ba881b9928956a55048f743f7a9e3b23e",
+      "branch": "main",
+      "stars": 11763,
+      "license": "MIT",
+      "python_share": 0.628,
+      "description": "把书、长视频、播客等高价值内容蒸馏成可执行的 Agent Skills（Distill high-value content from books, long-form videos, podcasts, and more into executable Agent Skills）",
+      "slice": "heldout"
+    },
+    "py-ouroboros": {
+      "github": "razzant/ouroboros",
+      "url": "https://github.com/razzant/ouroboros.git",
+      "sha": "6f3ddff05ff3e6c6f8d007ff96358df6af872e83",
+      "branch": "main",
+      "stars": 1586,
+      "license": "MIT",
+      "python_share": 0.88,
+      "description": "Ouroboros — self-creating AI agent. Born Feb 16, 2026.",
+      "slice": "heldout"
+    },
+    "py-blue_archive_auto_script": {
+      "github": "pur1fying/blue_archive_auto_script",
+      "url": "https://github.com/pur1fying/blue_archive_auto_script.git",
+      "sha": "1110e88df5955df277737ea9717869b9ca88362b",
+      "branch": "master",
+      "stars": 1521,
+      "license": "GPL-3.0",
+      "python_share": 0.933,
+      "description": "支持按轴凹总力战, 无缝制造三解, 用于实现蔚蓝档案自动化的程序( Steam已适配 )",
+      "slice": "heldout"
+    },
+    "py-flexget": {
+      "github": "Flexget/Flexget",
+      "url": "https://github.com/Flexget/Flexget.git",
+      "sha": "b806070a26b6544aaae82362cbb397372bac2193",
+      "branch": "develop",
+      "stars": 1989,
+      "license": "MIT",
+      "python_share": 0.923,
+      "description": "The official FlexGet repository",
+      "slice": "dev"
+    },
+    "py-gptme": {
+      "github": "gptme/gptme",
+      "url": "https://github.com/gptme/gptme.git",
+      "sha": "fc2c17be32f3550d66351aaff3b45c21ccc05eab",
+      "branch": "master",
+      "stars": 4465,
+      "license": "MIT",
+      "python_share": 0.855,
+      "description": "Your agent in your terminal, equipped with local tools: writes code, uses the terminal, browses the web. Make your own persistent autonomous agent on top!",
+      "slice": "dev"
+    },
+    "py-h2o-llmstudio": {
+      "github": "h2oai/h2o-llmstudio",
+      "url": "https://github.com/h2oai/h2o-llmstudio.git",
+      "sha": "6a3dc145a530231e1f37cb5009cc67ea2a7638a0",
+      "branch": "main",
+      "stars": 5187,
+      "license": "Apache-2.0",
+      "python_share": 0.987,
+      "description": "H2O LLM Studio - a framework and no-code GUI for fine-tuning LLMs. Documentation: https://docs.h2o.ai/h2o-llmstudio/",
+      "slice": "heldout"
+    },
+    "py-whisperlivekit": {
+      "github": "QuentinFuxa/WhisperLiveKit",
+      "url": "https://github.com/QuentinFuxa/WhisperLiveKit.git",
+      "sha": "eb92c115ee7abc1e161b0b2159da31785b0f5566",
+      "branch": "main",
+      "stars": 11179,
+      "license": "Apache-2.0",
+      "python_share": 0.925,
+      "description": "Real-time, local speech-to-text with streaming ASR, speaker diarization, translation, and OpenAI/Deepgram-compatible APIs.",
+      "slice": "heldout"
+    },
+    "py-docsgpt": {
+      "github": "arc53/DocsGPT",
+      "url": "https://github.com/arc53/DocsGPT.git",
+      "sha": "e1bcdae36bdacd790606beee0796c80275d387cc",
+      "branch": "main",
+      "stars": 18335,
+      "license": "MIT",
+      "python_share": 0.72,
+      "description": "Private AI platform for agents, assistants and enterprise search. Built-in Agent Builder, Deep research, Document analysis, Multi-model support, and API connectivity for agents.",
+      "slice": "heldout"
+    },
+    "py-deep-searcher": {
+      "github": "zilliztech/deep-searcher",
+      "url": "https://github.com/zilliztech/deep-searcher.git",
+      "sha": "ddc36db317836bd42302b36f03166bec5324708d",
+      "branch": "master",
+      "stars": 8348,
+      "license": "Apache-2.0",
+      "python_share": 0.999,
+      "description": "Open Source Deep Research Alternative to Reason and Search on Private Data. Written in Python.",
+      "slice": "heldout"
+    },
+    "py-scrapegraph-ai": {
+      "github": "ScrapeGraphAI/Scrapegraph-ai",
+      "url": "https://github.com/ScrapeGraphAI/Scrapegraph-ai.git",
+      "sha": "194055e203afce41ed4e70365dbc416bad756115",
+      "branch": "main",
+      "stars": 32245,
+      "license": "MIT",
+      "python_share": 0.999,
+      "description": "Python scraper based on AI",
+      "slice": "heldout"
+    },
+    "py-pageindex": {
+      "github": "VectifyAI/PageIndex",
+      "url": "https://github.com/VectifyAI/PageIndex.git",
+      "sha": "e38b40ebaeea26d2c7206b80ce7bc9bf2935cdec",
+      "branch": "main",
+      "stars": 39768,
+      "license": "MIT",
+      "python_share": 1.0,
+      "description": "📑 PageIndex: Document Index for Vectorless, Reasoning-based RAG",
+      "slice": "heldout"
+    },
+    "py-zha-device-handlers": {
+      "github": "zigpy/zha-device-handlers",
+      "url": "https://github.com/zigpy/zha-device-handlers.git",
+      "sha": "1f1405b0eb5e801a97732f380f2db6d244ff1df3",
+      "branch": "dev",
+      "stars": 1152,
+      "license": "Apache-2.0",
+      "python_share": 1.0,
+      "description": "ZHA quirks bridge the functionality gap created when manufacturers deviate from the ZCL specification, handling deviations and exceptions by parsing custom messages to and from Zigbee devices.",
+      "slice": "dev"
+    },
+    "py-llm-wiki-agent": {
+      "github": "SamurAIGPT/llm-wiki-agent",
+      "url": "https://github.com/SamurAIGPT/llm-wiki-agent.git",
+      "sha": "c373f02b577f31db179ec6d5d4a9635759439c60",
+      "branch": "main",
+      "stars": 3654,
+      "license": "MIT",
+      "python_share": 1.0,
+      "description": "A personal knowledge base that builds and maintains itself. Drop in sources — Claude (or Codex/Gemini) reads them, extracts knowledge, and maintains a persistent interlinked wiki. Works with Claude Code, Codex, OpenCode, Gemini CLI. No API key needed.",
+      "slice": "dev"
+    }
+  },
+  "rejected": [
+    {
+      "github": "ets-labs/python-dependency-injector",
+      "stars": 4917,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "Checkmk/checkmk",
+      "stars": 2618,
+      "reason": "size 6900414 KB > 400000"
+    },
+    {
+      "github": "Atarity/deploy-your-own-saas",
+      "stars": 10148,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "ChrispyBacon-dev/DockFlare",
+      "stars": 2492,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "widgetti/solara",
+      "stars": 2181,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "nottelabs/notte",
+      "stars": 2045,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "didilili/ai-agents-from-zero",
+      "stars": 5603,
+      "reason": "size 716121 KB > 400000"
+    },
+    {
+      "github": "donnemartin/system-design-primer",
+      "stars": 375652,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "dunossauro/fastapi-do-zero",
+      "stars": 1028,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "nicolargo/glances",
+      "stars": 33853,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "NVIDIA-AI-Blueprints/video-search-and-summarization",
+      "stars": 1948,
+      "reason": "size 931002 KB > 400000"
+    },
+    {
+      "github": "SylphAI-Inc/AdalFlow",
+      "stars": 4221,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "rommapp/romm",
+      "stars": 14054,
+      "reason": "size 455988 KB > 400000"
+    },
+    {
+      "github": "tinyfish-io/agentql",
+      "stars": 1491,
+      "reason": "Python 55% of bytes (< 60%)"
+    },
+    {
+      "github": "deepset-ai/haystack",
+      "stars": 26847,
+      "reason": "size 422067 KB > 400000"
+    },
+    {
+      "github": "Azure/agent-landing-zone",
+      "stars": 1190,
+      "reason": "template repository"
+    },
+    {
+      "github": "mckinsey/vizro",
+      "stars": 3811,
+      "reason": "size 1058811 KB > 400000"
+    },
+    {
+      "github": "Canner/WrenAI",
+      "stars": 17977,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "xlwings/xlwings",
+      "stars": 3426,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "1Panel-dev/MaxKB",
+      "stars": 23039,
+      "reason": "Python 45% of bytes (< 60%)"
+    },
+    {
+      "github": "rushter/selectolax",
+      "stars": 1695,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "uselotus/lotus",
+      "stars": 1841,
+      "reason": "Python 57% of bytes (< 60%)"
+    },
+    {
+      "github": "aiogram/aiogram",
+      "stars": 5908,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "dramaclaw/dramaclaw",
+      "stars": 6468,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "SilentDemonSD/WZML-X",
+      "stars": 1527,
+      "reason": "template repository"
+    },
+    {
+      "github": "Django-CRM/Django-CRM",
+      "stars": 2461,
+      "reason": "Python 48% of bytes (< 60%)"
+    },
+    {
+      "github": "frenck/awesome-home-assistant",
+      "stars": 8597,
+      "reason": "licence CC-BY-4.0 not in the OSI list"
+    },
+    {
+      "github": "DataDog/dd-agent",
+      "stars": 1331,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "sandbox-quantum/switch",
+      "stars": 1669,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "suitenumerique/docs",
+      "stars": 16948,
+      "reason": "Python 47% of bytes (< 60%)"
+    },
+    {
+      "github": "modelscope/evalscope",
+      "stars": 3593,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "line/line-bot-sdk-python",
+      "stars": 2144,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "NeptuneHub/AudioMuse-AI",
+      "stars": 2803,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "qdrant/fastembed",
+      "stars": 3265,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "octodns/octodns",
+      "stars": 3774,
+      "reason": "paths Windows cannot check out: ['tests/config/hybrid/two.test.', 'tests/config/hybrid/two.test./$two.test.yaml']"
+    },
+    {
+      "github": "yifanfeng97/Hyper-Extract",
+      "stars": 4199,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "ruc-datalab/DeepAnalyze",
+      "stars": 4754,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "KroMiose/nekro-agent",
+      "stars": 1157,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "line/promgen",
+      "stars": 1133,
+      "reason": "Python 48% of bytes (< 60%)"
+    },
+    {
+      "github": "jeremylongshore/tons-of-skills-marketplace",
+      "stars": 2874,
+      "reason": "size 508524 KB > 400000"
+    },
+    {
+      "github": "EmbeddedLLM/JamAIBase",
+      "stars": 1103,
+      "reason": "Python 60% of bytes (< 60%)"
+    },
+    {
+      "github": "ant-research/AntOmniEvo",
+      "stars": 1200,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "jet-admin/jet-bridge",
+      "stars": 1799,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "asdfghj1237890/WebVideo2NAS",
+      "stars": 1166,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "3441293738/creatorhub",
+      "stars": 2571,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "Altimis/Scweet",
+      "stars": 1655,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "yb2460/harness-anything",
+      "stars": 2572,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "Zero6992/chatGPT-discord-bot",
+      "stars": 2732,
+      "reason": "template repository"
+    },
+    {
+      "github": "Osmantic/ODS",
+      "stars": 7694,
+      "reason": "Python 46% of bytes (< 60%)"
+    },
+    {
+      "github": "itsOwen/CyberScraper-2077",
+      "stars": 3297,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "puppyone-ai/puppyone-cloud",
+      "stars": 1300,
+      "reason": "Python 50% of bytes (< 60%)"
+    },
+    {
+      "github": "neo4j/neo4j-graphrag-python",
+      "stars": 1320,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "dalibo/pg_activity",
+      "stars": 3051,
+      "reason": "licence PostgreSQL not in the OSI list"
+    },
+    {
+      "github": "AsyncFuncAI/deepwiki-open",
+      "stars": 18280,
+      "reason": "Python 52% of bytes (< 60%)"
+    },
+    {
+      "github": "Anil-matcha/awesome-muse-connectors",
+      "stars": 1386,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "Quenary/tugtainer",
+      "stars": 1546,
+      "reason": "Python 60% of bytes (< 60%)"
+    },
+    {
+      "github": "brettkromkamp/contextualise",
+      "stars": 1115,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "spyoungtech/ahk",
+      "stars": 1037,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "amidaware/tacticalrmm",
+      "stars": 4517,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "zenml-io/zenml",
+      "stars": 5628,
+      "reason": "size 935142 KB > 400000"
+    },
+    {
+      "github": "Mahanaicoach/google-maps-scraper-kit",
+      "stars": 1916,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "wsvincent/djangoforbeginners",
+      "stars": 1384,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "pmh1314520/WebRPA",
+      "stars": 1912,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "ansible/awx",
+      "stars": 15606,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "DefectDojo/django-DefectDojo",
+      "stars": 5131,
+      "reason": "size 860569 KB > 400000"
+    },
+    {
+      "github": "artisan-roaster-scope/artisan",
+      "stars": 1236,
+      "reason": "size 1045499 KB > 400000"
+    },
+    {
+      "github": "apache/airflow",
+      "stars": 47282,
+      "reason": "size 783133 KB > 400000"
+    },
+    {
+      "github": "atpuxiner/fastapi-scaff",
+      "stars": 1195,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "alvinreal/awesome-opensource-ai",
+      "stars": 4941,
+      "reason": "licence CC0-1.0 not in the OSI list"
+    },
+    {
+      "github": "szczyglis-dev/py-gpt",
+      "stars": 2003,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "meeb/tubesync",
+      "stars": 2808,
+      "reason": "Python 55% of bytes (< 60%)"
+    },
+    {
+      "github": "langchain-ai/langchain",
+      "stars": 148492,
+      "reason": "size 618706 KB > 400000"
+    },
+    {
+      "github": "insistence/RuoYi-FastAPI",
+      "stars": 1568,
+      "reason": "Python 58% of bytes (< 60%)"
+    },
+    {
+      "github": "TeamWiseFlow/xiaobei",
+      "stars": 8643,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "freelabz/secator",
+      "stars": 1323,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "s0md3v/Photon",
+      "stars": 13298,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "isso-comments/isso",
+      "stars": 5311,
+      "reason": "Python 58% of bytes (< 60%)"
+    },
+    {
+      "github": "plotly/plotly.py",
+      "stars": 18853,
+      "reason": "size 431540 KB > 400000"
+    },
+    {
+      "github": "xtekky/TikTok-ViewBot",
+      "stars": 1929,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "HolmesGPT/holmesgpt",
+      "stars": 3692,
+      "reason": "size 2014338 KB > 400000"
+    },
+    {
+      "github": "swingmx/swingmusic",
+      "stars": 2084,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "blakeblackshear/frigate",
+      "stars": 36955,
+      "reason": "Python 51% of bytes (< 60%)"
+    },
+    {
+      "github": "OneDragon-Anything/StarRailOneDragon",
+      "stars": 1516,
+      "reason": "size 1514113 KB > 400000"
+    },
+    {
+      "github": "heymrun/heym",
+      "stars": 1261,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "dgtlmoon/changedetection.io",
+      "stars": 35305,
+      "reason": "used before in Arbiter's corpora or docs"
+    },
+    {
+      "github": "LTEnjoy/easyChat",
+      "stars": 1513,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "arabcoders/ytptube",
+      "stars": 1047,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "baserow/baserow",
+      "stars": 6223,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "FalkorDB/GraphRAG-SDK",
+      "stars": 1027,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "apify/crawlee-python",
+      "stars": 9626,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "agronholm/apscheduler",
+      "stars": 7672,
+      "reason": "used before in Arbiter's corpora or docs"
+    },
+    {
+      "github": "iflytek/astron-rpa",
+      "stars": 5275,
+      "reason": "Python 36% of bytes (< 60%)"
+    },
+    {
+      "github": "2FastLabs/agent-squad",
+      "stars": 7792,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "chaostoolkit/chaostoolkit",
+      "stars": 2032,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "home-assistant/core",
+      "stars": 91738,
+      "reason": "size 922385 KB > 400000"
+    },
+    {
+      "github": "openwpm/OpenWPM",
+      "stars": 1425,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "frappe/frappe_docker",
+      "stars": 2606,
+      "reason": "Python 48% of bytes (< 60%)"
+    },
+    {
+      "github": "Rapptz/discord.py",
+      "stars": 16201,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "mbzuai-oryx/Video-ChatGPT",
+      "stars": 1513,
+      "reason": "licence CC-BY-4.0 not in the OSI list"
+    },
+    {
+      "github": "miguelgrinberg/microdot",
+      "stars": 2154,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "surajverma/homehub",
+      "stars": 1249,
+      "reason": "Python 53% of bytes (< 60%)"
+    },
+    {
+      "github": "kirodotdev/KiroCrew",
+      "stars": 4581,
+      "reason": "size 3210149 KB > 400000"
+    },
+    {
+      "github": "jimmy201602/webterminal",
+      "stars": 1725,
+      "reason": "size 830335 KB > 400000"
+    },
+    {
+      "github": "kishanrajput23/Jarvis-Desktop-Voice-Assistant",
+      "stars": 1013,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "doccker/cc-use-exp",
+      "stars": 1065,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "KatrielMoses/MailAccess",
+      "stars": 1696,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "mem0ai/mem0",
+      "stars": 67843,
+      "reason": "Python 58% of bytes (< 60%)"
+    },
+    {
+      "github": "django-cms/django-filer",
+      "stars": 1852,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "chunxiaoxx/nautilus-compass",
+      "stars": 1254,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "dataelement/bisheng",
+      "stars": 12079,
+      "reason": "Python 56% of bytes (< 60%)"
+    },
+    {
+      "github": "NovaSearch-Team/RAG-Retrieval",
+      "stars": 1136,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "open-webui/open-webui",
+      "stars": 156813,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "PegaProx/project-pegaprox",
+      "stars": 1689,
+      "reason": "Python 45% of bytes (< 60%)"
+    },
+    {
+      "github": "debpalash/VoiceStudio",
+      "stars": 88259,
+      "reason": "Python 48% of bytes (< 60%)"
+    },
+    {
+      "github": "fastapi-practices/fastapi-best-architecture",
+      "stars": 2595,
+      "reason": "template repository"
+    },
+    {
+      "github": "xushier/HD-Icons",
+      "stars": 1901,
+      "reason": "template repository"
+    },
+    {
+      "github": "maziggy/bambuddy",
+      "stars": 3177,
+      "reason": "size 937671 KB > 400000"
+    },
+    {
+      "github": "explorerhq/sql-explorer",
+      "stars": 2877,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "odoo/odoo",
+      "stars": 55337,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "python-telegram-bot/python-telegram-bot",
+      "stars": 29532,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "bojieli/ai-agent-book",
+      "stars": 55970,
+      "reason": "size 795797 KB > 400000"
+    },
+    {
+      "github": "fail2ban/fail2ban",
+      "stars": 18878,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "0x676e67/wreq-python",
+      "stars": 1501,
+      "reason": "Python 59% of bytes (< 60%)"
+    },
+    {
+      "github": "zjunlp/LightMem",
+      "stars": 1203,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "Usagi-org/ai-goofish-monitor",
+      "stars": 15166,
+      "reason": "Python 57% of bytes (< 60%)"
+    },
+    {
+      "github": "Zleap-AI/SAG",
+      "stars": 2637,
+      "reason": "Python 52% of bytes (< 60%)"
+    },
+    {
+      "github": "chyroc/WechatSogou",
+      "stars": 6400,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "morphik-org/morphik-core",
+      "stars": 3719,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "keephq/keep",
+      "stars": 12445,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "TarrySingh/Artificial-Intelligence-Deep-Learning-Machine-Learning-Tutorials",
+      "stars": 4018,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "obitouka/InstagramPrivSniffer",
+      "stars": 1093,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "ASCIT31/Dark-Moon",
+      "stars": 1146,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "AstrBotDevs/AstrBot",
+      "stars": 43748,
+      "reason": "used before in Arbiter's corpora or docs"
+    },
+    {
+      "github": "mher/flower",
+      "stars": 7240,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "lsdefine/GenericAgent",
+      "stars": 14348,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "krateng/maloja",
+      "stars": 1853,
+      "reason": "Python 58% of bytes (< 60%)"
+    },
+    {
+      "github": "transmute-app/transmute",
+      "stars": 1452,
+      "reason": "size 443163 KB > 400000"
+    },
+    {
+      "github": "benavlabs/fastcrud",
+      "stars": 1597,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "ccxt/ccxt",
+      "stars": 44586,
+      "reason": "size 8862903 KB > 400000"
+    },
+    {
+      "github": "datawhalechina/hello-agents",
+      "stars": 84728,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "scrapfly/scrapfly-scrapers",
+      "stars": 1108,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "PrefectHQ/prefect",
+      "stars": 24079,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "SigmaHQ/sigma",
+      "stars": 11345,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "Mai-with-u/MaiBot",
+      "stars": 6599,
+      "reason": "Python 59% of bytes (< 60%)"
+    },
+    {
+      "github": "getsentry/sentry",
+      "stars": 45650,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "neuml/txtai",
+      "stars": 13036,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "healthchecks/healthchecks",
+      "stars": 10456,
+      "reason": "used before in Arbiter's corpora or docs"
+    },
+    {
+      "github": "arrobalytics/django-ledger",
+      "stars": 1393,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "Kaliiiiiiiiii-Vinyzu/patchright-python",
+      "stars": 1582,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "fim-ai/fim-one",
+      "stars": 1586,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "unslothai/unsloth",
+      "stars": 78589,
+      "reason": "size 610636 KB > 400000"
+    },
+    {
+      "github": "IBM/mcp-context-forge",
+      "stars": 4696,
+      "reason": "size 457501 KB > 400000"
+    },
+    {
+      "github": "SamR1/FitTrackee",
+      "stars": 1174,
+      "reason": "size 518014 KB > 400000"
+    },
+    {
+      "github": "getredash/redash",
+      "stars": 28850,
+      "reason": "Python 45% of bytes (< 60%)"
+    },
+    {
+      "github": "zane-ops/zane-ops",
+      "stars": 1387,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "cft0808/edict",
+      "stars": 17018,
+      "reason": "Python 50% of bytes (< 60%)"
+    },
+    {
+      "github": "feyninc/chonkie",
+      "stars": 4807,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "poco-ai/poco-claw",
+      "stars": 1356,
+      "reason": "Python 47% of bytes (< 60%)"
+    },
+    {
+      "github": "dynamiq-ai/dynamiq",
+      "stars": 1071,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "MemoriLabs/Memori",
+      "stars": 17141,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "yuezhiai/jonex",
+      "stars": 1480,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "tubearchivist/tubearchivist",
+      "stars": 8544,
+      "reason": "Python 58% of bytes (< 60%)"
+    },
+    {
+      "github": "FujiwaraChoki/MoneyPrinterV2",
+      "stars": 32201,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "frappe/frappe",
+      "stars": 11002,
+      "reason": "size 1010292 KB > 400000"
+    },
+    {
+      "github": "Lightning-AI/LitServe",
+      "stars": 3955,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "ithtelab/workbuddy-manager",
+      "stars": 1905,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "jofizcd/Soul-of-Waifu",
+      "stars": 1426,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "headroomlabs-ai/headroom",
+      "stars": 77893,
+      "reason": "description names a library/SDK, not an application"
+    }
+  ]
+}

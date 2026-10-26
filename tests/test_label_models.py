@@ -482,3 +482,19 @@ def test_ground_truth_census_population_counts_each_stratum_and_keeps_labels():
     assert [(r["stratum_size"], r["stratum_held_out_size"], r["rule_population"]) for r in out] == \
         [(3, 3, 4)] * 3 + [(1, 1, 4)]
     assert all("stratum_size" not in r for r in recs)      # a copy, not an edit
+
+
+def test_windows_runs_the_claude_binary_not_the_npm_cmd_wrapper(tmp_path, monkeypatch):
+    """subprocess cannot start npm's claude.cmd without a shell (FileNotFoundError),
+    and a shell would mangle multi-line prompts; the labeller runs the
+    bin/claude.exe the wrapper launches (FAIL-142)."""
+    import label_models as lm
+    exe = tmp_path / "node_modules" / "@anthropic-ai" / "claude-code" / "bin" / "claude.exe"
+    exe.parent.mkdir(parents=True)
+    exe.write_bytes(b"")
+    monkeypatch.setattr(lm.os, "name", "nt")
+    monkeypatch.setattr(lm.shutil, "which", lambda _: str(tmp_path / "claude.CMD"))
+    assert lm._claude_executable() == str(exe)
+    monkeypatch.setattr(lm.os, "name", "posix")
+    monkeypatch.setattr(lm.shutil, "which", lambda _: "/usr/bin/claude")
+    assert lm._claude_executable() == "/usr/bin/claude"

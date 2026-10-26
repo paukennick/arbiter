@@ -45,6 +45,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "tools" / "ground_truth"))
 import gt_common as g  # noqa: E402
+from arbiter.precision import label_language  # noqa: E402
 
 _spec = importlib.util.spec_from_file_location("label_sample", ROOT / "tools" / "label_sample.py")
 ls = importlib.util.module_from_spec(_spec)
@@ -67,6 +68,8 @@ FIELDS = (*ls.POPULATION_KEYS, "population_from")
 PLAN: dict[str, str] = {
     "gold-model.jsonl": "report:tools/gold/results/2026-10-23-gold-report-relabel.json.gz",
     "heldout-r5-model.jsonl": "report:tools/gold/results/2026-10-23-heldout-r5-report.json.gz",
+    "heldout-r7-python-model.jsonl": "report:tools/gold/results/2026-10-26-heldout-r7-python-report.json.gz",
+    "breadth-r7-python-model.jsonl": "report:tools/gold/results/2026-10-26-breadth-r7-python-report.json.gz",
     "ai-corpus-model.jsonl": "census",
     "cve-suspects-model.jsonl": "census",
     "owasp-java.jsonl": "census",
@@ -108,9 +111,12 @@ def from_report(records: list[dict], report: dict, held: set[str], origin: str) 
     out = []
     for r in records:
         f = by_id.get((r.get("repo"), r["finding_id"]))
+        # A record written before ARB-159 says `typescript` for a .js file the
+        # TypeScript pack flagged; its stratum is the file's language.
+        lang = label_language(r.get("path"), r.get("language"))
         why = ("finding not in the report" if f is None else
                f"rule {f['rule']} in the report" if f["rule"] != r["rule_id"] else
-               f"language {f['language']!r} in the report" if f["language"] != (r.get("language") or "") else
+               f"language {f['language']!r} in the report" if f["language"] != lang else
                "held-out split differs from heldout.json" if (f["repo"] in held) != r["held_out"] else "")
         if why:
             out.append(unknown(r, why))

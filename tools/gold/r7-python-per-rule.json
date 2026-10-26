@@ -1,0 +1,20 @@
+{
+ "*": 0,
+ "arbiter/python.command-injection": 10,
+ "arbiter/python.csrf-protection-disabled": 1,
+ "arbiter/python.decompress-unbounded": 1,
+ "arbiter/python.error-message-to-client": 7,
+ "arbiter/python.error-traceback-to-client": 2,
+ "arbiter/python.http-no-timeout": 44,
+ "arbiter/python.image-bomb-check-disabled": 1,
+ "arbiter/python.mail-tls-unverified": 3,
+ "arbiter/python.request-body-unbounded": 32,
+ "arbiter/python.retry-constant-delay": 7,
+ "arbiter/python.retry-loop-no-backoff": 7,
+ "arbiter/python.sql-injection": 243,
+ "arbiter/python.swallowed-error-in-worker-loop": 19,
+ "arbiter/python.thread-not-daemon-never-joined": 6,
+ "arbiter/python.upload-client-filename": 2,
+ "arbiter/python.weak-password-hash": 3,
+ "arbiter/python.worker-loop-no-stop-signal": 1
+}

@@ -13,7 +13,7 @@ one demo. (ARB-067)
 > `taint:`); precision tiers, the per-rule ledger and its CI guard; the model
 > verification pass (`assisted`); regression guards, mutation variants and
 > the AI-written corpora; and rules for AI-written-code defect classes
-> (ARB-083). The language packs now hold 189 rules (276 shipped in all).
+> (ARB-083). The language packs now hold 193 rules (280 shipped in all).
 > Figures below are as of 2026-10-21 unless marked. Current measurements:
 > [precision.md](precision.md#current-numbers) and
 > [testing-harness.md](testing-harness.md).

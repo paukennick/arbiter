@@ -1,0 +1,23 @@
+{
+  "*": 0,
+  "arbiter/python.http-no-timeout": 10000,
+  "arbiter/python.request-body-unbounded": 10000,
+  "arbiter/python.retry-constant-delay": 10000,
+  "arbiter/python.command-injection": 10000,
+  "arbiter/python.ssrf-stored-callback": 10000,
+  "arbiter/python.thread-not-daemon-never-joined": 10000,
+  "arbiter/python.mail-tls-unverified": 10000,
+  "arbiter/python.ssrf-check-then-connect": 10000,
+  "arbiter/python.retry-loop-no-backoff": 10000,
+  "arbiter/python.worker-loop-no-stop-signal": 10000,
+  "arbiter/python.jwt-unverified-decode": 10000,
+  "arbiter/python.insecure-random-for-secret": 10000,
+  "arbiter/python.debug-mode-enabled": 10000,
+  "arbiter/python.decompress-unbounded": 10000,
+  "arbiter/python.weak-password-hash": 10000,
+  "arbiter/python.image-bomb-check-disabled": 10000,
+  "arbiter/python.error-traceback-to-client": 10000,
+  "arbiter/python.http-timeout-disabled": 10000,
+  "arbiter/python.error-message-to-client": 150,
+  "arbiter/python.swallowed-error-in-worker-loop": 100
+}

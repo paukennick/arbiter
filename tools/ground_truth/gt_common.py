@@ -237,19 +237,21 @@ def census_population(records: list[dict], how: str = "census") -> list[dict]:
     stratum's population is the records in it. Returns new records; the
     labels are untouched."""
     from collections import Counter
+
+    from arbiter.precision import label_language
     size: Counter = Counter()
     held: Counter = Counter()
     rule_size: Counter = Counter()
     rule_held: Counter = Counter()
     for r in records:
-        k = (r["source"], r["rule_id"], r.get("language") or "")
+        k = (r["source"], r["rule_id"], label_language(r.get("path"), r.get("language")))
         size[k] += 1
         held[k] += bool(r["held_out"])
         rule_size[k[:2]] += 1
         rule_held[k[:2]] += bool(r["held_out"])
     out = []
     for r in records:
-        k = (r["source"], r["rule_id"], r.get("language") or "")
+        k = (r["source"], r["rule_id"], label_language(r.get("path"), r.get("language")))
         out.append({**r, "stratum_size": size[k], "stratum_held_out_size": held[k],
                     "rule_population": rule_size[k[:2]], "rule_held_out_population": rule_held[k[:2]],
                     "sampling": how})

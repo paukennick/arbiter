@@ -57,7 +57,11 @@ Preregistration, frozen before any label is produced:
   stage re-acquires only the 11 pinned archives and verifies their recorded
   SHA-256 before scanning.
 
+The frozen preregistration for this stage is `docs/accuracy-prereg-b.md` (ARB-112).
+
 ### C. Learned triage on GPU (precision/ranking only)
+
+The frozen split and CPU baseline for this stage are now in `docs/accuracy-triage-cpu-baseline.md` (ARB-113) with artifacts under `tools/gold/labels/triage/`.
 
 Goal: rank advisory findings so the likely true positives surface first and
 estimate per-finding probability, to raise advisory-tier precision. It does

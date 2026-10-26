@@ -20,12 +20,13 @@ public class JobQueue implements Runnable {
     private static final Logger LOG = Logger.getLogger(JobQueue.class.getName());
     private static final int MAX_ATTEMPTS = 5;
 
-    private final BlockingQueue<Job> pending = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Job> pending = new java.util.concurrent.ArrayBlockingQueue<>(1000);
     private final Map<String, Job> byId = new ConcurrentHashMap<>();
     private final List<Job> deadLetters = new ArrayList<>();
     private final Map<String, Integer> attempts = new HashMap<>();
     private final ReentrantLock attemptsLock = new ReentrantLock();
-    private final ExecutorService pool = Executors.newFixedThreadPool(4);
+    private final ExecutorService pool = new java.util.concurrent.ThreadPoolExecutor(4, 4, 0L, TimeUnit.SECONDS,
+            new java.util.concurrent.ArrayBlockingQueue<>(100), new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
     private final LockStore store;
     private final AtomicInteger processed = new AtomicInteger();
     private final AtomicInteger failed = new AtomicInteger();

@@ -53,6 +53,7 @@ import json
 import math
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -191,6 +192,10 @@ CLAIMS: list[tuple[str, str, str]] = [
     ("*.image-*", "resilience", f"an image from {_OUTSIDE} is decoded with no limit on its pixel dimensions, so a small file can make the process allocate a very large amount of memory."),
     ("*.decompress-*", "resilience", f"compressed data from {_OUTSIDE} is decompressed with no limit on the output size, so a small input can expand to exhaust memory or disk."),
     ("*.request-body-*", "resilience", "a request body is read into memory with no maximum size, so one large request can exhaust the process's memory."),
+    ("*.unbounded-work-queue", "resilience", "the queue that feeds worker threads has no capacity limit, so submissions arriving faster than they are processed pile up in memory with nothing to make callers back off."),
+    ("*.unbounded-queue", "resilience", "the queue that feeds worker threads has no capacity limit, so submissions arriving faster than they are processed pile up in memory with nothing to make callers back off."),
+    ("*.body-as-class-unguarded", "resilience", f"a request body from {_OUTSIDE} is parsed with no handling for malformed or null JSON, so bad input is answered as a server error instead of a client error."),
+    ("*.compare-digest-unnormalised", "resilience", f"a value from {_OUTSIDE} is passed to a constant-time comparison that raises on non-ASCII text, so bad input is answered as a server error instead of a client error."),
     ("*.upload-memory-storage-unbounded", "resilience", "uploaded files are held in memory with no size limit, so one large upload can exhaust the process's memory."),
     ("*.requeue-without-delay", "resilience", "a failed job is put back on the queue immediately with no delay or attempt limit, so a persistent failure loops as fast as the worker can run."),
 ]
@@ -346,13 +351,26 @@ class Cache:
                 fh.write(json.dumps(rec, sort_keys=True) + "\n")
 
 
+def _claude_executable() -> str:
+    """The Claude CLI binary itself. On Windows npm installs `claude.cmd`, which
+    subprocess cannot start without a shell, and a shell would mangle the
+    multi-line prompts passed as arguments; the wrapper only launches
+    bin/claude.exe beside it, so run that directly (FAIL-142)."""
+    found = shutil.which("claude") or "claude"
+    if os.name == "nt" and found.lower().endswith((".cmd", ".bat")):
+        exe = Path(found).parent / "node_modules" / "@anthropic-ai" / "claude-code" / "bin" / "claude.exe"
+        if exe.is_file():
+            return str(exe)
+    return found
+
+
 def call_cli(system: str, prompt: str, model: str, timeout: int = 240,
              env: dict | None = None) -> tuple[str, float, str]:
     """(reply text, cost in USD, resolved model) from one headless CLI run.
     `env` replaces the inherited environment (the panel passes an allowlist,
     tools/panel/providers.py `clean_env`); by default it is this process's
     environment without ANTHROPIC_API_KEY."""
-    cmd = ["claude", "-p", prompt, "--model", model, "--tools", "", "--setting-sources", "",
+    cmd = [_claude_executable(), "-p", prompt, "--model", model, "--tools", "", "--setting-sources", "",
            "--strict-mcp-config", "--system-prompt", system, "--output-format", "json",
            "--no-session-persistence"]
     with tempfile.TemporaryDirectory(prefix="label-") as cwd:

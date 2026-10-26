@@ -1,0 +1,93 @@
+{
+ "fold_families": [
+  [
+   "ai-corpus:notes-api",
+   "py-celery",
+   "ruby-rubygems",
+   "ts-otel-js"
+  ],
+  [
+   "ai-corpus:webhook-receiver",
+   "py-cryptography",
+   "py-django",
+   "ts-nest"
+  ],
+  [
+   "ai-corpus:file-upload",
+   "ai-corpus:job-queue",
+   "go-coredns",
+   "ruby-rails",
+   "ts-undici"
+  ],
+  [
+   "go-caddy",
+   "go-etcd",
+   "java-netty",
+   "java-spring-security",
+   "java-tomcat"
+  ],
+  [
+   "ai-corpus:url-shortener",
+   "py-aiohttp",
+   "ruby-puma",
+   "ts-jose"
+  ]
+ ],
+ "folds": [
+  {
+   "fold": 0,
+   "families": 4,
+   "rows": 145,
+   "average_precision": 0.98,
+   "base_rate": 0.759,
+   "precision_at_20": 1.0,
+   "precision_at_50": 1.0
+  },
+  {
+   "fold": 1,
+   "families": 4,
+   "rows": 141,
+   "average_precision": 0.994,
+   "base_rate": 0.844,
+   "precision_at_20": 1.0,
+   "precision_at_50": 1.0
+  },
+  {
+   "fold": 2,
+   "families": 5,
+   "rows": 136,
+   "average_precision": 0.946,
+   "base_rate": 0.647,
+   "precision_at_20": 1.0,
+   "precision_at_50": 0.98
+  },
+  {
+   "fold": 3,
+   "families": 5,
+   "rows": 137,
+   "average_precision": 0.86,
+   "base_rate": 0.723,
+   "precision_at_20": 1.0,
+   "precision_at_50": 0.82
+  },
+  {
+   "fold": 4,
+   "families": 4,
+   "rows": 134,
+   "average_precision": 0.997,
+   "base_rate": 0.91,
+   "precision_at_20": 1.0,
+   "precision_at_50": 1.0
+  }
+ ],
+ "overall": {
+  "rows": 693,
+  "average_precision": 0.976,
+  "precision_at_20": 1.0,
+  "precision_at_50": 1.0,
+  "base_rate": 0.776,
+  "average_precision_mean": 0.955,
+  "average_precision_min": 0.86,
+  "average_precision_max": 0.997
+ }
+}

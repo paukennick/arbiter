@@ -107,3 +107,18 @@ def test_the_shipped_label_files_are_backfilled():
     failures, lines = LP.run(LP.PLAN, LP.LABELS, check=True)
     assert failures == 0, lines
     assert all(" 0 with unknown population" in line for line in lines), lines
+
+
+def test_a_typescript_pack_label_on_a_js_file_is_matched_in_the_javascript_stratum():
+    # ARB-159: the TypeScript pack flags .js files and older records say
+    # `typescript`; the stratum, and so its population, is the file's language.
+    rule = "arbiter/typescript.empty-catch"
+    report = {"repos": [{"name": "dev", "language": "typescript"}],
+              "raw_findings": {"dev": [_finding(1, "a.ts", rule), _finding(2, "b.ts", rule),
+                                       _finding(3, "c.js", rule)]}}
+    recs = [{**_label("f:1", "dev", language="typescript"), "rule_id": rule, "path": "a.ts"},
+            {**_label("f:3", "dev", language="typescript"), "rule_id": rule, "path": "c.js"}]
+    ts, js = LP.from_report(recs, report, set(), "r.json")
+    assert (ts["stratum_size"], ts["rule_population"]) == (2, 3)
+    assert (js["stratum_size"], js["rule_population"]) == (1, 3)
+    assert js["language"] == "typescript"  # the record itself is not rewritten

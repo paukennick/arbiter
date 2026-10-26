@@ -2488,6 +2488,53 @@
       "prevention_rules": [],
       "prevention_notes": "Verification must check the same location scans read; a verify that passes while the scan skips is a false clean",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-142",
+      "date": "2026-10-25",
+      "title": "label_models.py could not start the Claude CLI on Windows",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "label run on Windows: FileNotFoundError [WinError 2] from subprocess.run(['claude', ...]); no label written",
+      "how_detected": "first r7 Python labelling run",
+      "root_cause": "npm installs claude as claude.cmd on Windows. subprocess without a shell does not run .cmd files, and running through a shell would mangle the multi-line prompts passed as arguments. Labelling had only ever run on Linux/macOS",
+      "requirement": "",
+      "affected": [
+        "tools/label_models.py"
+      ],
+      "fix_summary": "call_cli runs the bin/claude.exe that claude.cmd launches; elsewhere unchanged",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_label_models.py::test_windows_runs_the_claude_binary_not_the_npm_cmd_wrapper"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Resolve CLI wrappers to their binary before passing multi-line arguments",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-160",
+      "date": "2026-10-26",
+      "title": "Partial regression_guard update on another machine shrank every other perf budget",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "PR #22 (and #20, arb-111) slow-tier failed: py-urllib3 scan 6.92s over budget 6.16s, go-coredns 21.27s over 19.25s; the same scans passed on the parent branch at budgets 7.82s and 26.13s",
+      "how_detected": "gh run view 40258934950 --log-failed while merging the Copilot ARB-110..113 stack",
+      "root_cause": "tools/regression_guard.py update overwrote reference_seconds whenever it timed anything. ARB-111 ran it for the three Java targets on a machine whose reference took 0.468s instead of 0.338s, so the old targets (timed against 0.338s) were now divided by a reference 1.385x too slow: CI's machine factor fell from 2.20 to 1.54 and every untouched budget shrank by the same ratio",
+      "requirement": "ARB-111",
+      "affected": [
+        "tools/regression_guard.py",
+        "tools/gold/snapshots/perf-baseline.json"
+      ],
+      "fix_summary": "update now calls rebase_reference, which rescales targets it did not re-time to the new reference; perf-baseline.json repaired by putting the reference back to 0.338s and scaling the three Java baselines by 0.338/0.468 (84.0->60.67, 63.81->46.09, 91.88->66.36), which leaves every CI budget the same as it was meant to be",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_regression_guard.py::test_partial_update_on_another_machine_keeps_untouched_budgets"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "A partial update can no longer mix two machines' timings in one baseline file",
+      "recurrence_of": ""
     }
   ]
 }

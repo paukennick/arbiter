@@ -207,6 +207,21 @@ def test_perf_guard_is_not_fooled_by_a_slowdown_that_also_hits_the_reference(sna
     assert _check(t, lines, live_reference=True, do_snap=False, do_perf=True) == 1, lines
 
 
+def test_partial_update_on_another_machine_keeps_untouched_budgets():
+    """FAIL-160: re-timing only some targets must not change what the others'
+    budgets mean. A reference 1.5x slower rescales the untouched targets by
+    1.5, so the same CI runner gets the same budget for them as before."""
+    base = {"reference_seconds": 0.338, "targets": {"py-urllib3": 1.76, "java-netty": 50.0}}
+    ci_ref = 0.737
+    before = rg.perf_budget(1.76, rg.machine_factor(ci_ref, 0.338, GUARDS["perf"]), GUARDS["perf"])
+    rg.rebase_reference(base, 0.468, {"java-netty"})
+    assert base["reference_seconds"] == 0.468
+    assert base["targets"]["java-netty"] == 50.0
+    after = rg.perf_budget(base["targets"]["py-urllib3"],
+                           rg.machine_factor(ci_ref, 0.468, GUARDS["perf"]), GUARDS["perf"])
+    assert abs(after - before) < 0.05, (before, after)
+
+
 # --- aggregate-only target (the held-out AI corpus) --------------------------
 
 def test_aggregate_target_fails_on_a_change_but_prints_only_numbers(snapdir):

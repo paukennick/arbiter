@@ -188,6 +188,44 @@ MUTATIONS = [
         new='            if isinstance(entry, dict) and isinstance(entry.get("version"), str):',
         test="tests/test_tool_version_memo.py::test_touching_the_executable_invalidates_its_entry",
     ),
+    Mutation(
+        name="partial-update-mixes-machines",
+        defect="A partial regression_guard update rewrites the reference time without "
+               "rescaling the targets it did not re-time, so their budgets shrink by the "
+               "machines' speed ratio (FAIL-160).",
+        path="tools/regression_guard.py",
+        old="        scale = ref_now / ref_old",
+        new="        scale = 1.0",
+        test="tests/test_regression_guard.py::test_partial_update_on_another_machine_keeps_untouched_budgets",
+    ),
+    Mutation(
+        name="clustering-tightens-the-bound",
+        defect="The design effect is no longer floored at 1, so repositories that "
+               "disagree more than chance would make the clustered bound tighter than "
+               "the independent one (ARB-168).",
+        path="src/arbiter/precision.py",
+        old='    return {**out, "deff": round(max(1.0, raw), 3),',
+        new='    return {**out, "deff": round(max(0.01, raw), 3),',
+        test="tests/test_cluster_precision.py::test_stratified_design_compares_each_finding_with_its_own_stratum",
+    ),
+    Mutation(
+        name="label-variance-ignored",
+        defect="The Dawid-Skene interval stops widening for uncertain labels, so a "
+               "finding at P(tp)=0.9 counts as a certain tp (ARB-167).",
+        path="src/arbiter/dawid_skene.py",
+        old="    lo, hi = widen(lo, hi, p * (1.0 - p) / n, sum_pq / (n * n))",
+        new="    lo, hi = widen(lo, hi, p * (1.0 - p) / n, 0.0)",
+        test="tests/test_dawid_skene.py::test_label_uncertainty_widens_the_interval",
+    ),
+    Mutation(
+        name="benchmark-truth-as-a-labeller",
+        defect="Benchmark records (labeller `ground-truth`, role labeller) become a "
+               "fallible labeller in Dawid-Skene instead of known truth (ARB-167).",
+        path="tools/precision_ledger.py",
+        old='    return r["role"] == "ground_truth" or r.get("labeller") == "ground-truth"',
+        new='    return r["role"] == "ground_truth"',
+        test="tests/test_dawid_skene.py::test_ground_truth_findings_are_fixed_and_unvoted",
+    ),
 ]
 
 

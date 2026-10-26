@@ -16,8 +16,8 @@ chain and assurance. Next to the findings it reports how much of its own
 rubric it could run, names every check that did not run and why, and withholds
 the overall grade when that coverage is too low.
 
-It never executes the code it scans. It runs 21 native probes (276 rules,
-189 of them in tree-sitter packs for Python, TypeScript/JavaScript, Go, Java
+It never executes the code it scans. It runs 21 native probes (280 rules,
+193 of them in tree-sitter packs for Python, TypeScript/JavaScript, Go, Java
 and Ruby), wraps six external analyzers (ruff, bandit, semgrep, checkov,
 gitleaks, Trivy) when they are installed, and maps findings to ten control
 frameworks, including the 2024 CWE Top 25 per language.
