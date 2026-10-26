@@ -3654,6 +3654,77 @@
         "changelog"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-174",
+      "category": "accuracy",
+      "title": "Advisory bar (lower bound >= 0.85 on >= 30 labels) and noisy rules off by default",
+      "description": "precision.DEFAULT_BAR gains an advisory level: Wilson 95% lower bound >= 0.85 on >= 30 TP+FP labels (held-out and development labels both count; unsure excluded). A rule with >= 30 labels and lower bound below 0.85, or observed precision below 0.5 on >= 10 labels, is off by default: its findings are dropped from the report, the score, the verify pass and the gate unless the user enables it (config enable_rules, CLI --all-rules). Computed from the shipped ledger at scan time; the ledger records default on/off per rule. A default-off rule never fails the gate, even when enabled. The report states how many findings default-off removed and how to see them. Approved by the owner from docs/research/2026-10-26-99-percent-bar-vs-market.md.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "src/arbiter/precision.py",
+        "src/arbiter/engine.py",
+        "src/arbiter/policy.py",
+        "src/arbiter/cli.py",
+        "src/arbiter/report.py",
+        "tools/precision_ledger.py",
+        "src/arbiter/packs/precision.json",
+        "tools/gold/precision.json",
+        "tests"
+      ],
+      "acceptance_criteria": [
+        "advisory bar computed from ledger counts",
+        "default-off selection at the 0.85/30 and 0.5/10 boundaries",
+        "enable_rules and --all-rules re-enable",
+        "gate never blocks on a default-off rule including legacy mode",
+        "report shows the default-off count and how to enable",
+        "ledger records default and default_reason matching the runtime result"
+      ],
+      "validation_required": [
+        "python -m pytest -q",
+        "python tools/mutate_tests.py",
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "changelog",
+        "docs/precision.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-175",
+      "category": "accuracy",
+      "title": "Coverage next to precision: one generated public precision sentence; model-label claim rule settled",
+      "description": "Every precision claim (README, docs/precision.md, docs/accuracy-roadmap.md, docs/accuracy-baseline.md, docs/accuracy-gap-closure-plan.md, console/markdown/PR-comment output, arbiter report) uses one form: findings that can fail the build come only from verified rules measured at >= 99% precision (95% lower bound, per rule, held-out repositories, model-labelled); X of N rules qualify; other findings advisory; rules shown by default measure >= 85% where measured; noisier rules off unless enabled. X and N generated from the ledger. No unqualified 99% wording. The 99% recall target is replaced by per-benchmark catch rate with intervals plus per-family improvement targets (capture-recapture on r7-capture). precision.md and roadmap evidence rule 2 agree: a model-labelled 0.99 counts only where the labeller is calibrated >= 0.99 on the rule's category, is always called model-labelled, and human PR-feedback spot checks are reported beside it once they exist; supply.unpinned-action (supply chain, labeller 0.824) is model-labelled but not calibrated.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "src/arbiter/precision.py",
+        "src/arbiter/report.py",
+        "README.md",
+        "docs/precision.md",
+        "docs/accuracy-roadmap.md",
+        "docs/accuracy-baseline.md",
+        "docs/accuracy-gap-closure-plan.md",
+        "tests"
+      ],
+      "acceptance_criteria": [
+        "sentence generated from ledger counts",
+        "no unqualified 99% wording in docs or output",
+        "precision.md and roadmap rule 2 consistent",
+        "uncalibrated caveat generated for rules outside calibrated categories"
+      ],
+      "validation_required": [
+        "python -m pytest -q",
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "changelog",
+        "README.md",
+        "docs/precision.md"
+      ],
+      "risk_notes": []
     }
   ]
 }
