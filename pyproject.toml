@@ -49,6 +49,9 @@ arbiter = ["packs/**/*.yaml", "packs/**/*.toml", "packs/**/*.adapter.toml", "pac
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Import this checkout's own code, not whichever copy is pip-installed in
+# editable mode (FAIL-170: worktrees silently tested the main checkout).
+pythonpath = ["src"]
 # Two tiers (ARB-046). `-m "not slow"` is the pull-request gate's suite and the
 # one `.ai/test-suites.json` registers; `slow` marks the tests that run a real
 # external analyzer through the adapters or scan more than the fixtures, and CI
