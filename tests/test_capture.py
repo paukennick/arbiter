@@ -236,3 +236,16 @@ def test_every_claimed_family_has_an_existing_claim():
 def test_dev_sets_name_no_held_out_corpus():
     for p in cr.DEV_SETS.values():
         assert "dev" in p.name
+
+
+def test_phase_selection_overlap_first():
+    def s(i, fam, dets):
+        return {"site_id": f"s{i}", "language": "python", "family": fam, "detectors": dets}
+    sites = [s(1, "a", ["arbiter", "bandit"]), s(2, "a", ["bandit"]), s(3, "b", ["semgrep"]),
+             s(4, "b", ["arbiter", "semgrep"])]
+    todo = [x for x in sites if x["site_id"] != "s1"]
+    # nothing labelled yet: only overlap sites
+    assert [x["site_id"] for x in cr.phase_selection(sites, sites, {})] == ["s1", "s4"]
+    # family a's overlap site came back tp: its single-detector sites open up
+    assert [x["site_id"] for x in cr.phase_selection(todo, sites, {"s1": "tp"})] == ["s2", "s4"]
+    assert [x["site_id"] for x in cr.phase_selection(todo, sites, {"s1": "fp"})] == ["s4"]

@@ -584,15 +584,26 @@ def cmd_sites(a) -> int:
     out.mkdir(parents=True, exist_ok=True)
     (out / "sites.json").write_text(json.dumps(sites, indent=0, sort_keys=True), encoding="utf-8")
     todo = [s for s in sites if s["site_id"] not in labels]
+    todo = phase_selection(todo, sites, labels)
     for set_name in DEV_SETS:
         rep = labelling_report(todo, set_name)
         (out / f"label-report-{set_name}.json").write_text(json.dumps(rep, indent=0), encoding="utf-8")
     by = Counter((s["language"], s["family"], "+".join(s["detectors"])) for s in sites)
     for k, n in sorted(by.items()):
         print(f"{k[0]:<11} {k[1]:<18} {k[2]:<24} {n}")
-    print(f"{len(sites)} sites, {len(labels)} already labelled, {len(todo)} unlabelled, "
+    print(f"{len(sites)} sites, {len(labels)} already labelled, {len(todo)} selected to label now, "
           f"{sum(1 for s in todo if s['family'] in CLAIM_RULE)} claimable")
     return 0
+
+
+def phase_selection(todo: list[dict], sites: list[dict], labels: dict[str, str]) -> list[dict]:
+    """Overlap first (plan, change 3): every unlabelled multi-detector site;
+    single-detector sites only in strata where a multi-detector site is
+    already labelled tp."""
+    open_strata = {(s["language"], s["family"]) for s in sites
+                   if len(s["detectors"]) >= 2 and labels.get(s["site_id"]) == "tp"}
+    return [s for s in todo if len(s["detectors"]) >= 2
+            or (s["language"], s["family"]) in open_strata]
 
 
 def cmd_dev(a) -> int:
