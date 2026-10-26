@@ -57,6 +57,8 @@ Preregistration, frozen before any label is produced:
   stage re-acquires only the 11 pinned archives and verifies their recorded
   SHA-256 before scanning.
 
+The frozen preregistration for this stage is `docs/accuracy-prereg-b.md` (ARB-112).
+
 ### C. Learned triage on GPU (precision/ranking only)
 
 Goal: rank advisory findings so the likely true positives surface first and

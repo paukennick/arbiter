@@ -2928,6 +2928,34 @@
         "changelog"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-112",
+      "category": "accuracy",
+      "title": "Preregistration for the model-labelled ARB-109 precision study (Workstream B)",
+      "description": "Freeze docs/accuracy-prereg-b.md before any scan or label exists: population (11 pinned ARB-109 repositories, Arbiter at the freeze parent, census), blinded packets, prosecutor/defender/adjudicator labelling with blind OWASP-Python calibration, cluster-bootstrap outputs, stop rules and a ban on tuning rules on the cohort. The study run is a later step under this requirement. Model-labelled conformance only; no 99 percent claim.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "docs/accuracy-prereg-b.md",
+        "docs/accuracy-gap-closure-plan.md",
+        "tools/label_models.py",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Preregistration committed before any label exists",
+        "Population gate and calibration reliability threshold stated",
+        "Labels never used to tune rules",
+        "No 99 percent claim"
+      ],
+      "validation_required": [
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
     }
   ]
 }
