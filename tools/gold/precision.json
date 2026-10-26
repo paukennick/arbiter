@@ -10087,10 +10087,79 @@
  "tier": {
   "held_out_only": true,
   "method": "stratified",
-  "rules": [],
-  "overall": null,
-  "claim": false,
+  "rules": [
+   "arbiter/supply.unpinned-action"
+  ],
+  "overall": {
+   "precision": 1.0,
+   "wilson_lower": 0.9926,
+   "wilson_upper": 1.0,
+   "n_eff": 517.8,
+   "n_eff_kish": 517.8,
+   "tp": 524,
+   "fp": 0,
+   "population": 1284,
+   "strata": 2,
+   "pooled": {
+    "precision": 1.0,
+    "wilson_lower": 0.9927
+   },
+   "held_out_population": 1284,
+   "unlabelled_population": 0,
+   "coverage": 1.0,
+   "claim_lower": 0.9926
+  },
+  "claim": true,
   "population_unknown": [],
-  "categories": {}
+  "categories": {
+   "CWE-1357": {
+    "precision": 1.0,
+    "wilson_lower": 0.9926,
+    "wilson_upper": 1.0,
+    "n_eff": 517.8,
+    "n_eff_kish": 517.8,
+    "tp": 524,
+    "fp": 0,
+    "population": 1284,
+    "strata": 2,
+    "pooled": {
+     "precision": 1.0,
+     "wilson_lower": 0.9927
+    },
+    "held_out_population": 1284,
+    "unlabelled_population": 0,
+    "coverage": 1.0,
+    "claim_lower": 0.9926,
+    "rule_ids": [
+     "arbiter/supply.unpinned-action"
+    ],
+    "claim": true,
+    "population_unknown": []
+   },
+   "CWE-494": {
+    "precision": 1.0,
+    "wilson_lower": 0.9926,
+    "wilson_upper": 1.0,
+    "n_eff": 517.8,
+    "n_eff_kish": 517.8,
+    "tp": 524,
+    "fp": 0,
+    "population": 1284,
+    "strata": 2,
+    "pooled": {
+     "precision": 1.0,
+     "wilson_lower": 0.9927
+    },
+    "held_out_population": 1284,
+    "unlabelled_population": 0,
+    "coverage": 1.0,
+    "claim_lower": 0.9926,
+    "rule_ids": [
+     "arbiter/supply.unpinned-action"
+    ],
+    "claim": true,
+    "population_unknown": []
+   }
+  }
  }
 }
