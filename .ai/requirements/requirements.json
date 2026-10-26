@@ -3551,6 +3551,42 @@
         "CHANGELOG.md"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-159",
+      "category": "measurement",
+      "title": "Precision reportable per language, JavaScript apart from TypeScript",
+      "description": "The ledger's language stratum comes from the finding's file extension (.js/.mjs/.cjs/.jsx javascript; .ts/.tsx/.mts/.cts typescript) instead of the TypeScript pack that flagged it; label populations re-derived from the committed runs with no relabel; tools/precision_ledger.py report prints one held-out, population-weighted tier claim per language (language_claims).",
+      "priority": "high",
+      "status": "needs_review",
+      "minimum_access_scope": [
+        "src/arbiter/precision.py",
+        "tools/precision_ledger.py",
+        "tools/label_populations.py",
+        "tools/label_sample.py",
+        "tools/ground_truth/gt_common.py",
+        "tools/gold/labels/gold-model.jsonl",
+        "tools/gold/labels/heldout-r5-model.jsonl",
+        "tools/gold/precision.json",
+        "src/arbiter/packs/precision.json"
+      ],
+      "acceptance_criteria": [
+        "a .js finding of the TypeScript pack is a javascript stratum",
+        "a split stratum's population is not counted twice",
+        "report prints one claim per language",
+        "ledger and packaged copy byte-identical",
+        "backfill --check passes"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/test_precision_ledger.py tests/test_label_populations.py tests/test_label_sample.py tests/test_label_models.py tests/test_precision_tiers.py -q",
+        "python tools/precision_ledger.py check",
+        "python tools/label_populations.py backfill --check"
+      ],
+      "documentation_required": [
+        "docs/precision.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
     }
   ]
 }

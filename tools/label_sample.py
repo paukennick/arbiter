@@ -67,12 +67,15 @@ def findings_from_report(report: dict) -> list[dict]:
 
 
 def _language(path: str) -> str:
+    """JavaScript and TypeScript by extension (precision.label_language,
+    ARB-159): the TypeScript pack scans both, and precision is reported per
+    language. Other files by the inventory's extension map."""
     try:
         from arbiter.inventory import LANG_BY_EXT
+        from arbiter.precision import label_language
     except ImportError:  # pragma: no cover
         return ""
-    lang = LANG_BY_EXT.get(Path(path).suffix, "")
-    return "typescript" if lang == "javascript" else lang
+    return label_language(path, LANG_BY_EXT.get(Path(path).suffix, ""))
 
 
 def allocate(sizes: dict, n: int, floor: int = 1) -> dict:

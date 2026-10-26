@@ -214,7 +214,14 @@ each stratum is weighted back to the number of findings it was drawn from.
 
 **Strata.** A stratum is (rule, source, language): the sampler's own
 (rule, language) strata within one source run (`gold-model` is one gold
-run; each ground-truth benchmark and the AI corpus are their own). Every
+run; each ground-truth benchmark and the AI corpus are their own). The
+language of a JavaScript or TypeScript finding is its file's extension
+(`.js`/`.mjs`/`.cjs`/`.jsx` javascript, `.ts`/`.tsx`/`.mts`/`.cts`
+typescript; `precision.label_language`), not the pack that fired: the
+TypeScript pack scans both, and `python tools/precision_ledger.py report`
+gives the tier claim per language, JavaScript apart (ARB-159). A rule's
+held-out findings no stratum lists count against every language the rule
+has strata in. Every
 label record carries its stratum's population (see Label format below,
 `stratum_size` and the fields beside it), recorded at sampling time from
 the population the sampler drew from. For the held-out claim the

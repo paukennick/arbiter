@@ -432,3 +432,88 @@ def test_guard_fails_a_verified_rule_whose_population_is_unknown():
     assert len(out) == 1 and "no recorded population" in out[0] and "400 label(s)" in out[0]
     assert PG.check(led, set(), SNAPS) == []        # not declared: the ledger only says so
     assert PG.check(_ledger(), {RULE}, SNAPS) == []
+
+
+# ---------------------------------------------------------------------------
+# Per language: JavaScript apart from TypeScript (ARB-159)
+# ---------------------------------------------------------------------------
+
+TS_RULE = "arbiter/typescript.empty-catch"
+
+
+@pytest.mark.parametrize("path,recorded,want", [
+    ("src/a.js", "typescript", "javascript"), ("a.MJS", "typescript", "javascript"),
+    ("a.cjs", "", "javascript"), ("a.jsx", "typescript", "javascript"),
+    ("a.ts", "javascript", "typescript"), ("a.tsx", "", "typescript"),
+    ("a.mts", "", "typescript"), ("a.cts", "", "typescript"),
+    ("App.vue", "typescript", "typescript"), ("a.py", "python", "python"), (None, "go", "go")])
+def test_label_language_comes_from_the_file_extension_for_js_and_ts(path, recorded, want):
+    assert P.label_language(path, recorded) == want
+
+
+def test_a_js_file_flagged_by_the_typescript_pack_is_its_own_javascript_stratum():
+    recs = (_pairs(3, rule=TS_RULE, prefix="t", language="typescript", path="a.ts", pop=_pop(5, 5, 7, 7))
+            + _pairs(2, rule=TS_RULE, prefix="j", language="typescript", path="b.js", pop=_pop(2, 2, 7, 7)))
+    e = PL.rule_entries(PL.final_verdicts(recs), P.DEFAULT_BAR)[TS_RULE]
+    assert [(s["language"], s["tp"], s["population"]) for s in e["strata"]] == \
+        [("javascript", 2, 2), ("typescript", 3, 5)]
+    assert e["population"] == 7  # split, not counted twice
+
+
+def test_a_sheet_row_takes_its_language_from_its_path(tmp_path):
+    sheet = tmp_path / "alice.json"
+    sheet.write_text(json.dumps([{"sample_id": "S1", "rule": TS_RULE, "verdict": "tp",
+                                  "language": "typescript", "path": "web/x.mjs"}]), encoding="utf-8")
+    assert PL.read_sheet(sheet, "b", "gold", True)[0]["language"] == "javascript"
+
+
+def _two_language_ledger(js_fp: int = 0) -> dict:
+    # 300 TypeScript + 100 JavaScript held-out labels: enough for the rule to be admitted.
+    ts = _pairs(300, rule=TS_RULE, prefix="t", language="typescript", path="a.ts", pop=_pop(300, 300, 400, 400))
+    js = _pairs(100 - js_fp, js_fp, rule=TS_RULE, prefix="j", language="typescript", path="b.js",
+                pop=_pop(100, 100, 400, 400))
+    return PL.build(ts + js, None, "2026-10-26", {TS_RULE})
+
+
+def test_language_claims_give_one_claim_per_language():
+    ledger = _two_language_ledger(js_fp=2)
+    assert ledger["rules"][TS_RULE]["admitted"]
+    c = PL.language_claims(ledger["rules"], ledger["bar"], {TS_RULE})
+    assert set(c) == {"javascript", "typescript"}
+    assert c["typescript"]["rules_admitted"] == c["javascript"]["rules_admitted"] == 1
+    assert (c["javascript"]["held_out_tp"], c["javascript"]["held_out_fp"]) == (98, 2)
+    assert c["javascript"]["precision"] == 0.98
+    assert c["javascript"]["claim"] is False
+    assert c["typescript"]["precision"] == 1.0
+    assert c["typescript"]["wilson_lower"] == pytest.approx(P.wilson(300, 300)[0], abs=1e-4)
+    assert c["typescript"]["claim"] is (c["typescript"]["claim_lower"] >= 0.99)
+
+
+def test_unattributed_held_out_findings_count_against_every_language_of_the_rule():
+    # 400 held-out findings of the rule, strata list 300 + 60; the other 40
+    # have no language, so each language's denominator carries them.
+    ts = _pairs(300, rule=TS_RULE, prefix="t", language="typescript", path="a.ts", pop=_pop(300, 300, 400, 400))
+    js = _pairs(60, rule=TS_RULE, prefix="j", language="typescript", path="b.js", pop=_pop(60, 60, 400, 400))
+    ledger = PL.build(ts + js, None, "2026-10-26", {TS_RULE})
+    c = PL.language_claims(ledger["rules"], ledger["bar"], {TS_RULE})
+    assert c["javascript"]["rules_admitted"] == 1
+    assert c["typescript"]["held_out_population"] == 340
+    assert c["javascript"]["held_out_population"] == 100
+    assert c["javascript"]["coverage"] == 0.6
+
+
+def test_a_language_with_no_verified_rule_makes_no_claim():
+    ledger = _two_language_ledger()
+    c = PL.language_claims(ledger["rules"], ledger["bar"], set())
+    assert all(not v["claim"] and v["rules_admitted"] == 0 and v["precision"] is None for v in c.values())
+
+
+def test_report_prints_a_row_per_language(tmp_path, monkeypatch, capsys):
+    path = tmp_path / "precision.json"
+    PL.write(_two_language_ledger(), (path,))
+    monkeypatch.setattr(PL, "declared_verified", lambda config=None: {TS_RULE})
+    assert PL.main(["report", "--ledger", str(path)]) == 0
+    out = capsys.readouterr().out
+    rows = {line.split()[0]: line.split() for line in out.splitlines()[2:]}
+    assert set(rows) == {"javascript", "typescript"}
+    assert rows["javascript"][2] == "1" and rows["javascript"][3] == "100"

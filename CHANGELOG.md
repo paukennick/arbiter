@@ -7,6 +7,12 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-159 | Precision is reported per language, with JavaScript apart from
+  TypeScript. A finding's language in the ledger comes from its file
+  extension, not the TypeScript pack that flagged it; label populations
+  were re-derived from the committed runs (no relabel), and
+  `tools/precision_ledger.py report` prints the held-out claim per
+  language. Verified-tier claim unchanged (0.9926; yaml only, one rule).
 - ARB-157 | PR checks pass on every matrix cell again. Windows CI downloads
   every default tree-sitter grammar up front, so the TypeScript pack no longer
   depends on test order for `tsx` (FAIL-132). `authored.undeclared-import`

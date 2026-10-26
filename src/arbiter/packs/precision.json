@@ -129,6 +129,20 @@
    "strata": [
     {
      "source": "gold-model",
+     "language": "javascript",
+     "population": 9,
+     "held_out_population": 0,
+     "tp": 9,
+     "fp": 0,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 0,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "gold-model",
      "language": "python",
      "population": 62,
      "held_out_population": 1,
@@ -144,9 +158,9 @@
     {
      "source": "gold-model",
      "language": "typescript",
-     "population": 88,
+     "population": 79,
      "held_out_population": 19,
-     "tp": 88,
+     "tp": 79,
      "fp": 0,
      "unsure": 0,
      "held_out": {
@@ -171,6 +185,20 @@
     },
     {
      "source": "heldout-r5-model",
+     "language": "javascript",
+     "population": 6,
+     "held_out_population": 6,
+     "tp": 6,
+     "fp": 0,
+     "unsure": 0,
+     "held_out": {
+      "tp": 6,
+      "fp": 0,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "heldout-r5-model",
      "language": "python",
      "population": 94,
      "held_out_population": 94,
@@ -186,13 +214,13 @@
     {
      "source": "heldout-r5-model",
      "language": "typescript",
-     "population": 198,
-     "held_out_population": 198,
-     "tp": 198,
+     "population": 192,
+     "held_out_population": 192,
+     "tp": 192,
      "fp": 0,
      "unsure": 0,
      "held_out": {
-      "tp": 198,
+      "tp": 192,
       "fp": 0,
       "unsure": 0
      }
@@ -217,7 +245,7 @@
     "tp": 445,
     "fp": 3,
     "population": 448,
-    "strata": 5,
+    "strata": 7,
     "pooled": {
      "precision": 0.9933,
      "wilson_lower": 0.9805
@@ -257,8 +285,8 @@
     "gold-model"
    ],
    "dates": {},
-   "population": 191,
-   "held_out_population": 69,
+   "population": 166,
+   "held_out_population": 50,
    "population_unknown": 0,
    "strata": [
     {
@@ -277,9 +305,9 @@
     },
     {
      "source": "gold-model",
-     "language": "python",
-     "population": 41,
-     "held_out_population": 1,
+     "language": "javascript",
+     "population": 13,
+     "held_out_population": 0,
      "tp": 1,
      "fp": 0,
      "unsure": 0,
@@ -291,9 +319,9 @@
     },
     {
      "source": "gold-model",
-     "language": "typescript",
-     "population": 38,
-     "held_out_population": 19,
+     "language": "python",
+     "population": 41,
+     "held_out_population": 1,
      "tp": 1,
      "fp": 0,
      "unsure": 0,
@@ -312,13 +340,13 @@
    },
    "weighted": {
     "precision": 1.0,
-    "wilson_lower": 0.5652,
+    "wilson_lower": 0.5432,
     "wilson_upper": 1.0,
-    "n_eff": 5.0,
-    "n_eff_kish": 5.0,
+    "n_eff": 4.6,
+    "n_eff_kish": 4.6,
     "tp": 5,
     "fp": 0,
-    "population": 191,
+    "population": 166,
     "strata": 3,
     "pooled": {
      "precision": 1.0,
@@ -361,8 +389,8 @@
     "gold-model"
    ],
    "dates": {},
-   "population": 75,
-   "held_out_population": 26,
+   "population": 63,
+   "held_out_population": 16,
    "population_unknown": 0,
    "strata": [
     {
@@ -410,8 +438,8 @@
     {
      "source": "gold-model",
      "language": "typescript",
-     "population": 47,
-     "held_out_population": 23,
+     "population": 35,
+     "held_out_population": 13,
      "tp": 1,
      "fp": 3,
      "unsure": 0,
@@ -433,14 +461,14 @@
     }
    },
    "weighted": {
-    "precision": 0.5167,
-    "wilson_lower": 0.2096,
-    "wilson_upper": 0.8117,
-    "n_eff": 6.7,
-    "n_eff_kish": 6.7,
+    "precision": 0.5675,
+    "wilson_lower": 0.2437,
+    "wilson_upper": 0.8423,
+    "n_eff": 6.8,
+    "n_eff_kish": 6.8,
     "tp": 4,
     "fp": 4,
-    "population": 75,
+    "population": 63,
     "strata": 4,
     "pooled": {
      "precision": 0.5,
@@ -557,7 +585,7 @@
     "gold-model"
    ],
    "dates": {},
-   "population": 82,
+   "population": 80,
    "held_out_population": 28,
    "population_unknown": 0,
    "strata": [
@@ -591,6 +619,20 @@
     },
     {
      "source": "gold-model",
+     "language": "javascript",
+     "population": 28,
+     "held_out_population": 11,
+     "tp": 0,
+     "fp": 1,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 1,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "gold-model",
      "language": "python",
      "population": 11,
      "held_out_population": 3,
@@ -600,20 +642,6 @@
      "held_out": {
       "tp": 0,
       "fp": 0,
-      "unsure": 0
-     }
-    },
-    {
-     "source": "gold-model",
-     "language": "typescript",
-     "population": 30,
-     "held_out_population": 11,
-     "tp": 0,
-     "fp": 1,
-     "unsure": 0,
-     "held_out": {
-      "tp": 0,
-      "fp": 1,
       "unsure": 0
      }
     },
@@ -641,12 +669,12 @@
    "weighted": {
     "precision": 0.0,
     "wilson_lower": 0.0,
-    "wilson_upper": 0.4772,
-    "n_eff": 4.2,
-    "n_eff_kish": 4.2,
+    "wilson_upper": 0.4707,
+    "n_eff": 4.3,
+    "n_eff_kish": 4.3,
     "tp": 0,
     "fp": 6,
-    "population": 82,
+    "population": 80,
     "strata": 5,
     "pooled": {
      "precision": 0.0,
@@ -7796,8 +7824,8 @@
     "gold-model"
    ],
    "dates": {},
-   "population": 140,
-   "held_out_population": 49,
+   "population": 136,
+   "held_out_population": 45,
    "population_unknown": 0,
    "strata": [
     {
@@ -7819,6 +7847,20 @@
      "language": "java",
      "population": 59,
      "held_out_population": 31,
+     "tp": 0,
+     "fp": 1,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 1,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "gold-model",
+     "language": "javascript",
+     "population": 4,
+     "held_out_population": 3,
      "tp": 0,
      "fp": 1,
      "unsure": 0,
@@ -7858,20 +7900,6 @@
     },
     {
      "source": "gold-model",
-     "language": "typescript",
-     "population": 8,
-     "held_out_population": 7,
-     "tp": 0,
-     "fp": 1,
-     "unsure": 0,
-     "held_out": {
-      "tp": 0,
-      "fp": 1,
-      "unsure": 0
-     }
-    },
-    {
-     "source": "gold-model",
      "language": "yaml",
      "population": 5,
      "held_out_population": 4,
@@ -7894,12 +7922,12 @@
    "weighted": {
     "precision": 0.0,
     "wilson_lower": 0.0,
-    "wilson_upper": 0.5153,
-    "n_eff": 3.6,
-    "n_eff_kish": 3.6,
+    "wilson_upper": 0.5275,
+    "n_eff": 3.4,
+    "n_eff_kish": 3.4,
     "tp": 0,
     "fp": 6,
-    "population": 140,
+    "population": 136,
     "strata": 6,
     "pooled": {
      "precision": 0.0,
@@ -7962,6 +7990,20 @@
     },
     {
      "source": "gold-model",
+     "language": "javascript",
+     "population": 14,
+     "held_out_population": 0,
+     "tp": 0,
+     "fp": 1,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 0,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "gold-model",
      "language": "kotlin",
      "population": 3,
      "held_out_population": 0,
@@ -7977,10 +8019,10 @@
     {
      "source": "gold-model",
      "language": "typescript",
-     "population": 24,
+     "population": 10,
      "held_out_population": 0,
      "tp": 0,
-     "fp": 2,
+     "fp": 1,
      "unsure": 0,
      "held_out": {
       "tp": 0,
@@ -7998,13 +8040,13 @@
    "weighted": {
     "precision": 0.0,
     "wilson_lower": 0.0,
-    "wilson_upper": 0.5477,
+    "wilson_upper": 0.5482,
     "n_eff": 3.2,
     "n_eff_kish": 3.2,
     "tp": 0,
     "fp": 5,
     "population": 115,
-    "strata": 3,
+    "strata": 4,
     "pooled": {
      "precision": 0.0,
      "wilson_lower": 0.0
@@ -8655,7 +8697,7 @@
    "strata": [
     {
      "source": "gold-model",
-     "language": "typescript",
+     "language": "javascript",
      "population": 5,
      "held_out_population": 3,
      "tp": 4,
@@ -8750,7 +8792,7 @@
    "strata": [
     {
      "source": "gold-model",
-     "language": "typescript",
+     "language": "javascript",
      "population": 7,
      "held_out_population": 1,
      "tp": 1,
@@ -8828,10 +8870,24 @@
    "strata": [
     {
      "source": "gold-model",
+     "language": "javascript",
+     "population": 3,
+     "held_out_population": 0,
+     "tp": 2,
+     "fp": 0,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 0,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "gold-model",
      "language": "typescript",
-     "population": 9,
+     "population": 6,
      "held_out_population": 1,
-     "tp": 3,
+     "tp": 1,
      "fp": 0,
      "unsure": 0,
      "held_out": {
@@ -8849,14 +8905,14 @@
    },
    "weighted": {
     "precision": 1.0,
-    "wilson_lower": 0.4385,
+    "wilson_lower": 0.3424,
     "wilson_upper": 1.0,
-    "n_eff": 3.0,
-    "n_eff_kish": 3.0,
+    "n_eff": 2.0,
+    "n_eff_kish": 2.0,
     "tp": 3,
     "fp": 0,
     "population": 9,
-    "strata": 1,
+    "strata": 2,
     "pooled": {
      "precision": 1.0,
      "wilson_lower": 0.4385
@@ -8907,10 +8963,24 @@
    "strata": [
     {
      "source": "gold-model",
-     "language": "typescript",
-     "population": 15,
+     "language": "javascript",
+     "population": 6,
      "held_out_population": 1,
-     "tp": 6,
+     "tp": 2,
+     "fp": 0,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 0,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "gold-model",
+     "language": "typescript",
+     "population": 9,
+     "held_out_population": 0,
+     "tp": 4,
      "fp": 0,
      "unsure": 0,
      "held_out": {
@@ -8921,15 +8991,29 @@
     },
     {
      "source": "heldout-r5-model",
+     "language": "javascript",
+     "population": 52,
+     "held_out_population": 52,
+     "tp": 50,
+     "fp": 2,
+     "unsure": 0,
+     "held_out": {
+      "tp": 50,
+      "fp": 2,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "heldout-r5-model",
      "language": "typescript",
-     "population": 144,
-     "held_out_population": 144,
-     "tp": 139,
-     "fp": 4,
+     "population": 92,
+     "held_out_population": 92,
+     "tp": 89,
+     "fp": 2,
      "unsure": 1,
      "held_out": {
-      "tp": 139,
-      "fp": 4,
+      "tp": 89,
+      "fp": 2,
       "unsure": 1
      }
     }
@@ -8948,12 +9032,12 @@
     "precision": 0.9747,
     "wilson_lower": 0.933,
     "wilson_upper": 0.9907,
-    "n_eff": 138.5,
-    "n_eff_kish": 138.5,
+    "n_eff": 138.0,
+    "n_eff_kish": 138.0,
     "tp": 145,
     "fp": 4,
     "population": 159,
-    "strata": 2,
+    "strata": 4,
     "pooled": {
      "precision": 0.9732,
      "wilson_lower": 0.933
@@ -9002,10 +9086,24 @@
    "strata": [
     {
      "source": "gold-model",
-     "language": "typescript",
-     "population": 9,
+     "language": "javascript",
+     "population": 8,
      "held_out_population": 0,
-     "tp": 7,
+     "tp": 6,
+     "fp": 0,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 0,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "gold-model",
+     "language": "typescript",
+     "population": 1,
+     "held_out_population": 0,
+     "tp": 1,
      "fp": 0,
      "unsure": 0,
      "held_out": {
@@ -9041,14 +9139,14 @@
    },
    "weighted": {
     "precision": 1.0,
-    "wilson_lower": 0.713,
+    "wilson_lower": 0.7122,
     "wilson_upper": 1.0,
     "n_eff": 9.5,
     "n_eff_kish": 9.5,
     "tp": 10,
     "fp": 0,
     "population": 15,
-    "strata": 2,
+    "strata": 3,
     "pooled": {
      "precision": 1.0,
      "wilson_lower": 0.7225
@@ -9096,7 +9194,7 @@
    "strata": [
     {
      "source": "gold-model",
-     "language": "typescript",
+     "language": "javascript",
      "population": 4,
      "held_out_population": 0,
      "tp": 0,
@@ -9344,7 +9442,7 @@
    "strata": [
     {
      "source": "gold-model",
-     "language": "typescript",
+     "language": "javascript",
      "population": 5,
      "held_out_population": 3,
      "tp": 4,
@@ -9421,7 +9519,7 @@
    "strata": [
     {
      "source": "gold-model",
-     "language": "typescript",
+     "language": "javascript",
      "population": 1,
      "held_out_population": 0,
      "tp": 0,
@@ -9514,7 +9612,7 @@
     },
     {
      "source": "gold-model",
-     "language": "typescript",
+     "language": "javascript",
      "population": 4,
      "held_out_population": 0,
      "tp": 0,
@@ -9594,7 +9692,7 @@
    "strata": [
     {
      "source": "gold-model",
-     "language": "typescript",
+     "language": "javascript",
      "population": 1,
      "held_out_population": 1,
      "tp": 1,
@@ -9670,10 +9768,24 @@
    "strata": [
     {
      "source": "gold-model",
-     "language": "typescript",
-     "population": 10,
-     "held_out_population": 8,
+     "language": "javascript",
+     "population": 2,
+     "held_out_population": 0,
      "tp": 1,
+     "fp": 0,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 0,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "gold-model",
+     "language": "typescript",
+     "population": 8,
+     "held_out_population": 8,
+     "tp": 0,
      "fp": 2,
      "unsure": 0,
      "held_out": {
@@ -9690,15 +9802,15 @@
     }
    },
    "weighted": {
-    "precision": 0.3333,
-    "wilson_lower": 0.0615,
-    "wilson_upper": 0.7923,
-    "n_eff": 3.0,
-    "n_eff_kish": 3.0,
+    "precision": 0.2,
+    "wilson_lower": 0.0232,
+    "wilson_upper": 0.7251,
+    "n_eff": 2.8,
+    "n_eff_kish": 2.8,
     "tp": 1,
     "fp": 2,
     "population": 10,
-    "strata": 1,
+    "strata": 2,
     "pooled": {
      "precision": 0.3333,
      "wilson_lower": 0.0615
@@ -9884,7 +9996,7 @@
    "strata": [
     {
      "source": "gold-model",
-     "language": "typescript",
+     "language": "javascript",
      "population": 3,
      "held_out_population": 0,
      "tp": 3,
@@ -9960,11 +10072,25 @@
    "strata": [
     {
      "source": "gold-model",
-     "language": "typescript",
-     "population": 4,
+     "language": "javascript",
+     "population": 3,
      "held_out_population": 0,
      "tp": 0,
-     "fp": 3,
+     "fp": 2,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 0,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "gold-model",
+     "language": "typescript",
+     "population": 1,
+     "held_out_population": 0,
+     "tp": 0,
+     "fp": 1,
      "unsure": 0,
      "held_out": {
       "tp": 0,
@@ -9982,13 +10108,13 @@
    "weighted": {
     "precision": 0.0,
     "wilson_lower": 0.0,
-    "wilson_upper": 0.5615,
-    "n_eff": 3.0,
-    "n_eff_kish": 3.0,
+    "wilson_upper": 0.5691,
+    "n_eff": 2.9,
+    "n_eff_kish": 2.9,
     "tp": 0,
     "fp": 3,
     "population": 4,
-    "strata": 1,
+    "strata": 2,
     "pooled": {
      "precision": 0.0,
      "wilson_lower": 0.0
@@ -10036,11 +10162,25 @@
    "strata": [
     {
      "source": "gold-model",
-     "language": "typescript",
-     "population": 22,
+     "language": "javascript",
+     "population": 15,
      "held_out_population": 0,
      "tp": 0,
-     "fp": 4,
+     "fp": 2,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 0,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "gold-model",
+     "language": "typescript",
+     "population": 7,
+     "held_out_population": 0,
+     "tp": 0,
+     "fp": 2,
      "unsure": 0,
      "held_out": {
       "tp": 0,
@@ -10058,13 +10198,13 @@
    "weighted": {
     "precision": 0.0,
     "wilson_lower": 0.0,
-    "wilson_upper": 0.4899,
-    "n_eff": 4.0,
-    "n_eff_kish": 4.0,
+    "wilson_upper": 0.5209,
+    "n_eff": 3.5,
+    "n_eff_kish": 3.5,
     "tp": 0,
     "fp": 4,
     "population": 22,
-    "strata": 1,
+    "strata": 2,
     "pooled": {
      "precision": 0.0,
      "wilson_lower": 0.0

@@ -16,6 +16,7 @@
 
     python tools/precision_ledger.py show            # the ledger as a table
     python tools/precision_ledger.py check           # written ledger == rebuilt counts
+    python tools/precision_ledger.py report          # tier claim per language (JS apart from TS)
 
 The ledger is rebuilt from the label files every time, never edited by hand:
 the label files are the evidence and the ledger is arithmetic on them. Two
@@ -175,7 +176,7 @@ def read_sheet(path: Path, batch: str, source: str, held_out: bool) -> list[dict
         out.append({"finding_id": f"{batch}:{r['sample_id']}", "rule_id": r["rule"], "label": label,
                     "labeller": (r.get("labeller") or "").strip() or path.stem, "source": source,
                     "held_out": held_out, "role": "labeller", "note": r.get("notes") or "",
-                    "language": r.get("language") or "",
+                    "language": P.label_language(r.get("path"), r.get("language")),
                     # A sheet is one split, so its stratum's held-out size is
                     # all of it or none of it. A blank size stays unknown.
                     **({"stratum_size": int(r["stratum_size"]),
@@ -253,7 +254,8 @@ def finding_stratum(recs: list[dict]) -> dict:
     r = next((x for x in ordered if _size(x.get("stratum_size")) is not None), ordered[0])
     size = _size(r.get("stratum_size"))
     held = _size(r.get("stratum_held_out_size"))
-    return {"source": r["source"], "language": r.get("language") or "", "size": size,
+    return {"source": r["source"], "language": P.label_language(r.get("path"), r.get("language")),
+            "size": size,
             "held_out_size": held if size is not None else None,
             "rule_size": _size(r.get("rule_population")) if size is not None else None,
             "rule_held_out_size": _size(r.get("rule_held_out_population")) if size is not None else None}
@@ -481,6 +483,74 @@ def tier_claim(rules: dict[str, dict], bar: dict, verified: set[str]) -> dict:
             "categories": categories}
 
 
+def language_claims(rules: dict[str, dict], bar: dict, verified: set[str]) -> dict[str, dict]:
+    """The tier claim per language (ARB-159): for each language any rule has
+    a stratum in, the held-out, population-weighted precision over the
+    verified rules (declared and admitted) with strata in that language.
+
+    Same arithmetic as `stratified_claim`, restricted to the language's
+    strata, with one difference in the denominator: a rule's held-out
+    findings that no stratum lists (its source population beyond its listed
+    strata) cannot be put in a language, so they count against every
+    language the rule has strata in under that source -- conservative,
+    never in a language's favour. A language with no verified rule makes no
+    claim."""
+    names = sorted(r for r in verified if r in rules and rules[r].get("admitted"))
+    langs: dict[str, dict] = {}
+    for r, e in rules.items():
+        for s in e.get("strata") or []:
+            d = langs.setdefault(s["language"] or "-", {"rules": set(), "tp": 0, "fp": 0})
+            d["rules"].add(r)
+            d["tp"] += s["held_out"]["tp"]
+            d["fp"] += s["held_out"]["fp"]
+    out = {}
+    for lang, d in sorted(langs.items()):
+        members = [r for r in names if r in d["rules"]]
+        row = {"rules_labelled": len(d["rules"]), "rules_admitted": len(members), "rule_ids": members,
+               "held_out_tp": d["tp"], "held_out_fp": d["fp"], "precision": None, "wilson_lower": None,
+               "claim_lower": None, "claim": False, "population_unknown": []}
+        unknown = sorted(r for r in members if rules[r].get("population_unknown")
+                         or rules[r].get("held_out_population") is None)
+        if unknown:
+            out[lang] = {**row, "population_unknown": unknown}
+            continue
+        rows, total = [], 0
+        for r in members:
+            strata = rules[r].get("strata") or []
+            sources = rules[r].get("source_population") or {}
+            for src in sorted({s["source"] for s in strata if (s["language"] or "-") == lang}):
+                mine = [s for s in strata if s["source"] == src and (s["language"] or "-") == lang]
+                listed = sum(s["held_out_population"] for s in strata if s["source"] == src)
+                rest = max(0, ((sources.get(src) or {}).get("held_out_population") or 0) - listed)
+                total += sum(s["held_out_population"] for s in mine) + rest
+                rows += [{"key": f"{r}|{src}/{lang}", "tp": s["held_out"]["tp"], "fp": s["held_out"]["fp"],
+                          "population": s["held_out_population"]} for s in mine]
+        w = P.weighted_precision(rows)
+        if w is None:
+            out[lang] = row
+            continue
+        coverage = w["population"] / total if total else 1.0
+        lower = round(w["wilson_lower"] * coverage, 4)
+        out[lang] = {**row, "precision": w["precision"], "wilson_lower": w["wilson_lower"],
+                     "n_eff": w["n_eff"], "held_out_population": total, "coverage": round(coverage, 4),
+                     "claim_lower": lower, "claim": lower >= bar["tier_lower"]}
+    return out
+
+
+def render_languages(claims: dict[str, dict], bar: dict) -> str:
+    def f(x):
+        return "-" if x is None else f"{x:.4f}"
+    lines = [f"per-language verified-tier claim (held-out, population-weighted; bar {bar['tier_lower']})",
+             f"{'language':<12} {'labelled':>8} {'admitted':>8} {'hoTP':>5} {'hoFP':>5} {'prec':>7} "
+             f"{'lower':>7} {'claim_lo':>8}  claim"]
+    for lang, c in claims.items():
+        note = f" (population unknown: {', '.join(c['population_unknown'])})" if c["population_unknown"] else ""
+        lines.append(f"{lang:<12} {c['rules_labelled']:>8} {c['rules_admitted']:>8} {c['held_out_tp']:>5} "
+                     f"{c['held_out_fp']:>5} {f(c['precision']):>7} {f(c['wilson_lower']):>7} "
+                     f"{f(c['claim_lower']):>8}  {'yes' if c['claim'] else 'no'}{note}")
+    return "\n".join(lines)
+
+
 def snapshot_counts() -> dict[str, dict[str, int]]:
     out = {}
     for t in SNAPSHOT_TARGETS:
@@ -580,10 +650,17 @@ def main(argv: list[str] | None = None) -> int:
                    help="model labels to keep, by labeller prompt version (default: the current "
                         "tools/label_models.py PROMPT_VERSION; 'any' keeps every version)")
     sub.add_parser("show")
+    r = sub.add_parser("report", help="the tier claim per language (JavaScript apart from TypeScript)")
+    r.add_argument("--ledger", type=Path, default=LEDGER)
     sub.add_parser("check", help="fail when the written ledger differs from its packaged copy")
     args = ap.parse_args(argv)
     if args.cmd == "show":
         print(render(P.load_ledger(LEDGER)))
+        return 0
+    if args.cmd == "report":
+        ledger = P.load_ledger(args.ledger)
+        bar = {**P.DEFAULT_BAR, **(ledger.get("bar") or {})}
+        print(render_languages(language_claims(ledger.get("rules") or {}, bar, declared_verified()), bar))
         return 0
     if args.cmd == "check":
         same = LEDGER.read_bytes() == PACKAGED.read_bytes()

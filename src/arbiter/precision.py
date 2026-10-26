@@ -72,6 +72,23 @@ DEFAULT_BAR = {
 }
 DETERMINISTIC_PROFILES = ("offline", "ci")
 
+# The TypeScript pack also scans JavaScript, so a finding's recorded language
+# says which pack fired, not what the file is. Precision is reported per
+# language (ARB-159), so the file's extension decides between the two.
+SCRIPT_LANGUAGE_BY_EXT = {
+    ".js": "javascript", ".mjs": "javascript", ".cjs": "javascript", ".jsx": "javascript",
+    ".ts": "typescript", ".tsx": "typescript", ".mts": "typescript", ".cts": "typescript",
+}
+
+
+def label_language(path: str | None, recorded: str | None = "") -> str:
+    """The language a finding is reported under: javascript or typescript
+    from the file extension when it is one of those, otherwise the language
+    the record gives (a `.vue` file the TypeScript pack scanned stays
+    `typescript`)."""
+    suffix = Path(str(path or "")).suffix.lower()
+    return SCRIPT_LANGUAGE_BY_EXT.get(suffix) or (recorded or "")
+
 
 # ---------------------------------------------------------------------------
 # Statistics -- pure
