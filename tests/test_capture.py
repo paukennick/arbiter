@@ -165,3 +165,74 @@ def test_bootstrap_over_repositories_deterministic_and_brackets():
     assert a == c.bootstrap_ci(groups, stat, b=200, seed="x")
     assert a[0] < 480 < a[1]
     assert c.bootstrap_ci(groups[:1], stat) is None
+
+
+# --- the tool: benchmark truth, strata, label reports -------------------------
+
+import importlib.util  # noqa: E402
+import sys  # noqa: E402
+
+from helpers import ROOT  # noqa: E402
+
+_spec = importlib.util.spec_from_file_location("capture_recapture", ROOT / "tools" / "capture_recapture.py")
+cr = importlib.util.module_from_spec(_spec)
+sys.modules["capture_recapture"] = cr
+_spec.loader.exec_module(cr)
+
+
+@pytest.mark.parametrize("name,case", [
+    ("CWE89_SQL_Injection__connect_tcp_executeBatch_51a.java", "CWE89_SQL_Injection__connect_tcp_executeBatch_51"),
+    ("CWE89_SQL_Injection__connect_tcp_executeBatch_51b.java", "CWE89_SQL_Injection__connect_tcp_executeBatch_51"),
+    ("CWE81_XSS_Error_Message__Servlet_81_bad.java", "CWE81_XSS_Error_Message__Servlet_81"),
+    ("CWE81_XSS_Error_Message__Servlet_81_goodG2B.java", "CWE81_XSS_Error_Message__Servlet_81"),
+    ("CWE81_XSS_Error_Message__Servlet_81_base.java", "CWE81_XSS_Error_Message__Servlet_81"),
+    ("CWE80_XSS__CWE182_Servlet_getCookies_Servlet_01.java", "CWE80_XSS__CWE182_Servlet_getCookies_Servlet_01"),
+])
+def test_juliet_multi_file_case_is_one_defect(name, case):
+    assert cr.juliet_case(name) == case
+
+
+def test_stratum_not_estimable_reasons():
+    one = cr.stratum_result("python", "xss", ["semgrep"], {"a": {"semgrep"}})
+    assert not one["estimable"] and "two detectors" in one["why"]
+    few = cr.stratum_result("python", "xss", ["a", "b"], {str(i): {"a", "b"} for i in range(5)})
+    assert not few["estimable"] and "< 10" in few["why"]
+    apart = cr.stratum_result("python", "xss", ["a", "b"],
+                              {**{f"x{i}": {"a"} for i in range(8)}, **{f"y{i}": {"b"} for i in range(8)}})
+    assert not apart["estimable"] and apart["why"] == "no defect found by two detectors"
+
+
+def test_stratum_result_counts_and_rates():
+    caught = {**{f"b{i}": {"a", "b"} for i in range(30)}, **{f"a{i}": {"a"} for i in range(30)},
+              **{f"c{i}": {"b"} for i in range(20)}}
+    r = cr.stratum_result("python", "sql-injection", ["a", "b"], caught, true_total=100)
+    assert r["found"] == {"a": 60, "b": 50} and r["union"] == 80
+    assert r["histories"] == {"01": 20, "10": 30, "11": 30}
+    assert r["primary"]["n_hat"] == pytest.approx(61 * 51 / 31 - 1, abs=0.01)
+    assert r["rates"]["a"]["rate"] == pytest.approx(60 / (61 * 51 / 31 - 1), abs=1e-3)
+
+
+def test_label_report_uses_existing_claims_and_stable_ids():
+    site = {"set": "gold-dev", "repo": "py-x", "path": "a.py", "line": 7, "language": "python",
+            "family": "missing-timeout", "detectors": ["bandit"], "site_id": "site:py-x|a.py|missing-timeout|7",
+            "rep": {"id": "f:1", "rule": "bandit/B113", "line": 7, "cwe": ["CWE-400"], "severity": "medium"}}
+    xxe = {**site, "family": "xxe", "site_id": "site:py-x|a.py|xxe|7"}
+    rep = cr.labelling_report([site, xxe], "gold-dev")
+    rows = rep["raw_findings"]["py-x"]
+    assert len(rows) == 1                      # xxe has no claim text: not labelled
+    assert rows[0]["id"] == cr.site_fid(site)
+    import label_models as lm
+    cat, claim = lm.claim_for(rows[0]["rule"])
+    assert claim == lm.claim_for("arbiter/python.http-no-timeout")[1]
+    assert cr.labelling_report([site], "r7py-dev")["raw_findings"] == {}
+
+
+def test_every_claimed_family_has_an_existing_claim():
+    import label_models as lm
+    for fam, rule in cr.CLAIM_RULE.items():
+        assert lm.claim_for(rule.format(lang="python")) is not None, fam
+
+
+def test_dev_sets_name_no_held_out_corpus():
+    for p in cr.DEV_SETS.values():
+        assert "dev" in p.name

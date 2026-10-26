@@ -234,23 +234,31 @@ def _solve(a: list[list[float]], b: list[float]) -> list[float] | None:
 
 def _poisson_fit(rows: list[list[float]], y: list[float], iters: int = 100) -> list[float] | None:
     """Poisson GLM, log link, by iteratively reweighted least squares."""
+    """Zero cells (common: benchmarks' detectors often agree on everything)
+    put the maximum at the boundary, a parameter heading to minus infinity.
+    The fitted means there go to zero, which is the right answer, so the
+    linear predictor is clamped at -30 (mean ~1e-13) and the fit stops when
+    the deviance stops changing rather than when the parameters do. A tiny
+    ridge keeps the weighted cross-product invertible at that boundary."""
     k = len(rows[0])
     mean = max(sum(y) / len(y), 0.5)
     beta = [math.log(mean)] + [0.0] * (k - 1)
+    prev = math.inf
     for _ in range(iters):
-        eta = [sum(b * x for b, x in zip(beta, r)) for r in rows]
-        if max(eta) > 700:
-            return None
+        eta = [min(max(sum(b * x for b, x in zip(beta, r)), -30.0), 700.0) for r in rows]
         mu = [math.exp(e) for e in eta]
+        dev = sum((yi * math.log(yi / m) if yi > 0 else 0.0) - (yi - m) for yi, m in zip(y, mu))
+        if abs(prev - dev) < 1e-9:
+            return beta
+        prev = dev
         z = [e + (yi - m) / m for e, yi, m in zip(eta, y, mu)]
-        xtwx = [[sum(m * r[i] * r[j] for m, r in zip(mu, rows)) for j in range(k)] for i in range(k)]
+        xtwx = [[sum(m * r[i] * r[j] for m, r in zip(mu, rows)) + (1e-9 if i == j else 0.0)
+                 for j in range(k)] for i in range(k)]
         xtwz = [sum(m * r[i] * zi for m, r, zi in zip(mu, rows, z)) for i in range(k)]
         new = _solve(xtwx, xtwz)
         if new is None:
             return None
-        if max(abs(a - b) for a, b in zip(new, beta)) < 1e-10:
-            return new
-        beta = new
+        beta = [max(min(b, 700.0), -700.0) for b in new]
     return beta
 
 
