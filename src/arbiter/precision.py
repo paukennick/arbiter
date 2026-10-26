@@ -385,6 +385,14 @@ CALIBRATED_CWES = frozenset({
 })
 # Measured labeller lower bounds outside those, for the plain caveat.
 LABELLER_CALIBRATION = {"CWE-1357": ("supply chain", 0.824), "CWE-494": ("supply chain", 0.824)}
+# Rules whose every model label was also checked against a model-free fact,
+# which stands in for category calibration (docs/precision.md).
+FACT_CHECKED = {
+    "arbiter/supply.unpinned-action": (
+        "every one of its 700 labels was also checked against a mechanical fact "
+        "(whether the `uses:` line names a full commit SHA): 700 of 700 agree, "
+        "lower bound 0.9945 (ARB-176)"),
+}
 
 
 def held_out_lower(entry: dict | None) -> float:
@@ -412,12 +420,15 @@ def qualifying_rules(ledger: dict, config: dict | None = None,
 
 
 def calibration_caveat(rule: str, entry: dict | None) -> str:
-    """'' when the rule's category has a labeller calibrated to 0.99; else
-    a plain sentence saying its figure is model-labelled, not calibrated."""
+    """'' when the rule's category has a labeller calibrated to 0.99. A
+    rule whose labels were fact-checked says so; any other says plainly that
+    its figure is model-labelled and not calibrated."""
     cwes = set((entry or {}).get("cwe") or [])
     if cwes & CALIBRATED_CWES:
         return ""
     short = rule.removeprefix("arbiter/")
+    if rule in FACT_CHECKED:
+        return f"{short}: its 99% is model-labelled; {FACT_CHECKED[rule]}."
     known = [LABELLER_CALIBRATION[c] for c in sorted(cwes) if c in LABELLER_CALIBRATION]
     if known:
         cat, lo = known[0]
@@ -437,21 +448,35 @@ def public_claim(ledger: dict | None = None, config: dict | None = None,
     names = sorted(rules) if rules is not None else sorted(shipped_rules())
     q = qualifying_rules(ledger, config, names)
     entries = {r: (ledger.get("rules") or {}).get(ledger_key(r)) for r in names}
+    # Rules that can gate (declared and admitted at rule_lower) but whose
+    # own held-out lower bound is under tier_lower: while there are any,
+    # the sentence may not say "only from rules measured at 99%".
+    short = sorted(r for r in names if r not in q and declared_verified(r, config)
+                   and admission(entries[r], bar)[0])
     measured = [r for r, e in entries.items() if _decided(e)[1] >= int(bar["advisory_min_n"])]
     off = [r for r, e in entries.items() if e and default_state(e, bar)[0] == "off"]
     x, n = len(q), len(names)
-    sentence = (
-        f"Findings that can fail your build come only from verified rules, measured at "
-        f"≥ 99% precision (95% lower bound, per rule, on held-out repositories, "
-        f"model-labelled); {x} of {n} rules qualify. Other findings are advisory: rules "
-        f"shown by default measure ≥ {round(float(bar['advisory_lower']) * 100)}%; "
-        f"noisier rules are off unless enabled.")
+    advisory = (f"Other findings are advisory: rules shown by default measure "
+                f"≥ {round(float(bar['advisory_lower']) * 100)}%; noisier rules are off "
+                f"unless enabled.")
+    if short:
+        sentence = (
+            f"Findings that can fail your build come only from verified rules: {x} of {n} "
+            f"rules are measured at ≥ 99% precision (95% lower bound, per rule, on "
+            f"held-out repositories, model-labelled) and {len(short)} more at "
+            f"≥ {round(float(bar['rule_lower']) * 100)}%. {advisory}")
+    else:
+        sentence = (
+            f"Findings that can fail your build come only from verified rules, measured at "
+            f"≥ 99% precision (95% lower bound, per rule, on held-out repositories, "
+            f"model-labelled); {x} of {n} rules qualify. {advisory}")
     coverage = (f"{len(measured)} of {n} rules have enough labels ({bar['advisory_min_n']} or "
-                f"more) to be measured against the advisory bar; {len(off)} are off by default; "
+                f"more) to be measured against the advisory bar; "
+                f"{len(off)} {'rule is' if len(off) == 1 else 'rules are'} off by default; "
                 f"every other rule is shown as advisory.")
     caveats = [c for c in (calibration_caveat(r, entries[r]) for r in q) if c]
     return {"sentence": sentence, "coverage": coverage, "caveats": caveats,
-            "qualifying": q, "rules_total": n, "measured": len(measured),
+            "qualifying": q, "below_claim": short, "rules_total": n, "measured": len(measured),
             "default_off": sorted(off), "ledger_generated": ledger.get("generated", "")}
 
 
@@ -608,7 +633,7 @@ def tier_line(counts: dict, gating: Iterable[str]) -> str:
 
 
 TIER_MEANING = {
-    "verified": "from a rule measured at 99% precision or better (95% lower bound, model-labelled)",
+    "verified": "from a verified rule (how it was measured: see the precision note)",
     "advisory": "not confirmed",
     "inferred": "found by a model, not confirmed",
 }

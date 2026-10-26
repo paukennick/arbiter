@@ -231,7 +231,7 @@ def test_all_shows_every_tier_verified_first_sectioned_and_labelled(tmp_path):
     assert view_summary(rep) == line
     console = render_console(rep, color=False)
     assert line in console
-    assert "FINDINGS (verified) — measured at least 99% precise; can block the gate" in console
+    assert "FINDINGS (verified) — from a verified rule (how it was measured: see the precision note); can block the gate" in console
     assert "FINDINGS (advisory) — not confirmed; shown, cannot block the gate" in console
     assert "FINDINGS (inferred) — found by a model, not confirmed; shown, cannot block the gate" in console
     assert console.index(v.title) < console.index(a.title) < console.index(i.title)

@@ -21,6 +21,7 @@ from .core import (
     Scorecard,
     sev_at_least,
 )
+from .precision import DEFAULT_OFF_TAG
 
 PROFILES: dict[str, dict] = {
     "offline": {"network": False, "model": False, "description": "air-gapped; vendored rules only"},
@@ -63,7 +64,7 @@ DEFAULTS: dict[str, Any] = {
         "gate_on_inferred": False,
         # tiered (the default since ARB-100): fail_on reads only findings
         # whose precision tier is in `tiers` (precision.py), so a build fails
-        # on what Arbiter has measured to be right at least 99% of the time
+        # on findings from verified rules (precision.py, docs/precision.md)
         # and on nothing else. legacy: fail_on reads every active finding, as
         # it did before tiers; an explicit opt-in for a repository that wants
         # the louder gate.

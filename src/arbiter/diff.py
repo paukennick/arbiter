@@ -210,4 +210,13 @@ def render_pr_comment(after: Report, d: ReportDiff | None = None) -> str:
         more = f" and {len(skipped) - 6} more" if len(skipped) > 6 else ""
         L.append(f"<sub>Not assessed: {names}{more}. Absence of findings from a skipped "
                  f"probe is not a pass.</sub>")
+    from .report import default_off_text, precision_claim_lines
+    off = default_off_text(after)
+    if off:
+        L.append("")
+        L.append(f"<sub>{off}</sub>")
+    claim = precision_claim_lines(after)
+    if claim:
+        L.append("")
+        L.append("<sub>" + " ".join(claim) + "</sub>")
     return "\n".join(L)

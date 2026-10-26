@@ -898,6 +898,8 @@ def run_scan(
     from .precision import annotate as annotate_tiers
     from .precision import rules_block, set_view
     report.scan_scope["tiers"] = annotate_tiers(report.findings, config, profile_name)
+    from .precision import public_claim
+    report.scan_scope["precision_claim"] = public_claim(config=config)
     report.rules = rules_block(report.findings)
 
     report.gate = evaluate_gate(report, config)

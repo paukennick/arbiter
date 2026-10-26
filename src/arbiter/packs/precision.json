@@ -6,7 +6,11 @@
   "rule_min_n": 30,
   "kappa_min": 0.8,
   "offline_lower": 0.99,
-  "tier_lower": 0.99
+  "tier_lower": 0.99,
+  "advisory_lower": 0.85,
+  "advisory_min_n": 30,
+  "off_precision": 0.5,
+  "off_min_n": 10
  },
  "generated": "2026-10-26",
  "rules": {
@@ -92,6 +96,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -256,6 +262,8 @@
    "fp_notes": [],
    "admitted": true,
    "admitted_reason": "lower bound 0.980 on 448 labels",
+   "default": "on",
+   "default_reason": "lower bound 0.980 on 448 labels meets 0.85",
    "updated": "2026-10-24",
    "snapshot_counts": {
     "planted": 0,
@@ -358,6 +366,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "5 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "5 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 4,
@@ -482,6 +492,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "8 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "8 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 5,
@@ -556,6 +568,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "4 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "4 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -688,6 +702,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "6 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "6 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -764,6 +780,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "5 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "5 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -854,6 +872,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -930,6 +950,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -1004,6 +1026,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -1078,6 +1102,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -1153,6 +1179,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "6 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "6 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -1227,6 +1255,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "6 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "6 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -1320,6 +1350,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "4 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "4 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -1397,6 +1429,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -1473,6 +1507,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -1569,6 +1605,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "12 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "12 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-24",
    "snapshot_counts": {
     "planted": 3,
@@ -1646,6 +1684,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "6 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "6 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 6,
@@ -1722,6 +1762,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -1817,6 +1859,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "29 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "29 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-24",
    "snapshot_counts": {
     "planted": 3,
@@ -1893,6 +1937,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -1969,6 +2015,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -2046,6 +2094,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -2123,6 +2173,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -2200,6 +2252,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -2295,6 +2349,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -2372,6 +2428,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -2448,6 +2506,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 5,
@@ -2510,6 +2570,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "0 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "no labels: unmeasured, shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -2586,6 +2648,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -2662,6 +2726,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -2738,6 +2804,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -2814,6 +2882,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -2891,6 +2961,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -3007,6 +3079,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.621 on 874 labels, below 0.97",
+   "default": "off",
+   "default_reason": "lower bound 0.621 on 874 labels, below 0.85",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 7,
@@ -3084,6 +3158,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -3160,6 +3236,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -3237,6 +3315,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -3313,6 +3393,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -3389,6 +3471,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -3466,6 +3550,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "4 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "4 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -3542,6 +3628,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "4 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "4 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -3618,6 +3706,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -3695,6 +3785,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -3810,6 +3902,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.671 on 3632 labels, below 0.97",
+   "default": "off",
+   "default_reason": "lower bound 0.671 on 3632 labels, below 0.85",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 9,
@@ -3872,6 +3966,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "0 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "no labels: unmeasured, shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -3948,6 +4044,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "7 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "7 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -4025,6 +4123,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "4 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "4 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -4102,6 +4202,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "6 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "6 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 7,
@@ -4178,6 +4280,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -4255,6 +4359,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -4331,6 +4437,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -4407,6 +4515,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -4504,6 +4614,8 @@
    "fp_notes": [],
    "admitted": true,
    "admitted_reason": "lower bound 0.975 on 219 labels",
+   "default": "on",
+   "default_reason": "lower bound 0.975 on 219 labels meets 0.85",
    "updated": "2026-10-24",
    "snapshot_counts": {
     "planted": 7,
@@ -4599,6 +4711,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.844 on 435 labels, below 0.97",
+   "default": "off",
+   "default_reason": "lower bound 0.844 on 435 labels, below 0.85",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -4695,6 +4809,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.479 on 34 labels, below 0.97",
+   "default": "off",
+   "default_reason": "lower bound 0.479 on 34 labels, below 0.85",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -4811,6 +4927,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.411 on 81 labels, below 0.97",
+   "default": "off",
+   "default_reason": "lower bound 0.411 on 81 labels, below 0.85",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 5,
@@ -4887,6 +5005,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -4964,6 +5084,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "9 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "9 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 2,
@@ -5061,6 +5183,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "10 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "10 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -5158,6 +5282,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.945 on 157 labels, below 0.97",
+   "default": "on",
+   "default_reason": "lower bound 0.945 on 157 labels meets 0.85",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -5254,6 +5380,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -5368,6 +5496,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.968 on 357 labels, below 0.97",
+   "default": "on",
+   "default_reason": "lower bound 0.968 on 357 labels meets 0.85",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 2,
@@ -5444,6 +5574,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 2,
@@ -5540,6 +5672,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -5655,6 +5789,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.833 on 112 labels, below 0.97",
+   "default": "off",
+   "default_reason": "lower bound 0.833 on 112 labels, below 0.85",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 3,
@@ -5733,6 +5869,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "13 label(s), 30 needed",
+   "default": "off",
+   "default_reason": "precision 0.077 (1/13) below 0.5",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -5847,6 +5985,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "28 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "28 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 2,
@@ -5963,6 +6103,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.881 on 332 labels, below 0.97",
+   "default": "on",
+   "default_reason": "lower bound 0.881 on 332 labels meets 0.85",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 3,
@@ -6078,6 +6220,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.506 on 76 labels, below 0.97",
+   "default": "off",
+   "default_reason": "lower bound 0.506 on 76 labels, below 0.85",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -6174,6 +6318,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "24 label(s), 30 needed",
+   "default": "off",
+   "default_reason": "precision 0.208 (5/24) below 0.5",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 3,
@@ -6328,6 +6474,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.078 on 251 labels, below 0.97",
+   "default": "off",
+   "default_reason": "precision 0.112 (28/251) below 0.5",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 8,
@@ -6405,6 +6553,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "21 label(s), 30 needed",
+   "default": "off",
+   "default_reason": "precision 0.048 (1/21) below 0.5",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -6482,6 +6632,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.276 on 50 labels, below 0.97",
+   "default": "off",
+   "default_reason": "precision 0.400 (20/50) below 0.5",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -6597,6 +6749,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.000 on 121 labels, below 0.97",
+   "default": "off",
+   "default_reason": "precision 0.000 (0/121) below 0.5",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -6712,6 +6866,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.299 on 52 labels, below 0.97",
+   "default": "off",
+   "default_reason": "precision 0.423 (22/52) below 0.5",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -6808,6 +6964,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.380 on 33 labels, below 0.97",
+   "default": "off",
+   "default_reason": "lower bound 0.380 on 33 labels, below 0.85",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 4,
@@ -6885,6 +7043,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 4,
@@ -7040,6 +7200,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.819 on 82 labels, below 0.97",
+   "default": "off",
+   "default_reason": "lower bound 0.819 on 82 labels, below 0.85",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 3,
@@ -7136,6 +7298,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "11 label(s), 30 needed",
+   "default": "off",
+   "default_reason": "precision 0.455 (5/11) below 0.5",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -7210,6 +7374,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "8 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "8 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -7284,6 +7450,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "6 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "6 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -7359,6 +7527,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "7 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "7 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -7433,6 +7603,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "8 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "8 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -7507,6 +7679,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "7 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "7 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -7581,6 +7755,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "8 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "8 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -7655,6 +7831,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "8 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "8 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -7733,6 +7911,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 6,
@@ -7810,6 +7990,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -7886,6 +8068,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -7962,6 +8146,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -8038,6 +8224,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 5,
@@ -8134,6 +8322,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "6 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "6 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -8230,6 +8420,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -8306,6 +8498,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -8401,6 +8595,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "17 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "17 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-24",
    "snapshot_counts": {
     "planted": 2,
@@ -8479,6 +8675,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "4 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "4 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -8555,6 +8753,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -8631,6 +8831,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "7 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "7 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 4,
@@ -8707,6 +8909,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "10 label(s), 30 needed",
+   "default": "off",
+   "default_reason": "precision 0.000 (0/10) below 0.5",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 5,
@@ -8783,6 +8987,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -8859,6 +9065,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -8955,6 +9163,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "4 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "4 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 4,
@@ -9031,6 +9241,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -9108,6 +9320,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -9184,6 +9398,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -9260,6 +9476,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -9406,6 +9624,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "6 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "6 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -9524,6 +9744,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "5 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "5 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -9614,6 +9836,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -9760,6 +9984,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "6 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "6 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -9836,6 +10062,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -9932,6 +10160,8 @@
    "fp_notes": [],
    "admitted": true,
    "admitted_reason": "lower bound 0.994 on 690 labels",
+   "default": "on",
+   "default_reason": "lower bound 0.994 on 690 labels meets 0.85",
    "updated": "2026-10-24",
    "snapshot_counts": {
     "planted": 0,
@@ -10029,6 +10259,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "27 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "27 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -10125,6 +10357,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "16 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "16 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 0,
@@ -10221,6 +10455,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.886 on 30 labels, below 0.97",
+   "default": "on",
+   "default_reason": "lower bound 0.886 on 30 labels meets 0.85",
    "updated": "2026-10-24",
    "snapshot_counts": {
     "planted": 3,
@@ -10299,6 +10535,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -10391,6 +10629,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -10515,6 +10755,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "lower bound 0.933 on 149 labels, below 0.97",
+   "default": "on",
+   "default_reason": "lower bound 0.933 on 149 labels meets 0.85",
    "updated": "2026-10-24",
    "snapshot_counts": {
     "planted": 3,
@@ -10624,6 +10866,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "10 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "10 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-24",
    "snapshot_counts": {
     "planted": 1,
@@ -10700,6 +10944,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "2 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "2 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -10776,6 +11022,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -10872,6 +11120,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "6 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "6 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -10949,6 +11199,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "4 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "4 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -11026,6 +11278,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -11122,6 +11376,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "5 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "5 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -11198,6 +11454,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -11288,6 +11546,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -11364,6 +11624,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "1 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "1 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -11426,6 +11688,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "0 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "no labels: unmeasured, shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 1,
@@ -11502,6 +11766,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 2,
@@ -11592,6 +11858,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "3 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "3 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 3,
@@ -11682,6 +11950,8 @@
    "fp_notes": [],
    "admitted": false,
    "admitted_reason": "4 label(s), 30 needed",
+   "default": "on",
+   "default_reason": "4 label(s), 30 needed to measure: shown as advisory",
    "updated": "2026-10-23",
    "snapshot_counts": {
     "planted": 6,

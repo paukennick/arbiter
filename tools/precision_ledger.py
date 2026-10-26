@@ -424,6 +424,9 @@ def rule_entries(verdicts: dict[str, dict], bar: dict) -> dict[str, dict]:
             "fp_notes": list(dict.fromkeys(e["notes"])),
         }
         entry["admitted"], entry["admitted_reason"] = P.admission(entry, bar)
+        # Shown by default, or off as noise (ARB-174); the scan recomputes it
+        # from the counts, this records it for readers of the ledger.
+        entry["default"], entry["default_reason"] = P.default_state(entry, bar)
         out[rule] = entry
     return out
 
@@ -589,6 +592,8 @@ def build(records: list[dict], previous: dict | None, today: str, verified: set[
             rules[rule] = {"tp": 0, "fp": 0, "unsure": 0, "n": 0,
                            "held_out": {"tp": 0, "fp": 0, "unsure": 0},
                            "fp_notes": old["fp_notes"], "admitted": False,
+                           "default": "on",
+                           "default_reason": "no labels: unmeasured, shown as advisory",
                            "admitted_reason": "0 label(s)", "updated": old.get("updated", today),
                            "snapshot_counts": {}}
     return {"_about": ABOUT, "version": 1, "bar": bar, "generated": today,

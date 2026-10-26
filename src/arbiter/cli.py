@@ -137,6 +137,10 @@ def _add_scan_commands(sub) -> None:
                         help="ask a model to confirm or reject each finding at or above "
                              "verify.min_severity (default: on for --profile assisted; "
                              "never under offline or ci)")
+        sp.add_argument("--all-rules", dest="all_rules", action="store_true",
+                        help="also report rules that are off by default because the "
+                             "precision ledger measured them below the advisory bar "
+                             "(same as enable_rules: ['*']); their findings never fail the gate")
         _add_view_flags(sp, " (report.json always holds every finding)")
         return sp
 
@@ -521,6 +525,8 @@ def cmd_scan(args, gate_mode: bool = False) -> int:
     view = _view_override(args)
     if view:
         config = {**config, "report": {**(config.get("report") or {}), "show": view}}
+    if getattr(args, "all_rules", False):
+        config = {**config, "enable_rules": ["*"]}
 
     report = run_scan(
         targets=args.targets,

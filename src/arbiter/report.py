@@ -405,6 +405,21 @@ def skipped_lines(report: Report) -> list[str]:
     return out
 
 
+def default_off_text(report: Report) -> str:
+    """How many findings the default-off rules left out, and how to see
+    them (ARB-174); '' when none."""
+    from .precision import default_off_line
+    return default_off_line((report.scan_scope or {}).get("default_off"))
+
+
+def precision_claim_lines(report: Report) -> list[str]:
+    """The public precision sentence with its coverage and caveats, as the
+    scan computed them from its ledger (ARB-175); [] for a report written
+    before the sentence existed."""
+    c = (report.scan_scope or {}).get("precision_claim") or {}
+    return [x for x in [c.get("sentence"), c.get("coverage"), *(c.get("caveats") or [])] if x]
+
+
 def _bluf_lines(report: Report) -> list[str]:
     """What this report can and cannot claim, worst news first.
 
@@ -447,6 +462,9 @@ def _bluf_lines(report: Report) -> list[str]:
         )
     if not_shown(report):
         lines.append(view_summary(report, HINT_CONFIG).capitalize() + ".")
+    off = default_off_text(report)
+    if off:
+        lines.append(off[0].upper() + off[1:])
     no_fix = sum(1 for f in report.active() if f.remediation_source == "default")
     if no_fix:
         lines.append(
@@ -710,6 +728,14 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
     suppressed = [f for f in report.findings if f.suppressed]
     if suppressed:
         L.append(_color(color, "dim", f"  {len(suppressed)} finding(s) suppressed by policy"))
+    off = default_off_text(report)
+    if off:
+        L.append(_color(color, "dim", f"  {off}"))
+    claim = precision_claim_lines(report)
+    if claim:
+        L.append("")
+        for line in claim:
+            L.append(_color(color, "dim", f"  {line}"))
 
     gate = report.gate or {}
     if gate:
@@ -844,6 +870,12 @@ def render_markdown(report: Report) -> str:
         L.append("")
         for p in skipped:
             L.append(f"- `{p.name}` — {p.reason}")
+        L.append("")
+    claim = precision_claim_lines(report)
+    if claim:
+        L.append("## What the tiers mean")
+        L.append("")
+        L.extend(f"{line}  " for line in claim)
         L.append("")
     return "\n".join(L)
 

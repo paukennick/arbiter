@@ -40,6 +40,19 @@ def _result_cache_off():
     DEFAULTS["cache"]["enabled"] = True
 
 
+@pytest.fixture(scope="session", autouse=True)
+def _every_rule_on():
+    """The suite tests what each rule finds, so it runs every rule, including
+    the ones off by default because the ledger measured them below the
+    advisory bar (ARB-174): the planted fixtures and the CWE coverage tests
+    rely on them. tests/test_advisory_bar.py turns this off per scan
+    (`enable_rules: []`) to test the default itself."""
+    from arbiter.policy import DEFAULTS
+    DEFAULTS["enable_rules"] = ["*"]
+    yield
+    DEFAULTS["enable_rules"] = []
+
+
 @pytest.fixture(scope="session")
 def legacy_report():
     cfg = load_config(None, str(LEGACY))
