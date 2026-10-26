@@ -196,11 +196,14 @@ def test_the_committed_ledger_carries_the_block_it_would_rebuild_to():
 
 
 def test_which_admitted_rules_survive_on_the_committed_ledger():
-    """Recorded on 2026-10-26 (alpha = q = 0.025, family m = 14): the two
+    """Recorded on 2026-10-26 (alpha = q = 0.025, family m = 14). A rebuild
+    with new labels may move these; update them with the ledger. The two
     rules with a lot of evidence survive every method; the weak-random rule
     (218 TP of 219) passes alone but not once the family is counted."""
     b = _ledger()["multiplicity"]
-    assert b["tests"]["rule_lower"]["m"] == 14
+    held = [e for e in _ledger()["rules"].values()
+            if e["held_out"]["tp"] + e["held_out"]["fp"] >= P.DEFAULT_BAR["rule_min_n"]]
+    assert b["tests"]["rule_lower"]["m"] == len(held)   # 14 on 2026-10-26; grows with labels
     s = b["survive"]["rule_lower"]
     both = ["arbiter/assurance.blanket-suppression", "arbiter/supply.unpinned-action"]
     assert s["unadjusted"] == sorted(both + ["arbiter/java.weak-random-for-secret"])
