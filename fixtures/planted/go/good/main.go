@@ -17,7 +17,13 @@ func main() {
 			time.Sleep(30 * time.Second)
 		}
 	}()
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	srv := &http.Server{
+		Addr:         ":8080",
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }

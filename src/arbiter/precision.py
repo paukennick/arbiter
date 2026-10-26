@@ -187,7 +187,25 @@ def load_ledger(path: str | Path | None = None) -> dict:
         raise RuntimeError(f"precision ledger {p}: expected a mapping with a `rules` mapping")
     out = empty_ledger()
     out.update(data)
-    out["bar"] = {**DEFAULT_BAR, **(data.get("bar") or {})}
+    out["bar"] = effective_bar(data.get("bar"))
+    return out
+
+
+def effective_bar(declared: dict | None) -> dict:
+    """The bar a ledger is judged by: never below `DEFAULT_BAR`. Every
+    threshold in the bar is a minimum, so a ledger declaring a lower one
+    would be admitting its own rules on less evidence than the tier
+    promises (ARB-143); a higher one is honoured."""
+    out = dict(DEFAULT_BAR)
+    for key, value in (declared or {}).items():
+        if key in DEFAULT_BAR:
+            try:
+                raised = max(float(DEFAULT_BAR[key]), float(value))
+            except (TypeError, ValueError):
+                continue
+            out[key] = type(DEFAULT_BAR[key])(raised)
+        else:
+            out[key] = value
     return out
 
 

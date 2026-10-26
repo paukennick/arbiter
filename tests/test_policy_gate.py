@@ -3,6 +3,8 @@ coverage and the judgement pass's effect on the gate.
 """
 from __future__ import annotations
 
+import pytest
+
 import json
 
 from helpers import ROOT
@@ -10,6 +12,7 @@ from helpers import ROOT
 from arbiter.core import Finding, Location
 from arbiter.engine import run_scan
 from arbiter.policy import apply_suppressions, load_config
+from arbiter import ast as _ts
 
 # --------------------------------------------------------------------------
 # coverage honesty
@@ -61,6 +64,7 @@ def test_gate_fails_on_critical(legacy_report):
     assert any("critical" in r for r in gate["reasons"])
 
 
+@pytest.mark.skipif(not _ts.available(), reason="tree-sitter not installed: rule packs cannot run, so the grade is withheld")
 def test_the_default_gate_passes_the_fixture_and_says_why(legacy_report):
     """Under the default tiered gate (ARB-100) only verified findings are
     considered. The one rule declared verified (supply.unpinned-action,

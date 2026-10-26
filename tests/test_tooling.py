@@ -353,6 +353,8 @@ def test_trivy_release_asset_selection_is_platform_aware(monkeypatch):
     monkeypatch.setattr(tooling.platform, "system", lambda: "Windows")
     monkeypatch.setattr(tooling.platform, "machine", lambda: "AMD64")
     assert tooling._release_asset(tool, "0.76.1")[0] == "trivy_0.76.1_windows-64bit.zip"
+    # the Windows archive holds trivy.exe; looking up `trivy` failed (FAIL-135)
+    assert tooling._release_asset(tool, "0.76.1")[2] == "trivy.exe"
 
     monkeypatch.setattr(tooling.platform, "system", lambda: "FreeBSD")
     with pytest.raises(ValueError, match="no trivy release"):

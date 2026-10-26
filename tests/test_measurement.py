@@ -205,3 +205,116 @@ def test_measurement_cannot_promote_a_check_to_high():
     assert band(10.0) == "medium"
     assert band(3.0) == "low"
     assert band(1.0) == "info"
+
+
+# --------------------------------------------------------------------------
+# Adaptive thresholds
+# --------------------------------------------------------------------------
+
+def test_a_profile_is_ignored_until_there_is_enough_of_it():
+    """Under thirty samples the fixed threshold stands.
+
+    Six files are a rumour about a codebase, not its distribution, and a
+    threshold drawn from six would swing with every file added.
+    """
+    from arbiter.learn import adaptive_threshold
+    thin = {"n": 6, "p95": 4000.0}
+    assert adaptive_threshold(thin, fixed=800.0) == 800.0
+
+
+def test_a_uniformly_bad_codebase_cannot_normalize_its_way_clean():
+    """The configured threshold caps the result, so adaptive only tightens.
+
+    Without the cap the worse a codebase gets the more permissive its own
+    threshold becomes, and the report improves as the code degrades. The
+    earlier version of this test asserted only `>= floor`, which a threshold of
+    50,000 satisfies -- it passed while the property it is named for was
+    violated by a factor of sixty.
+    """
+    from arbiter.learn import adaptive_threshold
+    awful = {"n": 500, "p95": 50_000.0}
+    assert adaptive_threshold(awful, fixed=800.0, floor=200.0) == 800.0
+
+    tidy = {"n": 500, "p95": 10.0}
+    assert adaptive_threshold(tidy, fixed=800.0, floor=200.0) == 200.0
+
+
+def test_degrading_a_codebase_uniformly_cannot_hide_findings():
+    """Scaling every measurement must not leave the flagged set unchanged.
+
+    A threshold drawn from a percentile alone is scale-equivariant: at ten
+    times the size it is ten times the number, so exactly the same files sit
+    above it and a codebase that got uniformly worse reports identically. The
+    cap breaks that equivariance, which is the whole reason it is there.
+    """
+    from arbiter.learn import adaptive_threshold
+    files = [5.0, 100.0, 300.0, 700.0, 954.0, 2032.0]
+
+    def flagged(scale: float) -> int:
+        profile = {"n": 60, "p95": 1066.0 * scale}
+        threshold = adaptive_threshold(profile, fixed=900.0, floor=200.0)
+        return sum(1 for f in files if f * scale > threshold)
+
+    assert flagged(1) == 2
+    assert flagged(10) > flagged(1), (
+        "ten times worse must report more, not the same findings by rank")
+
+
+def test_profiles_are_stored_per_repository():
+    """One threshold for two codebases is wrong for both."""
+    from arbiter.learn import Knowledge, learn_profiles, profile_for
+    k = Knowledge()
+    learn_profiles(k, "terse", {"file_lines": {"n": 40, "p95": 30.0}})
+    learn_profiles(k, "sprawling", {"file_lines": {"n": 40, "p95": 3000.0}})
+    assert profile_for(k, "terse")["file_lines"]["p95"] == 30.0
+    assert profile_for(k, "sprawling")["file_lines"]["p95"] == 3000.0
+    assert profile_for(k, "never-profiled") == {}
+
+
+def test_learning_a_profile_moves_the_knowledge_version():
+    """Profiles decide which findings a scan reports, so they are pinned.
+
+    This is why `arbiter profile` is a separate command and a scan never
+    writes one: if scanning stored a profile, every run would move the hash it
+    had just written into its own report, and `--pin-knowledge` would fail
+    against a ledger the pinned run itself produced.
+    """
+    from arbiter.learn import Knowledge, learn_profiles
+    k = Knowledge()
+    before = k.version_hash()
+    learn_profiles(k, "demo", {"file_lines": {"n": 40, "p95": 120.0}})
+    assert k.version_hash() != before
+
+
+def test_an_empty_measurement_stores_nothing():
+    """A repository with no readable source must not get a profile of zeroes."""
+    from arbiter.learn import Knowledge, learn_profiles, profile_for
+    k = Knowledge()
+    learn_profiles(k, "empty", {"file_lines": {}, "complexity": {}})
+    assert profile_for(k, "empty") == {}
+
+
+def test_the_profile_key_does_not_depend_on_a_scans_display_id(tmp_path):
+    """Written and read under the same name, or the store is write-only.
+
+    A single-target scan calls its repository "root" for display. Keying the
+    profile on that would give every separately-scanned repository the same
+    entry, so the first one profiled would set the thresholds for all of them
+    -- and a profile written by `arbiter profile` under the directory name
+    would never be found again. That is how this was wrong when first written:
+    the scan reported `profile_source: measured` with a learned profile
+    sitting in the ledger.
+    """
+    from arbiter.learn import Knowledge, learn_profiles, profile_for, profile_key
+    one = tmp_path / "service-alpha"
+    two = tmp_path / "service-beta"
+    one.mkdir()
+    two.mkdir()
+
+    assert profile_key(str(one)) != profile_key(str(two)), (
+        "two repositories must not share a profile key")
+
+    k = Knowledge()
+    learn_profiles(k, profile_key(str(one)), {"file_lines": {"n": 40, "p95": 42.0}})
+    assert profile_for(k, profile_key(str(one)))["file_lines"]["p95"] == 42.0
+    assert profile_for(k, profile_key(str(two))) == {}

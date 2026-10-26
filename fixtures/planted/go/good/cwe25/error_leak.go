@@ -46,7 +46,7 @@ func Invoice(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 func Serve(db *sql.DB) error {
 	mux := http.NewServeMux()
 	mux.Handle("/orders", Orders(db))
-	srv := &http.Server{Addr: ":8080", Handler: mux, ReadHeaderTimeout: 5e9}
+	srv := &http.Server{Addr: ":8080", Handler: mux, ReadHeaderTimeout: 5e9, ReadTimeout: 15e9, WriteTimeout: 30e9}
 	return srv.ListenAndServe()
 }
 

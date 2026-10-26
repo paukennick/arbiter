@@ -1,8 +1,9 @@
 {
  "target": "ruby-puma",
  "pinned_sha": "d53529399bc250915374eebe3ae54dd9fd9a6cb0",
- "arbiter_commit": "2520303ae488d9b8e6e4d2182f822d8bb19fd368",
- "count": 74,
+ "arbiter_commit": "8a1292690cb29a20406a0c496c388ee9cd9f67a7",
+ "recorded": "2026-10-24",
+ "count": 83,
  "by_rule": {
   "arbiter/ast.deep-nesting": 2,
   "arbiter/ast.function-too-long": 7,
@@ -20,7 +21,9 @@
   "arbiter/ruby.tls-verify-off": 2,
   "arbiter/ruby.unsynchronised-counter": 6,
   "arbiter/secrets.private-key": 10,
-  "arbiter/supply.unpinned-action": 17
+  "arbiter/supply.unpinned-action": 17,
+  "arbiter/supply.unpinned-container-image": 2,
+  "arbiter/supply.unpinned-ruby-dep": 7
  },
  "findings": [
   "arbiter/ast.deep-nesting\text/puma_http11/http11_parser.c\t73",
@@ -96,6 +99,15 @@
   "arbiter/supply.unpinned-action\t.github/workflows/tests.yml\t29",
   "arbiter/supply.unpinned-action\t.github/workflows/tests.yml\t97",
   "arbiter/supply.unpinned-action\t.github/workflows/turbo-rails.yml\t48",
-  "arbiter/supply.unpinned-action\t.github/workflows/turbo-rails.yml\t83"
+  "arbiter/supply.unpinned-action\t.github/workflows/turbo-rails.yml\t83",
+  "arbiter/supply.unpinned-container-image\t.devcontainer/Dockerfile\t5",
+  "arbiter/supply.unpinned-container-image\ttools/Dockerfile\t6",
+  "arbiter/supply.unpinned-ruby-dep\tbenchmarks/local/sinatra/Gemfile\t10",
+  "arbiter/supply.unpinned-ruby-dep\tbenchmarks/local/sinatra/Gemfile\t6",
+  "arbiter/supply.unpinned-ruby-dep\tbenchmarks/local/sinatra/Gemfile\t7",
+  "arbiter/supply.unpinned-ruby-dep\ttest/worker_gem_independence_test/new_json/Gemfile\t7",
+  "arbiter/supply.unpinned-ruby-dep\ttest/worker_gem_independence_test/new_json_with_puma_stats_after_fork/Gemfile\t7",
+  "arbiter/supply.unpinned-ruby-dep\ttest/worker_gem_independence_test/old_json/Gemfile\t7",
+  "arbiter/supply.unpinned-ruby-dep\ttest/worker_gem_independence_test/old_json_with_puma_stats_after_fork/Gemfile\t7"
  ]
 }

@@ -18,7 +18,7 @@ PACK = "java"
 RULES = {
     "check-then-act-unsynchronized", "unsynchronized-counter", "http-client-no-timeout",
     "http-request-no-timeout", "url-connection-no-timeout", "rest-template-no-timeout",
-    "retry-without-backoff", "worker-loop-no-stop", "swallowed-exception", "sql-string-built",
+    "retry-without-backoff", "worker-loop-no-stop", "path-confinement-optional", "ssrf-check-then-connect", "swallowed-exception", "swallowed-stack-trace-only", "swallowed-error-to-500", "sql-string-built",
     "command-injection", "object-input-stream", "xml-decoder", "jackson-default-typing",
     "stub-method", "test-without-assertion", "trust-all-certificates",
     "hostname-verifier-disabled", "weak-random-for-secret",
@@ -725,3 +725,63 @@ class Svc extends Number {
 def test_number_contracts_and_byte_buffers_narrow_on_purpose(tmp_path):
     # gson LazilyParsedNumber.intValue, tomcat drawboard DrawMessage colours.
     assert lines_of(tmp_path, _NUMBER, "parsed-number-narrowed") == [5]
+
+
+_SWALLOW = """package app;
+class H {
+    void a() { try { run(); } catch (Exception e) { e.printStackTrace(); } }
+    void b() { try { run(); } catch (Exception e) { log.error("x", e); e.printStackTrace(); } }
+    int c() { try { run(); return 200; } catch (Exception e) { return 500; } }
+    int d() { try { run(); return 200; } catch (Exception e) { log.error("failed", e); return 500; } }
+    int f() { try { run(); return 200; } catch (Exception e) { throw new IllegalStateException(e); } }
+}
+"""
+
+
+def test_stack_trace_only_catch_and_unlogged_500_are_reported(tmp_path):
+    assert lines_of(tmp_path, _SWALLOW, "swallowed-stack-trace-only") == [3]
+    assert lines_of(tmp_path, _SWALLOW, "swallowed-error-to-500") == [5]
+
+
+_ROOT_JAVA = """package app;
+import java.nio.file.Path;
+class R {
+    private final Path baseDir;
+    R(String d) { this.baseDir = d == null ? null : Path.of(d); }
+    Path a(String raw) {
+        Path p = Path.of(raw);
+        if (baseDir != null && !p.startsWith(baseDir)) { throw new IllegalArgumentException("x"); }
+        return p;
+    }
+    Path b(String raw) {
+        Path p = baseDir.resolve(raw);
+        if (!p.startsWith(baseDir)) { throw new IllegalArgumentException("x"); }
+        return p;
+    }
+}
+"""
+
+_SSRF_JAVA = """package app;
+import java.net.*;
+import java.net.http.*;
+class F {
+    HttpClient client = HttpClient.newHttpClient();
+    static boolean isPublicHost(String h) throws Exception { return InetAddress.getByName(h) != null; }
+    String plain(String u) throws Exception {
+        URI uri = URI.create(u);
+        if (!isPublicHost(uri.getHost())) return null;
+        return client.send(HttpRequest.newBuilder(uri).build(), HttpResponse.BodyHandlers.ofString()).body();
+    }
+    String pinned(String u) throws Exception {
+        URI uri = URI.create(u);
+        InetSocketAddress addr = new InetSocketAddress(uri.getHost(), 443);
+        if (!isPublicHost(uri.getHost())) return null;
+        return client.send(HttpRequest.newBuilder(uri).build(), HttpResponse.BodyHandlers.ofString()).body();
+    }
+}
+"""
+
+
+def test_optional_base_confinement_and_resolve_then_connect_are_reported(tmp_path):
+    assert lines_of(tmp_path, _ROOT_JAVA, "path-confinement-optional") == [8]
+    assert lines_of(tmp_path, _SSRF_JAVA, "ssrf-check-then-connect") == [9]

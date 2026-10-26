@@ -1,16 +1,19 @@
 # Accuracy Baseline and Evidence Gaps
 
-Inventory date: 2026-10-23. This is an inventory of existing evidence, not a
-new benchmark run or a 99% certification. Machine-readable source inventory
-and the per-run record contract are in
+Inventory date: 2026-10-25. This records the existing evidence, two
+benchmark-conformance runs, and two analyzer-differential scans; it is not a
+99% certification. Machine-readable
+source inventory and run metadata are in
 [accuracy-benchmark-manifest.json](accuracy-benchmark-manifest.json), validated
 by [accuracy-benchmark-manifest.schema.json](accuracy-benchmark-manifest.schema.json).
+The additive multi-CWE aggregate report is
+[accuracy-realvuln-multicwe-run.json](accuracy-realvuln-multicwe-run.json).
 
-No rule was changed and no held-out labels, findings, or excerpts were opened
-for this inventory. The sealed AI corpus remains aggregate-only. The
-historical figures below are quoted from the dated harness and precision
-documentation; where the original run commit or host environment was not
-recorded there, that reproducibility gap is stated rather than guessed.
+No detection rules were changed. The sealed AI and OWASP sources remain
+untouched; the approved RealVuln subset was evaluated through the aggregate-only
+workflow below, without publishing per-case reports. Historical figures below
+are quoted from their dated harness and precision documentation; missing run
+metadata is stated rather than guessed.
 
 ## Existing benchmark inventory
 
@@ -22,6 +25,8 @@ recorded there, that reproducibility gap is stated rather than guessed.
 | Pinned public gold repositories | Development and repository-level holdout | 24 repos across Go, Java, Python, Ruby, TypeScript; 17 development and 7 held out | Arbiter finding labels include model labels; the harness describes a 60-row human sheet from 5 repos/41 strata as not yet labelled | Public projects are not a random sample of all repositories. Four repositories report `NOASSERTION` license metadata; resolve license/provenance before external publication. |
 | OWASP Benchmark Java/Python | Sealed ground-truth sources | Java: 2,740 cases/11 CWEs; Python: 1,230 cases/14 CWEs | Benchmark expected results; human audit status not recorded | Java source is GPL-2.0; Python is GPL-3.0. Both are fetched at pins and have restrictions recorded in `tools/gold/benchmarks.json`. Synthetic benchmark scope is not production-repository scope. |
 | CVE fix pairs and Juliet Java | Sealed ground-truth sources | CVE language mix and Juliet license status not inventoried here; Juliet is Java | Patch-derived or benchmark-provided labels; independent human audit not recorded | License/provenance and label audit are gaps. These sources are held out; do not inspect them while tuning. |
+| GHSA fix pairs (ARB-121, [external-cve-benchmark.md](external-cve-benchmark.md)) | Development (277 pairs) and sealed aggregate-only evaluation (223 pairs), split by repository | 500 real advisories, 100 per language (Python, TypeScript/JavaScript, Go, Java, Ruby), in CWEs the language's native rules claim; frozen in commit 02df982 before any scan | Patch-derived (advisory CWE plus the lines the fix changed); not human-adjudicated | Baseline primary recall 9.4% development (26/277), 8.1% sealed (18/223), Wilson and repository-cluster intervals in the results files. Advisory data is CC-BY-4.0; code is fetched at pins outside the repository and never redistributed; 119 of the 500 pairs' repositories report `NOASSERTION` or no licence. |
+| RealVuln 3.1.0 Python subset | Aggregate-only external conformance pilots | 11 pinned repositories; 502 available labels across 65 primary CWEs; 408 `manual_review` labels scored across 53 CWEs | 66/408 included labels explicitly set `manually_verified`; labels are not independently multi-reviewer adjudicated | Completed on MIT/Unlicense source pins. Curated vulnerable applications; not representative production repositories. The original CWE-89 run is preserved; the additive multi-CWE run and metadata follow. |
 
 The existing precision ledger reports labels for 120 rules and three admitted
 rules. One rule, `supply.unpinned-action`, is declared verified (ARB-101: 690
@@ -59,13 +64,159 @@ different, narrower evidential strength:
    prioritize cases. Agreement is not a truth oracle; model judges need
    calibration against independent truth and cannot substitute for it.
 
-For the chosen Python SQL-injection slice, the recommended no-human path is
-to screen CVEfixes metadata for a sufficiently large CWE-89/Python subset
-without opening code or labels; verify selected source licenses; then create
-an aggregate-only benchmark evaluator. If those gates fail, stop rather than
-quietly switching to synthetic examples and calling that accuracy. Any
-result must be named **CVEfixes benchmark conformance** and scoped to its
-data and label-generation method. It cannot support a general 99% claim.
+## Completed Python CWE-89 conformance pilot
+
+The owner-approved RealVuln 3.1.0 subset contains 11 pinned Python repositories
+whose source licenses are MIT or Unlicense. Only the `lang_python` probe ran,
+with the offline profile, adapters disabled, and cache and history disabled.
+All 11 Python probes were assessed; all 11 overall scorecards were withheld
+because this deliberately narrow run did not assess the other applicable
+probes. A withheld scorecard is not a low grade and was not used as a result.
+The source code was statically scanned, not executed.
+
+| Measure | Aggregate result |
+|---|---:|
+| Labelled cases | 60 (26 vulnerable, 34 safe traps) |
+| Case-level confusion | TP 21, FN 5, FP 6, TN 28 |
+| Labelled-case precision | 21/27 = 77.8% |
+| Labelled-case recall | 21/26 = 80.8% |
+| Safe-trap false-positive rate | 6/34 = 17.6% |
+| Unmatched CWE-89 findings | 1, left unassessed |
+| 95% repository-cluster bootstrap interval, precision | 64.3%–90.9% |
+| 95% repository-cluster bootstrap interval, recall | 50.0%–100.0% |
+
+The intervals use 10,000 seeded repository-cluster bootstrap replicates and
+describe stability only within this curated 11-repository subset. The 60
+labels are benchmark-maintainer evidence marked `manual_review`; five
+explicitly set `manually_verified=true`, and no independent multi-reviewer
+audit is documented. The reported precision is labelled-case conformance,
+not Arbiter finding-level precision: the unmatched finding remains
+unassessed. These measurements are well below the 99% target and cannot
+support a production-population, cross-language, cross-platform, or general
+accuracy claim. The machine-readable run record retains the commit, dirty
+worktree state, evaluator and configuration digests, runtime, matching
+tolerance, denominators, uncertainty method, and scope limits.
+
+## Completed multi-CWE conformance baseline
+
+ARB-106 validated all 502 labels in the 11 previously approved pinned
+repositories. The labels span 65 primary CWEs. The score includes only the
+408 entries with `evidence.source=manual_review`, covering 53 primary CWEs;
+it excludes 75 `our-scanner` labels, 13 `gt_expansion_verification_2026_04_29`
+labels, five `snyk` labels, and one `walkthrough` label rather than treating
+tool-derived or differently sourced labels as equivalent ground truth. Of the
+408 included labels, 66 explicitly set `manually_verified=true`. The source
+contains no explicit `non_scoring` entries. None of these labels has a
+documented independent multi-reviewer audit.
+
+| Measure | Aggregate result |
+|---|---:|
+| Included labelled cases | 408 (341 vulnerable, 67 safe traps) |
+| Case-level confusion | TP 62, FN 279, FP 7, TN 60 |
+| Labelled-case precision | 62/69 = 89.9% |
+| Labelled-case recall | 62/341 = 18.2% |
+| Safe-trap false-positive rate | 7/67 = 10.4% |
+| 95% repository-cluster bootstrap interval, precision | 84.5%–94.7% |
+| 95% repository-cluster bootstrap interval, recall | 13.0%–23.8% |
+| CWE findings unmatched to included labels | 25, left unassessed |
+
+The largest aggregate miss buckets were CWE-79 (0/37 positive cases detected),
+CWE-798 (1/22), CWE-918 (0/18), CWE-400 (1/18), CWE-22 (0/17), and CWE-639
+(0/13). These counts are prioritization signals only: no case-level examples
+were inspected, and no rules were tuned on this benchmark. The multi-CWE run
+used only the offline Python probe on all 11 repositories; all 11 overall
+scorecards were withheld because the other probes were not assessed. Source
+code was not executed. Results are maintainer-label case conformance, not
+independently adjudicated truth, finding-level precision, or a production
+population estimate.
+
+The multi-CWE evaluator reproduces the original CWE-89 confusion counts
+exactly (TP 21, FN 5, FP 6, TN 28); the historical run record and matcher
+remain unchanged. The source, label, and scan-report digests, tool versions,
+environment, and aggregate results are recorded in the separate run report
+and referenced from the benchmark manifest.
+
+## ARB-107: pinned analyzer differential rehearsal
+
+Arbiter native probes, Semgrep, and CodeQL scanned the same 11 pinned,
+license-cleared RealVuln Python snapshots. This is an intentionally vulnerable
+benchmark cohort, not an ordinary or representative production-repository
+sample. No project build, test, setup, or application command was run; CodeQL
+used `--build-mode none`, and target code was not executed. Arbiter ran
+offline with adapters, cache, and history disabled so its Semgrep adapter
+could not duplicate the separately pinned Semgrep run.
+
+| Analyzer | Python security findings | Python files scanned | Result |
+|---|---:|---:|---|
+| Arbiter native probes | 102 | File-level denominator not comparable to other tools | 0 scan errors; internal probe coverage ranged from 96.9% to 98.4% |
+| Semgrep 1.177.0 | 236 | 360 | 0 scan errors; each source repository's `.semgrepignore` was applied |
+| CodeQL 2.27.3 / `codeql/python-queries@1.8.13` | 96 | 459/459 | 11/11 invocations succeeded; 0 error- or warning-level notifications |
+
+The pinned source trees were identical across tools, but their effective file
+sets were not: Semgrep scanned 360 Python files while CodeQL extracted all 459
+Python files. Counts below use normalized repository-relative Python paths
+and intersecting inclusive line spans. A finding can overlap more than one
+finding from another analyzer, so pair totals are not deduplicated
+vulnerability instances.
+
+| Pair | Findings with a location-overlapping counterpart | Unmatched by location | Overlapping pairs with shared CWE tag / without shared CWE tag |
+|---|---:|---:|---:|
+| Arbiter / Semgrep | 75/102 and 121/236 | 27 Arbiter; 115 Semgrep | 91 / 133 |
+| Arbiter / CodeQL | 30/102 and 40/96 | 72 Arbiter; 56 CodeQL | 25 / 53 |
+| Semgrep / CodeQL | 89/236 and 61/96 | 147 Semgrep; 35 CodeQL | 73 / 22 |
+
+These are differential-coverage signals only. Overlap is not a true positive;
+an unmatched result is not a false positive or false negative; and differing
+CWE tags do not adjudicate the underlying issue. No precision, recall, or
+accuracy estimate follows from this run. The aggregate record, tool pins,
+configuration digest, source archive hashes, and matching contract are in
+`docs/accuracy-benchmark-manifest.json`; source archives, databases, and
+case-level analyzer reports remain temporary.
+
+A separate maintainer-authored Python planted-corpus regression run scored
+73/73, including all 8 planted SQL-injection cases, with no reported misses,
+unexpected findings, or safe-twin false positives. It ran on Python 3.14.4
+under Linux/WSL2 with `tree-sitter-language-pack` 1.22.1. This is regression
+evidence only; it does not contradict or replace the RealVuln conformance
+result and is not independent accuracy evidence.
+
+## ARB-109: ordinary-Python cohort differential scan
+
+The frozen ordinary-Python feasibility cohort contains 11 MIT-licensed pinned
+repositories selected from a popularity-sorted GitHub metadata frame. Only
+those exact snapshots were acquired. Arbiter's scanner sources matched commit
+`82ca64b5fc1c4fc8234daea1e8cd1b75051831b7`; Arbiter ran offline with only the
+native `lang_python` probe, and its configuration digest is in the manifest.
+Semgrep 1.177.0 used rules commit
+`40b8c63f75dc7c22c8a77482d73bfb864b146f7e`. CodeQL 2.27.3 used
+`codeql/python-queries@1.8.13` with `--build-mode none`. No project build,
+test, setup, or application command ran, and no target code was executed.
+
+| Analyzer | Findings | Relevant file coverage | Execution notes |
+|---|---:|---:|---|
+| Arbiter native `lang_python` | 105 | Probe ran on 11/11 repositories; overall coverage was 8.1% | All 11 overall scorecards were withheld because only one probe was selected. This is not a low grade. |
+| Semgrep 1.177.0 | 2,663 | 2,146/3,662 Python files; 4,040 files total | 8 scan errors: 7 timeouts and 1 syntax error. Repository ignore behavior narrows its file set. |
+| CodeQL 2.27.3 | 16 | 3,661/3,662 Python files | 11/11 invocations succeeded; 189 extractor warning lines (187 dynamic-library path warnings and 2 module-context warnings). |
+
+Location-span comparison found 39 Arbiter/Semgrep finding pairs: 31 shared a
+CWE tag and 8 did not. No location-overlapping pairs were found for
+Arbiter/CodeQL or CodeQL/Semgrep. A location match or CWE-tag intersection is
+not adjudication; no overlap does not prove a miss or false positive.
+Differences in rules, language coverage, ignore behavior, and extraction also
+make raw finding totals non-comparable as correctness scores.
+
+This small, popularity-biased convenience cohort is not probability-sampled or
+representative. It contributes no precision, recall, false-positive-rate, or
+population estimate. There were no labels, independent human review, or rule
+tuning, and this result is not eligible for a general 99% claim. The manifest
+records tool and environment provenance, archive hashes, per-repository
+aggregates, and limitations; raw archives, reports, databases, and
+case-level findings remain temporary.
+
+CVEfixes remains an unapproved candidate: its large archive was not
+downloaded or ingested, and neither source-code licensing nor label quality
+has been resolved. Do not silently substitute synthetic fixtures or another
+scanner's output for independent ground truth.
 
 ## Execution-platform evidence
 
@@ -108,15 +259,143 @@ the CI setup does not establish equivalent analyzer coverage on Windows.
    evaluator revision, host image, architecture, and all tool/database pins.
    Populate the run record in the benchmark manifest for every new evaluation.
 
+## External conformance scorecard (ARB-120)
+
+On 2026-10-24, `tools/ground_truth/external_scorecard.py` ran Arbiter
+`f52484f` (clean worktree, offline profile, no adapters, no cache, native
+probes only) over the outside benchmarks already wired. It wrote one run
+record per benchmark in the `run_record_template` shape (checked against
+the manifest schema) to [external-scorecard.json](external-scorecard.json),
+with per-CWE and per-rule tables in
+[external-scorecard.md](external-scorecard.md). Output is aggregate-only:
+counts and rates, with no case names, paths, advisory IDs or excerpts.
+
+| benchmark | units (vuln/safe) | clusters | case precision [Wilson 95%] | recall | in-scope recall | safe-case FPR |
+|---|---:|---:|---:|---:|---:|---:|
+| OWASP Benchmark Java 1.2 | 2,740 (1,415/1,325) | 1 | 0.808 [0.783, 0.831] | 0.591 [0.565, 0.616] | 0.970 [0.956, 0.979] | 0.149 [0.131, 0.170] |
+| OWASP Benchmark Python 0.1 | 1,230 (452/778) | 1 | 0.883 [0.838, 0.918] | 0.487 [0.441, 0.533] | 0.974 [0.943, 0.988] | 0.037 [0.026, 0.053] |
+| Juliet Java 1.3 (8 CWE dirs) | 18,310 (9,155/9,155) | 1 | 0.688 [0.673, 0.702] | 0.309 [0.299, 0.318] | 0.342 [0.332, 0.352] | 0.140 [0.133, 0.147] |
+| CVE fix pairs (70 GHSA) | 140 (70/70) | 70 | 0.556 [0.267, 0.811] | 0.071 [0.031, 0.157] | 0.079 [0.034, 0.173] | 0.057 [0.022, 0.138] |
+
+The CVE repository-cluster bootstrap (10,000 replicates, seed 0) gives
+precision [0.333, 0.800], recall [0.014, 0.143] and safe-case FPR
+[0.014, 0.114].
+
+**How to read it.**
+
+- These are **benchmark-conformance** results only. They describe agreement
+  with each benchmark's own labels under the matching rules stated in the
+  scorecard. They are not finding precision as the precision ledger
+  defines it, not production-population accuracy, and not a 99% claim.
+  *Case precision* is the share of the units Arbiter flagged that the
+  benchmark marks vulnerable.
+- OWASP and Juliet are each a single synthetic repository, so each is one
+  cluster. Their Wilson intervals are case-level only and do not generalise
+  beyond the benchmark.
+- The OWASP units are the benchmark's own `expectedresults` rows. The
+  Juliet and CVE vulnerable/safe units are **Arbiter-defined**, not lists
+  those benchmarks publish:
+  - Juliet: one case is all the files sharing a case stem. Its `bad` code
+    is the vulnerable unit and its `good*` code the safe unit.
+  - CVE: the vulnerable unit is the hunks the fix changed, ±2 lines, on the
+    vulnerable side. The safe unit is the same window on the fixed side.
+- "In scope" means some Arbiter rule for that language claims the CWE. Out
+  of scope:
+  - OWASP Java: 7 of 11 CWEs.
+  - OWASP Python: 8 of 14.
+  - Juliet: CWE-23 and CWE-36.
+
+  These are coverage gaps marked not assessed, not passes.
+- **No benchmark, CWE or rule reaches a 0.99 lower bound on both precision
+  and recall.** The closest are:
+  - OWASP Java CWE-330: 218/218 vulnerable units flagged and 0 of 275
+    safe units, lower bound 0.983 on both.
+  - OWASP Python CWE-330: 99/99, lower bound 0.963.
+  - OWASP Python CWE-328: 71/71, lower bound 0.949.
+- **Largest weak spots** (gap to 0.99, from the scorecard's ranking):
+  - Rules that claim a CWE but flag nothing:
+    - Juliet CWE-190: 4,257 vulnerable units; `java.parsed-count-overflow`
+      and `java.parsed-number-narrowed` never fire.
+    - Juliet CWE-81: 335 units.
+    - `java.argument-injection` on Juliet CWE-78 and OWASP Java CWE-78.
+    - `python.argument-injection` on OWASP Python.
+    - Most CVE strata (CWE-22, 79, 200, 287, 798, 918: 0 detected each).
+  - Rules that fire but are far from the bar:
+    - Juliet XSS recall 0.16 at precision 1.0 (CWE-80 and CWE-83).
+    - Safe-case false positives on the injection rules: Juliet CWE-89 FPR
+      0.486 and CWE-78 FPR 0.457 at about 0.99 recall; OWASP Java CWE-78
+      FPR 0.688; OWASP Python CWE-78 FPR 0.857, CWE-94 0.333, CWE-502
+      0.333.
+    - CVE overall: 5 of 70 fixes detected.
+- **Development exposure.** OWASP Java/Python and Juliet have already been
+  used to measure earlier rule changes (for example ARB-065's
+  before-and-after false-positive rates, recorded in the CHANGELOG). The
+  CWEs that were worked on, such as OWASP injection recall near 1.0, are
+  therefore not untouched-holdout evidence. The large difference between
+  in-scope recall on OWASP (0.97) and on Juliet (0.34) and the CVE pairs
+  (0.08) is consistent with that.
+- **Holdout status.** Once rules are tuned on this scorecard's weak spots,
+  OWASP Benchmark, Juliet and the 70 CVE pairs are **spent as sealed sets**
+  for those rules. From then on, their results for those rules are
+  development evidence. ARB-121's frozen GHSA split becomes the fresh
+  holdout for any claim about them.
+
+Reproduce (about 8 minutes on the recorded host; needs
+`tools/fetch_corpus.sh` and `tools/ground_truth/fetch_gt.sh` first):
+
+```bash
+python tools/ground_truth/external_scorecard.py --aggregate-only \
+    --corpus ~/wt/corpus-gold --gt ~/wt/corpus-gt \
+    --out docs/external-scorecard.json --markdown docs/external-scorecard.md
+```
+
+## ARB-110 development-recall progress
+
+Development-corpus only (`fixtures/ai-corpus`, native probes with the `ast`
+extra installed), model-labelled conformance. The first rule, Go
+`http-server-no-timeout`, moved code recall from 34/117 (29.1%) to 37/117
+(31.6%), Go from 14/24 to 17/24, with no new false alarms or unreviewed
+findings. The sealed held-out aggregate guard also moved (146 to 151
+findings, true positives +3 against +5 in scope); that tree was not opened and
+the rule was not tuned to it, so treat that as a precision caution, not a
+result. Real-repository precision for the rule is unmeasured. This is not a
+99% claim.
+
+Second batch, swallowed-exception (Java, Ruby and TypeScript, five rules):
+code recall 37/117 to 41/117 (35.0%), Java 5 to 7, Ruby 5 to 6, TypeScript 4
+to 5, no new false alarms or unreviewed findings. The first Ruby draft also
+fired on a puma `ipv6_interface_available?` probe; probe methods named `foo?`
+are now exempt, and the real-repository guard (python, TypeScript, Ruby, Go)
+is unchanged. Java has no real-repository guard, so its precision is
+unmeasured. The held-out aggregate did not move. Not a 99% claim.
+
+Third batch, path-confinement and SSRF (seven rules): code recall 41/117 to
+48/117 (41.0%), no new false alarms or unreviewed findings. The real-repository
+guard (python, TypeScript, Ruby, Go) and the held-out aggregate did not move;
+Java precision on real code is unmeasured. The rules are shape- and
+name-based, so they will miss renamed variables, and only the "optional root"
+and "resolve, then connect" shapes are covered. Not a 99% claim.
+
 ## Baseline decision
 
-The present data is suitable for regression, gap discovery, and planning a
-narrow pilot. It is not sufficient for a 99% precision-and-recall claim:
-the AI-heldout recall is 4%, the AI development recall is 28%, human
-adjudication is incomplete, confidence bounds are not cluster-aware, and
-platform/segment coverage is incomplete.
+The evidence is not sufficient for a 99% precision-and-recall claim. The
+AI-heldout recall is 4%, AI-development recall is 28%, and the RealVuln
+multi-CWE manual-review slice measured 89.9% labelled-case precision and
+18.2% labelled-case recall with benchmark-specific cluster intervals. The
+narrow CWE-89 slice remains at 77.8% precision and 80.8% recall. The ARB-107
+and ARB-109 analyzer differentials do not add accuracy evidence. Human
+adjudication, representative populations, blind miss audits, and
+platform/segment coverage remain incomplete.
 
-**Next milestone:** create a new, non-sealed development/validation sample for
-one narrowly scoped weakness and language slice, obtain blind human
-adjudication, and validate the cluster-aware estimator before changing rules.
-Keep the existing sealed AI and gold sources closed.
+**Next milestone:** rule owners should address the broad missed weakness
+families using development data only, with regression tests and paired
+precision/recall checks. In parallel, execute the predeclared real-repository
+precision sample with blinded labels and prepare independent human review.
+Keep this RealVuln evaluation data and the existing sealed AI and gold sources
+closed to case-level tuning.
+
+Per the owner's 2026-10-24 decision, interim measurements may use blind model
+labels when human reviewers are unavailable. Report those results only as
+**model-labelled conformance**, with model and prompt provenance; they are not
+independent adjudication, certified precision/recall, or evidence for a 99%
+claim. This interim option changes no baseline result or label provenance.

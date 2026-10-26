@@ -1362,3 +1362,545 @@ a no-op under the default but still overrides `report.show: verified` for
 one run, which is what the existing `run with --advisory to include them`
 hint relies on. The two flags are mutually exclusive.
 
+## 2026-09-18 — Thresholds that fit the repository (ARB-153)
+
+**What prompted it.** The adaptive-threshold mechanism was already written --
+`metrics_from_inventory`, `adaptive_threshold`, `resolve_quality_config` --
+and had never once run. It was gated behind a `quality.adaptive` config flag
+that was set nowhere, and the distributions it produced were computed fresh on
+every scan, used, and discarded. The `profiles` store in `knowledge.json` was
+an empty object. This change turned it on and gave the profiles somewhere to
+live.
+
+**Why writing a profile is its own command.** Profiles decide which findings a
+scan reports, so they are part of the knowledge version hash. If a scan stored
+one, every run would move the hash it had just recorded into its own report,
+and `--pin-knowledge` would then fail against a ledger the pinned run itself
+produced. `arbiter profile` writes them deliberately, and running it means
+re-pinning. A scan only ever reads.
+
+**Why the source is in the report.** A threshold measured from the code being
+judged and one drawn from the pinned ledger look identical as numbers, but
+only the second is reproducible from the knowledge version alone -- the first
+moves when the code moves, so adding a long file raises the threshold that
+decides whether long files are reported. `learning.profile_source` says which
+it was: `learned`, `measured`, or `none`.
+
+**One defect introduced and caught here.** The first implementation keyed
+profiles on `repos[0].id`, which is the literal string `root` for any
+single-target scan. A profile written by `arbiter profile` under the directory
+name was therefore never found again, and every repository scanned on its own
+would have shared one entry, with whichever was profiled first setting the
+thresholds for all of them. Nothing failed: the scan ran clean and reported
+`profile_source: measured` while a learned profile sat in the ledger, which is
+the only reason it was noticed. `profile_key()` now derives the name from the
+directory, and `tools/mutate_tests.py` restores the defect to prove the test
+covering it can fail.
+
+**Enabled here, not shipped on.** `adaptive: true` is set in this
+repository's `arbiter.yaml` rather than in the defaults, because flipping the
+default would move every existing user's thresholds without them asking. The
+learned profile for this repository is `file_lines` over 60 files: median 267,
+p95 1066, max 2032. The ledger moved `k:2b2bbb166445` -> `k:bc9c7897df3e`.
+
+**A second defect, found by doing the arithmetic.** The rule shipped as
+`max(p95, floor)` -- a floor and no ceiling. The configured threshold was
+therefore not a bound on anything, and turning the feature on raised this
+repository's own `max_file_lines` from 900 to 1066 and silenced three real
+findings at 954, 975 and 1066 lines. The deeper problem was that the rule was
+scale-equivariant in the percentile: multiplying every file by ten multiplied
+the threshold by ten, so the identical two files stayed flagged where the
+fixed threshold would have gone from 5 findings to 42. Uniform decay could not
+be seen at all, which is grading on a curve in the literal sense -- a
+percentile threshold flags a fixed *fraction* of files no matter how the code
+reads. Three documents asserted the opposite property, and the test named for
+it asserted only `>= floor`, which a threshold of 50,000 satisfies. The
+configured value now caps the result: adaptive tightens, never loosens. The
+asymmetry is an evidence argument rather than a preference -- bootstrapping
+p95 over the 60 files gives a 90% interval of [664, 2032], spanning finding
+counts from 0 to 6, and an estimate that loose can be trusted to fail closed
+but not to fail open. Under the cap, adaptive is inert for `max_file_lines` on
+this repository: it resolves back to 900.
+
+**What this does not yet do.** Only the first repository's profile is
+consulted, because quality thresholds are resolved once for the whole run -- a
+multi-repo system scan cannot hold one set per repository, which is a
+limitation of where thresholds live and not of the store. And `function_lines`
+and `complexity` are measured only when tree-sitter is importable; it is not
+installed on this machine, so the only threshold that actually adapts here is
+`max_file_lines`. The function-length case that motivates the feature in
+`docs/calibration.md` is precisely the one that cannot adapt without it.
+
+**What was deliberately not done.** No adjudicated verdict feeds any of this.
+The thresholds adapt to a repository's shape, not to whether anyone agreed
+with the findings they produced; `docs/proposal-usage-learning.md` argues for
+the latter and remains a proposal, on the grounds that a weak signal nobody
+can calibrate against is how a tool starts grading itself on a curve.
+
+## 2026-10-24 — External conformance scorecard (ARB-120)
+
+**Why.** The 99% program needs evidence from code and labels Arbiter's
+authors did not write. OWASP Benchmark, Juliet and the GHSA fix pairs were
+already fetched and pinned, but they were only used per *finding* (ground-truth
+labels for the precision ledger). Nothing measured recall or safe-case
+false positives on them in the manifest's run-record format.
+
+**Decisions.**
+- **Score per case, not per finding.** Recall and safe-case FPR need a
+  denominator of cases. OWASP's are its `expectedresults` rows, and the
+  OWASP matching is `gold_benchmark.score_recall`'s, with a test holding the
+  two equal. Juliet and the CVE pairs publish no safe-case list, so their
+  units are Arbiter-defined, and the scorecard and docs say so:
+  - Juliet: one case stem, a `bad` unit and a `good*` unit, decided by
+    `benchmarks_gt.juliet_side`.
+  - CVE: the hunks the fix changed ±2 lines, vulnerable side versus fixed
+    side, using the same window on both. `cve_pairs.classify` uses exact
+    changed lines on the vulnerable side. A pure-insertion fix leaves the
+    sink line unchanged and could never match there.
+- **One cluster means case-level intervals.** OWASP and Juliet are single
+  repositories, so their Wilson intervals are stated as case-level only.
+  The CVE pairs (70 repositories) also get the RealVuln pilot's
+  repository-cluster percentile bootstrap (8198df7: 10,000 replicates,
+  seed 0). That code is reimplemented, not shared, until that branch
+  merges.
+- **The manifest and schema are not edited.** Copilot's unmerged 8198df7
+  rewrites both. The run records live in `docs/external-scorecard.json` and
+  a test validates them against the template subschema. `counts` and
+  `metrics` hold exactly the template's keys; everything else sits beside
+  them.
+- **Weak spots are ranked by `0.99 - min(precision lower, recall lower)`,**
+  shown in two lists. With dozens of zero-detection rules tied at 0.99, one
+  list hid the rules that fire but miss the bar.
+
+**What it showed** (Arbiter `f52484f`):
+- No benchmark, CWE or rule meets the 0.99 lower bound on both precision
+  and recall.
+- OWASP in-scope recall is about 0.97, against 0.34 on Juliet and 0.08 on
+  the CVE pairs. OWASP and Juliet were used to measure earlier rule changes
+  (ARB-065), so the OWASP figure is development-exposed, not holdout
+  evidence.
+- Injection rules trade precision for recall on safe cases: Juliet CWE-89
+  FPR 0.486 and CWE-78 FPR 0.457, at about 0.99 recall.
+
+**Holdout consequence.** Once a rule is tuned on these weak spots, OWASP,
+Juliet and the 70 CVE pairs are spent as sealed sets for it. ARB-121's
+frozen GHSA split is the fresh holdout.
+
+**Follow-up.**
+- Extend RealVuln beyond CWE-89 and share one bootstrap once 8198df7 merges.
+- The license and provenance inventory for Juliet and the CVE pairs is
+  still open.
+
+## 2026-10-24 — External real-CVE benchmark from GHSA (ARB-121)
+
+The first measurement of Arbiter against outside code at scale in all five
+languages: 500 reviewed GitHub advisories (100 per language) whose fix is a
+small single-parent GitHub commit, restricted to the CWEs the language pack's
+security rules are tagged with, so that a miss is a miss of a weakness
+Arbiter claims. Criteria, seeded order and the repository split were fixed in
+code and committed (02df982) before anything was scanned; repositories of
+every existing sealed set are excluded, gold development repositories are kept
+in development. The sealed half (188 repositories, `held_out_ghsa_r1`) is
+reported in aggregate only and was used once, for this baseline.
+
+Baseline primary recall is 9.4% on development (26/277) and 8.1% sealed
+(18/223); Python is highest (19.0% / 13.5%), Java and Go lowest. Looser regions
+add little (file level 12.6% / 10.8%): mostly nothing matching fires at all.
+The development misses, per CWE, are the recall work list (Phase 4 of
+docs/accuracy-roadmap.md); the sealed split must stay closed while rules change.
+Labels are patch-derived and not human-adjudicated: these are
+benchmark-conformance figures, not a population claim.
+
+## 2026-10-24 — A panel of models from different companies (ARB-122)
+
+The precision study's model labels came from one vendor's model with two
+prompts, so the ledger's unanimity and κ never saw two independent
+labellers. `tools/panel/` adds a panel: Claude, Codex (OpenAI) and Gemini
+(Google) CLIs on the user's subscriptions, plus Copilot as an optional
+fourth seat. Each labels the same blind packet alone, and each answer is its
+own label record (`<seat>-<model>:panel/v1`).
+
+- **Independence is a vendor property, not a prompt property.** The panel
+  refuses two seats of one vendor. It discards an answer that came from
+  another vendor's model, because Copilot's auto routing moved from
+  Microsoft's `mai-code-1.1-flash` to OpenAI's `gpt-6-luna` within one
+  session. The ledger's κ now pairs the first labeller with the first from
+  another vendor (`kappa_pair`), so two Anthropic labellers no longer count
+  as a pair. Existing ledger numbers did not move: a rebuild is
+  byte-identical.
+- **Tool-off is tested with a canary file, not read off `--help`.**
+  Copilot's empty `--available-tools` left every tool on, and the model read
+  the canary file (FAIL-074). Codex's remaining exec tool fails closed with
+  its code-mode host off, and every answer showing a tool event is refused.
+- **Gemini runs on an API key and sees public code only.** Google ended
+  personal Code Assist logins, so the seat uses an AI Studio key from
+  `~/.config/arbiter/gemini.key`, passed only to the child process. The free
+  tier may train on prompts, so the seat is public-only in code: it gets
+  gold, held-out, CVE and benchmark packets, never planted, AI-corpus or
+  private-repository ones.
+- **A `mechanical` role sits between ground truth and the adjudicator.** It
+  lets the planned sandbox checkers (fact re-derivation, exploit runs, mutation, fault
+  injection) decide findings by observed behaviour.
+- **Records stay one per model** so that Dawid–Skene can later replace
+  strict unanimity with labeller-weighted votes.
+- **Smoke, 2026-10-24.** Two vendors only: Claude and Codex agreed with
+  benchmark truth on every decided item of 24. Gemini was logged in, but
+  Google refused the personal account ("no longer supported for Gemini Code
+  Assist for individuals"). Copilot's only route was OpenAI, already
+  seated. A three-vendor calibration of 60 or more items is still owed
+  before panel labels feed any claim. Panel labels are reported as
+  model-labelled conformance, never as certified.
+
+## 2026-10-24 — A target may not grade itself; unassessed source says so (ARB-143..147)
+
+A core audit of main 8a12926 reproduced five false-clean / false-verified
+gaps. All five share one shape: an input the scan did not control (the
+target's config, a language with no pack, a mistyped path, a tool's
+unreadable output, a glob) was read as "nothing to report".
+
+**Config trust (ARB-143).** `load_config` now distinguishes the file it
+found in the target root from one the operator named with `--config`. The
+target's file may *tighten* the gate and may use every feature meant for it
+(suppressions, house rules, scoring, quality thresholds); it may not set
+`precision` or `verify`, and may not *loosen* the gate. Tighten versus
+loosen is decided key by key against `DEFAULTS["gate"]`: a known severity
+for `fail_on.severity`/`new` (none ranks above the default `critical`), a
+numeric `coverage_below`, `true` for `gate_on_inferred`/`fail_on_probe_error`,
+`tier_mode: legacy`, and a `tiers` list that keeps every default tier.
+Anything else under `gate` is dropped. A malformed value (`teired`) still
+raises, as before. Dropped keys land in `scan_scope.config.ignored` and are
+printed, so the drop is never silent. A ledger named by any config is
+resolved relative to that file and refused if it escapes the file's
+directory; `effective_bar` floors every bar threshold at `DEFAULT_BAR`.
+*Open to review:* whether `suppress` should also be restricted for a target
+root config (it was left alone: suppressions stay visible in the report and
+`assurance.blanket-suppression` already counts them), and whether
+`fail_on.severity` below `critical` should be treated as tightening when
+the operator's `--config` would have set something else (today a target
+root config is only ever compared with the defaults, never with an
+operator's file, since `--config` replaces it).
+
+**Unassessed languages (ARB-144).** The existing withholding mechanism is
+coverage; the fix adds to the denominator rather than inventing a second
+rule. `lang_rules.not_assessed_outcome` emits one `skipped`, `applicable`
+outcome named `lang_unsupported`, sized as the mean pack size times the
+number of missing languages, so three unsupported languages weigh like
+three packs. A second check withholds the grade outright when more than
+half the source lines are in such languages even if coverage clears the
+threshold, with the same wording a partial scan uses. The inventory now
+recognises the common languages it cannot assess, so they are reported as
+unassessed source rather than as `unknown` data.
+
+**`--only-files` (ARB-145).** `lstrip("./")` strips characters. The path is
+now normalised with a prefix loop, an absolute path under a target is made
+relative, and a path the inventory does not hold is an error that names it.
+
+**Adapters failing inside `ok_exit` (ARB-146).** `Adapter.decode` and
+`rows_of` raise `AdapterOutputError` for output that is not what the
+manifest describes; `map.errors` declares where a tool reports its own
+failures, and any non-warning entry raises `AnalyzerErrors`. Decision: an
+analyzer that reports errors is recorded `error` with its findings set
+aside (counted in the reason) rather than kept, because invariant CI-7
+says an errored probe reports no findings and a half-read tree is not the
+tool's answer. The alternative, a new `partial` status, would have touched
+every consumer of `status` for one adapter case.
+
+**Globs (ARB-147).** `arbiter/globs.py` is a small globstar matcher (`*`
+within a segment, `**` across segments, `[...]`, case-sensitive). House
+rules use it; the gitignore reader, suppression `path:` globs and language
+pack `files:` keep `fnmatch`, since their documented semantics are
+fnmatch's and changing them was out of scope.
+
+
+## 2026-10-24 — Nothing leaves the scan silently (ARB-148..152)
+
+The second batch from the core audit of main 8a12926 (CORE-013..025). The
+shape is the same as ARB-143..147: an input the scan did not control -- a
+file it would not read, a directory it would not enter, a config key with a
+typo, a change with nothing readable in it -- was read as "nothing to
+report". Each fix extends the mechanism ARB-143/144 built rather than adding
+one: dropped config keys go through `restrict_target_config` and
+`scan_scope.config.ignored`; unread files become one more `skipped` outcome
+in the coverage denominator; withholding goes through the one
+`_withhold()` helper with a token the gate reads.
+
+**Config trust, second pass (ARB-148).** The question ARB-143 left open --
+whether `suppress` should be restricted for a target-root config -- is
+answered yes: `suppress` and `probes.severity_overrides` are dropped, and a
+`score.coverage_threshold` below the default is dropped. The cost is real
+and deliberate: a repository that keeps its suppressions in its own
+`arbiter.yaml` must now pass `--config arbiter.yaml` to have them honoured.
+Arbiter's own pr-check, the `omni gate` rule in
+`.ai/rules/completion-workflow.json`, the shipped GitHub action (new
+`config` input defaulting to `arbiter.yaml`; a missing file means the
+defaults) and the GitLab template do so. `probes.disable`, `rules`,
+`quality` and `score.weights` are left to the target: a disabled probe
+lowers coverage, which the gate now reads (ARB-152); the others add findings
+or re-weigh a grade the gate does not read. *Open:* `quality` thresholds
+raised to absurd values hide quality findings; `score.weights` can zero a
+dimension in the grade.
+
+**Nothing read (ARB-149).** `Inventory.assessable_files` -- text files in
+roles source/test/config/iac/ci -- is the definition of "something a probe
+reads". Docs, data and generated files are opened by a probe or two but no
+rule pack or quality check assesses them, so a tree of only those has had
+nothing assessed. Zero assessable files withholds the grade with
+`withheld_by: nothing_read`. In a partial scan the equivalent question is
+asked of the changed files (ARB-151) and the whole-tree check is skipped.
+
+**Skipped files (ARB-150).** `walk_repo` takes a `skipped` list and
+appends an entry with a fixed reason string for every file it will not read
+and every directory it will not enter. Decisions: (1) `vendor/`,
+`node_modules/`, `target/`, `site-packages/` and the rest of `SKIP_DIRS`
+are reported with a bounded file count (500+), never counted against
+coverage -- what is vendored did not change, and counting node_modules
+would wreck every Node repository's coverage; the gap is visible and that is
+the brief. (2) Source-like means a known text extension in an assessable
+role, so a skipped `.png` or `package-lock.json` is counted by reason but
+does not lower coverage; a skipped `.py` does. (3) BOM-less UTF-16 is
+detected by its NUL stride (half the odd offsets NUL and no even one, or
+the mirror) and reported with a fix-it reason, not decoded: `probes._read`
+could decode it, but `ast.py` hands tree-sitter the raw bytes and the pack
+reader uses `read_text(encoding="utf-8")`, so decoding in one place would
+make one reader right and the rest silently wrong. (4) A file symlink whose
+resolved target is outside the root is not read: before, a hostile pull
+request could point a `.py` at a runner file and have its content echoed
+into the evidence. Links inside the tree are read as before. (5) One
+`files_not_read` outcome sized as one rule pack joins the denominator;
+above 50% of source-like files skipped (`UNASSESSED_SOURCE_LIMIT`, shared
+with ARB-144) the grade is withheld.
+
+**--changed (ARB-151).** `narrow()` now counts a changed file as read only
+when it is text and not `generated`; `unread_reason()` says why otherwise.
+Deletions are named by a new `git_deleted` (the existing `git_changed`
+filters them with `--diff-filter=d`, correctly, since there is nothing to
+read). Decision: a change with changed files present and none read fails
+the gate ("none of the N changed file(s) was read (...)"); a delete-only
+change passes with a line saying so. A deletion cannot introduce a finding
+and repo-scoped probes do not run in a partial scan, so failing it would be
+a gate with no remedy.
+
+**Fail closed (ARB-152).** Three validations and one gate rule.
+`check_gate_config` normalises `fail_on.severity`/`new` case-insensitively
+and raises on an unknown name, from a target root as from `--config`
+(ARB-143 used to drop a misspelt name as "would loosen"; a typo is an error,
+not a loosening). `suppression_problems` enforces what the docstring and
+docs had always claimed -- `reason`, `expires`, a selector -- at load, and
+`apply_suppressions` ignores an invalid entry as a backstop for configs
+built in code. `Scorecard.withheld_by` names the cause of a withholding and
+`evaluate_gate` fails on any cause but the operator's own: `partial`
+(`--changed`, `--only-files`) and `probes_selected` (`--only`, `--skip`,
+`--no-adapters`). `probes_selected` is granted only when the operator's
+choice explains the gap: the engine recomputes coverage with the
+operator-skipped outcomes out of the denominator and the rest must reach
+the bar (`scan_scope.probes_selected.coverage_without`), so a target config
+that disables probes under an operator's `--no-adapters` still fails. An
+analyzer the operator switched off reads `external analyzers disabled for
+this run` whether or not it is installed (the check moved ahead of
+`prevented` and the binary check), and a `--skip` reads `skipped on the
+command line`, so claims.py's CI-12 list gained "on the command line".
+*Consequence to know:* a machine without the analyzers installed now fails
+`arbiter gate .` with `grade withheld (coverage): 24%` where it passed
+before; the remedies are `arbiter tools install`, `--no-adapters`, or
+`gate.fail_on.withheld_grade: false` in a `--config` file. A target root
+may not set it false.
+
+**Out of scope, listed as follow-ups:** CORE-024 (the sqrt(LOC) size
+factor lets five criticals grade 96/100 at 5M lines), CORE-027 (unsure
+labels leave the precision denominator), CORE-026 (`ignore:` is declared in
+DEFAULTS and read nowhere; unknown top-level keys are not validated),
+CORE-021 (CR-only line endings reach the regex rules as one line).
+
+## 2026-10-24 — RealVuln Python CWE-89 pilot completed (ARB-097)
+
+The owner-approved RealVuln 3.1.0 subset was evaluated in aggregate-only mode:
+11 pinned MIT/Unlicense Python repositories, 26 vulnerable labels, and 34 safe
+traps. The pinned ground-truth records use internal repository IDs distinct
+from their benchmark directory keys; both identities and the ground-truth
+version were validated separately. All source archives and labels were kept
+outside the checkout, source code was not executed, and the scan used the
+offline `lang_python` probe with adapters, cache, and history disabled.
+
+Aggregate case-level results were TP 21, FN 5, FP 6, TN 28: precision 21/27
+(77.8%), recall 21/26 (80.8%), and safe-trap false-positive rate 6/34 (17.6%).
+One unmatched CWE-89 finding remains unassessed. The 95% seeded
+repository-cluster bootstrap intervals (10,000 replicates) are 64.3%–90.9%
+for precision and 50.0%–100.0% for recall; they describe this curated
+11-repository subset only. All labels have `manual_review` provenance, but
+only five are explicitly marked `manually_verified`; no independent
+multi-reviewer audit is documented. All 11 overall scorecards were withheld
+because only the Python probe ran, although that probe was assessed on all 11.
+
+This result is RealVuln case-level conformance, not Arbiter finding precision,
+production-population accuracy, or evidence for the general 99% target. No
+detection rules were changed or tuned. Aggregate results and run provenance
+are recorded in `docs/accuracy-benchmark-manifest.json`; raw source, labels,
+reports, and per-repository logs were temporary and are removed after
+validation. Follow-up requires independent reviewers or an approved larger
+source with defensible labels, plus blind repository miss audits and
+representative language/platform coverage. FAIL-063 through FAIL-069 and
+FAIL-080 through FAIL-084 record
+the validation and acquisition issues encountered and their regression or
+prevention evidence. The testing playbook now requires aggregate assertions
+to account for all included fixture records.
+
+Separately, the maintainer-authored Python planted regression corpus passed
+73/73, including 8/8 planted SQL-injection cases, with no reported misses,
+unexpected findings, or safe-twin false positives. That run used Python
+3.14.4 on Linux/WSL2 with `tree-sitter-language-pack` 1.22.1 and is regression
+evidence only, not independent accuracy evidence.
+
+ARB-104 adds `docs/accuracy-review-protocol.md` as the operational next step
+after the aggregate-only RealVuln pilot. It separates blinded sampled-finding
+precision review from repository-level missed-defect audits, requires two
+independent reviewers and third-party adjudication, and calls for predeclared
+sampling and cluster-aware analysis. This is documentation only: no reviewers
+were engaged, no source or sealed dataset was opened, no new labels or audits
+were collected, and no detection rules were tuned. Before executing the
+protocol, secure an independent coordinator/reviewers, approve source and
+license terms, and freeze the study sampling and analysis plan.
+
+ARB-105 records the next measurement design in
+`docs/accuracy-measurement-expansion.md`. The first RealVuln extension should
+inventory the pinned ground truth and, if label completeness and exclusions
+validate, score eligible CWEs on the previously cleared 11 Python repo pins,
+keeping the existing case matcher and historical run untouched.
+RealVuln's pinned benchmark metadata reports 90 LLM-generated repositories
+across Python and TypeScript/JavaScript, but their per-repository rights are
+not established by the benchmark repository's Apache-2.0 license; do not
+acquire those sources until each pin is cleared. RealVuln targets are
+intentionally vulnerable applications, so its results are benchmark
+conformance, not a representative real-production-repository precision
+estimate. SecurityEval and
+RealSec-Bench also have no declared GitHub license in the reviewed metadata;
+RealSec-Bench's documented evaluator executes generated code and is outside
+the current no-execution boundary.
+
+For the real-repository precision study, Semgrep findings and CodeQL findings
+are differential signals only. A blinded model may label samples under the
+owner's interim decision, but results must be called model-labelled
+conformance, include exact model/prompt provenance, and must not be described
+as independent truth or certified 99% accuracy. Semgrep 1.177.0 and its
+locked rules are available in the current environment; CodeQL is not
+installed. The generic manifest `run_record_template` remains the stable
+cross-study format; the existing Python/CWE-89 `evaluation_run` is not
+rewritten for other scopes.
+
+## 2026-10-24 — RealVuln multi-CWE baseline (ARB-106)
+
+Validated all 502 labels in the previously approved 11 MIT/Unlicense Python
+repository pins (65 primary CWEs). The aggregate-only run included only the
+408 `manual_review` labels across 53 CWEs; 66 of those explicitly set
+`manually_verified=true`. It excluded 75 `our-scanner`, 13
+`gt_expansion_verification_2026_04_29`, five `snyk`, and one `walkthrough`
+labels. Results: TP 62, FN 279, FP 7, TN 60; labelled-case precision 62/69
+(89.9%), recall 62/341 (18.2%), safe-trap false-positive rate 7/67 (10.4%).
+Twenty-five unmatched findings remain unassessed. Descriptive repository-
+cluster bootstrap intervals are 84.5%–94.7% for precision and 13.0%–23.8%
+for recall. All 11 Python probes ran; all overall scorecards were withheld
+because other probes were not assessed. The target source was never executed.
+
+This is benchmark-maintainer label conformance, not independent multi-reviewer
+truth, finding-level precision, production accuracy, or a 99% claim. No
+case-level examples were inspected and no rules were tuned on this benchmark.
+The additive multi-CWE evaluator reproduces the historical CWE-89 confusion
+counts exactly; the prior matcher and run record are unchanged. Aggregate
+results and per-repository source, label, and report hashes are in
+`docs/accuracy-realvuln-multicwe-run.json`; `docs/accuracy-benchmark-manifest.json`
+references its digest. Prioritize follow-up rule work using development data
+and independent regression cases, not these evaluation examples.
+
+## 2026-10-24 — Pinned analyzer differential rehearsal (ARB-107)
+
+Ran Arbiter native probes, Semgrep 1.177.0 with rules commit
+`40b8c63f75dc7c22c8a77482d73bfb864b146f7e`, and CodeQL 2.27.3 with
+`codeql/python-queries@1.8.13` on the same 11 MIT/Unlicense RealVuln Python
+snapshots. CodeQL used `--build-mode none`; Arbiter used offline native probes
+with adapters, cache, and history disabled. No build, test, setup, or
+application command ran, and target code was not executed.
+
+The aggregate Python security finding counts were Arbiter 102, Semgrep 236,
+and CodeQL 96. CodeQL extracted 459/459 Python files; Semgrep scanned 360
+Python files while applying each source repository's `.semgrepignore`, so the
+effective file sets differed. Location-overlap, unmatched-by-location, and
+CWE-tag agreement counts are recorded in the analyzer differential entry of
+`docs/accuracy-benchmark-manifest.json`; raw per-case reports and databases
+were temporary and are not committed. The worktree had the ARB-107 registry
+update and unrelated pre-existing untracked paths, but scanner source files
+matched commit `f766cec`.
+
+These are differential-coverage signals on intentionally vulnerable benchmark
+applications, not accuracy, precision, recall, or ground truth. The separate
+ordinary-repository precision study, blinded review, and human miss audit
+remain unmeasured. No detection rules were tuned.
+
+ARB-108 froze the ordinary Python precision feasibility cohort before any
+source acquisition or scan. The manifest records the 100-result
+popularity-sorted metadata frame, the ordered 17-repository eligible pool,
+seeded 11-repository draw, exact commit pins, MIT license-file digests, and
+identifier-only overlap checks against Arbiter gold and RealVuln. The cohort
+is convenience-sampled and unscanned; it provides no accuracy evidence. The
+next stage must scan only the frozen pins, with blinded review coordinated
+independently and model labels described only as model-labelled conformance.
+
+## 2026-10-25 — Ordinary Python cohort differential scan (ARB-109)
+
+Scanned only the 11 exact MIT-licensed pins frozen under ARB-108. Arbiter's
+scanner sources matched commit `82ca64b5fc1c4fc8234daea1e8cd1b75051831b7`;
+the scan used its offline `lang_python` probe with adapters, cache, and history
+disabled. Semgrep 1.177.0 used rules commit
+`40b8c63f75dc7c22c8a77482d73bfb864b146f7e`; CodeQL 2.27.3 used
+`codeql/python-queries@1.8.13` and no-build extraction. No target source was
+executed and no project build, test, or setup command ran.
+
+The aggregate counts were Arbiter 105, Semgrep 2,663, and CodeQL 16. Semgrep
+scanned 2,146/3,662 Python files and reported eight errors (seven timeouts,
+one syntax error). CodeQL scanned 3,661/3,662 files, completed all 11
+invocations, and emitted 189 extractor warning lines. Arbiter ran its Python
+probe on all repositories, but all 11 overall scorecards were withheld at
+8.1% overall coverage because other probes were not selected. Location-span
+comparison found 39 Arbiter/Semgrep pairs (31 with shared CWE tags, 8 without)
+and no location-overlapping pairs involving CodeQL.
+
+These are aggregate differential-coverage observations only. The
+popularity-biased 11-repository cohort is not representative; analyzer
+agreement is not ground truth. No labels, independent human review, miss
+audit, or rule tuning were performed, so this adds no precision/recall estimate
+and no basis for a general 99% claim. The manifest retains tool/environment
+provenance, source archive hashes, per-repository aggregates, and limits;
+raw snapshots and case-level reports remain temporary.
+
+Next: preregister a blinded finding review sample and separate blind
+repository miss audit, with an independent coordinator and human reviewers.
+Model labels, if approved in place of unavailable human review, remain
+model-labelled conformance and cannot be reported as certified accuracy.
+
+## 2026-10-25 — Gap closure without human reviewers (ARB-110)
+
+Owner decision: human reviewers will not be available soon, so the gap is to
+be closed with development-data rule work, model-labelled conformance and,
+if useful, GPU-trained triage. `docs/accuracy-gap-closure-plan.md` records the
+plan. Recall (4% held-out, 28% development, 18.2% RealVuln multi-CWE) is rule
+coverage and is the dominant gap; learned triage can only reorder or annotate
+findings that analyzers already report. Training data is limited to
+development labels split by repository; the sealed held-out sets, RealVuln and
+the ARB-109 cohort stay evaluation-only. A learned score is `inferred`
+provenance and never becomes the verified tier. Hardware: RTX 5070 Laptop,
+8 GB; torch and a code model are not installed and need a separate
+dependency requirement. Nothing here is a measurement or a 99% claim.
+
+ARB-110 update: owner uses RunPod for training and approved uploading public code. Interim spend ceiling USD 25 per experiment, USD 75 total; sealed, held-out, RealVuln and ARB-109 data never leave the machine. See the plan's Workstream C.
+
+## 2026-10-25 — First development-only recall rule (ARB-110, Workstream A)
+
+Environment note: the repository venv lacked the `ast` extra, so a first score read 8.5% code recall instead of the documented ~28%. Installing it (`uv pip install -e ".[ast]"`) restored the baseline of 34/117 (29.1%). Re-measure only with the extra installed.
+
+Ranked the development corpus misses (`tools/ai_corpus_score.py`). Largest wholly missed families: unhandled-input-error 0/8, missing-timeout 0/6, path-traversal 0/6, replay 0/5, test-ineffective 0/5, server-no-timeout 0/3. First rule: Go `http-server-no-timeout` (CWE-400). Development corpus: Go 14 -> 17 of 24, all 34 -> 37 of 117, 0 new false alarms. Guarded by planted bad/good twins and unit tests; the planted and ai-corpus snapshots were re-cut with exactly the five intended findings added.
+
+The sealed held-out aggregate guard moved as a side effect (146 -> 151 findings; true positives +3 against +5 in scope), so up to two of the new held-out findings are not true positives by its labels. That tree was not opened, the rule was not adjusted to it, and the snapshot was re-cut. Treat it as a precision caution for this rule, not a result. The pinned real-repository guards were skipped (corpus not fetched), so real-repository precision for this rule is unmeasured.
+
+Next families by defect count: unhandled-input-error, path-traversal, swallowed-exception, ssrf, unbounded-memory. Model-labelled conformance on development data only; no 99% claim.
+
+2026-10-26 ARB-110 second batch: five swallowed-exception rules (Java x2, Ruby x2, TypeScript x1), dev-corpus code recall 37 -> 41 of 117, 0 new false alarms, real-repo guard and held-out aggregate unchanged; packs 182 rules (269 in all). Remaining: path-traversal (optional-root shape), ssrf, unbounded-memory, unhandled-input-error. Model-labelled conformance on development data only; no 99% claim.
+
+2026-10-26 ARB-110 third batch: path-confinement-optional (py/ts/ruby/java) and ssrf-check-then-connect (py/ts/java), dev-corpus code recall 41 -> 48 of 117, 0 new false alarms, real-repo guard and held-out aggregate unchanged; packs 189 rules (276 in all). Remaining: unbounded-memory, unhandled-input-error, Go symlink path-traversal, Ruby SSRF blocklist gaps. Model-labelled conformance on development data only; no 99% claim.

@@ -45,7 +45,7 @@ per CWE. Cells marked † are measured on pairs that were already in the corpus.
 | 2 | 787 OOB write | n/a | n/a | n/a | n/a | n/a |
 | 3 | 89 SQL injection | N+S+B † | N+S † | N+S † | N+S † | N+S † |
 | 4 | 352 CSRF | N+S | N | OOR | N+S | N |
-| 5 | 22 Path traversal | S | S | N | S | N |
+| 5 | 22 Path traversal | N+S | N+S | N | N+S | N |
 | 6 | 125 OOB read | n/a | n/a | n/a | n/a | n/a |
 | 7 | 78 OS command injection | N+S+B † | N+S † | N+S † | N+S † | N+S † |
 | 8 | 416 Use after free | n/a | n/a | n/a | n/a | n/a |
@@ -85,10 +85,10 @@ the total. "Native only" means no external analyzer is needed.
 
 | Language | Applicable cells | Native | Semgrep | Bandit | Caught by anything | Gaps |
 |---|---|---|---|---|---|---|
-| Python | 14 | 12 | 12 | 7 | 14 | 0 |
-| TypeScript | 14 | 12 | 7 | n/a | 14 | 0 |
+| Python | 14 | 13 | 12 | 7 | 14 | 0 |
+| TypeScript | 14 | 13 | 7 | n/a | 14 | 0 |
 | Go | 12 | 11 | 3 | n/a | 12 | 0 |
-| Java | 15 | 13 | 8 | n/a | 15 | 0 |
+| Java | 15 | 14 | 8 | n/a | 15 | 0 |
 | Ruby | 14 | 13 | 6 | n/a | 14 | 0 |
 
 gitleaks ran on every language and reported none of the planted credentials:

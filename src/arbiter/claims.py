@@ -216,7 +216,8 @@ INVARIANTS = {
 # that pairs one of these with applicable=False is laundering a coverage gap
 # as a non-question, which is exactly the move CI-12 exists to refuse.
 _PREVENTED_REASONS = ("missing binary", "missing python package", "not installed", "forbids",
-                      "not selected", "disabled in configuration", "partial scan")
+                      "not selected", "disabled in configuration", "on the command line",
+                      "partial scan")
 
 
 def verify(report: Report, config: dict | None = None) -> list[Violation]:

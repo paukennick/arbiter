@@ -12,6 +12,7 @@ treated as passes.
 - [The resource graph](#the-resource-graph)
 - [Concurrency](#concurrency)
 - [Language packs](#language-packs)
+- [Supply-chain pinning](#supply-chain-pinning)
 - [Machine-authored code](#machine-authored-code)
 - [AI-written services](#ai-written-services)
 - [Contracts between artifacts](#contracts-between-artifacts)
@@ -31,7 +32,7 @@ treated as passes.
 | `quality` | quality | nothing | Oversized files, TODO clusters, repositories with no tests |
 | `ast_metrics` | quality | tree-sitter | Function length, cyclomatic complexity and nesting depth measured from a real parse tree, in 11 languages |
 | `house_rules_ast` | quality, security | tree-sitter | Your own tree-sitter queries from `arbiter.yaml` |
-| `supply_chain` | supply chain, security | nothing | Unpinned Python/npm dependencies, GitHub Actions on mutable refs, `pull_request_target` |
+| `supply_chain` | supply chain, security | nothing | References to third-party code that can change under the same commit: Actions, container images, pre-commit hooks, GitLab includes, Python/npm/Maven/Gradle/RubyGems/Terraform dependencies, installs in a build, remote scripts piped into a shell; and `pull_request_target` — see [Supply-chain pinning](#supply-chain-pinning) |
 | `doc_drift` | drift | nothing | Broken documentation links, files described in prose that do not exist, documented environment variables nothing reads |
 | `interface` | interface | 2+ repos | Six cross-repo seam checks — see [systems.md](systems.md). On a single repository it is recorded as not applicable (`n/a` in the NOT ASSESSED block) and leaves the coverage denominator; a probe that was *prevented* from running stays in it, and claim invariant CI-12 refuses a report that marks a prevented probe as not applicable. |
 | `house_rules` | quality, drift | nothing | Your own rules from `arbiter.yaml` |
@@ -51,8 +52,8 @@ arbiter probes ./repo
 ```
 
 The `CHECKS` column is how many rules each probe holds. On this repository,
-2026-10-23, the language packs hold 176 rules (Python 26, TypeScript/JavaScript
-42, Go 34, Java 39, Ruby 35) and Arbiter ships 263 rules in all. Every rule
+2026-10-25, the language packs hold 189 rules (Python 28, TypeScript/JavaScript
+45, Go 35, Java 43, Ruby 38) and Arbiter ships 276 rules in all. Every rule
 starts in the `advisory` precision tier ([precision.md](precision.md#tiers)).
 
 ### Probe scopes
@@ -298,6 +299,48 @@ cells are the `cwe-top25-2024` control pack, so a scan's controls report says
 per language which weaknesses were assessed, which are gaps, which are out of
 reach and which do not apply (`arbiter controls --framework CWE-Top25-2024`;
 see [compliance.md](compliance.md#cwe-top-25-per-language)).
+
+## Supply-chain pinning
+
+The `supply_chain` probe asks one question of every reference to code the
+repository does not contain: is it immutable, so that what was reviewed is
+what gets built? (ARB-130..132; `src/arbiter/supply.py` and
+`src/arbiter/supply_deps.py`.) Structured files are read with a parser, not
+a pattern: YAML through PyYAML's node API (which keeps line numbers), JSON
+and TOML through the standard library, a POM through expat, Terraform
+through the HCL subset reader in `graph.py`. Requirements files, Gemfiles,
+Gradle scripts, Dockerfiles and shell are read line by line, with
+continuations joined.
+
+| Rule | Reads | Pinned means | Severity |
+|---|---|---|---|
+| `supply.unpinned-action` | workflow `uses:`, composite `action.yml` | a full 40-hex commit SHA (a `# v4` comment is fine); local `./` actions skipped | low, **verified** |
+| `supply.unpinned-container-image` | Dockerfile/Containerfile `FROM` and `COPY --from=<image>`, compose `image:`, Kubernetes container `image:`, GitLab CI `image:`/`services:`, workflow `container:`/`services:`, `uses: docker://` | an `@sha256:` digest. `scratch`, earlier build stages, ARGs with no default and Helm templates are not judged; ARG defaults are resolved; compose `image:` beside `build:` names the built tag; Kubernetes `:latest` is left to `resource.k8s-mutable-image-tag` | low |
+| `supply.unpinned-precommit` | `.pre-commit-config.yaml` | `rev:` a 40-hex SHA (`pre-commit autoupdate --freeze`); `local` and `meta` skipped | info |
+| `supply.unpinned-ci-include` | `.gitlab-ci.yml` `include:` | `project:` at `ref: <SHA>`, a component `@<SHA>`, a remote URL that embeds a SHA; `local:` and `template:` skipped | info |
+| `supply.remote-script-piped` | Dockerfile `RUN`, CI step bodies, `*.sh`, `*.ps1` | n/a: `curl`/`wget` piped or substituted into `sh`/`bash`/`python`/..., `iex` of a download | info (security) |
+| `supply.unpinned-install-in-build` | Dockerfile `RUN`, CI step bodies | `pip install x==1.2.3`, `npm i -g x@1.2.3`, `gem install x -v 1.2.3`, `go install m@v1.2.3`; `-r`/`-c`/`-e`, `npm ci`, local paths and the pip/setuptools/wheel bootstrap skipped | info |
+| `supply.unpinned-python-dep` | `requirements*.txt`, `requirements/*.txt`, `constraints*.txt` holding pip input | `==`/`===` (not `==1.*`), a `--hash`, a VCS URL at a 40-hex commit, a direct archive URL; silent when `poetry.lock`, `uv.lock`, `Pipfile.lock` or `pdm.lock` sits beside it | info |
+| `supply.unpinned-npm-dep` | `package.json` dependencies, devDependencies, optionalDependencies | an exact version, a git ref at a 40-hex commit, `file:`/`link:`/`workspace:`; silent when `package-lock.json`, `npm-shrinkwrap.json`, `yarn.lock`, `pnpm-lock.yaml` or `bun.lock(b)` sits beside or above it | info |
+| `supply.unpinned-java-dep` | `pom.xml`, `build.gradle(.kts)`, `*.versions.toml` | anything but `LATEST`/`RELEASE`, ranges, `+`, `latest.*`; a SNAPSHOT only in a SNAPSHOT build or of the project's own group; Gradle `dependencyLocking` or a `gradle.lockfile` credits dynamic versions | info |
+| `supply.unpinned-ruby-dep` | `Gemfile`, `gems.rb` with no `Gemfile.lock` beside it | a bounded requirement (`~>`, `=`, or `>=` with an upper bound); git gems need `ref:`; `path:` gems and a gem's own Gemfile (`gemspec`) skipped | info |
+| `supply.unpinned-terraform` | `*.tf` `module` and `required_providers` | a registry module at an exact `version`, a git source at `?ref=<SHA or x.y.z>`; a provider with a `version`, or a `.terraform.lock.hcl` beside it | info |
+
+Library manifests are left alone on purpose: `pyproject.toml`, `Pipfile`,
+`setup.cfg` and a gemspec declare ranges for their consumers, which is
+correct. **Go needs no rule**: `go.sum` records a hash for every module
+version a build uses and the go command refuses one that does not match,
+so a Go build is verified against what was first resolved. `go install
+...@latest` in a build is still reported, by `unpinned-install-in-build`.
+
+Severities follow the same measurement as the original three rules (see
+`tests/test_probes_quality.py` and the table in `src/arbiter/supply.py`): on 2026-10-24, over the development tuning
+corpora only (11,283 KLOC well-maintained, 443 KLOC deliberately
+vulnerable; no held-out repository scanned), only
+`unpinned-container-image` fired more than 3x as often on vulnerable code
+(0.013 vs 0.050 per KLOC, 3.95x), so it alone carries `low`. The rest are
+`info`: they report, and score zero. Every new rule is **advisory** until the
+precision ledger admits it on labels; none can block a tiered gate.
 
 ## Machine-authored code
 

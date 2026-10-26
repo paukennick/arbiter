@@ -38,6 +38,27 @@ def _toml_loads(text: str) -> dict:
     return tomllib.loads(text)
 
 
+class AdapterOutputError(RuntimeError):
+    """The tool's output could not be read as the manifest says it should:
+    nothing written, not JSON, or JSON without the key the findings live
+    under. Not an empty result: an answer that cannot be read is no answer
+    (ARB-146)."""
+
+
+class AnalyzerErrors(RuntimeError):
+    """The tool reported errors of its own (`map.errors`, bandit's and
+    semgrep's `errors[]`): files it could not parse, rules it could not
+    load. The run is recorded as an error, not as the tool's answer for
+    the tree: the files it skipped were not checked, and invariant CI-7
+    says an errored probe reports no findings, so the ones it did produce
+    are set aside and counted in the reason. Fix what the tool could not
+    read and rerun; the findings come back with the status."""
+
+    def __init__(self, message: str, findings: list[Finding]):
+        super().__init__(message)
+        self.findings = findings
+
+
 def cache_dir() -> Path:
     """Where an adapter's own fetched-at-install-time content lives.
 
@@ -373,7 +394,10 @@ class Adapter:
             cwd=cwd, env=env, **popen_kwargs,
         )
         try:
-            out, _err = proc.communicate(timeout=self.timeout)
+            out, err = proc.communicate(timeout=self.timeout)
+            # The tool's own account of a failed run lives on stderr; kept so
+            # an unreadable result can say why (gitleaks: `FTL ... toml`).
+            self.last_stderr = (err or "").strip()[-400:]
             if report_file:
                 try:
                     out = Path(report_file).read_text(encoding="utf-8", errors="replace")
@@ -438,17 +462,57 @@ class Adapter:
 
     # -- normalize ---------------------------------------------------------
     def parse_output(self, out: str) -> list[Any]:
+        """The finding rows in `out`. Raises `AdapterOutputError` when the
+        output is not what the manifest describes; an empty list means the
+        tool answered and found nothing."""
+        return self.rows_of(self.decode(out))
+
+    def decode(self, out: str) -> Any:
+        """The tool's output as a JSON document (a list of documents under
+        `parse = "jsonlines"`). Empty, non-JSON, and a banner with nothing
+        readable after it are all `AdapterOutputError` (ARB-146): before
+        that, each of them parsed as "ran, found nothing", and a gitleaks
+        that died on a malformed `.gitleaks.toml` read as a clean repository."""
         out = out.strip()
         if not out:
-            return []
+            raise AdapterOutputError(f"{self.name} wrote no output")
+        if self.parse == "jsonlines":
+            rows = []
+            for line in out.split("\n"):
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rows.append(json.loads(line))
+                except ValueError:
+                    continue
+            if not rows:
+                raise AdapterOutputError(f"{self.name} wrote no JSON line that could be read")
+            return rows
+        try:
+            return json.loads(out)
+        except ValueError:
+            # tools sometimes emit a banner before the JSON body
+            m = re.search(r"[\[{]", out)
+            if m:
+                try:
+                    return json.loads(out[m.start():])
+                except ValueError:
+                    pass
+        raise AdapterOutputError(f"{self.name} output is not JSON: {out[:120]!r}")
+
+    def rows_of(self, doc: Any) -> list[Any]:
+        """The finding rows of a decoded document, by the manifest's
+        `map.findings` selector. A document without the key the selector
+        starts at is `AdapterOutputError`: a tool whose schema moved under
+        us must not read as one that found nothing."""
         if self.parse == "trivy":
-            try:
-                document = json.loads(out)
-            except ValueError:
-                return []
-            results = document.get("Results", []) if isinstance(document, dict) else []
+            document = doc
+            if not isinstance(document, dict):
+                raise AdapterOutputError(f"{self.name} output is not a JSON object")
+            results = document.get("Results", [])
             if not isinstance(results, list):
-                return []
+                raise AdapterOutputError(f"{self.name} output has no `Results` list")
             rows: list[dict[str, Any]] = []
             for result in results:
                 if not isinstance(result, dict):
@@ -499,28 +563,9 @@ class Adapter:
                     })
             return rows
         if self.parse == "jsonlines":
-            rows = []
-            for line in out.split("\n"):
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    rows.append(json.loads(line))
-                except ValueError:
-                    continue
-            return rows
-        try:
-            doc = json.loads(out)
-        except ValueError:
-            # tools sometimes emit a banner before the JSON body
-            m = re.search(r"[\[{]", out)
-            if not m:
-                return []
-            try:
-                doc = json.loads(out[m.start():])
-            except ValueError:
-                return []
+            return list(doc) if isinstance(doc, list) else [doc]
         expr = self.mapping.get("findings", "$")
+        self._check_shape(doc, expr)
         rows = select(doc, expr)
         # Some tools (checkov with several frameworks) emit a LIST of result
         # objects rather than one. Fan the selector across the elements.
@@ -528,6 +573,49 @@ class Adapter:
             for element in doc:
                 rows.extend(select(element, expr))
         return rows
+
+    def _check_shape(self, doc: Any, expr: str) -> None:
+        """`$` needs a list; `$.key...` needs `key` in the object (or in at
+        least one object of a list of them, the checkov shape)."""
+        if expr == "$":
+            if not isinstance(doc, list):
+                raise AdapterOutputError(f"{self.name} output is not the JSON list its manifest expects")
+            return
+        if not expr.startswith("$."):
+            return
+        first = re.split(r"[.\[]", expr[2:], maxsplit=1)[0]
+        if not first:
+            return
+        if isinstance(doc, dict):
+            if first not in doc:
+                raise AdapterOutputError(f"{self.name} output has no `{first}` key; "
+                                         "the tool's output format may have changed")
+            return
+        if isinstance(doc, list):
+            if not any(isinstance(d, dict) and first in d for d in doc):
+                raise AdapterOutputError(f"{self.name} output has no `{first}` key in any element")
+            return
+        raise AdapterOutputError(f"{self.name} output is not a JSON object")
+
+    def reported_errors(self, doc: Any) -> list[str]:
+        """The tool's own error reports, one message each, read from the
+        manifest's `map.errors` selector. An entry whose `level` is `warn`
+        or `warning` is advice, not a failure, and is not counted."""
+        expr = self.mapping.get("errors")
+        if not expr or isinstance(doc, list) and self.parse == "jsonlines":
+            return []
+        out: list[str] = []
+        for row in select(doc, expr):
+            if isinstance(row, dict):
+                if str(row.get("level") or "").lower() in ("warn", "warning"):
+                    continue
+                message = str(row.get("message") or row.get("reason") or row.get("msg") or "").strip()
+                where = str(row.get("path") or row.get("filename") or "").strip()
+                text = ": ".join(p for p in (where, message) if p) or json.dumps(row)[:120]
+            else:
+                text = str(row)
+            out.append(text[:200])
+        return out
 
     def _dig_remediation(self, row: Any, m: dict, field_key: str, format_key: str) -> tuple[str, str]:
         """Returns (text, source). source is "link" whenever the dug value is
@@ -620,22 +708,47 @@ class Adapter:
 
     def run(self, ctx: ProbeContext) -> list[Finding]:
         findings: list[Finding] = []
+        errors: list[str] = []
         for repo in ctx.repos:
             try:
                 out, code = self.invoke(repo.path)
             except subprocess.TimeoutExpired:
                 raise RuntimeError(f"{self.name} timed out after {self.timeout}s")
-            rows = self.parse_output(out)
+            # Output that cannot be read as the manifest describes is a
+            # failed run whatever the exit code (ARB-146): gitleaks exits 1
+            # both for "leaks found" and for a fatal config error, ruff
+            # `--exit-zero` still exits 1 and writes nothing when its own
+            # config is bad, and a renamed results key is not an empty one.
+            try:
+                doc = self.decode(out)
+                rows = self.rows_of(doc)
+            except AdapterOutputError as exc:
+                detail = str(exc).removeprefix(f"{self.name} ")
+                if code not in self.ok_exit:
+                    raise RuntimeError(f"{self.name} exited {code}: {detail}{self._stderr_detail()}") from None
+                raise RuntimeError(f"{self.name} {detail} (exit {code}){self._stderr_detail()}") from None
             # An exit outside ok_exit is a failed run unless the tool still
             # handed back findings. Checking only for empty output let semgrep's
             # "unable to find a config" (exit 7, a JSON body of errors and no
             # results) be recorded as a clean run with nothing found (ARB-059).
             if code not in self.ok_exit and not rows:
-                raise RuntimeError(f"{self.name} exited {code}{_error_detail(out)}")
+                raise RuntimeError(f"{self.name} exited {code}{_error_detail(out)}{self._stderr_detail()}")
             produced = self.to_findings(rows, repo.id, repo.path)
             known = {f.path for f in ctx.inventory.by_repo.get(repo.id, [])}
             findings.extend(in_scope(produced, known))
+            errors.extend(self.reported_errors(doc))
+        if errors:
+            more = f" (+{len(errors) - 1} more)" if len(errors) > 1 else ""
+            kept = (f"; {len(findings)} finding(s) from the files it did read are set aside "
+                    "until the run is clean" if findings else "")
+            raise AnalyzerErrors(
+                f"{self.name} reported {len(errors)} error(s) of its own, so part of the tree "
+                f"was not checked: {errors[0]}{more}{kept}", findings)
         return findings
+
+    def _stderr_detail(self) -> str:
+        err = getattr(self, "last_stderr", "")
+        return f"; stderr: {err.splitlines()[-1][:200]}" if err else ""
 
 
 def _error_detail(out: str) -> str:

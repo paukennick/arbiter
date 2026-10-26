@@ -1103,6 +1103,27 @@ rules:
       a deliberate choice and not reported.
     remediation: "Log it with context, rethrow, or return a documented fallback; if ignoring is right, say why in the block."
 
+  - id: swallowed-catch-to-500
+    requirements: [ARB-110]
+    title: "`catch` without a binding turns any failure into a 500"
+    severity: low
+    confidence: medium
+    dimension: quality
+    cwe: [CWE-390, CWE-778]
+    controls: [NIST-800-218:PW.5]
+    tags: [error-handling]
+    query: |
+      (catch_clause !parameter body: (statement_block) @b
+        (#match? @b "\\b500\\b")
+        (#not-match? @b "throw|[Ll]og|console|report|[Ss]entry|[Mm]etric")) @hit
+    description: >
+      A `catch` with no bound error that answers 500. The error is not
+      available to log, so the client gets a generic failure and the operator
+      gets nothing to diagnose it with.
+    remediation: >
+      Bind the error (`catch (err)`), log it with the request context, then
+      answer 500, or let it reach the framework error handler.
+
   - id: empty-catch-in-loop
     requirements: [ARB-061]
     title: "Error swallowed by an empty `catch` inside a loop"
@@ -1472,3 +1493,58 @@ rules:
       until `end` holds the whole body in memory, however large the client
       makes it.
     remediation: "Count bytes in the handler and `req.destroy()` with 413 past a limit, or use a body parser with `limit` (express.json, raw-body)."
+
+  - id: path-confinement-optional
+    requirements: [ARB-110]
+    title: "Path confinement only runs when the root variable is set: `{text}`"
+    severity: medium
+    confidence: low
+    dimension: security
+    cwe: [CWE-22, CWE-73]
+    controls: [NIST-800-218:PW.5]
+    tags: [path-traversal]
+    query: |
+      ((if_statement condition: (parenthesized_expression (identifier) @v)
+         consequence: (statement_block) @b) @hit
+        (#match? @v "(?i)(root|base|jail|sandbox|dir$)")
+        (#match? @b "throw")
+        (#match? @b "relative\\(|startsWith\\(|isAbsolute\\(|includes\\("))
+    requires_in_scope: |
+      ((function_declaration) @f (#match? @f "process\\.env\\."))
+      ((arrow_function) @f (#match? @f "process\\.env\\."))
+      ((method_definition) @f (#match? @f "process\\.env\\."))
+    description: >
+      The containment check is nested under `if (root)`, and the root comes
+      from an optional environment variable. When it is unset nothing confines
+      the caller's path, so an absolute or `../` path reaches any file the
+      process can read or write. The default deployment is the unconfined one.
+    remediation: "Make the root required (throw at start-up when it is unset) or default it to a fixed directory, and run the containment check on every call."
+
+  - id: ssrf-check-then-connect
+    requirements: [ARB-110]
+    title: "Host is resolved for an SSRF check, then resolved again to connect: `{text}`"
+    severity: medium
+    confidence: low
+    dimension: security
+    cwe: [CWE-918, CWE-367]
+    controls: [NIST-800-218:PW.5]
+    tags: [ssrf]
+    query: |
+      ((call_expression function: (identifier) @g) @hit
+        (#match? @g "(?i)^(is|assert|check|ensure|validate|verify)(public|safe|external|global|allowed)\\w*(host|url|addr|ip)\\w*$"))
+    requires_in_scope: |
+      ((function_declaration) @f (#match? @f "\\bfetch\\(|\\baxios\\b|\\bhttps?\\.(get|request)\\(|\\bgot\\(|\\bundici\\b"))
+      ((arrow_function) @f (#match? @f "\\bfetch\\(|\\baxios\\b|\\bhttps?\\.(get|request)\\(|\\bgot\\(|\\bundici\\b"))
+      ((method_definition) @f (#match? @f "\\bfetch\\(|\\baxios\\b|\\bhttps?\\.(get|request)\\(|\\bgot\\(|\\bundici\\b"))
+    requires_file: |
+      ((member_expression property: (property_identifier) @r) (#match? @r "^(lookup|resolve4|resolve6)$"))
+    # Connecting to the address that was checked closes the gap.
+    unless_in_scope: |
+      ((property_identifier) @p (#match? @p "^(lookup|agent|dispatcher|connect)$"))
+      ((identifier) @i (#match? @i "(?i)^(\\w*agent|dispatcher|pinned\\w*)$"))
+    description: >
+      The host is resolved once to decide it is public and again by `fetch` (or
+      the HTTP client) to connect. A DNS server that answers with a public
+      address for the check and a private one for the connection (DNS
+      rebinding) reaches internal services through the guard.
+    remediation: "Resolve once and connect to that address (a custom `lookup` on the agent or an undici `connect` hook that returns the validated IP), or route fetches through an egress proxy that blocks internal ranges."

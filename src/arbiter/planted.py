@@ -18,6 +18,15 @@ report the same defect:
 
 Markers live on the defect line itself, so they cannot drift away from it the
 way a separate list of line numbers would.
+
+Manifests and build files carry markers too (ARB-130): a Dockerfile,
+workflow, compose file, requirements file, Gemfile, Gradle build, Terraform
+or shell script takes a `#` or `//` comment, and a POM an XML comment:
+
+    <version>LATEST</version> <!-- expect: arbiter/supply.unpinned-java-dep -->
+
+JSON has no comments, so a package.json defect is asserted by unit tests
+rather than marked here.
 """
 from __future__ import annotations
 
@@ -25,10 +34,19 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-MARKER = re.compile(r"(?:#|//|--)\s*(?P<body>expect(?:-ext)?:\s*[\w./:,\- ]+?)\s*(?:\*/)?\s*$")
+MARKER = re.compile(r"(?:#|//|--)\s*(?P<body>expect(?:-ext)?:\s*[\w./:,\- ]+?)\s*(?:\*/|-->)?\s*$")
 # Where each `expect:` / `expect-ext:` group starts inside a marker's body.
 _GROUP = re.compile(r"(?:^|\s)expect(-ext)?:\s*")
 SOURCE_SUFFIXES = {".py", ".ts", ".tsx", ".js", ".mjs", ".cjs", ".go", ".java", ".rb"}
+# Build and dependency files the supply-chain rules read (ARB-130).
+MANIFEST_SUFFIXES = {".yml", ".yaml", ".txt", ".gradle", ".kts", ".toml", ".tf", ".sh",
+                     ".ps1", ".xml"}
+MANIFEST_NAMES = {"Dockerfile", "Containerfile", "Gemfile", "Jenkinsfile"}
+
+
+def _carries_markers(path: Path) -> bool:
+    return (path.suffix in SOURCE_SUFFIXES or path.suffix in MANIFEST_SUFFIXES
+            or path.name in MANIFEST_NAMES or path.name.startswith("Dockerfile."))
 
 
 @dataclass
@@ -52,7 +70,7 @@ class Score:
 def markers(root: Path) -> list[Expected]:
     out: list[Expected] = []
     for path in sorted(root.rglob("*")):
-        if not path.is_file() or path.suffix not in SOURCE_SUFFIXES:
+        if not path.is_file() or not _carries_markers(path):
             continue
         rel = path.relative_to(root).as_posix()
         for i, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):

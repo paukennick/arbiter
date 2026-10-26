@@ -189,6 +189,33 @@ def git_changed(repo_path: str, ref: str) -> tuple[set[str], str]:
     return paths, ""
 
 
+def git_deleted(repo_path: str, ref: str) -> set[str]:
+    """Paths the change deleted (committed since `ref`, staged, or in the
+    working tree). `git_changed` filters deletions out because there is
+    nothing to read; this names them so a delete-only change can say so
+    instead of reading as "nothing changed" (ARB-151)."""
+    def run(*args: str) -> tuple[int, str]:
+        try:
+            r = subprocess.run(["git", "-C", repo_path, *args],
+                               capture_output=True, text=True, timeout=120)
+        except Exception as exc:  # noqa: BLE001 - same contract as git_changed: a failed git is no deletions
+            return 1, str(exc)
+        return r.returncode, r.stdout
+
+    out: set[str] = set()
+    code, text = run("diff", "--name-only", "--diff-filter=D", f"{ref}...HEAD")
+    if code != 0:
+        code, text = run("diff", "--name-only", "--diff-filter=D", ref)
+    if code == 0:
+        out.update(p.strip() for p in text.split("\n") if p.strip())
+    for args in (("diff", "--name-only", "--diff-filter=D"),
+                 ("diff", "--name-only", "--diff-filter=D", "--cached")):
+        code, text = run(*args)
+        if code == 0:
+            out.update(p.strip() for p in text.split("\n") if p.strip())
+    return out
+
+
 REGISTRY_PATH = ".ai/requirements/requirements.json"
 
 # How a finding's `req:` tags were chosen (ARB-052). `commits`: from the
@@ -348,32 +375,62 @@ def narrow(inv: Inventory, selected: dict[str, set[str]]) -> tuple[Inventory, di
     """
     kept: list[FileInfo] = []
     changed_kept = 0
+    changed_read = 0
     context_kept = 0
+    # A changed file the probes will not look at -- binary, over the size
+    # cap, or in a generated role such as dist/ -- used to count as read
+    # because it was in the inventory (FAIL-128). It is kept, so a reader
+    # can see it was changed, and listed here with why it was not read.
+    not_read: list[dict] = []
+    skip_reasons = {(s["repo_id"], s["path"]): s["reason"]
+                    for s in inv.skipped if s["kind"] == "file"}
     for f in inv.files:
         want = f.path in selected.get(f.repo_id, set())
         if want:
             changed_kept += 1
+            why = unread_reason(f, skip_reasons)
+            if why:
+                not_read.append({"path": f.path, "reason": why})
+            else:
+                changed_read += 1
         elif is_context(f):
             context_kept += 1
             want = True
         if want:
             kept.append(f)
 
-    out = Inventory(files=kept, stacks=set(inv.stacks), whole=inv.whole or inv)
+    out = Inventory(files=kept, stacks=set(inv.stacks), whole=inv.whole or inv,
+                    skipped=list(inv.skipped))
     for f in kept:
         out.by_repo.setdefault(f.repo_id, []).append(f)
     for rid in inv.by_repo:
         out.by_repo.setdefault(rid, [])
 
     total_lines = sum(f.lines for f in inv.files)
-    kept_lines = sum(f.lines for f in kept)
+    read = [f for f in kept if not unread_reason(f, skip_reasons)]
+    kept_lines = sum(f.lines for f in read)
     stats = {
         "files_total": len(inv.files),
-        "files_read": len(kept),
+        "files_read": len(read),
         "files_changed": changed_kept,
+        "files_changed_read": changed_read,
+        "files_changed_not_read": len(not_read),
+        "changed_not_read": not_read[:50],
         "files_context": context_kept,
         "lines_total": total_lines,
         "lines_read": kept_lines,
         "fraction_read": round(kept_lines / total_lines, 4) if total_lines else 1.0,
     }
     return out, stats
+
+
+def unread_reason(f: FileInfo, skip_reasons: dict[tuple[str, str], str] | None = None) -> str:
+    """Why a file in the inventory is one no probe reads, or "" when the
+    probes do read it. Binary covers the size cap and the NUL test
+    (inventory.walk_repo records the precise reason); `generated` is a role
+    every language and quality probe skips."""
+    if f.binary:
+        return (skip_reasons or {}).get((f.repo_id, f.path)) or "binary or over the size cap"
+    if f.role == "generated":
+        return "generated (dist/, build/, minified or lock file): no probe reads it"
+    return ""

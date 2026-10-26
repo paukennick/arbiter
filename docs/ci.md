@@ -96,8 +96,13 @@ analysis is.
 So `--changed` reads less.
 
 ```bash
-arbiter gate . --changed origin/main --baseline .arbiter/baseline.json
+arbiter gate . --changed origin/main --baseline .arbiter/baseline.json --config arbiter.yaml
 ```
+
+`--config arbiter.yaml` names the repository's own file as the operator's:
+without it the file is the target's, and its `suppress` and
+`severity_overrides` blocks are ignored and reported as such
+([configuration.md](configuration.md#which-config-is-trusted)).
 
 Every probe declares a scope. **file** means every finding depends only on the
 file it is in — a hardcoded secret is a secret whether or not the rest of the
@@ -148,7 +153,18 @@ the files. Fixed at the source rather than exempted.
 
 A ref that does not exist refuses rather than scanning nothing. An empty diff
 and a failed diff look identical downstream, and the second would produce a
-green gate that read no files at all.
+green gate that read no files at all. `--only-files` holds to the same rule:
+a path that names no file the scan can read (a typo, a path under an ignored
+directory) is an error, and so is a request that ends with zero files read
+(ARB-145).
+
+An external analyzer that fails inside its accepted exit codes is an error,
+not a clean run (ARB-146): nothing on stdout, output that is not JSON, JSON
+without the key the manifest reads findings from, or a tool-reported error
+list (bandit's and semgrep's `errors[]`) each record the adapter as `error`
+with the tool's own message, and its checks count as not assessed. gitleaks
+exits 1 both for "leaks found" and for a fatal config error, so the exit code
+alone was never enough.
 
 Findings that land in a context file the branch did not touch are tagged
 `outside-this-change`, so a pull request is not blamed for a lockfile it never

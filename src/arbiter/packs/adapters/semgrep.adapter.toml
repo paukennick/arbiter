@@ -84,6 +84,11 @@ argv = ["semgrep", "scan", "--json", "--quiet",
         "--config", "semgrep-rules/rust",
         "--config", "semgrep-rules/bash",
         "--config", "semgrep-rules/c",
+        # csharp, kotlin, swift: present in the pinned semgrep-rules checkout
+        # (52, 14 and 4 rule files at 40b8c63) but never pointed at.
+        "--config", "semgrep-rules/csharp",
+        "--config", "semgrep-rules/kotlin",
+        "--config", "semgrep-rules/swift",
         "{workdir}"]
 version_argv = ["semgrep", "--version"]
 parse = "json"
@@ -91,6 +96,9 @@ ok_exit = [0, 1]
 
 [map]
 findings = "$.results[*]"
+# The tool's own failures (files it could not parse, rules it could not
+# load). Any entry here makes the run an error, findings kept (ARB-146).
+errors = "$.errors[*]"
 rule_id = "check_id"
 title = "extra.message"
 path = "path"

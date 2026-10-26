@@ -89,6 +89,26 @@ MUTATIONS = [
         test="tests/test_metamorphic.py::test_every_carrier_survives_windows_line_endings",
     ),
     Mutation(
+        name="adaptive-threshold-can-loosen",
+        defect="The configured threshold no longer caps the adaptive one, so a "
+               "sprawling repository raises its own limit and uniform "
+               "degradation leaves the flagged set unchanged.",
+        path="src/arbiter/learn.py",
+        old="    return max(bottom, min(value, fixed))",
+        new="    return max(bottom, value)",
+        test="tests/test_measurement.py::test_a_uniformly_bad_codebase_cannot_normalize_its_way_clean",
+    ),
+    Mutation(
+        name="profile-key-from-display-id",
+        defect="The profile key comes from a scan's display id again, so every "
+               "repository scanned on its own shares one profile and a learned "
+               "one is never found.",
+        path="src/arbiter/learn.py",
+        old='    return Path(path).resolve().name or "root"',
+        new='    return "root"',
+        test="tests/test_measurement.py::test_the_profile_key_does_not_depend_on_a_scans_display_id",
+    ),
+    Mutation(
         name="synthetic-counts-as-evidence",
         defect="Generated trials count toward the observations that decide a rule "
                "is proven, so a night of injection manufactures confidence.",
@@ -138,6 +158,25 @@ MUTATIONS = [
         old='    return _sha("adapter", name, version, rules, inputs)',
         new='    return _sha("adapter", name, version, rules, "")',
         test="tests/test_adapter_cache.py::test_one_changed_file_reruns_every_adapter",
+    ),
+    Mutation(
+        name="quoted-uses-ref",
+        defect="The workflow `uses:` line pattern lets the ref run over a closing "
+               "quote again, so a quoted SHA pin reads as `<sha>\"` and is "
+               "reported unpinned (FAIL-100).",
+        path="src/arbiter/supply.py",
+        old='_USES_LINE = re.compile(r"""^[ \\t]*-?[ \\t]*uses:[ \\t]*(["\']?)([^\\s"\'#]+)\\1""", re.M)',
+        new='_USES_LINE = re.compile(r"""^[ \\t]*-?[ \\t]*uses:[ \\t]*()([^\\s#]+)\\1""", re.M)',
+        test="tests/test_supply_pinning.py::test_the_fallback_reader_handles_quotes_too",
+    ),
+    Mutation(
+        name="docker-uses-read-as-action",
+        defect="A `uses: docker://image@sha256:...` digest is judged as an action "
+               "again, so its `sha256:` ref fails the 40-hex test (FAIL-100).",
+        path="src/arbiter/supply.py",
+        old='        if value.startswith("./") or value.startswith("docker://") or "@" not in value:',
+        new='        if value.startswith("./") or "@" not in value:',
+        test="tests/test_supply_pinning.py::test_a_docker_digest_is_not_an_unpinned_action",
     ),
     Mutation(
         name="version-memo-ignores-the-binary",

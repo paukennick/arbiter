@@ -250,10 +250,56 @@ identified gaps in human adjudication, cluster-aware uncertainty, benchmark
 representativeness, and platform coverage. No detection rules were changed,
 and sealed labels/findings/excerpts were not opened.
 
-The next implementation milestone should create a new, non-sealed
-development/validation sample for one narrowly scoped weakness and language
-slice, complete blind human adjudication, and validate the cluster-aware
-estimator before changing rules. Keep the existing sealed AI and gold sources
-closed. Expand rule coverage only after this measurement pilot is reviewed.
+ARB-097 completed an aggregate-only RealVuln 3.1.0 Python CWE-89 pilot on 11
+pinned MIT/Unlicense repositories: 21/27 labelled-case precision (77.8%),
+21/26 labelled-case recall (80.8%), and 6/34 safe-trap false positives.
+One unmatched CWE-89 finding remains unassessed. The descriptive
+repository-cluster bootstrap intervals are 64.3%–90.9% for precision and
+50.0%–100.0% for recall. All 11 overall scorecards were withheld because only
+the Python probe ran; the selected probe was assessed on all 11 repositories.
+This is benchmark-specific conformance against maintainer-authored labels,
+only five of which are explicitly marked manually verified. It does not
+certify production accuracy or the 99% target, and no detection rules were
+changed or tuned on the benchmark.
+
+ARB-104 defines the reviewer roles, blind finding-adjudication and
+repository-miss-audit procedures, sampling safeguards, and claim limits in
+[accuracy-review-protocol.md](accuracy-review-protocol.md). This is protocol
+readiness only: no independent reviewers have been engaged, no new benchmark
+has been approved, and no new labels or audits have been collected. The next
+execution gate is to secure an independent coordinator and reviewers, approve
+the source/license and sampling plan, then freeze the study before any cases
+are shared. Keep the existing sealed AI and gold sources closed; do not tune
+rules on the evaluation data or expand claims beyond measured strata.
+
+The owner has since approved model labels as an interim operational substitute
+for human reviewers, with a strict **model-labelled conformance** label and no
+certified-accuracy claim. ARB-105 records the source review and execution
+design in [accuracy-measurement-expansion.md](accuracy-measurement-expansion.md):
+Semgrep/CodeQL disagreement is a differential signal, not ground truth; the
+first bounded RealVuln expansion is now recorded under ARB-106 below. The
+broader RealVuln LLM-generated Python and TypeScript/JavaScript corpora are
+promising external AI-code strata, but each source repository's pinned
+license must be cleared before acquisition.
+
+ARB-106 validated all labels in the already-cleared 11-repository Python
+subset, then scored only the 408 `manual_review` entries (341 positive, 67
+safe traps) across 53 primary CWEs. The aggregate result was TP 62, FN 279,
+FP 7, TN 60: 89.9% labelled-case precision and 18.2% labelled-case recall;
+25 unmatched findings remain unassessed. The largest aggregate miss buckets
+were CWE-79 (0/37), CWE-798 (1/22), CWE-918 (0/18), CWE-400 (1/18), CWE-22
+(0/17), and CWE-639 (0/13). Only 66 included entries explicitly set
+`manually_verified=true`; the labels are not independently adjudicated.
+The run used offline Python scans, executed no target code, and did not tune
+rules on the benchmark. The original CWE-89 result and matcher are unchanged.
+See [accuracy-baseline.md](accuracy-baseline.md) and the aggregate-only
+[run record](accuracy-realvuln-multicwe-run.json) for limitations, intervals,
+and reproducibility metadata.
+
+The next detection-improvement work must use development data and regression
+cases, not these evaluation examples. Keep exact RealVuln cases unopened for
+tuning; use only the aggregate miss buckets to prioritize broad investigation.
+The real-repository precision study and independent review process remain
+separate requirements.
 
 This roadmap is a program, not a result: it does not certify Arbiter at 99%.

@@ -2591,6 +2591,992 @@
         "the PR comment and annotations are longer on repositories with many advisory findings; --sarif-min-severity and report.show: verified are the narrowing tools",
         "Completed 2026-10-24: default view shows every tier (planted 404/404, ai-corpus 127/127 via the regression_guard default-view check); gate unchanged (tiered); SARIF advisory capped at warning. FAIL-071 records why ARB-100's default was reverted."
       ]
+    },
+    {
+      "id": "ARB-120",
+      "category": "measurement",
+      "title": "External conformance scorecard over OWASP Benchmark, Juliet and CVE fix pairs",
+      "description": "One reproducible command runs the pinned Arbiter (offline, no adapters, no cache) over the outside benchmarks already wired (OWASP Benchmark Java 1.2 and Python 0.1, Juliet Java 1.3, the 70 GHSA fix pairs) and records one run record per benchmark in the accuracy manifest's run_record_template format, with per-benchmark, per-CWE and per-rule case-level TP/FP/FN/TN, labelled-case precision, recall and safe-case false-positive rate, Wilson intervals, a repository-cluster bootstrap where there are several repositories, coverage and not-assessed reasons, and the weak spots ranked by distance from the 0.99 lower-bound bar. Measurement only: benchmark-conformance results, aggregate-only output, no detection rule changes.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "tools/ground_truth/external_scorecard.py",
+        "tests/test_external_scorecard.py",
+        "docs/external-scorecard.md",
+        "docs/external-scorecard.json",
+        "docs/accuracy-baseline.md",
+        "docs/testing-harness.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "One command produces a JSON results file and a markdown summary",
+        "One run record per benchmark validates against the manifest run_record_template subschema",
+        "Per benchmark per CWE and per rule TP FP FN TN precision recall and safe-case FPR with Wilson 95% intervals",
+        "Single-repository synthetic benchmarks are declared one cluster with case-level intervals only and CVE pairs get a repository-cluster bootstrap",
+        "Not-assessed CWEs and unassessed findings are counted with reasons",
+        "Output is aggregate-only with no case names paths or excerpts",
+        "Arbiter-defined safe units for Juliet and CVE are documented as such",
+        "No detection rule changes"
+      ],
+      "validation_required": [
+        "python -m pytest -q tests/test_external_scorecard.py",
+        "python -m pytest -q",
+        "./omni gate"
+      ],
+      "documentation_required": [
+        "docs/external-scorecard.md",
+        "docs/accuracy-baseline.md",
+        "docs/testing-harness.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": [
+        "Generating the scorecard spends OWASP Juliet and CVE-70 as sealed sets for any rule tuned on its weak spots",
+        "Juliet and CVE safe units are Arbiter-defined not benchmark-published"
+      ]
+    },
+    {
+      "id": "ARB-121",
+      "category": "accuracy",
+      "title": "External real-CVE fix-pair benchmark from GHSA, five languages, frozen dev/sealed split",
+      "description": "Expand real-CVE fix pairs from the GitHub Advisory Database (reviewed, CC-BY-4.0) toward ~100 per language (python, typescript, go, java, ruby), restricted to CWEs a native security rule of that language pack is tagged with; deterministic seeded selection with predeclared criteria; split by repository into development and sealed (held_out_ghsa_r1), frozen and committed before any scan; scan both sides with the pinned Arbiter and report hunk-region recall, looser function/file recall and fixed-side persistence per language and CWE with Wilson and repository-cluster bootstrap intervals; development in detail, sealed aggregate only. Measurement only: no rule is changed.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "tools/ground_truth",
+        "tools/gold/heldout.json",
+        "tools/gold/results",
+        "tests/test_ghsa_benchmark.py",
+        "docs/external-cve-benchmark.md",
+        "docs/accuracy-baseline.md",
+        "docs/accuracy-benchmark-manifest.json"
+      ],
+      "acceptance_criteria": [
+        "selection and split committed before any scan (freeze sha recorded)",
+        "no repo in both splits and no already-sealed repo included",
+        "pointers only (no third-party code committed)",
+        "per language/CWE recall with Wilson and cluster bootstrap; sealed aggregate only",
+        "real counts reported where a language falls short of 100"
+      ],
+      "validation_required": [
+        "tests/test_ghsa_benchmark.py",
+        "python -m pytest -q",
+        "omni gate"
+      ],
+      "documentation_required": [
+        "docs/external-cve-benchmark.md",
+        "docs/accuracy-baseline.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": [
+        "Patch-derived labels are noisy and not human-adjudicated: benchmark conformance only",
+        "Fixed-side persistence is an FP signal not proof",
+        "The sealed split is used once here as a baseline; later tuning uses development only"
+      ]
+    },
+    {
+      "id": "ARB-122",
+      "category": "capability",
+      "title": "Independent multi-vendor model panel for precision labels",
+      "description": "tools/panel: Claude, Codex and Copilot CLIs label blind packets (label_models make_item/item_prompt/SYSTEM) one record per model with a distinct labeller name (<seat>-<model>:panel/v1); calibrate measures each model and the panel against ground truth with Wilson intervals and cost; prioritise ranks rules by labels still needed to reach Wilson 0.99. The ledger keeps panel/v1 as current, adds a mechanical role between ground_truth and adjudicator for ARB-123 checkers, and pairs kappa across vendors. No two seats may resolve to the same vendor. Reported as model-labelled conformance, not certified.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "tools/panel/providers.py",
+        "tools/panel/panel.py",
+        "tools/precision_ledger.py",
+        "tests/test_panel.py",
+        "tests/test_precision_ledger.py",
+        "docs/precision.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "providers behind one interface with strict JSON parsing and usage-limit handling",
+        "label writes one record per model via gt_common.label",
+        "calibrate reports per-model and panel agreement with Wilson intervals and cost",
+        "prioritise ranks rules by labels needed for Wilson 0.99",
+        "ledger keeps panel/v1 and supports a mechanical role",
+        "two seats resolving to one vendor are refused",
+        "tests use fake providers only",
+        "committed ledger numbers unchanged"
+      ],
+      "validation_required": [
+        "python -m pytest -q",
+        "./omni gate",
+        "smoke calibration on about 20 ground-truth items"
+      ],
+      "documentation_required": [
+        "docs/precision.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": [
+        "model labels are not certification",
+        "Copilot auto routing may change model",
+        "subscription usage limits",
+        "Smoke calibration ran with two vendors (Claude, Codex) only: Google refused the Gemini OAuth personal login, the Gemini API key file was still empty, and Copilot auto-routing offered only OpenAI. A three-vendor calibration of 60+ items is owed before panel labels feed a claim."
+      ]
+    },
+    {
+      "id": "ARB-130",
+      "category": "capability",
+      "title": "Supply-chain pinning covers the main pinning methods",
+      "description": "Arbiter's pinning checks cover how software is actually pinned, not only requirements.txt, package.json carets and workflow uses:. Fixes supply.unpinned-action (quoted SHA pins and docker:// digests reported unpinned; docker:// tags never checked; composite action.yml unchecked) and adds supply.unpinned-container-image (Dockerfile FROM / COPY --from, compose, Kubernetes, GitLab CI image/services, workflow container/services, docker:// uses; digest = pinned), supply.unpinned-precommit (rev not a 40-hex SHA), supply.unpinned-ci-include (GitLab include remote/project/component without a SHA), supply.remote-script-piped (curl|wget piped or substituted into an interpreter, PowerShell iex of a download) and supply.unpinned-install-in-build (pip/npm -g/gem/go install without a version in Dockerfile RUN and CI steps). Structured files are read with parsers (PyYAML nodes, json, tomllib, expat, graph.py HCL reader), not regex. Every new rule starts advisory; severity is set from measured fire rates on the dev tuning corpora.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/supply.py",
+        "src/arbiter/probes.py",
+        "src/arbiter/cwe.py",
+        "src/arbiter/packs/rules/native.yaml",
+        "tests/test_supply_pinning.py",
+        "fixtures/planted"
+      ],
+      "acceptance_criteria": [
+        "quoted SHA pins and docker:// digests are not reported by supply.unpinned-action",
+        "docker:// tags and untagged images are reported by supply.unpinned-container-image",
+        "composite action.yml uses are checked",
+        "unpinned-action delta on planted and ai-corpus is 0",
+        "each new rule has planted bad/good fixtures unit tests CWE NIST control and native.yaml requirements",
+        "fire rates per KLOC measured on maintained vs vulnerable dev corpora and severities chosen from them",
+        "no new rule declared verified"
+      ],
+      "validation_required": [
+        "python -m pytest -q",
+        "python tools/planted_score.py",
+        "python tools/regression_guard.py check --targets planted",
+        "ai-corpus --no-perf",
+        "python tools/precision_guard.py check",
+        "python tools/integrity.py",
+        "./omni gate"
+      ],
+      "documentation_required": [
+        "docs/supply-chain.md",
+        "docs/precision.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": [
+        "Completed 2026-10-24 (15013c5, 68cf62c): unpinned-action parses uses: (FAIL-100; dev-corpora delta 5 quote-free evidence strings + 1 composite action, planted/ai-corpus 0); 5 new advisory rules; container-image low (3.95x), others info; planted 42 new markers 100% caught 0 on good twins; omni gate PASS with PYTHONPATH=src (the shared install lacks supply.py until synced)."
+      ]
+    },
+    {
+      "id": "ARB-131",
+      "category": "capability",
+      "title": "Python and npm pinning breadth",
+      "description": "supply.unpinned-python-dep reads any requirements*.txt, requirements/*.txt and constraints*.txt that holds pip requirements (a prose file of that name is skipped), credits ==/=== exact pins, --hash lines and VCS references at a 40-hex commit, handles -e/--editable (local paths skipped, VCS refs judged) and is silent when poetry.lock, uv.lock, Pipfile.lock or pdm.lock sits beside it. pyproject/Pipfile/setup.cfg ranges stay unflagged (libraries declare ranges). supply.unpinned-npm-dep adds >=, >, x/X/* wildcards, bare majors/minors, || and hyphen ranges, dist-tags and git/github refs without a commit SHA (dependencies, devDependencies, optionalDependencies), and is silent when package-lock.json, npm-shrinkwrap.json, yarn.lock, pnpm-lock.yaml or bun.lock(b) sits beside or above the manifest -- the shape of all six FP labels this rule had.",
+      "priority": "medium",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/supply.py",
+        "tests/test_supply_pinning.py"
+      ],
+      "acceptance_criteria": [
+        "every requirements-file shape listed is read and prose .txt files are not",
+        "exact/hash/VCS-commit pins are credited",
+        "-e local paths skipped and -e VCS refs judged",
+        "a sibling Python lockfile silences ranges",
+        "a sibling or ancestor npm lockfile silences ranges",
+        "ai-corpus snapshot counts for both rules unchanged"
+      ],
+      "validation_required": [
+        "python -m pytest -q tests/test_supply_pinning.py",
+        "python tools/precision_guard.py check"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": [
+        "Completed 2026-10-24: python-dep 15 -> 103 dev-corpora findings (maintained only), npm-dep 953 -> 308 (maintained 735 -> 138, vulnerable 218 -> 170; lockfile credit); ai-corpus counts unchanged (18, 47)."
+      ]
+    },
+    {
+      "id": "ARB-132",
+      "category": "capability",
+      "title": "Java, Ruby and Terraform pinning rules",
+      "description": "supply.unpinned-java-dep: Maven LATEST/RELEASE/version ranges, SNAPSHOT dependencies in a non-SNAPSHOT build (not the project's own group: sibling modules build from the same tree), properties resolved within the POM; Gradle +, latest.release, latest.integration and ranges in build.gradle(.kts) and *.versions.toml, credited by dependencyLocking or a gradle.lockfile. supply.unpinned-ruby-dep: with no Gemfile.lock beside the Gemfile, gems with no requirement or only open ones (>=, >), and git gems with no ref:; a gem's own Gemfile (gemspec) is a library and is skipped. supply.unpinned-terraform: module sources from a registry without an exact version or from git without ?ref=<sha or x.y.z>; required_providers entries with no version unless .terraform.lock.hcl sits beside them. Go needs no rule: go.sum hashes every module.",
+      "priority": "medium",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/supply.py",
+        "tests/test_supply_pinning.py",
+        "fixtures/planted"
+      ],
+      "acceptance_criteria": [
+        "each dynamic-version form is reported and exact versions are not",
+        "locking/lockfiles credit as described",
+        "unresolvable versions are not judged",
+        "Go's go.sum coverage documented"
+      ],
+      "validation_required": [
+        "python -m pytest -q tests/test_supply_pinning.py",
+        "python tools/planted_score.py"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": [
+        "Completed 2026-10-24: java-dep 0, ruby-dep 14, terraform 0 findings on the dev corpora; all info, advisory."
+      ]
+    },
+    {
+      "id": "ARB-143",
+      "category": "defect",
+      "title": "A target's own arbiter.yaml cannot set precision keys or loosen the gate",
+      "description": "Config found in the scanned repository root may tighten the gate and use suppressions, house rules and scoring, but its precision and verify blocks are dropped and any gate key that would loosen the gate is dropped, each recorded in scan_scope.config.ignored and printed. --config is trusted in full. precision.ledger resolves relative to the config file and may not escape its directory; a ledger bar never reads below DEFAULT_BAR.",
+      "priority": "critical",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/policy.py",
+        "src/arbiter/precision.py",
+        "src/arbiter/engine.py",
+        "src/arbiter/report.py",
+        "tests/test_target_config_trust.py",
+        "docs/configuration.md"
+      ],
+      "acceptance_criteria": [
+        "a target-root precision block yields no verified finding and a printed note",
+        "fail_on.severity null in a target root still fails on a critical",
+        "ledger path escaping the config directory is an error",
+        "ledger bar floored at DEFAULT_BAR"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_target_config_trust.py"
+      ],
+      "documentation_required": [
+        "docs/configuration.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": [
+        "suppress in a target root config is still honoured"
+      ]
+    },
+    {
+      "id": "ARB-144",
+      "category": "defect",
+      "title": "Source in languages without a rule pack is reported not assessed",
+      "description": "The inventory recognises the common languages no pack reads; one lang_unsupported outcome (skipped, applicable, sized like the missing packs) joins the coverage denominator; scan_scope.languages_not_assessed lists each language with files, lines and share; above 50% of source lines the grade is withheld with the languages named.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/inventory.py",
+        "src/arbiter/lang_rules.py",
+        "src/arbiter/engine.py",
+        "tests/test_unassessed_languages.py",
+        "docs/configuration.md"
+      ],
+      "acceptance_criteria": [
+        "a Kotlin/Scala/Swift-only repository has its grade withheld and names the languages",
+        "a repository in pack languages only has no lang_unsupported outcome"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_unassessed_languages.py"
+      ],
+      "documentation_required": [
+        "docs/configuration.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-145",
+      "category": "defect",
+      "title": "--only-files keeps dotfiles and refuses unknown paths",
+      "description": "Strip only a literal leading ./ (lstrip turned .husky into husky); accept an absolute path under the target; a path that names no file the scan can read, or a request that reads zero files, is an error.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/engine.py",
+        "tests/test_only_files_paths.py",
+        "docs/cli.md",
+        "docs/ci.md"
+      ],
+      "acceptance_criteria": [
+        "--only-files .husky/pre-commit reads that file",
+        "--only-files nope.py is a RuntimeError"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_only_files_paths.py"
+      ],
+      "documentation_required": [
+        "docs/cli.md",
+        "docs/ci.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-146",
+      "category": "defect",
+      "title": "An analyzer failing inside ok_exit is an error, never ran clean",
+      "description": "No output, non-JSON output, JSON without the manifest's findings key, and a tool-reported errors list (map.errors; bandit and semgrep) each record the adapter as error with the tool's message; findings produced beside tool errors are set aside and counted in the reason (CI-7).",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/adapters.py",
+        "src/arbiter/packs/adapters/bandit.adapter.toml",
+        "src/arbiter/packs/adapters/semgrep.adapter.toml",
+        "tests/test_adapter_failed_inside_ok_exit.py",
+        "docs/ci.md"
+      ],
+      "acceptance_criteria": [
+        "fake gitleaks exiting 1 with no report is status error",
+        "fake bandit with errors[] is status error naming the file",
+        "a clean JSON answer is still ran"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_adapter_failed_inside_ok_exit.py"
+      ],
+      "documentation_required": [
+        "docs/ci.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-147",
+      "category": "defect",
+      "title": "House-rule globs are globstar paths, case-sensitive on every OS",
+      "description": "src/arbiter/globs.py replaces fnmatch for house-rule files: and paths: patterns: * within a segment, ** across segments, [...] classes, case-sensitive; **/* reaches root files and src/**/*.py reaches src/a.py.",
+      "priority": "medium",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/globs.py",
+        "src/arbiter/probes.py",
+        "tests/test_globs.py",
+        "docs/configuration.md"
+      ],
+      "acceptance_criteria": [
+        "a content_match rule with the default glob fires on a root file",
+        "src/**/*.py matches src/a.py"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_globs.py"
+      ],
+      "documentation_required": [
+        "docs/configuration.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-148",
+      "category": "defect",
+      "title": "A target-root arbiter.yaml may not hide or downgrade its findings",
+      "description": "restrict_target_config drops suppress and probes.severity_overrides from a config found in the target root and a score.coverage_threshold below the default; each drop is recorded in scan_scope.config.ignored and printed. --config is trusted in full; Arbiter's own CI, the omni gate rule and the shipped CI templates pass --config arbiter.yaml.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/policy.py",
+        "tests/test_target_config_hiding.py",
+        "docs/configuration.md",
+        ".github/workflows/pr-check.yml",
+        ".ai/rules/completion-workflow.json",
+        "ci/github-action/action.yml",
+        "ci/gitlab/arbiter.gitlab-ci.yml"
+      ],
+      "acceptance_criteria": [
+        "a selector-less suppress entry in the target root hides nothing and is listed under scan_scope.config.ignored",
+        "severity_overrides in the target root does not downgrade",
+        "the same file passed with --config is honoured in full"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_target_config_hiding.py"
+      ],
+      "documentation_required": [
+        "docs/configuration.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-149",
+      "category": "defect",
+      "title": "A scan that read nothing a probe assesses withholds the grade and fails the gate",
+      "description": "When no text file in a role a probe reads (source, test, config, iac, ci) was read -- an empty directory, docs only, binaries only -- the grade is withheld with withheld_by nothing_read and the gate fails; the reason counts what was found and why it was not read.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/engine.py",
+        "src/arbiter/inventory.py",
+        "tests/test_nothing_read.py",
+        "docs/configuration.md"
+      ],
+      "acceptance_criteria": [
+        "empty docs-only binary-only and data-only directories withhold the grade and fail the gate",
+        "one source file is enough to grade"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_nothing_read.py"
+      ],
+      "documentation_required": [
+        "docs/configuration.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-150",
+      "category": "defect",
+      "title": "Files the walk did not read are reported and counted against coverage",
+      "description": "inventory.walk_repo records every skipped file (NUL byte, over the size cap, UTF-16 without a BOM, unreadable, a file symlink leaving the tree, git-ignored) and every directory it did not enter (SKIP_DIRS, symlinked, git-ignored; bounded file count) with a reason; scan_scope.skipped carries them, a files_not_read outcome joins the coverage denominator, the console and markdown print NOT READ lines, and above 50% of source-like files skipped the grade is withheld. A file symlink to a target outside the tree is not read. What counts as vendored is unchanged.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/inventory.py",
+        "src/arbiter/lang_rules.py",
+        "src/arbiter/engine.py",
+        "src/arbiter/report.py",
+        "tests/test_skipped_files.py",
+        "docs/configuration.md"
+      ],
+      "acceptance_criteria": [
+        "a NUL-bearing .py is listed with its reason and lowers coverage",
+        "BOM-less UTF-16 is named as such",
+        "a symlinked directory and a vendor directory are listed with file counts",
+        "a file symlink outside the tree is not read",
+        "two of three source files skipped withholds the grade and fails the gate"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_skipped_files.py"
+      ],
+      "documentation_required": [
+        "docs/configuration.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-151",
+      "category": "defect",
+      "title": "Under --changed a changed file counts as read only if a probe read it",
+      "description": "narrow() counts changed files as read only when text and not generated; files_changed_read, files_changed_not_read, changed_not_read (path and reason) and files_changed_deleted (git_deleted) are recorded; the gate fails when changed files exist and none was read; a delete-only change passes and is named; --only-files refuses when none of its files is read.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/incremental.py",
+        "src/arbiter/engine.py",
+        "src/arbiter/policy.py",
+        "src/arbiter/report.py",
+        "tests/test_changed_not_read.py",
+        "docs/configuration.md"
+      ],
+      "acceptance_criteria": [
+        "code moved under dist/ is changed-not-read and fails the gate",
+        "a NUL-bearing changed file is not read",
+        "a delete-only change passes and says so",
+        "an ordinary change still passes"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_changed_not_read.py"
+      ],
+      "documentation_required": [
+        "docs/configuration.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-152",
+      "category": "defect",
+      "title": "Configuration mistakes fail closed: gate severities, suppression entries, withheld grades",
+      "description": "check_gate_config normalises fail_on.severity/new case-insensitively and raises on an unknown name; coverage_below and withheld_grade are type-checked. suppression_problems/check_suppress_config require reason, expires and a selector; apply_suppressions ignores invalid entries. evaluate_gate fails on a withheld grade (gate.fail_on.withheld_grade, default true, not settable false from a target root) unless withheld_by is the operator's partial scan or probes_selected (--only/--skip/--no-adapters explaining the gap).",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/policy.py",
+        "src/arbiter/engine.py",
+        "src/arbiter/core.py",
+        "src/arbiter/claims.py",
+        "tests/test_config_fail_closed.py",
+        "docs/configuration.md"
+      ],
+      "acceptance_criteria": [
+        "severity Critical gates as critical and crtical is a config error exit 2",
+        "a suppress entry without expires or without a selector is a config error",
+        "probes disabled in the target config cannot yield a passing gate",
+        "a partial scan and an --only scan still pass while withheld",
+        "--config may set withheld_grade false"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest -q tests/test_config_fail_closed.py"
+      ],
+      "documentation_required": [
+        "docs/configuration.md",
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-154",
+      "category": "developer-tooling",
+      "title": "install_tools.sh runs on Windows where python3 is the Store alias",
+      "description": "tools/install_tools.sh called bare python3 to read its tool catalog (added in 3561ecc). On Windows python3 is often the Microsoft Store alias: on PATH but only prints an install hint and exits non-zero, so the script exited 2 and two install-script tests failed. The script now picks the first of python3 or python that actually runs and uses it for every Python step. Defect recorded as FAIL-072.",
+      "priority": "medium",
+      "status": "completed",
+      "minimum_access_scope": [
+        "tools/install_tools.sh"
+      ],
+      "acceptance_criteria": [
+        "install_tools.sh reads its catalog when python3 is the Store alias and python works",
+        "test_install_script_never_fails_a_build passes on Windows",
+        "test_install_script_does_not_accept_an_unpinned_existing_binary passes on Windows"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/test_tools_training.py -q"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-153",
+      "category": "developer-tooling",
+      "title": "Turn on adaptive quality thresholds and pin them per repository",
+      "description": "The adaptive-threshold mechanism existed in learn.py (metrics_from_inventory, adaptive_threshold, resolve_quality_config) but had never run: it was gated behind a quality.adaptive config flag set nowhere, and the profiles it produced were computed fresh each scan, used, and thrown away. knowledge.json's profiles store was empty. Enabled it in arbiter.yaml rather than in the shipped defaults, since flipping the default would move every existing user's thresholds without them asking. Added an `arbiter profile` command, which learns a repository's metric distributions and writes them to the ledger; a scan now prefers the learned profile and falls back to measuring from its own inventory. Writing is deliberately a separate command because profiles are part of the version hash: if a scan stored one, every run would move the hash it had just recorded into its own report and --pin-knowledge would fail against a ledger the pinned run itself produced. Reports carry learning.profile_source so a reader can tell a pinned profile from one measured off the code being judged, which the numbers alone do not show. The first implementation keyed profiles on the scan's repo id, which is the literal string 'root' for any single-target scan, so a learned profile was never found again and every repository scanned alone would have shared one entry; keys now come from the directory.",
+      "priority": "medium",
+      "status": "needs_review",
+      "minimum_access_scope": [
+        "src/arbiter/learn.py",
+        "src/arbiter/engine.py",
+        "src/arbiter/cli.py",
+        "arbiter.yaml",
+        "tests/test_measurement.py",
+        "tools/mutate_tests.py",
+        "docs/calibration.md",
+        "tests/test_review_learn.py",
+        "docs/cli.md"
+      ],
+      "acceptance_criteria": [
+        "arbiter profile writes a per-repository profile and moves the knowledge version",
+        "a scan with a learned profile reports profile_source learned and one without reports measured",
+        "profiles are keyed so two repositories never share an entry",
+        "a profile under 30 samples leaves the fixed threshold in place",
+        "the configured threshold caps the adaptive one; so a uniformly bad codebase cannot raise its own limit and a tenfold uniform degradation cannot leave the flagged set unchanged"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/ -q",
+        "python tools/mutate_tests.py"
+      ],
+      "documentation_required": [
+        "docs/calibration.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Only the first repository's profile is consulted because quality thresholds are resolved once for the whole run; a multi-repo system scan cannot yet hold one set per repository",
+        "Learning a profile moves the knowledge version so any pinned scan must be re-pinned deliberately",
+        "Adaptive is on for this repository only; the shipped default is unchanged",
+        "Ported 2026-10-25 from local commit 7fd2ab7 where it was written as REQ-031; upstream later used that id for a different requirement"
+      ]
+    },
+    {
+      "id": "ARB-155",
+      "category": "developer-tooling",
+      "title": "Point semgrep at the C#, Kotlin and Swift rules it already fetches",
+      "description": "The pinned semgrep-rules checkout (40b8c63) holds csharp, kotlin and swift rule directories (52, 14 and 4 rule files) that no --config pointed at, so those languages got no semgrep coverage. The adapter now loads them, and the tooling catalog lists csharp, kotlin and swift so a repository written in them gets semgrep in its plan and lock. Ported from unpushed commit 759ffd5; the osv-scanner half of that commit is not ported.",
+      "priority": "low",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/packs/adapters/semgrep.adapter.toml",
+        "src/arbiter/tooling.json",
+        ".arbiter/tooling.lock.json"
+      ],
+      "acceptance_criteria": [
+        "semgrep loads the csharp kotlin and swift rule directories with no errors",
+        "a Kotlin MD5 call is reported",
+        "the committed lock matches the catalog"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/test_tooling.py tests/test_tools_training.py tests/test_adapters.py -q"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-098",
+      "category": "accuracy",
+      "title": "Define blinded accuracy review protocol",
+      "description": "Create an operational, reviewer-ready protocol for independent blind adjudication of sampled scanner findings and repository-level missed-defect audits. Specify blinding, reviewer independence, sampling frames, disagreement resolution, evidence capture, license/privacy handling, frozen evaluation conditions, and limits on claims; do not change detection rules or access sealed corpora.",
+      "priority": "high",
+      "status": "withdrawn",
+      "minimum_access_scope": [
+        "docs/accuracy-review-protocol.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Protocol separates finding precision adjudication from repository miss audits",
+        "defines independent blinded review and disagreement resolution",
+        "specifies predeclared sampling and repository-cluster-aware analysis",
+        "documents handling and claim limits",
+        "preserves sealed datasets and prohibits tuning on evaluation cases"
+      ],
+      "validation_required": [
+        "Review documentation for alignment with docs/accuracy-roadmap.md and docs/accuracy-baseline.md; python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-review-protocol.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Protocol does not itself establish independent labels or authorize access to licensed or sealed benchmark data",
+        "Protocol is complete; independent reviewer recruitment, source approval, and data collection remain future work.",
+        "Superseded by ARB-104 after coordinating requirement IDs with concurrent main-branch work."
+      ]
+    },
+    {
+      "id": "ARB-104",
+      "category": "accuracy",
+      "title": "Define blinded accuracy review protocol",
+      "description": "Create an operational, reviewer-ready protocol for independent blind adjudication of sampled scanner findings and repository-level missed-defect audits. Specify blinding, reviewer independence, sampling frames, disagreement resolution, evidence capture, license/privacy handling, frozen evaluation conditions, and limits on claims; do not change detection rules or access sealed corpora.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-review-protocol.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Protocol separates finding precision adjudication from repository miss audits",
+        "defines independent blinded review and disagreement resolution",
+        "specifies predeclared sampling and repository-cluster-aware analysis",
+        "documents handling and claim limits",
+        "preserves sealed datasets and prohibits tuning on evaluation cases"
+      ],
+      "validation_required": [
+        "Review documentation for alignment with docs/accuracy-roadmap.md and docs/accuracy-baseline.md; python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-review-protocol.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Protocol does not itself establish independent labels or authorize access to licensed or sealed benchmark data; independent reviewer recruitment",
+        "source approval",
+        "and data collection remain future work."
+      ]
+    },
+    {
+      "id": "ARB-105",
+      "category": "accuracy",
+      "title": "Research external AI-code sources and define differential conformance study",
+      "description": "Research external AI-generated-code benchmark sources and design an aggregate-only Semgrep/CodeQL differential plus RealVuln expansion beyond CWE-89. Differential agreement is a triage signal, never ground truth; interim model labels must be blinded, provenance-recorded, and reported only as model-labelled conformance. Preserve the existing run-record template and RealVuln matching contract; do not ingest unlicensed sources or execute target code.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "tools/ground_truth/realvuln_conformance.py"
+      ],
+      "acceptance_criteria": [
+        "Separate differential agreement from ground truth; record model label provenance and all run environment/tool versions; keep existing RealVuln matcher and run-record compatibility; assess benchmark source licensing and holdout safety; document unsupported data and no universal 99 percent claims"
+      ],
+      "validation_required": [
+        "Schema validation; evaluator tests; review findings and sampling methodology; python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "CodeQL is unavailable in the current environment; benchmark license metadata is incomplete; model-labelled results are conformance only and do not establish independent truth.",
+        "Research gate only: CodeQL is unavailable in the current environment; source-level license eligibility for AI-generated repositories is not established. No benchmark corpus or target source has been acquired in this task.",
+        "This requirement completes source review and study design only; the all-CWE run, model-label measurements, CodeQL scan, and broader RealVuln acquisition remain future work pending source rights and tool provisioning."
+      ]
+    },
+    {
+      "id": "ARB-106",
+      "category": "accuracy",
+      "title": "Expanding labeled RealVuln baseline beyond CWE-89",
+      "description": "Extend the existing approved aggregate-only RealVuln pilot using only the 11 already-cleared pinned MIT/Unlicense Python repositories. Inventory all eligible CWE labels and non-scoring exclusions, validate completeness, and measure supported cases without changing the historical CWE-89 run or matcher. Do not inspect sealed fixtures, fetch additional repositories, or tune rules against evaluation data.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-roadmap.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "tools/ground_truth/realvuln_conformance.py",
+        "tests/test_realvuln_conformance.py",
+        "approved local RealVuln input/report artifacts only"
+      ],
+      "acceptance_criteria": [
+        "Inventory eligible labels and exclusions for all 11 approved source pins;validate label completeness and source commit identity;produce a reproducible additive multi-CWE aggregate run without altering historical CWE-89 data;report unsupported or unassessed cases explicitly;do not claim production accuracy or 99 percent certification"
+      ],
+      "validation_required": [
+        "focused evaluator tests;manifest schema validation;python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-roadmap.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Benchmark labels are not independently adjudicated; the 11-repository subset is curated and Python-only; broader language expansion and rule tuning require separate rights and evaluation gates",
+        "Pinned-label inventory validated 11 approved source pins with 502 scorable cases across multiple CWEs and no identity/completeness errors; proceed with aggregate-only static scans and a separate evaluator while preserving the historical CWE-89 run.",
+        "Scope includes docs/accuracy-baseline.md and docs/accuracy-realvuln-multicwe-run.json so the current baseline and reproducible aggregate report stay aligned with the new result.",
+        "Completed the 11-repository aggregate-only multi-CWE baseline with pinned label provenance and digests; preserved historical CWE-89 output; validated focused and fast suites, schema, lint, mutation guards, Arbiter self-gate, and Omni gate."
+      ]
+    },
+    {
+      "id": "ARB-107",
+      "category": "accuracy",
+      "title": "Running pinned analyzer differential rehearsal",
+      "description": "Run a reproducible static differential rehearsal using Arbiter, Semgrep, and CodeQL on the already-cleared, frozen 11-repository RealVuln Python subset. Record tool overlap and unique findings as benchmark differential coverage only; do not interpret analyzer agreement as truth or as ordinary production-repository accuracy. Keep all case-level outputs temporary and publish aggregate-only results; do not tune rules.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "approved public-repository candidate metadata",
+        "aggregate-only differential reports",
+        "temporary pinned analyzer installation"
+      ],
+      "acceptance_criteria": [
+        "Freeze repository snapshot pins before scanning;verify each selected repository license;pin Arbiter",
+        "Semgrep binary and rules",
+        "CodeQL CLI and query pack;run same snapshots in no-target-execution mode;report agreement and unique findings without treating them as ground truth;preserve source privacy and no case-level publication without permission"
+      ],
+      "validation_required": [
+        "verify CodeQL checksums;validate same-snapshot coverage;schema validation;focused tests;python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-baseline.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Differential agreement is not ground truth; a convenience cohort cannot estimate representative production accuracy; model labels require blinding and provenance; CodeQL no-build extraction may be incomplete for some projects",
+        "This first differential cohort is intentionally vulnerable benchmark code, not a representative real-repository population; the separate ordinary-repository precision study remains unmeasured.",
+        "Completed the pinned 11-repository Python analyzer differential. Aggregate-only results and provenance are in docs/accuracy-benchmark-manifest.json. Schema validation, 10 focused conformance tests, Omni doctor, and the project-managed Omni gate passed. This is differential coverage only, not production accuracy."
+      ]
+    },
+    {
+      "id": "ARB-108",
+      "category": "accuracy",
+      "title": "Freeze ordinary-repository precision pilot cohort",
+      "description": "Define and freeze a small exploratory sample of ordinary public Python repositories for the finding-precision study, separate from RealVuln and all existing sealed or tuned datasets. Pre-register the sampling frame and selection method before scans; pin each repository snapshot and verify its license at that snapshot. Record the limits honestly: this feasibility cohort is not representative population accuracy and cannot support a 99% claim. Keep a blinded adjudication as a separate follow-up requiring an independent coordinator/reviewer.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "pre-register the ordinary-repository population and reproducible cohort selection before scanning",
+        "select only repositories outside Arbiter development and sealed datasets",
+        "pin source commit and verify each license at that commit",
+        "retain aggregate-only source metadata and no case-level findings",
+        "do not call convenience-sample results production accuracy or a 99 percent claim",
+        "record independent blind-review prerequisites"
+      ],
+      "validation_required": [
+        "validate manifest against Draft 2020-12 schema",
+        "review pin and license provenance",
+        "python omni doctor",
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "A convenience sample cannot estimate representative production accuracy; no independent reviewers/coordinator are currently available; avoid all sealed or previously tuned repositories; license metadata must be verified at the exact frozen snapshot.",
+        "Frozen pre-scan metadata-only cohort with 11 verified MIT pins; scanning and independent blinded review remain separate follow-ups."
+      ]
+    },
+    {
+      "id": "ARB-109",
+      "category": "accuracy",
+      "title": "Scan frozen ordinary Python pilot cohort",
+      "description": "Acquire only the 11 exact source commits frozen under the ARB-108 ordinary Python feasibility cohort and run the pre-registered static-analysis measurement without building or executing target code. Record aggregate-only results, tool and environment provenance, and per-repository assessment coverage; retain no case-level findings in the repository. Treat analyzer overlap as differential coverage only and do not claim precision, recall, or 99 percent accuracy without independent blinded review.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md",
+        "tools/install_tools.sh",
+        "arbiter.yaml"
+      ],
+      "acceptance_criteria": [
+        "Acquire and verify only the frozen commit pins and MIT license digests",
+        "No build test setup or target execution is performed",
+        "Run Arbiter and available pinned static analyzers with reproducible configuration and provenance",
+        "Publish aggregate-only counts and coverage without case-level finding details",
+        "Unavailable analyzers and unsupported scan strata are reported as not assessed",
+        "No precision recall or 99 percent claim is made from analyzer counts or overlap"
+      ],
+      "validation_required": [
+        "manifest validates against Draft 2020-12 schema",
+        "scan provenance and source pins are verified",
+        "focused conformance tests",
+        "python omni doctor",
+        "python omni gate",
+        "Arbiter repository self-gate"
+      ],
+      "documentation_required": [
+        "docs/accuracy-benchmark-manifest.json",
+        "docs/accuracy-benchmark-manifest.schema.json",
+        "docs/accuracy-measurement-expansion.md",
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "The cohort is a small popularity-biased convenience sample",
+        "Independent coordinator and human reviewers remain unavailable",
+        "Analyzer agreement is not ground truth; model-labelled conformance only if separately authorized",
+        "Aggregate-only differential completed on the frozen 11-repository cohort; no case-level findings, labels, independent review, precision/recall estimate, or 99% claim. Blinded finding review and a separate repository miss audit remain follow-up work."
+      ]
+    },
+    {
+      "id": "ARB-110",
+      "category": "accuracy",
+      "title": "Close recall gap without human reviewers: development-only recall analysis and preregistered model-labelled sample",
+      "description": "Human reviewers are unavailable, so bridge the gap with (1) a development-data-only breakdown of missed weakness families from the ai-corpus development set and RealVuln-excluded sources, ranked by CWE and language, to direct rule work; (2) a preregistered, frozen, blinded model-labelled precision sample of the ARB-109 cohort, using the existing tools/label_models.py two-labeller-plus-adjudicator pipeline, reported only as model-labelled conformance; (3) a design for GPU-trained learned triage that uses only development labels and never sealed, RealVuln, held-out or ARB-109 evaluation data for training. No 99 percent claim; sealed sets stay closed.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "docs/accuracy-roadmap.md",
+        "docs/accuracy-baseline.md",
+        "docs/accuracy-review-protocol.md",
+        "tools/label_models.py",
+        "tools/gold/labels",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "acceptance_criteria": [
+        "Recall-gap table from development data only with denominators",
+        "Preregistration frozen before any evaluation labels are produced",
+        "Training/evaluation split by repository with no sealed or evaluation leakage",
+        "Results labelled model-labelled conformance",
+        "No 99 percent claim"
+      ],
+      "validation_required": [
+        "python omni doctor",
+        "python omni gate",
+        "tools/precision_guard.py check",
+        "fast pytest tier"
+      ],
+      "documentation_required": [
+        "docs/accuracy-baseline.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": [
+        "Model labels are not independent truth",
+        "Learned triage can overfit tuned corpora",
+        "Labeller cost and code leaving the machine as bounded excerpts only for public code"
+      ]
+    },
+    {
+      "id": "ARB-156",
+      "category": "developer-tooling",
+      "title": "Tests that pin bytes or timing pass on Windows checkouts",
+      "description": "Two tests failed on a Windows laptop but not in Linux CI: a sha256-pinned accuracy report checked out with CRLF (FAIL-131), and an adapter concurrency test with a fixed 2.0s bound that ignored scan overhead (FAIL-130). The report is now kept LF by .gitattributes; the timing test compares against a baseline measured in the same run and still fails when adapters run serially.",
+      "priority": "low",
+      "status": "completed",
+      "minimum_access_scope": [
+        ".gitattributes",
+        "tests/test_adapter_cache.py",
+        "docs/accuracy-realvuln-multicwe-run.json"
+      ],
+      "acceptance_criteria": [
+        "the digest test passes on a Windows checkout",
+        "test_two_adapters_run_at_once passes five runs in a row on Windows",
+        "forcing parallel=1 makes test_two_adapters_run_at_once fail"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/test_adapter_cache.py tests/test_realvuln_conformance.py -q"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-157",
+      "category": "developer-tooling",
+      "title": "PR checks pass on every matrix cell again",
+      "description": "PR #21's CI failed on three cells; round 6 and Copilot's branches had failed the same way. Fixed: Windows grammars are downloaded up front (FAIL-132); undeclared-import no longer depends on which Python runs the scan (FAIL-133); the shipped GitHub Action pins upload-sarif to a SHA (FAIL-134).",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        ".github/workflows/pr-check.yml",
+        "src/arbiter/authored.py",
+        "ci/github-action/action.yml",
+        "tests/test_probes_quality.py"
+      ],
+      "acceptance_criteria": [
+        "windows-latest typescript control tests pass",
+        "ubuntu-latest 3.10 held-out total matches 3.11",
+        "the self-gate passes"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/ -q"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-158",
+      "category": "developer-tooling",
+      "title": "CI scans use the analyzers CI installs",
+      "description": "Since 2687e9a scans read analyzers from the lock-keyed cache that arbiter tools install fills, but CI only ran install_tools.sh, so every self-gate since 2026-10-23 skipped all six analyzers and withheld its grade at 44% coverage (FAIL-136). Both workflows now run arbiter tools install. arbiter tools install also works on Windows, where it looked for trivy instead of trivy.exe (FAIL-135).",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        ".github/workflows/pr-check.yml",
+        ".github/workflows/train.yml",
+        "src/arbiter/tooling.py",
+        "tests/test_tooling.py"
+      ],
+      "acceptance_criteria": [
+        "the CI self-gate runs all six analyzers",
+        "the self-gate grade is not withheld for coverage",
+        "_release_asset returns trivy.exe on Windows"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/test_tooling.py -q"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
     }
   ]
 }

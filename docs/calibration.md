@@ -11,6 +11,7 @@ two.
 - [Three limits that keep it honest](#three-limits-that-keep-it-honest)
 - [Adjudication](#adjudication)
 - [The nightly job](#the-nightly-job)
+- [Thresholds that fit the repository](#thresholds-that-fit-the-repository)
 - [Calibrating someone else's tool](#calibrating-someone-elses-tool)
 
 The constants this page relies on -- twenty observations, the ratio bands,
@@ -194,6 +195,51 @@ cycle itself. It asserts none of the five is ignored and dry-runs the exact
 write-back that cannot happen is a reason not to start. A push that loses a race
 to another commit is the same lost night by a different route, so the job
 rebases before pushing and fails the step if that does not work.
+
+## Thresholds that fit the repository
+
+A fixed 120-line function limit is useless in a codebase whose median function
+is 12 lines. Where a profile has been learned, the quality thresholds are drawn
+from the repository's own distribution instead -- downward only.
+
+```bash
+arbiter profile .            # learn this repository's distributions and pin them
+arbiter profile . --show     # print what would be learned, write nothing
+```
+
+Three things keep this from becoming a curve the tool grades itself on:
+
+- **A ceiling.** The configured threshold caps the adaptive one, so adaptive
+  only ever tightens. Without that cap the rule is scale-equivariant in the
+  percentile: multiply every file in a repository by ten and the threshold
+  multiplies by ten, so exactly the same files sit above it and a codebase
+  that got uniformly worse reports identically. Measured on this repository,
+  a tenfold uniform degradation left the flagged set at the same two files,
+  where the fixed threshold would have gone from 5 findings to 42. A floor
+  applies at the other end, so a very terse repository is not held to a
+  threshold too strict to mean anything.
+- **A minimum sample.** Under 30 measurements the fixed threshold stands;
+  six files are a rumour about a codebase, not its distribution. Even well
+  above that line the estimate is loose: bootstrapping this repository's p95
+  from its 60 files gives a 90% interval of [664, 2032], which spans finding
+  counts from 0 to 6. That looseness is the argument for the asymmetry --
+  tightening on a noisy estimate fails closed and costs a file read, while
+  loosening on it fails open and hides findings.
+- **It is written deliberately, never by a scan.** Profiles decide which
+  findings a scan reports, so they are part of the knowledge version. If
+  scanning stored one, every run would move the hash it had just recorded into
+  its own report, and `--pin-knowledge` would fail against a ledger the pinned
+  run itself produced. `arbiter profile` is a separate command for that reason,
+  and running it means re-pinning.
+
+A report says which it used: `learning.profile_source` is `learned` when the
+thresholds came from the pinned ledger and are reproducible from the knowledge
+version alone, `measured` when they were drawn from that run's own inventory
+and therefore move with the code being judged. The numbers look identical
+either way, which is why the field exists.
+
+Profiles are stored per repository, keyed by directory. One threshold shared
+across two codebases is wrong for both.
 
 ## Calibrating someone else's tool
 

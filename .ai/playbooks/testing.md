@@ -59,6 +59,13 @@ edges). Use that instead of guessing:
   test that fails without the fix. Record it with
   `omni failure update FAIL-### --tests <path or path::name>`.
 
+## Aggregate Test Oracles
+
+Derive aggregate assertion fields and shapes from the current producer
+contract. Reconcile expected numerators and denominators against every
+included fixture record, including pre-existing unmatched, unlabelled, or
+ignored cases.
+
 ## Failing Tests Are Evidence
 
 When a test, build or check fails, do not just make it green. Record what it

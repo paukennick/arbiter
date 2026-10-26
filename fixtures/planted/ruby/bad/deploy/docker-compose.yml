@@ -1,0 +1,10 @@
+services:
+  web:
+    build: .
+    image: planted/web:dev
+  worker:
+    image: planted/web:dev
+  db:
+    image: postgres:16 # expect: arbiter/supply.unpinned-container-image
+  cache:
+    image: redis # expect: arbiter/supply.unpinned-container-image

@@ -100,6 +100,7 @@ CLAIMS: list[tuple[str, str, str]] = [
     ("*.command-injection", "injection", f"{_OUTSIDE} reaches an operating-system command or shell in a way that lets it change which command runs or what its arguments are."),
     ("*.shell-*", "injection", f"{_OUTSIDE} reaches an operating-system command or shell in a way that lets it change which command runs or what its arguments are."),
     ("*.path-traversal*", "injection", f"a file path built from {_OUTSIDE} could reach files outside the intended directory (for example with '../' or an absolute path)."),
+    ("*.path-confinement-*", "injection", f"a file path built from {_OUTSIDE} is only confined to a directory when an optional setting is present, so otherwise it could reach files outside the intended directory (for example with '../' or an absolute path)."),
     ("*.upload-client-filename", "injection", "an uploaded file is stored under the name the client supplied, so the client controls where it is written or what type it gets."),
     ("*.xss-*", "injection", f"{_OUTSIDE} is written into an HTML response or page without escaping, so it could inject script."),
     ("*.html-from-request", "injection", f"{_OUTSIDE} is written into an HTML response or page without escaping, so it could inject script."),
@@ -345,13 +346,18 @@ class Cache:
                 fh.write(json.dumps(rec, sort_keys=True) + "\n")
 
 
-def call_cli(system: str, prompt: str, model: str, timeout: int = 240) -> tuple[str, float, str]:
-    """(reply text, cost in USD, resolved model) from one headless CLI run."""
+def call_cli(system: str, prompt: str, model: str, timeout: int = 240,
+             env: dict | None = None) -> tuple[str, float, str]:
+    """(reply text, cost in USD, resolved model) from one headless CLI run.
+    `env` replaces the inherited environment (the panel passes an allowlist,
+    tools/panel/providers.py `clean_env`); by default it is this process's
+    environment without ANTHROPIC_API_KEY."""
     cmd = ["claude", "-p", prompt, "--model", model, "--tools", "", "--setting-sources", "",
            "--strict-mcp-config", "--system-prompt", system, "--output-format", "json",
            "--no-session-persistence"]
     with tempfile.TemporaryDirectory(prefix="label-") as cwd:
-        env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
+        if env is None:
+            env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
         proc = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout,
                               stdin=subprocess.DEVNULL, env=env)
     try:

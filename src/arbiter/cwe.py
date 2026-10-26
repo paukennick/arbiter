@@ -23,6 +23,9 @@ NATIVE: dict[str, list[str]] = {
     "arbiter/concurrency.unsynchronised-counter": ["CWE-362", "CWE-366"],
     "arbiter/supply.unpinned-*": ["CWE-1357", "CWE-494"],
     "arbiter/supply.pull-request-target": ["CWE-829"],
+    # Executing a download nobody checked: code from an untrusted control
+    # sphere (829) fetched without an integrity check (494).
+    "arbiter/supply.remote-script-piped": ["CWE-494", "CWE-829"],
     "arbiter/assurance.test-asserts-nothing": ["CWE-1164"],
     "arbiter/ast.high-complexity": ["CWE-1121"],
     "arbiter/ast.deep-nesting": ["CWE-1124"],

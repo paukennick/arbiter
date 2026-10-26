@@ -1221,3 +1221,68 @@ def test_named_gemfiles_inline_gemfiles_and_rescued_requires_are_declared(tmp_pa
     names = sorted(f.evidence for f in rep.active() if "undeclared-import" in f.rule_id)
     # httparty is still undeclared: only the rescued require is optional.
     assert names == ["undeclared:rubygems:httparty"]
+
+
+def test_unbound_broad_rescue_returning_a_default_or_500_is_reported(tmp_path):
+    code = """
+    class F
+      def call(url)
+        post(url)
+      rescue StandardError
+        false
+      end
+      def named(url)
+        post(url)
+      rescue StandardError => e
+        false
+      end
+      def ipv6_available?
+        probe
+      rescue StandardError
+        false
+      end
+      def status
+        run
+      rescue StandardError
+        [500, {}, ["error"]]
+      end
+      def logged
+        run
+      rescue StandardError
+        warn "failed"
+        [500, {}, ["error"]]
+      end
+    end
+    """
+    got = _rules(tmp_path, code)
+    assert got.get("swallowed-rescue-fallback") == [5]
+    assert got.get("swallowed-error-to-500") == [20]
+
+
+def test_confinement_that_only_runs_when_the_root_is_set_is_reported(tmp_path):
+    optional = """
+    class R
+      def initialize
+        @root = ENV["IMAGE_ROOT"]
+      end
+      def resolve(path)
+        full = File.expand_path(path)
+        if @root
+          raise ArgumentError, "outside" unless full.start_with?(@root + "/")
+        end
+        full
+      end
+    end
+    """
+    required = """
+    class R
+      ROOT = File.expand_path(ENV.fetch("IMAGE_ROOT", "/srv"))
+      def resolve(path)
+        full = File.expand_path(path, ROOT)
+        raise ArgumentError, "outside" unless full.start_with?(ROOT + "/")
+        full
+      end
+    end
+    """
+    assert _rules(tmp_path, optional).get("path-confinement-optional") == [8]
+    assert "path-confinement-optional" not in _rules(tmp_path / "x", required)

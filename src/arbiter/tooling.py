@@ -485,6 +485,9 @@ def _release_asset(tool: dict[str, Any], version: str) -> tuple[str, str, str]:
     binary = release.get("binary")
     if not isinstance(checksum_template, str) or not isinstance(binary, str):
         raise ValueError(f"invalid release metadata for {tool.get('name')}")
+    # Windows archives hold `trivy.exe`, not `trivy` (FAIL-135).
+    if system == "windows" and not binary.endswith(".exe"):
+        binary += ".exe"
     return template.format(version=version), checksum_template.format(version=version), binary
 
 

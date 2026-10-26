@@ -437,18 +437,33 @@ def build_profile(values: list[float]) -> dict:
 
 def adaptive_threshold(profile: dict, fixed: float, percentile: str = "p95",
                        floor: float | None = None) -> float:
-    """A threshold that fits the repository it is judging.
+    """A threshold that fits the repository it is judging, but only downward.
 
-    A fixed 120-line function limit is wrong in both directions: noise in a
-    codebase whose median function is 80 lines, and useless in one whose median
-    is 12. Where a profile exists, flag the tail of the repository's own
-    distribution instead — but never below a floor, so a codebase that is
-    uniformly bad cannot normalize its way to a clean report.
+    A fixed 120-line function limit is useless in a codebase whose median
+    function is 12 lines, so where a profile exists the tail of the
+    repository's own distribution is used instead — bounded at both ends.
+
+    The bounds are not symmetric, and deliberately so. `fixed` caps the result,
+    so adaptive can only ever tighten: a repository cannot raise its own
+    threshold by being sprawling. Without that cap the rule is scale-equivariant
+    in the percentile — multiply every file by ten and the threshold multiplies
+    by ten, leaving the flagged set identical, so uniform degradation becomes
+    invisible and the tool grades on a curve it redraws from the code it is
+    judging. `floor` bounds the other end, so a very terse repository does not
+    hold itself to a threshold too strict to mean anything.
+
+    The asymmetry is an evidence argument, not a taste one. The percentile is
+    an estimate from a finite sample: at n=60 a bootstrap of this repository's
+    p95 gives a 90% interval of [664, 2032], wide enough to swing the finding
+    count from 0 to 6. Tightening on an estimate that noisy fails closed — the
+    cost is a file read that need not have been. Loosening on it fails open,
+    and silences real findings. The same evidence does not buy both.
     """
     if not profile or profile.get("n", 0) < 30:
         return fixed
     value = float(profile.get(percentile, fixed))
-    return max(value, floor if floor is not None else fixed * 0.5)
+    bottom = floor if floor is not None else fixed * 0.5
+    return max(bottom, min(value, fixed))
 
 
 def metrics_from_inventory(inventory, graph=None) -> dict:
@@ -473,6 +488,44 @@ def metrics_from_inventory(inventory, graph=None) -> dict:
     except Exception:  # noqa: BLE001 - profiles are advisory; a parser failure leaves them absent
         pass
     return out
+
+
+def profile_key(path: str) -> str:
+    """The name a profile is stored under.
+
+    Derived from the directory rather than from a scan's repository id,
+    because a single-target scan labels its repository "root" for display --
+    so keying on that would give every separately-scanned repository the same
+    profile, and whichever was written first would set the thresholds for all
+    of them.
+    """
+    return Path(path).resolve().name or "root"
+
+
+def learn_profiles(knowledge: Knowledge, repo_id: str, metrics: dict) -> dict:
+    """Store one repository's metric distributions under its own id.
+
+    Keyed by repository because the distributions are the repository: a
+    codebase whose median function is twelve lines and one whose median is
+    eighty do not share a sensible threshold, and merging them produces a
+    number wrong for both.
+
+    Writing this is deliberate, and happens through `arbiter profile` rather
+    than during a scan. Profiles are part of the version hash, because they
+    change which findings a scan produces -- so if a scan wrote them, every
+    run would move the hash it had just recorded, and `--pin-knowledge` would
+    fail against the ledger the pinned run itself created.
+    """
+    stored = {name: dist for name, dist in metrics.items() if dist}
+    if stored:
+        knowledge.profiles[repo_id] = stored
+    return stored
+
+
+def profile_for(knowledge: Knowledge, repo_id: str) -> dict:
+    """The stored profile for a repository, or empty when none was learned."""
+    entry = knowledge.profiles.get(repo_id)
+    return entry if isinstance(entry, dict) else {}
 
 
 def resolve_quality_config(config: dict, profiles: dict) -> dict:

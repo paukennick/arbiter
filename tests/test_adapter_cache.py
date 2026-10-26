@@ -83,6 +83,10 @@ class Fakes:
     def counts(self) -> tuple[int, ...]:
         return tuple(self.count(n) for n in NAMES)
 
+    def reset_counts(self) -> None:
+        for n in NAMES:
+            (self.home / f"{n}.count").unlink(missing_ok=True)
+
     def sleep(self, seconds: float) -> None:
         for n in NAMES:
             (self.home / f"{n}.sleep").write_text(str(seconds), encoding="utf-8")
@@ -154,13 +158,27 @@ def _stats(report) -> dict:
 
 def test_two_adapters_run_at_once(tmp_path, fakes):
     root = _repo(tmp_path)
-    fakes.sleep(1.0)
 
+    # What the scan costs with adapters that do no work: process start-up,
+    # inventory and report building. Comparing against a fixed 2.0s failed on
+    # machines where that overhead alone is a few hundred milliseconds, even
+    # though the adapters did run at once (FAIL-130).
+    fakes.sleep(0.0)
+    t0 = time.monotonic()
+    _scan(root, _cfg(parallel=1), use_cache=False)
+    base = time.monotonic() - t0
+    fakes.reset_counts()
+
+    fakes.sleep(1.0)
     t0 = time.monotonic()
     parallel = _scan(root, _cfg(parallel=2), use_cache=False)
     wall = time.monotonic() - t0
     assert fakes.counts() == (1, 1)
-    assert wall < 2.0, f"two one-second adapters took {wall:.2f}s: they ran one after the other"
+    # Serial would take base + 2s; at once takes about base + 1s. Split the
+    # difference so neither noise nor slow start-up decides the result.
+    assert wall < base + 1.5, (
+        f"two one-second adapters took {wall:.2f}s over a {base:.2f}s baseline: "
+        "they ran one after the other")
     for name in NAMES:
         assert _outcome(parallel, name).status == "ran"
 
