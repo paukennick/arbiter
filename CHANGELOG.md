@@ -24,6 +24,11 @@ under `[Unreleased]` (there are no release tags yet) and reference the
   others) as standard library whichever Python runs the scan; a 3.10 scan
   reported `import tomllib` as undeclared (FAIL-133). The shipped GitHub
   Action pins `upload-sarif` to a commit SHA (FAIL-134).
+- ARB-162 | r7 Python labels: all 389 findings of 17 Python rules on the 19
+  held-out repositories, labelled with v3 prompts ($17.54). No Python rule is
+  admitted yet. `python.sql-injection` is mostly wrong on real code: 11 true,
+  218 false, 14 unsure (pooled lower bound 0.078), flagging SQL built from
+  internal table and column names. `python.http-no-timeout` 43 true, 1 false.
 
 ### 2026-10-25
 

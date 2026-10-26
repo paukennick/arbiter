@@ -3594,7 +3594,7 @@
       "title": "Held-out set r7 (Python): 20 pinned repositories frozen before scanning",
       "description": "Round 7 measures Python precision on repositories no rule was tuned against. 10 well-run (OpenSSF Scorecard >= 7.0, top by stars) and 9 applications (hand-picked deployed services and self-hosted tools from the metadata-qualified candidates; searxng dropped before any scan because Windows cannot check out its paths), with >= 1000 stars, OSI licence, Python >= 60% of bytes, workflows present, not used before, pinned to default-branch HEAD on 2026-10-26 and frozen before any clone. Every finding of 17 Python rules (389 of 9,711 findings) is labelled with the v3 prompts so the v3 calibration applies; unsafe-deserialization and code-injection wait for a rescan after ARB-160.",
       "priority": "high",
-      "status": "pending",
+      "status": "needs_review",
       "minimum_access_scope": [
         "tools/gold/heldout-r7-python-repos.json",
         "tools/fetch_heldout_r7_python.sh"
@@ -3610,7 +3610,9 @@
       "documentation_required": [
         "CHANGELOG.md"
       ],
-      "risk_notes": []
+      "risk_notes": [
+        "Labelled 2026-10-26: 389 held-out findings, v3 prompts, $17.54. Census, so these are rates, not samples. No Python rule admitted. sql-injection 11 tp / 218 fp / 14 unsure in r7 (pooled 28/223, lower 0.078): fires on SQL built from internal identifiers. http-no-timeout 43/1 in r7 (pooled 45/2, lower 0.858). weak-password-hash pooled 74/3 (lower 0.892), insecure-random-for-secret unchanged 99/2 (no r7 findings)."
+      ]
     }
   ]
 }
