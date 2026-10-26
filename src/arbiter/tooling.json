@@ -73,7 +73,7 @@
   "semgrep_rules_ref": "40b8c63f75dc7c22c8a77482d73bfb864b146f7e",
   "tree_sitter": {
     "package": "tree-sitter-language-pack",
-    "default_grammars": ["python", "javascript", "typescript", "tsx", "go", "java", "ruby"],
+    "default_grammars": ["python", "javascript", "typescript", "tsx", "go", "java", "ruby", "c", "cpp"],
     "grammars": {
       "python": ["python"],
       "javascript": ["javascript"],

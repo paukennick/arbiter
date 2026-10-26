@@ -33,8 +33,10 @@ LANG_BY_EXT = {
     ".go": "go",
     ".rb": "ruby",
     ".java": "java", ".kt": "kotlin", ".kts": "kotlin",
+    # `.h` is C unless the repository also has C++ sources (walk_repo, ARB-161).
     ".c": "c", ".h": "c",
-    ".cc": "cpp", ".cpp": "cpp", ".cxx": "cpp", ".hpp": "cpp", ".hh": "cpp",
+    ".cc": "cpp", ".cpp": "cpp", ".cxx": "cpp", ".c++": "cpp", ".hpp": "cpp", ".hh": "cpp",
+    ".hxx": "cpp", ".ipp": "cpp", ".inl": "cpp",
     ".cs": "csharp",
     ".rs": "rust",
     ".php": "php",
@@ -449,7 +451,19 @@ def walk_repo(root: Path, repo_id: str, exclude: set[str] | None = None,
                 fi.lines = raw.count(b"\n") + (0 if raw.endswith(b"\n") or not raw else 1)
                 fi.role = classify(rel, language)
             out.append(fi)
+    _headers_follow_cpp(out)
     return out
+
+
+def _headers_follow_cpp(files: list[FileInfo]) -> None:
+    """A `.h` header is C by default, but in a repository with C++ sources it
+    is almost always C++ (classes, templates, namespaces), and the C grammar
+    misparses those. One C++ source file switches every `.h` in the repo."""
+    if not any(f.language == "cpp" for f in files):
+        return
+    for f in files:
+        if f.language == "c" and f.path.lower().endswith(".h"):
+            f.language = "cpp"
 
 
 def detect_stacks(files: list[FileInfo]) -> set[str]:
@@ -488,6 +502,10 @@ def detect_stacks(files: list[FileInfo]) -> set[str]:
         stacks.add("ruby")
     if {"CMakeLists.txt"} & names or any(f.language == "cpp" for f in files):
         stacks.add("cpp")
+    # Build files alone mark the stack; the C pack itself only runs where
+    # there are C or C++ files to read (lang_rules.register_lang_rules).
+    if {"Makefile", "meson.build", "configure.ac"} & names or any(f.language == "c" for f in files):
+        stacks.add("c")
     if any(f.language == "r" for f in files):
         stacks.add("r")
 

@@ -80,8 +80,28 @@ FUNCTION_QUERIES: dict[str, str] = {
     "ruby": "(method name: (identifier) @name) @fn",
     "rust": "(function_item name: (identifier) @name) @fn",
     "php": "(function_definition name: (name) @name) @fn",
-    "c": "(function_definition declarator: (function_declarator declarator: (identifier) @name)) @fn",
-    "cpp": "(function_definition declarator: (function_declarator declarator: (identifier) @name)) @fn",
+    # The function's declarator sits under a pointer declarator when it
+    # returns one (`char *dup(...)`), and under a reference declarator in C++.
+    "c": """
+        (function_definition declarator: [
+          (function_declarator declarator: (identifier) @name)
+          (pointer_declarator declarator: (function_declarator declarator: (identifier) @name))
+          (pointer_declarator declarator: (pointer_declarator
+            declarator: (function_declarator declarator: (identifier) @name)))]) @fn
+    """,
+    # C++ adds out-of-class methods (`Foo::bar`, `Foo<T>::bar`), destructors,
+    # operators and inline methods. A template's function_definition sits
+    # inside its template_declaration and is matched there (ARB-161).
+    "cpp": """
+        (function_definition declarator: [
+          (function_declarator declarator: [
+            (identifier) (field_identifier) (qualified_identifier) (destructor_name)
+            (operator_name) (template_function)] @name)
+          (pointer_declarator declarator: (function_declarator declarator: [
+            (identifier) (field_identifier) (qualified_identifier) (operator_name)] @name))
+          (reference_declarator (function_declarator declarator: [
+            (identifier) (field_identifier) (qualified_identifier) (operator_name)] @name))]) @fn
+    """,
     "bash": "(function_definition name: (word) @name) @fn",
 }
 

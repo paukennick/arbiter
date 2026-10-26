@@ -7,6 +7,19 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-161 | C and C++ are read by a rule pack for the first time. A `c` stack
+  is detected from a Makefile, `meson.build`, `configure.ac` or any C file;
+  `.hxx`, `.c++`, `.ipp` and `.inl` are C++, and `.h` is C++ in a repository
+  that has C++ sources. The `c` and `cpp` grammars are downloaded by default,
+  and the C++ function boundaries now include `Foo::bar`, templates,
+  operators, destructors and inline methods. The new `c` pack has five rules,
+  each with a planted defect and a silent lookalike: `gets-call`,
+  `unbounded-copy` (advisory), `command-injection` (a non-literal
+  `system`/`popen` command), `format-string` (a non-literal printf-family
+  format) and `insecure-random-secret` (`rand()` into a token, nonce or key).
+  A language pack now runs only where its files exist, so a Makefile in a
+  Python repository no longer reads as C assessed. The CWE Top 25 matrix has
+  a C/C++ column: CWE-78 and CWE-798 native, the memory-safety rows gaps.
 - ARB-157 | PR checks pass on every matrix cell again. Windows CI downloads
   every default tree-sitter grammar up front, so the TypeScript pack no longer
   depends on test order for `tsx` (FAIL-132). `authored.undeclared-import`

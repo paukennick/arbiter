@@ -1,4 +1,4 @@
-# 2024 CWE Top 25, per IDE language. Generated from the matrix in
+# 2024 CWE Top 25, per IDE language (`c` is the C/C++ pack, ARB-161). Generated from the matrix in
 # docs/cwe-top25.md, and held to it by tests/test_controls_cwe_top25.py: edit
 # both together.
 #
@@ -49,6 +49,7 @@ controls:
       go: {status: applies, measured: "S"}
       java: {status: applies, measured: "N"}
       ruby: {status: applies, measured: "S"}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-787
     title: "Out-of-bounds Write"
@@ -64,6 +65,7 @@ controls:
       go: {status: not_applicable, measured: "n/a", reason: "Memory-safe runtime: no pointer arithmetic or manual frees. Occurs only through unsafe, JNI, FFI or a C extension, which the packs do not parse."}
       java: {status: not_applicable, measured: "n/a", reason: "Memory-safe runtime: no pointer arithmetic or manual frees. Occurs only through unsafe, JNI, FFI or a C extension, which the packs do not parse."}
       ruby: {status: not_applicable, measured: "n/a", reason: "Memory-safe runtime: no pointer arithmetic or manual frees. Occurs only through unsafe, JNI, FFI or a C extension, which the packs do not parse."}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-89
     title: "Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
@@ -79,6 +81,7 @@ controls:
       go: {status: applies, measured: "N+S †"}
       java: {status: applies, measured: "N+S †"}
       ruby: {status: applies, measured: "N+S †"}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-352
     title: "Cross-Site Request Forgery (CSRF)"
@@ -94,6 +97,7 @@ controls:
       go: {status: out_of_reach, measured: "OOR", reason: "net/http has no CSRF protection to switch off. Protection is middleware (gorilla/csrf, http.CrossOriginProtection) and its absence only shows in the whole router set-up."}
       java: {status: applies, measured: "N+S"}
       ruby: {status: applies, measured: "N"}
+      c: {status: out_of_reach, measured: "OOR", reason: "C and C++ have no web framework with CSRF protection to switch off. A CGI or embedded-server handler protects itself, and its absence only shows in the whole request path."}
 
   - id: CWE-22
     title: "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
@@ -109,6 +113,7 @@ controls:
       go: {status: applies, measured: "N"}
       java: {status: applies, measured: "N+S"}
       ruby: {status: applies, measured: "N"}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-125
     title: "Out-of-bounds Read"
@@ -124,6 +129,7 @@ controls:
       go: {status: not_applicable, measured: "n/a", reason: "Memory-safe runtime: no pointer arithmetic or manual frees. Occurs only through unsafe, JNI, FFI or a C extension, which the packs do not parse."}
       java: {status: not_applicable, measured: "n/a", reason: "Memory-safe runtime: no pointer arithmetic or manual frees. Occurs only through unsafe, JNI, FFI or a C extension, which the packs do not parse."}
       ruby: {status: not_applicable, measured: "n/a", reason: "Memory-safe runtime: no pointer arithmetic or manual frees. Occurs only through unsafe, JNI, FFI or a C extension, which the packs do not parse."}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-78
     title: "Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
@@ -139,6 +145,7 @@ controls:
       go: {status: applies, measured: "N+S †"}
       java: {status: applies, measured: "N+S †"}
       ruby: {status: applies, measured: "N+S †"}
+      c: {status: applies, measured: "N"}
 
   - id: CWE-416
     title: "Use After Free"
@@ -154,6 +161,7 @@ controls:
       go: {status: not_applicable, measured: "n/a", reason: "Memory-safe runtime: no pointer arithmetic or manual frees. Occurs only through unsafe, JNI, FFI or a C extension, which the packs do not parse."}
       java: {status: not_applicable, measured: "n/a", reason: "Memory-safe runtime: no pointer arithmetic or manual frees. Occurs only through unsafe, JNI, FFI or a C extension, which the packs do not parse."}
       ruby: {status: not_applicable, measured: "n/a", reason: "Memory-safe runtime: no pointer arithmetic or manual frees. Occurs only through unsafe, JNI, FFI or a C extension, which the packs do not parse."}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-862
     title: "Missing Authorization"
@@ -169,6 +177,7 @@ controls:
       go: {status: out_of_reach, measured: "OOR", reason: "Telling a missing or wrong permission check from a correct one needs the application's authorization model (which routes need which roles, who owns which object), which no single file states."}
       java: {status: out_of_reach, measured: "OOR", reason: "Telling a missing or wrong permission check from a correct one needs the application's authorization model (which routes need which roles, who owns which object), which no single file states."}
       ruby: {status: out_of_reach, measured: "OOR", reason: "Telling a missing or wrong permission check from a correct one needs the application's authorization model (which routes need which roles, who owns which object), which no single file states."}
+      c: {status: out_of_reach, measured: "OOR", reason: "Telling a missing or wrong permission check from a correct one needs the application's authorization model (which routes need which roles, who owns which object), which no single file states."}
 
   - id: CWE-434
     title: "Unrestricted Upload of File with Dangerous Type"
@@ -184,6 +193,7 @@ controls:
       go: {status: applies, measured: "N"}
       java: {status: applies, measured: "N+S"}
       ruby: {status: applies, measured: "N"}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-94
     title: "Improper Control of Generation of Code ('Code Injection')"
@@ -199,6 +209,7 @@ controls:
       go: {status: not_applicable, measured: "n/a", reason: "No runtime code evaluation. text/template injection is CWE-1336 and reaches template data, not code."}
       java: {status: applies, measured: "S"}
       ruby: {status: applies, measured: "N+S †"}
+      c: {status: not_applicable, measured: "n/a", reason: "No runtime code evaluation. Loading a library by a value (dlopen) is CWE-114, not code injection."}
 
   - id: CWE-20
     title: "Improper Input Validation"
@@ -214,6 +225,7 @@ controls:
       go: {status: out_of_reach, measured: "OOR", reason: "A pillar: every concrete instance is a more specific CWE with its own row (22, 79, 89, 434). A missing validation with no specific sink has no single-file signature."}
       java: {status: out_of_reach, measured: "OOR", reason: "A pillar: every concrete instance is a more specific CWE with its own row (22, 79, 89, 434). A missing validation with no specific sink has no single-file signature."}
       ruby: {status: out_of_reach, measured: "OOR", reason: "A pillar: every concrete instance is a more specific CWE with its own row (22, 79, 89, 434). A missing validation with no specific sink has no single-file signature."}
+      c: {status: out_of_reach, measured: "OOR", reason: "A pillar: every concrete instance is a more specific CWE with its own row (22, 79, 89, 434). A missing validation with no specific sink has no single-file signature."}
 
   - id: CWE-77
     title: "Improper Neutralization of Special Elements used in a Command ('Command Injection')"
@@ -229,6 +241,7 @@ controls:
       go: {status: applies, measured: "N"}
       java: {status: applies, measured: "N"}
       ruby: {status: applies, measured: "N"}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-287
     title: "Improper Authentication"
@@ -244,6 +257,7 @@ controls:
       go: {status: applies, measured: "N"}
       java: {status: applies, measured: "N+S"}
       ruby: {status: applies, measured: "N+S"}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-269
     title: "Improper Privilege Management"
@@ -259,6 +273,7 @@ controls:
       go: {status: out_of_reach, measured: "OOR", reason: "A deployment and role-design property. Its single-file signals (running as root, broad IAM) sit in Dockerfiles, Kubernetes and IaC, not application code."}
       java: {status: out_of_reach, measured: "OOR", reason: "A deployment and role-design property. Its single-file signals (running as root, broad IAM) sit in Dockerfiles, Kubernetes and IaC, not application code."}
       ruby: {status: out_of_reach, measured: "OOR", reason: "A deployment and role-design property. Its single-file signals (running as root, broad IAM) sit in Dockerfiles, Kubernetes and IaC, not application code."}
+      c: {status: out_of_reach, measured: "OOR", reason: "A deployment and role-design property. Its single-file signals (running as root, broad IAM) sit in Dockerfiles, Kubernetes and IaC, not application code."}
 
   - id: CWE-502
     title: "Deserialization of Untrusted Data"
@@ -274,6 +289,7 @@ controls:
       go: {status: not_applicable, measured: "n/a", reason: "The stdlib decoders (encoding/json, gob, xml) fill declared types. There is no gadget chain or code execution path."}
       java: {status: applies, measured: "N+S †"}
       ruby: {status: applies, measured: "N †"}
+      c: {status: not_applicable, measured: "n/a", reason: "No object deserialization that instantiates types by name, so no gadget chain. Parsing an untrusted binary layout is a bounds problem, counted under CWE-787, 125 and 119."}
 
   - id: CWE-200
     title: "Exposure of Sensitive Information to an Unauthorized Actor"
@@ -289,6 +305,7 @@ controls:
       go: {status: applies, measured: "N"}
       java: {status: applies, measured: "N"}
       ruby: {status: applies, measured: "N"}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-863
     title: "Incorrect Authorization"
@@ -304,6 +321,7 @@ controls:
       go: {status: out_of_reach, measured: "OOR", reason: "Telling a missing or wrong permission check from a correct one needs the application's authorization model (which routes need which roles, who owns which object), which no single file states. go.stub-on-security-path reports a stubbed-out check; its silence is not evidence."}
       java: {status: out_of_reach, measured: "OOR", reason: "Telling a missing or wrong permission check from a correct one needs the application's authorization model (which routes need which roles, who owns which object), which no single file states."}
       ruby: {status: out_of_reach, measured: "OOR", reason: "Telling a missing or wrong permission check from a correct one needs the application's authorization model (which routes need which roles, who owns which object), which no single file states."}
+      c: {status: out_of_reach, measured: "OOR", reason: "Telling a missing or wrong permission check from a correct one needs the application's authorization model (which routes need which roles, who owns which object), which no single file states."}
 
   - id: CWE-918
     title: "Server-Side Request Forgery (SSRF)"
@@ -319,6 +337,7 @@ controls:
       go: {status: applies, measured: "N"}
       java: {status: applies, measured: "N"}
       ruby: {status: applies, measured: "N"}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-119
     title: "Improper Restriction of Operations within the Bounds of a Memory Buffer"
@@ -334,6 +353,7 @@ controls:
       go: {status: not_applicable, measured: "n/a", reason: "Memory-safe runtime: no pointer arithmetic or manual frees. Occurs only through unsafe, JNI, FFI or a C extension, which the packs do not parse."}
       java: {status: not_applicable, measured: "n/a", reason: "Memory-safe runtime: no pointer arithmetic or manual frees. Occurs only through unsafe, JNI, FFI or a C extension, which the packs do not parse."}
       ruby: {status: not_applicable, measured: "n/a", reason: "Memory-safe runtime: no pointer arithmetic or manual frees. Occurs only through unsafe, JNI, FFI or a C extension, which the packs do not parse."}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-476
     title: "NULL Pointer Dereference"
@@ -349,6 +369,7 @@ controls:
       go: {status: out_of_reach, measured: "OOR", reason: "A nil dereference is a real panic, but proving a value is nil at its use needs nullness flow analysis across calls."}
       java: {status: out_of_reach, measured: "OOR", reason: "A null dereference is a real NPE, but proving a value is null at its use needs nullness flow analysis across calls."}
       ruby: {status: not_applicable, measured: "n/a", reason: "nil access raises a catchable NoMethodError, not a pointer dereference (error handling, CWE-703)."}
+      c: {status: out_of_reach, measured: "OOR", reason: "A NULL dereference is a real crash, but proving a pointer is NULL at its use needs nullness flow analysis across calls."}
 
   - id: CWE-798
     title: "Use of Hard-coded Credentials"
@@ -364,6 +385,7 @@ controls:
       go: {status: applies, measured: "N"}
       java: {status: applies, measured: "N"}
       ruby: {status: applies, measured: "N+S"}
+      c: {status: applies, measured: "N"}
 
   - id: CWE-190
     title: "Integer Overflow or Wraparound"
@@ -379,6 +401,7 @@ controls:
       go: {status: applies, measured: "N"}
       java: {status: applies, measured: "N"}
       ruby: {status: not_applicable, measured: "n/a", reason: "Integers are arbitrary-precision and cannot wrap."}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-400
     title: "Uncontrolled Resource Consumption"
@@ -394,6 +417,7 @@ controls:
       go: {status: applies, measured: "N †"}
       java: {status: applies, measured: "N †"}
       ruby: {status: applies, measured: "N †"}
+      c: {status: applies, measured: "gap"}
 
   - id: CWE-306
     title: "Missing Authentication for Critical Function"
@@ -409,3 +433,4 @@ controls:
       go: {status: out_of_reach, measured: "OOR", reason: "Needs the route and middleware topology across files, plus knowing which functions are critical."}
       java: {status: out_of_reach, measured: "OOR", reason: "Needs the route and middleware topology across files, plus knowing which functions are critical."}
       ruby: {status: out_of_reach, measured: "OOR", reason: "Needs the route and middleware topology across files, plus knowing which functions are critical."}
+      c: {status: out_of_reach, measured: "OOR", reason: "Needs the route and middleware topology across files, plus knowing which functions are critical."}

@@ -37,7 +37,8 @@ from pathlib import Path
 MARKER = re.compile(r"(?:#|//|--)\s*(?P<body>expect(?:-ext)?:\s*[\w./:,\- ]+?)\s*(?:\*/|-->)?\s*$")
 # Where each `expect:` / `expect-ext:` group starts inside a marker's body.
 _GROUP = re.compile(r"(?:^|\s)expect(-ext)?:\s*")
-SOURCE_SUFFIXES = {".py", ".ts", ".tsx", ".js", ".mjs", ".cjs", ".go", ".java", ".rb"}
+SOURCE_SUFFIXES = {".py", ".ts", ".tsx", ".js", ".mjs", ".cjs", ".go", ".java", ".rb",
+                   ".c", ".h", ".cc", ".cpp", ".cxx", ".c++", ".hpp", ".hh", ".hxx", ".ipp", ".inl"}
 # Build and dependency files the supply-chain rules read (ARB-130).
 MANIFEST_SUFFIXES = {".yml", ".yaml", ".txt", ".gradle", ".kts", ".toml", ".tf", ".sh",
                      ".ps1", ".xml"}

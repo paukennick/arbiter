@@ -37,35 +37,41 @@ New pairs live in `cwe25/` (Python, Go), `src/cwe25/` (TypeScript),
 `src/main/java/planted/cwe25/` (Java) and `app/controllers/` (Ruby), one file
 per CWE. Cells marked † are measured on pairs that were already in the corpus.
 
+The C/C++ column (ARB-161, the `c` pack, which reads both languages) is a
+starting point, not a measurement like the other five: its two N cells are
+planted in `fixtures/planted/c/` and `fixtures/planted/cpp/`, but its `gap`
+cells are not planted yet, and semgrep has not been run on C. A C/C++ `gap`
+means the weakness applies and no native rule covers it.
+
 ## The matrix
 
-| # | CWE | Python | TypeScript | Go | Java | Ruby |
-|---|---|---|---|---|---|---|
-| 1 | 79 XSS | S | N+S † | S | N | S |
-| 2 | 787 OOB write | n/a | n/a | n/a | n/a | n/a |
-| 3 | 89 SQL injection | N+S+B † | N+S † | N+S † | N+S † | N+S † |
-| 4 | 352 CSRF | N+S | N | OOR | N+S | N |
-| 5 | 22 Path traversal | N+S | N+S | N | N+S | N |
-| 6 | 125 OOB read | n/a | n/a | n/a | n/a | n/a |
-| 7 | 78 OS command injection | N+S+B † | N+S † | N+S † | N+S † | N+S † |
-| 8 | 416 Use after free | n/a | n/a | n/a | n/a | n/a |
-| 9 | 862 Missing authorization | OOR | OOR | OOR | OOR | OOR |
-| 10 | 434 Dangerous upload | N | N | N | N+S | N |
-| 11 | 94 Code injection | N+S+B † | N+S † | n/a | S | N+S † |
-| 12 | 20 Input validation | OOR | OOR | OOR | OOR | OOR |
-| 13 | 77 Command injection (argument) | N | N | N | N | N |
-| 14 | 287 Improper authentication | N+S | N | N | N+S | N+S |
-| 15 | 269 Privilege management | OOR | OOR | OOR | OOR | OOR |
-| 16 | 502 Deserialization | N+S+B † | S | n/a | N+S † | N † |
-| 17 | 200 Information exposure | N+S+B | N | N | N | N |
-| 18 | 863 Incorrect authorization | OOR | OOR | OOR | OOR | OOR |
-| 19 | 918 SSRF | N+S | N | N | N | N |
-| 20 | 119 Buffer bounds | n/a | n/a | n/a | n/a | n/a |
-| 21 | 476 NULL dereference | n/a | n/a | OOR | OOR | n/a |
-| 22 | 798 Hard-coded credentials | N+S+B | N+S | N | N | N+S |
-| 23 | 190 Integer overflow | n/a | n/a | N | N | n/a |
-| 24 | 400 Resource consumption | N+S+B † | N † | N † | N † | N † |
-| 25 | 306 Missing auth for critical function | OOR | OOR | OOR | OOR | OOR |
+| # | CWE | Python | TypeScript | Go | Java | Ruby | C/C++ |
+|---|---|---|---|---|---|---|---|
+| 1 | 79 XSS | S | N+S † | S | N | S | gap |
+| 2 | 787 OOB write | n/a | n/a | n/a | n/a | n/a | gap |
+| 3 | 89 SQL injection | N+S+B † | N+S † | N+S † | N+S † | N+S † | gap |
+| 4 | 352 CSRF | N+S | N | OOR | N+S | N | OOR |
+| 5 | 22 Path traversal | N+S | N+S | N | N+S | N | gap |
+| 6 | 125 OOB read | n/a | n/a | n/a | n/a | n/a | gap |
+| 7 | 78 OS command injection | N+S+B † | N+S † | N+S † | N+S † | N+S † | N |
+| 8 | 416 Use after free | n/a | n/a | n/a | n/a | n/a | gap |
+| 9 | 862 Missing authorization | OOR | OOR | OOR | OOR | OOR | OOR |
+| 10 | 434 Dangerous upload | N | N | N | N+S | N | gap |
+| 11 | 94 Code injection | N+S+B † | N+S † | n/a | S | N+S † | n/a |
+| 12 | 20 Input validation | OOR | OOR | OOR | OOR | OOR | OOR |
+| 13 | 77 Command injection (argument) | N | N | N | N | N | gap |
+| 14 | 287 Improper authentication | N+S | N | N | N+S | N+S | gap |
+| 15 | 269 Privilege management | OOR | OOR | OOR | OOR | OOR | OOR |
+| 16 | 502 Deserialization | N+S+B † | S | n/a | N+S † | N † | n/a |
+| 17 | 200 Information exposure | N+S+B | N | N | N | N | gap |
+| 18 | 863 Incorrect authorization | OOR | OOR | OOR | OOR | OOR | OOR |
+| 19 | 918 SSRF | N+S | N | N | N | N | gap |
+| 20 | 119 Buffer bounds | n/a | n/a | n/a | n/a | n/a | gap |
+| 21 | 476 NULL dereference | n/a | n/a | OOR | OOR | n/a | OOR |
+| 22 | 798 Hard-coded credentials | N+S+B | N+S | N | N | N+S | N |
+| 23 | 190 Integer overflow | n/a | n/a | N | N | n/a | gap |
+| 24 | 400 Resource consumption | N+S+B † | N † | N † | N † | N † | gap |
+| 25 | 306 Missing auth for critical function | OOR | OOR | OOR | OOR | OOR | OOR |
 
 The matrix is also a control pack,
 `src/arbiter/packs/controls/cwe-top25-2024.yaml`: each cell's mark is its
@@ -90,6 +96,7 @@ the total. "Native only" means no external analyzer is needed.
 | Go | 12 | 11 | 3 | n/a | 12 | 0 |
 | Java | 15 | 14 | 8 | n/a | 15 | 0 |
 | Ruby | 14 | 13 | 6 | n/a | 14 | 0 |
+| C/C++ | 16 | 2 | not run | n/a | 2 | 14 |
 
 gitleaks ran on every language and reported none of the planted credentials:
 they are generic passwords and signing keys, not provider-shaped tokens.
@@ -308,19 +315,22 @@ semgrep's bundled `generic.secrets.gitleaks.*` rules did report two of them.
 
 | CWE | Cells | Reason |
 |---|---|---|
-| 787, 125, 416, 119 | all five | Memory-safe runtimes: no pointer arithmetic or manual frees. These CWEs would only occur through `unsafe`, JNI, FFI or a C extension, which the packs do not parse. |
+| 787, 125, 416, 119 | Python, TS, Go, Java, Ruby | Memory-safe runtimes: no pointer arithmetic or manual frees. These CWEs would only occur through `unsafe`, JNI, FFI or a C extension, which the packs do not parse. |
 | 476 | Python, TS, Ruby | `None`/`undefined`/`nil` access raises a catchable exception, not a pointer dereference. The crash case is covered as error handling (CWE-703). |
-| 476 | Go, Java | OOR. A nil or null dereference is a real panic or NPE, but proving a value is nil at its use needs nullness flow analysis across calls. |
+| 476 | Go, Java, C/C++ | OOR. A nil or null dereference is a real panic or NPE, but proving a value is nil at its use needs nullness flow analysis across calls. |
 | 190 | Python, Ruby | Integers are arbitrary-precision and cannot wrap. |
 | 190 | TypeScript | `number` is a double, so overflow means lost precision (CWE-1339), not wraparound. `bigint` is arbitrary-precision. |
 | 94 | Go | No runtime code evaluation. `text/template` injection is CWE-1336 and reaches only template data, not code. |
+| 94 | C/C++ | No runtime code evaluation. Loading a library chosen by a value (`dlopen`) is CWE-114, not code injection. |
 | 502 | Go | The stdlib decoders (`encoding/json`, `gob`, `xml`) fill declared types. There is no gadget chain or code execution path. |
+| 502 | C/C++ | No deserialization that instantiates types by name, so no gadget chain. Parsing an untrusted binary layout is a bounds problem (787, 125, 119). |
 | 352 | Go | OOR. `net/http` has no CSRF protection to switch off. Protection is middleware (`gorilla/csrf`, Go 1.25's `http.CrossOriginProtection`), and its absence only shows in the whole router set-up. |
-| 862, 863 | all five | OOR. Telling a missing or wrong permission check from a correct one needs the application's authorization model: which routes need which roles, and who owns which object. `go.stub-on-security-path` (tagged CWE-863) only catches a stubbed-out check. |
-| 306 | all five | OOR. Needs the route and middleware topology across files, plus knowing which functions are "critical". |
-| 269 | all five | OOR. Privilege management is a deployment and role-design property. Its single-file signals (running as root, broad IAM) sit in Dockerfiles, Kubernetes and IaC, where checkov covers part of it, not in application code. |
-| 20 | all five | OOR as a class. CWE-20 is a pillar: every concrete instance is a more specific CWE (22, 79, 89, 434, 1287 ...) that has its own row. A "missing validation" with no specific sink has no single-file signature. |
-| 918 | all five | Assessed **only in the same-function form** (request value to HTTP client in one handler). A URL that passes through one same-file helper is followed (`taint:`, one hop); beyond that, or across files, it needs interprocedural taint, which is OOR. The plan listed 918 as out of reach "without taint". The same-function form is common enough in AI-written code, and semgrep catches it in Python, so it is planted. |
+| 352 | C/C++ | OOR. There is no web framework with CSRF protection to switch off; a CGI or embedded-server handler protects itself, and its absence only shows in the whole request path. |
+| 862, 863 | all six | OOR. Telling a missing or wrong permission check from a correct one needs the application's authorization model: which routes need which roles, and who owns which object. `go.stub-on-security-path` (tagged CWE-863) only catches a stubbed-out check. |
+| 306 | all six | OOR. Needs the route and middleware topology across files, plus knowing which functions are "critical". |
+| 269 | all six | OOR. Privilege management is a deployment and role-design property. Its single-file signals (running as root, broad IAM) sit in Dockerfiles, Kubernetes and IaC, where checkov covers part of it, not in application code. |
+| 20 | all six | OOR as a class. CWE-20 is a pillar: every concrete instance is a more specific CWE (22, 79, 89, 434, 1287 ...) that has its own row. A "missing validation" with no specific sink has no single-file signature. |
+| 918 | Python, TS, Go, Java, Ruby | Assessed **only in the same-function form** (request value to HTTP client in one handler). A URL that passes through one same-file helper is followed (`taint:`, one hop); beyond that, or across files, it needs interprocedural taint, which is OOR. The plan listed 918 as out of reach "without taint". The same-function form is common enough in AI-written code, and semgrep catches it in Python, so it is planted. |
 
 ## Gap list for the next step
 

@@ -10,7 +10,8 @@ injection is caught the same way whichever language the code is in.
 ## Packs
 
 One YAML file per pack under `packs/rules/ast/` (`python.yaml`,
-`typescript.yaml`, `go.yaml`, `java.yaml`, `ruby.yaml`). Each pack becomes its
+`typescript.yaml`, `go.yaml`, `java.yaml`, `ruby.yaml`, and `c.yaml`, which
+reads C and C++). Each pack becomes its
 own probe, `lang_<pack>`, so a grammar this machine lacks shows up as that one
 language not assessed rather than as a clean pass.
 
@@ -91,6 +92,8 @@ FUNCTION_TYPES: dict[str, set[str]] = {
     "go": {"function_declaration", "method_declaration", "func_literal"},
     "java": {"method_declaration", "constructor_declaration", "lambda_expression"},
     "ruby": {"method", "singleton_method", "lambda"},
+    "c": {"function_definition"},
+    "cpp": {"function_definition", "lambda_expression"},
 }
 
 _KEYS = {"id", "title", "severity", "confidence", "dimension", "cwe", "controls", "tags",
@@ -857,8 +860,23 @@ def register_lang_rules() -> None:
             modules=["tree_sitter_language_pack"],
             grammars=grammars,
             run=lambda ctx, _pack=pack: run_pack(_pack, ctx),
+            applies=lambda ctx, _langs=frozenset(data["languages"]): _has_language(ctx, _langs),
             cacheable=True,
         ))
+
+
+def _has_language(ctx, languages: frozenset[str]) -> tuple[bool, str]:
+    """A pack applies where there is a file in one of its languages. The
+    stack alone is not enough: a `Makefile` marks the `c` stack in a Python
+    repository too, and a pack that ran over no files would read as every
+    C cell assessed and clean (ARB-161). The whole inventory, not an
+    incremental scan's changed files, so a scan of a diff that touches no
+    Go still reads Go as present."""
+    inv = getattr(ctx.inventory, "whole", None) or ctx.inventory
+    files = getattr(inv, "files", None)
+    if files is None or any(f.language in languages for f in files):
+        return True, ""
+    return False, f"no {'/'.join(sorted(languages))} files in target"
 
 
 def pack_path(pack: str) -> Path:

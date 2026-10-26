@@ -3551,6 +3551,49 @@
         "CHANGELOG.md"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-161",
+      "category": "analysis",
+      "title": "C/C++ support: detection, grammars and a precise first rule pack",
+      "description": "Round 7 Phase 4. C and C++ files were recognised but no pack read them. Adds the c stack (Makefile, meson.build, configure.ac, any C file), maps .hxx .c++ .ipp .inl to cpp and .h to cpp in a repo with C++ sources, adds c and cpp to the default grammars, fixes the cpp function query (qualified methods, templates, operators, destructors, inline methods) and ships packs/rules/ast/c.yaml (languages c, cpp): gets-call, unbounded-copy, command-injection, format-string, insecure-random-secret. Pack probes now apply only where a file of their languages exists, so a Makefile alone never reads as C assessed. CWE Top 25 matrix gains a C/C++ column.",
+      "priority": "high",
+      "status": "needs_review",
+      "minimum_access_scope": [
+        "src/arbiter/inventory.py",
+        "src/arbiter/ast.py",
+        "src/arbiter/lang_rules.py",
+        "src/arbiter/planted.py",
+        "src/arbiter/tooling.json",
+        ".arbiter/tooling.lock.json",
+        "src/arbiter/packs/rules/ast/c.yaml",
+        "src/arbiter/packs/controls/cwe-top25-2024.yaml",
+        "docs/cwe-top25.md",
+        "fixtures/planted/c",
+        "fixtures/planted/cpp",
+        "tests/test_lang_c.py",
+        "tests/test_controls_cwe_top25.py",
+        "tools/gold/snapshots/planted.json"
+      ],
+      "acceptance_criteria": [
+        "every c pack rule fires on its planted defect in c/bad and cpp/bad and stays silent on the good twin",
+        "a literal format string or command never fires",
+        ".h is cpp only beside C++ sources",
+        "a repo with only a Makefile and Python does not run lang_c",
+        "cpp function query names Foo::bar templates operators and destructors"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/test_lang_c.py tests/test_planted_corpus.py tests/test_controls_cwe_top25.py -q"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md",
+        "docs/cwe-top25.md"
+      ],
+      "risk_notes": [
+        "C/C++ gap cells in the CWE matrix are not planted yet",
+        "semgrep not measured on C",
+        "rules not yet run against real C repositories"
+      ]
     }
   ]
 }

@@ -25,7 +25,9 @@ DOC = ROOT / "docs" / "cwe-top25.md"
 PACK = ROOT / "src" / "arbiter" / "packs" / "controls" / "cwe-top25-2024.yaml"
 FW_ID = "CWE-Top25-2024"
 DOC_LANGS = {"Python": "python", "TypeScript": "typescript", "Go": "go", "Java": "java",
-             "Ruby": "ruby"}
+             "Ruby": "ruby", "C/C++": "c"}
+# The memory-safe languages: the memory-safety rows are n/a in each of them.
+MEMORY_SAFE = {"python", "typescript", "go", "java", "ruby"}
 
 
 def _section(title: str) -> list[str]:
@@ -151,13 +153,20 @@ def test_a_clean_run_reads_assessed_gap_out_of_reach_and_na_per_language():
         }
         got = {k: v for k, v in res["languages"][lang].items() if v}
         assert got == want, lang
-    # The memory-safety rows apply nowhere, so the control is not applicable;
-    # that is a state of its own, not not_automatable.
-    states = {r["id"]: r["state"] for r in res["controls"]}
+    # The memory-safety rows apply in none of the memory-safe languages, so
+    # in a codebase of only those the control is not applicable; that is a
+    # state of its own, not not_automatable. In C/C++ they apply, and no
+    # native rule covers them yet: a gap, never a pass (ARB-161).
+    safe = controls.evaluate(_pack(), [], _outcomes(MEMORY_SAFE))
+    states = {r["id"]: r["state"] for r in safe["controls"]}
     for cwe in ("CWE-787", "CWE-125", "CWE-416", "CWE-119"):
         assert states[cwe] == controls.NOT_APPLICABLE
     assert states["CWE-89"] == controls.SATISFIED
     assert states["CWE-862"] == controls.NO_COVERAGE
+    assert safe["counts"][controls.NOT_AUTOMATABLE] == 0
+    every = {r["id"]: r["state"] for r in res["controls"]}
+    for cwe in ("CWE-787", "CWE-125", "CWE-416", "CWE-119"):
+        assert every[cwe] == controls.NO_COVERAGE
     assert res["counts"][controls.NOT_AUTOMATABLE] == 0
 
 

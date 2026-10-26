@@ -1,0 +1,230 @@
+# C and C++ rules. Schema: src/arbiter/lang_rules.py. Built under ARB-161.
+#
+# Precise by construction: each rule names a call that is dangerous by
+# itself (gets, an unbounded copy) or a call whose dangerous argument has a
+# syntactic tell (a format or command that is not a literal). Every rule has
+# a lookalike twin in fixtures/planted/{c,cpp}/good that must stay silent,
+# and tests/test_lang_c.py pins the exclusions below.
+#
+# One pack reads both languages: every query compiles under the C and the
+# C++ grammar, so callees are matched as `function: (_) @f` with an
+# anchored regex (`gets`, `::gets`, `std::gets`) rather than as a C++-only
+# `qualified_identifier`. A field call (`obj.gets()`, `p->system(x)`) never
+# matches the anchored regex.
+#
+# What is deliberately not reported, and why:
+#   - a format or command held in an ALL_CAPS name: by convention a macro,
+#     i.e. a compile-time constant;
+#   - a format or command held in a local initialised from a literal earlier
+#     in the same block, used up to three levels inside a statement
+#     (`const char *fmt = "%d\n"; if (printf(fmt, n) < 0) ...`). A
+#     file-scope `static const char *` constant is not followed, and for the
+#     format rule any argument naming such a local silences the call;
+#   - a format that is a gettext lookup of a literal (`printf(_("..."))`);
+#   - printf-family calls inside a variadic function: the format is the
+#     caller's (`void die(const char *fmt, ...)`), checked at each call site
+#     by the compiler's format attribute;
+#   - the v*printf family as a format sink: a va_list forwarder is its only
+#     normal use.
+pack: c
+languages: [c, cpp]
+rules:
+  - id: gets-call
+    requirements: [ARB-161]
+    title: "`{text}` reads a line with no length limit"
+    severity: high
+    confidence: high
+    dimension: security
+    cwe: [CWE-242, CWE-120]
+    controls: [NIST-800-218:PW.5]
+    tags: [memory-safety, buffer-overflow]
+    query: |
+      ((call_expression function: (_) @f) @hit
+        (#match? @f "^(::|std::)?gets$"))
+    description: >-
+      gets() writes as many bytes as the input line holds into the buffer it
+      is given, and nothing tells it the buffer's size. Any line longer than
+      the buffer overwrites the stack. It was removed from C11 and C++14 for
+      this reason; there is no safe way to call it.
+    remediation: "Use fgets(buf, sizeof buf, stdin) (and strip the newline), or getline() where POSIX is available."
+
+  - id: unbounded-copy
+    requirements: [ARB-161]
+    title: "`{text}` copies with no bound: check the destination is always large enough"
+    severity: medium
+    confidence: medium
+    dimension: security
+    cwe: [CWE-120]
+    controls: [NIST-800-218:PW.5]
+    tags: [memory-safety, buffer-overflow]
+    query: |
+      ((call_expression function: (_) @f) @hit
+        (#match? @f "^(::|std::)?(strcpy|strcat|stpcpy|wcscpy|wcscat|sprintf|vsprintf)$"))
+    description: >-
+      strcpy, strcat, sprintf and vsprintf write until the source or the
+      formatted text ends, whatever the size of the destination. This is
+      advisory: the call is safe when the destination is provably larger
+      than every possible source, but nothing in the call says so, and an
+      input that grows later turns it into a stack or heap overflow.
+    remediation: "Use a bounded call that is told the destination size: snprintf(dst, sizeof dst, ...), strlcpy/strlcat where available, or std::string in C++. Check the return value for truncation."
+
+  - id: command-injection
+    requirements: [ARB-161]
+    title: "`{text}` runs a shell with a command that is not a literal"
+    severity: high
+    confidence: medium
+    dimension: security
+    cwe: [CWE-78]
+    controls: [NIST-800-218:PW.5, NIST-800-53r5:SI-10]
+    tags: [injection, shell]
+    query: |
+      ((call_expression
+        function: (_) @f
+        arguments: (argument_list . (_) @cmd)) @hit
+        (#match? @f "^(::|std::)?(system|popen)$")
+        (#not-match? @cmd "^(L|u8|u|U)?R?\"")
+        (#not-match? @cmd "^[A-Z_][A-Z0-9_]*$")
+        (#not-match? @cmd "^[0-9]"))
+    unless_inside: |
+      (compound_statement
+        (declaration declarator: (init_declarator
+          declarator: [(identifier) @n
+                       (pointer_declarator declarator: (identifier) @n)
+                       (pointer_declarator declarator: (pointer_declarator declarator: (identifier) @n))
+                       (array_declarator declarator: (identifier) @n)]
+          value: [(string_literal) (concatenated_string)]))
+        (_ (call_expression function: (_) @f arguments: (argument_list . (identifier) @a))) @use
+        (#match? @f "^(::|std::)?(system|popen)$")
+        (#eq? @n @a))
+      (compound_statement
+        (declaration declarator: (init_declarator
+          declarator: [(identifier) @n
+                       (pointer_declarator declarator: (identifier) @n)
+                       (pointer_declarator declarator: (pointer_declarator declarator: (identifier) @n))
+                       (array_declarator declarator: (identifier) @n)]
+          value: [(string_literal) (concatenated_string)]))
+        (_ (_ (call_expression function: (_) @f arguments: (argument_list . (identifier) @a)))) @use
+        (#match? @f "^(::|std::)?(system|popen)$")
+        (#eq? @n @a))
+      (compound_statement
+        (declaration declarator: (init_declarator
+          declarator: [(identifier) @n
+                       (pointer_declarator declarator: (identifier) @n)
+                       (pointer_declarator declarator: (pointer_declarator declarator: (identifier) @n))
+                       (array_declarator declarator: (identifier) @n)]
+          value: [(string_literal) (concatenated_string)]))
+        (_ (_ (_ (call_expression function: (_) @f arguments: (argument_list . (identifier) @a))))) @use
+        (#match? @f "^(::|std::)?(system|popen)$")
+        (#eq? @n @a))
+    description: >-
+      system() and popen() hand their string to /bin/sh. A command assembled
+      from a variable (snprintf into a buffer, a parameter, a strcat chain)
+      lets any shell metacharacter in that value -- `;`, `|`, `$( )`,
+      backticks -- run commands of its own.
+    remediation: "Run the program directly with fork/execve or posix_spawn and an argument vector, so no shell parses the input. If a shell is unavoidable, allowlist the value's characters before building the command."
+
+  - id: format-string
+    requirements: [ARB-161]
+    title: "`{text}` uses a format string that is not a literal"
+    severity: high
+    confidence: high
+    dimension: security
+    cwe: [CWE-134]
+    controls: [NIST-800-218:PW.5, NIST-800-53r5:SI-10]
+    tags: [injection, format-string]
+    query: |
+      ((call_expression
+        function: (_) @f
+        arguments: (argument_list . (_) @fmt)) @hit
+        (#match? @f "^(::|std::)?printf$")
+        (#not-match? @fmt "^(L|u8|u|U)?R?\"")
+        (#not-match? @fmt "^[A-Z_][A-Z0-9_]*$")
+        (#not-match? @fmt "^(_|N_|gettext|dgettext|dcgettext|ngettext)\\s*\\(")
+        (#not-match? @fmt "^[^\"]*\\?\\s*\"[^\"]*\"\\s*:\\s*\"[^\"]*\"$"))
+      ((call_expression
+        function: (_) @f
+        arguments: (argument_list . (_) . (_) @fmt)) @hit
+        (#match? @f "^(::|std::)?(fprintf|dprintf|sprintf|syslog)$")
+        (#not-match? @fmt "^(L|u8|u|U)?R?\"")
+        (#not-match? @fmt "^[A-Z_][A-Z0-9_]*$")
+        (#not-match? @fmt "^(_|N_|gettext|dgettext|dcgettext|ngettext)\\s*\\(")
+        (#not-match? @fmt "^[^\"]*\\?\\s*\"[^\"]*\"\\s*:\\s*\"[^\"]*\"$"))
+      ((call_expression
+        function: (_) @f
+        arguments: (argument_list . (_) . (_) . (_) @fmt)) @hit
+        (#match? @f "^(::|std::)?snprintf$")
+        (#not-match? @fmt "^(L|u8|u|U)?R?\"")
+        (#not-match? @fmt "^[A-Z_][A-Z0-9_]*$")
+        (#not-match? @fmt "^(_|N_|gettext|dgettext|dcgettext|ngettext)\\s*\\(")
+        (#not-match? @fmt "^[^\"]*\\?\\s*\"[^\"]*\"\\s*:\\s*\"[^\"]*\"$"))
+    unless_in_scope: |
+      ((parameter_list) @v (#match? @v "[.][.][.][ \t\n]*[)]$"))
+    unless_inside: |
+      (compound_statement
+        (declaration declarator: (init_declarator
+          declarator: [(identifier) @n
+                       (pointer_declarator declarator: (identifier) @n)
+                       (pointer_declarator declarator: (pointer_declarator declarator: (identifier) @n))
+                       (array_declarator declarator: (identifier) @n)]
+          value: [(string_literal) (concatenated_string)]))
+        (_ (call_expression arguments: (argument_list (identifier) @a))) @use
+        (#eq? @n @a))
+      (compound_statement
+        (declaration declarator: (init_declarator
+          declarator: [(identifier) @n
+                       (pointer_declarator declarator: (identifier) @n)
+                       (pointer_declarator declarator: (pointer_declarator declarator: (identifier) @n))
+                       (array_declarator declarator: (identifier) @n)]
+          value: [(string_literal) (concatenated_string)]))
+        (_ (_ (call_expression arguments: (argument_list (identifier) @a)))) @use
+        (#eq? @n @a))
+      (compound_statement
+        (declaration declarator: (init_declarator
+          declarator: [(identifier) @n
+                       (pointer_declarator declarator: (identifier) @n)
+                       (pointer_declarator declarator: (pointer_declarator declarator: (identifier) @n))
+                       (array_declarator declarator: (identifier) @n)]
+          value: [(string_literal) (concatenated_string)]))
+        (_ (_ (_ (call_expression arguments: (argument_list (identifier) @a))))) @use
+        (#eq? @n @a))
+    description: >-
+      The format argument of printf, fprintf, sprintf, snprintf, dprintf
+      and syslog is interpreted: `%s` and `%x` read the stack, `%n` writes
+      to it. Passing a value that is not a literal as the format (printf(msg),
+      syslog(LOG_ERR, msg)) lets whoever controls that value read memory or
+      redirect execution.
+    remediation: "Pass the value as an argument to a literal format: printf(\"%s\", msg), syslog(LOG_ERR, \"%s\", msg). Build with -Wformat -Wformat-security."
+
+  - id: insecure-random-secret
+    requirements: [ARB-161]
+    title: "`{text}` builds a secret from rand(), which is predictable"
+    severity: high
+    confidence: medium
+    dimension: security
+    cwe: [CWE-338]
+    controls: [NIST-800-218:PW.5, NIST-800-53r5:SC-13]
+    tags: [randomness, crypto]
+    query: |
+      ((init_declarator
+        declarator: [(identifier) @n
+                     (pointer_declarator declarator: (identifier) @n)
+                     (array_declarator declarator: (identifier) @n)]
+        value: (_) @v) @hit
+        (#match? @n "(?i)token|secret|passw|nonce|session_?id|salt|api_?key|(^|_)otp($|_)|csrf|signing_?key|secret_?key|private_?key")
+        (#not-match? @n "(?i)tokeni[sz]")
+        (#match? @v "(^|[^A-Za-z0-9_.>:])(std::)?(rand|random|rand_r|lrand48|mrand48|nrand48|jrand48)\\s*\\("))
+      ((assignment_expression
+        left: [(identifier) @n
+               (field_expression field: (field_identifier) @n)
+               (subscript_expression argument: (identifier) @n)
+               (subscript_expression argument: (field_expression field: (field_identifier) @n))]
+        right: (_) @v) @hit
+        (#match? @n "(?i)token|secret|passw|nonce|session_?id|salt|api_?key|(^|_)otp($|_)|csrf|signing_?key|secret_?key|private_?key")
+        (#not-match? @n "(?i)tokeni[sz]")
+        (#match? @v "(^|[^A-Za-z0-9_.>:])(std::)?(rand|random|rand_r|lrand48|mrand48|nrand48|jrand48)\\s*\\("))
+    description: >-
+      rand() and random() are linear generators with at most 32 bits of
+      state, usually seeded with srand(time(NULL)): anyone who knows roughly
+      when the process started can reproduce every value. A session token,
+      password, nonce, salt or key drawn from them can be guessed.
+    remediation: "Draw secrets from the OS CSPRNG: getrandom(2) or /dev/urandom on Linux, arc4random_buf on the BSDs and macOS, BCryptGenRandom on Windows, or RAND_bytes from OpenSSL."
