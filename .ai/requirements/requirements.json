@@ -3672,6 +3672,24 @@
         "changelog"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-177",
+      "category": "accuracy",
+      "title": "Scan development breadth slices on GitHub Actions",
+      "description": "workflow_dispatch workflow scan-dev.yml shards a breadth manifest's dev slice across up to 20 runners and returns reports as artifacts; refuses any other slice, so held-out scans stay on the laptop.",
+      "priority": "medium",
+      "status": "pending",
+      "minimum_access_scope": [],
+      "acceptance_criteria": [],
+      "validation_required": [
+        "doctor",
+        "validate"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
     }
   ]
 }

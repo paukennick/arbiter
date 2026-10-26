@@ -7,6 +7,9 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-177 | `.github/workflows/scan-dev.yml`: scan a breadth set's development slice
+  on GitHub's runners (up to 20 shards, reports as artifacts) instead of the laptop.
+  Only the `dev` slice can be chosen; held-out scans stay local.
 - ARB-176 | `supply.unpinned-action`'s 700 model labels checked against the
   mechanical SHA-pin fact: 700/700 agree (lower 0.9945), so the one verified rule
   no longer rests on an uncalibrated labeller. `tools/gold/results/2026-10-26-factcheck-unpinned-action.md`.
