@@ -255,28 +255,6 @@
       "language": "python",
       "kind": "application"
     },
-    "py-searxng": {
-      "github": "searxng/searxng",
-      "stars": 38845,
-      "license": "AGPL-3.0",
-      "default_branch": "master",
-      "size_kb": 125022,
-      "python_share": 0.8185,
-      "workflows": true,
-      "scorecard": null,
-      "pinned_sha": "54ca1d9cfb08674f66261d7f351b063558dfcc62",
-      "pinned_commit_date": "2026-10-25T18:34:17Z",
-      "description": "SearXNG is a free internet metasearch engine which aggregates results from various search services and databases. Users are neither tracked nor profiled.",
-      "languages": {
-        "Python": 0.8185,
-        "Shell": 0.0585,
-        "HTML": 0.0531,
-        "Less": 0.0382,
-        "TypeScript": 0.028
-      },
-      "language": "python",
-      "kind": "application"
-    },
     "py-changedetection.io": {
       "github": "dgtlmoon/changedetection.io",
       "stars": 35298,
@@ -447,6 +425,12 @@
       "github": "inventree/InvenTree",
       "kind": "application",
       "reason": "not in candidate metadata"
+    },
+    {
+      "github": "searxng/searxng",
+      "stars": 38845,
+      "kind": "application",
+      "reason": "dropped after freeze, before any scan: the pinned commit contains paths with ':' (utils/templates/etc/.../searxng.ini:socket) that cannot be checked out on Windows, where labelling runs; no source was read"
     }
   ]
 }

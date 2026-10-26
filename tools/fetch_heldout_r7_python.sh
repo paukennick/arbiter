@@ -37,7 +37,6 @@ get_pinned py-optuna https://github.com/optuna/optuna.git b37c43f8037fed3859e9e0
 get_pinned py-pytest https://github.com/pytest-dev/pytest.git 082ed70e314ee8e1ab117763d17fe801648f7508 python
 get_pinned py-paperless-ngx https://github.com/paperless-ngx/paperless-ngx.git 5f17b1a310aa011f43b56474221d97f8d6bfe689 python
 get_pinned py-mitmproxy https://github.com/mitmproxy/mitmproxy.git e139573eb9eebcce3c67a3fb51aa376c39d98074 python
-get_pinned py-searxng https://github.com/searxng/searxng.git 54ca1d9cfb08674f66261d7f351b063558dfcc62 python
 get_pinned py-changedetection.io https://github.com/dgtlmoon/changedetection.io.git 7c1b74b52ed7a504aaeaad03b604556b29660847 python
 get_pinned py-jumpserver https://github.com/jumpserver/jumpserver.git ef6499663e81d4e04b2c772c490ee9974dc46818 python
 get_pinned py-private-gpt https://github.com/zylon-ai/private-gpt.git 0f6a2de226374a7ccc7ac5e739054be8da9929d9 python
