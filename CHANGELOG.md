@@ -7,6 +7,12 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-163 | Breadth r7 held-out slice scanned on the laptop before any label: 135
+  repositories, 20,614 kloc, 65,025 findings, all at their pins
+  (`tools/gold/results/2026-10-26-breadth-r7-python-report.json.gz`). Labelling
+  plan pre-registered: 1,216 findings of 20 Python rules
+  (`tools/gold/breadth-r7-python-per-rule.json`); `sql-injection` waits for a
+  rescan at its fixed commit.
 - ARB-163 | Breadth set r7 for Python frozen before any clone or scan: 180
   applications (median 3,018 stars) chosen from GitHub metadata and file names
   only by `tools/freeze_breadth_python.py` (seed 20261026), split 45 `dev` /

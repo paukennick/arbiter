@@ -69,6 +69,7 @@ PLAN: dict[str, str] = {
     "gold-model.jsonl": "report:tools/gold/results/2026-10-23-gold-report-relabel.json.gz",
     "heldout-r5-model.jsonl": "report:tools/gold/results/2026-10-23-heldout-r5-report.json.gz",
     "heldout-r7-python-model.jsonl": "report:tools/gold/results/2026-10-26-heldout-r7-python-report.json.gz",
+    "breadth-r7-python-model.jsonl": "report:tools/gold/results/2026-10-26-breadth-r7-python-report.json.gz",
     "ai-corpus-model.jsonl": "census",
     "cve-suspects-model.jsonl": "census",
     "owasp-java.jsonl": "census",
