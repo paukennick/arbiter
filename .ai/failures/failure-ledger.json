@@ -2441,6 +2441,54 @@
       "prevention_rules": [],
       "prevention_notes": "Composite actions under ci/ are pinned like workflows",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-140",
+      "date": "2026-10-25",
+      "title": "python.unsafe-deserialization reported a pickle round trip",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "pickle.loads(pickle.dumps(v)) in celery/utils/serialization.py:132 reported as unsafe deserialisation (gold label f-row, development, fp)",
+      "how_detected": "gold benchmark labels (gold-model, held_out=false)",
+      "root_cause": "The rule matched every pickle.loads call regardless of argument; when the argument is a dumps() call made on the spot the bytes are the process's own, so no outside data can reach the unpickler.",
+      "requirement": "ARB-160",
+      "affected": [
+        "src/arbiter/packs/rules/ast/python.yaml"
+      ],
+      "fix_summary": "unless_inside: loads/load whose sole first argument is a pickle-family dumps() call; loads(dumps(v)+blob) still reports",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_lang_python.py::test_pickle_round_trip_copy_is_not_deserialising_input",
+        "fixtures/planted/python/good/gold_shapes.py"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Planted twin in gold_shapes.py and a unit test pin both the skip and the still-reported concatenation",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-141",
+      "date": "2026-10-25",
+      "title": "python.code-injection reported exec of the package's own __about__.py",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "exec(f.read(), about) in pyca/cryptography src/_cffi_src/utils.py:17 reported as code injection (gold label, development, fp)",
+      "how_detected": "gold benchmark labels (gold-model, held_out=false)",
+      "root_cause": "The rule only exempted exec(compile(...)); exec of a file handle's read() was reported even when the file is opened by a literal .py path, i.e. the package's own source.",
+      "requirement": "ARB-160",
+      "affected": [
+        "src/arbiter/packs/rules/ast/python.yaml"
+      ],
+      "fix_summary": "unless_inside: with open(<args containing a literal .py name>) as f: exec(f.read(), ...), tied by capture equality so only that handle's read is exempt",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_lang_python.py::test_exec_of_the_packages_own_fixed_source_file_is_fine",
+        "fixtures/planted/python/good/gold_shapes.py"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Planted twin: a variable-named file still reports; tests cover another handle and a sibling eval in the same block",
+      "recurrence_of": ""
     }
   ]
 }

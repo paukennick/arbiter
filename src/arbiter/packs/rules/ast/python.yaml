@@ -391,6 +391,20 @@ rules:
     unless_inside: |
       (call function: (identifier) @f (#match? @f "^(eval|exec)$")
         arguments: (argument_list . (call function: (identifier) @c (#eq? @c "compile")))) @x
+      ; Gold benchmark (ARB-160), pyca/cryptography's `_cffi_src/utils.py`:
+      ; `with open(os.path.join(base, "cryptography", "__about__.py")) as f:
+      ; exec(f.read(), about)` runs the package's own source file, named by a
+      ; literal `.py` path. Only the exec of that handle's read() is skipped;
+      ; anything else in the block, or a file named by a variable, reports.
+      (with_statement
+        (with_clause (with_item value: (as_pattern
+          (call function: (identifier) @o (#eq? @o "open") arguments: (argument_list) @oa
+            (#match? @oa "[\"'][\\w./-]*\\.py[\"']"))
+          alias: (as_pattern_target (identifier) @fh))))
+        body: (block (call function: (identifier) @e (#eq? @e "exec")
+          arguments: (argument_list . (call function: (attribute object: (identifier) @rd
+            attribute: (identifier) @r (#eq? @r "read"))))) @x)
+        (#eq? @fh @rd))
     # OWASP Benchmark Python (ARB-065): a function that validates the input
     # first and returns or raises when it fails -- `if not s.startswith("'")
     # or ...: return`, `if not re.fullmatch(...)`, `if name not in ALLOWED`
@@ -426,6 +440,13 @@ rules:
       (call function: (attribute) @f (#match? @f "^yaml\\.(load|load_all|unsafe_load|unsafe_load_all)$")) @hit
     unless_inside: |
       (call arguments: (argument_list (_) @a (#match? @a "(SafeLoader|CSafeLoader)"))) @x
+      ; Gold benchmark (ARB-160), celery/utils/serialization.py: a pickle
+      ; round trip, `pickle.loads(pickle.dumps(v))`, checks that a value can be
+      ; pickled; the bytes are made on the spot. Only when dumps() is the
+      ; whole argument: `loads(dumps(v) + blob)` still reports.
+      (call function: (attribute) @f (#match? @f "^(pickle|cPickle|_pickle|dill|cloudpickle)\\.loads$")
+        arguments: (argument_list . (call function: (attribute) @d
+          (#match? @d "^(pickle|cPickle|_pickle|dill|cloudpickle)\\.dumps$")) .)) @x
     description: >-
       pickle, marshal and PyYAML's full loader all construct arbitrary
       objects, and arbitrary objects mean arbitrary code. If the bytes came

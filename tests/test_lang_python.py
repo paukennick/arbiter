@@ -278,6 +278,47 @@ def test_yaml_safe_loader_positional_or_keyword_is_fine(tmp_path):
     assert "unsafe-deserialization" in rules_in(tmp_path, "import yaml\na = yaml.load(s, Loader=yaml.Loader)\n")
 
 
+def test_pickle_round_trip_copy_is_not_deserialising_input(tmp_path):
+    # Gold benchmark (ARB-160): celery/utils/serialization.py checks an
+    # exception survives pickling with pickle.loads(pickle.dumps(v)) -- the
+    # bytes are the process's own, made on the spot.
+    assert "unsafe-deserialization" not in rules_in(tmp_path, (
+        "import pickle\n"
+        "def copy(v):\n"
+        "    return pickle.loads(pickle.dumps(v))\n"))
+    # Anything joined onto the self-made bytes is still outside data.
+    assert "unsafe-deserialization" in rules_in(tmp_path, (
+        "import pickle\n"
+        "def copy(v, trailer):\n"
+        "    return pickle.loads(pickle.dumps(v) + trailer)\n"))
+
+
+def test_exec_of_the_packages_own_fixed_source_file_is_fine(tmp_path):
+    # Gold benchmark (ARB-160): pyca/cryptography reads its version by
+    # exec'ing its own `__about__.py`, opened by a literal file name.
+    assert "code-injection" not in rules_in(tmp_path, (
+        "import os\n"
+        "base = os.path.dirname(os.path.abspath(__file__))\n"
+        "about = {}\n"
+        "with open(os.path.join(base, 'pkg', '__about__.py')) as f:\n"
+        "    exec(f.read(), about)\n"))
+    # A file whose name is not fixed, a different value exec'd under the
+    # same with-block, or a second eval beside it, is still reported.
+    assert "code-injection" in rules_in(tmp_path, (
+        "def run(path, ns):\n"
+        "    with open(path) as f:\n"
+        "        exec(f.read(), ns)\n"))
+    assert "code-injection" in rules_in(tmp_path, (
+        "def run(other, ns):\n"
+        "    with open('setup.py') as f:\n"
+        "        exec(other.read(), ns)\n"))
+    assert _lines(tmp_path, (
+        "def run(expr, ns):\n"
+        "    with open('version.py') as f:\n"
+        "        exec(f.read(), ns)\n"
+        "        eval(expr)\n"), "code-injection") == [4]
+
+
 # --- cryptography ------------------------------------------------------------
 
 def test_random_is_only_reported_for_secret_shaped_names(tmp_path):

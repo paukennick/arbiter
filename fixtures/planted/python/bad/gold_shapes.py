@@ -1,5 +1,6 @@
 """Shapes taken from the gold benchmark and OWASP Benchmark Python (ARB-065)."""
 import hashlib
+import pickle
 import random
 
 from flask import session
@@ -34,3 +35,14 @@ def store_credential(secret_value: bytes) -> None:
 
 def lookup(expr: str, names: dict):
     return eval(expr, {"__builtins__": {}}, names)  # expect: arbiter/python.code-injection
+
+
+def roundtrip_with_trailer(value, trailer: bytes):
+    # Round 7 (ARB-160): bytes joined onto a self-made pickle are outside data.
+    return pickle.loads(pickle.dumps(value) + trailer)  # expect: arbiter/python.unsafe-deserialization
+
+
+def load_version(path: str, about: dict) -> None:
+    # Round 7 (ARB-160): the file is named by a variable, not fixed.
+    with open(path) as f:
+        exec(f.read(), about)  # expect: arbiter/python.code-injection

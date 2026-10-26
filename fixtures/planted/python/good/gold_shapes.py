@@ -1,6 +1,7 @@
 """Shapes taken from the gold benchmark and OWASP Benchmark Python (ARB-065)."""
 import hashlib
 import os
+import pickle
 import secrets
 from typing import TYPE_CHECKING
 
@@ -47,3 +48,15 @@ def lookup(expr: str, names: dict):
     if not expr.isidentifier():
         raise ValueError(f"not a name: {expr!r}")
     return eval(expr, {"__builtins__": {}}, names)
+
+
+def roundtrip(value):
+    # Round 7 (ARB-160): checks the value pickles; the bytes are made here.
+    return pickle.loads(pickle.dumps(value))
+
+
+def load_version(about: dict) -> None:
+    # Round 7 (ARB-160): the package's own source file, by a literal name.
+    base = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(base, "pkg", "__about__.py")) as f:
+        exec(f.read(), about)

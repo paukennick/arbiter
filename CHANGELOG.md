@@ -7,6 +7,13 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-160 | Python rules drop two false positives from the development gold
+  labels. `python.unsafe-deserialization` no longer reports a pickle round
+  trip, `pickle.loads(pickle.dumps(v))` (FAIL-140); `python.code-injection` no
+  longer reports `exec(f.read())` of a file opened by a literal `.py` name, a
+  package reading its own `__about__.py` (FAIL-141). `insecure-random-for-secret`
+  and `weak-password-hash` were not tuned: their only false positives are
+  held-out.
 - ARB-157 | PR checks pass on every matrix cell again. Windows CI downloads
   every default tree-sitter grammar up front, so the TypeScript pack no longer
   depends on test order for `tsx` (FAIL-132). `authored.undeclared-import`

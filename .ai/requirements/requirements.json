@@ -3551,6 +3551,29 @@
         "CHANGELOG.md"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-160",
+      "category": "precision",
+      "title": "Round 7 Python precision: remove known development false positives",
+      "description": "Tighten python.* rules against false positives labelled in the development (non-held-out) gold labels. insecure-random-for-secret and weak-password-hash have only held-out false positives and are not tuned. Fixed: unsafe-deserialization skips a pickle round trip loads(dumps(v)); code-injection skips exec(f.read()) of a with-opened file named by a literal .py path. Left: sql-injection and the Django cache backends, whose safety depends on provenance in another function.",
+      "priority": "medium",
+      "status": "completed",
+      "minimum_access_scope": [],
+      "acceptance_criteria": [
+        "Each fix has a planted good/bad twin",
+        "Each fix has a test in tests/test_lang_python.py that fails without it",
+        "Every existing planted true positive still fires"
+      ],
+      "validation_required": [
+        "tests/test_lang_python.py",
+        "tests/test_planted_corpus.py",
+        "tests/test_regression_guard.py::test_in_tree_snapshots_match"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
     }
   ]
 }
