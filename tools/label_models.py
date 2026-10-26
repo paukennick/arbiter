@@ -372,7 +372,7 @@ def call_cli(system: str, prompt: str, model: str, timeout: int = 240,
     with tempfile.TemporaryDirectory(prefix="label-") as cwd:
         if env is None:
             env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
-        proc = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout,
+        proc = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout,
                               stdin=subprocess.DEVNULL, env=env)
     try:
         meta = json.loads(proc.stdout)

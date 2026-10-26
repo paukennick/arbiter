@@ -2464,6 +2464,30 @@
       "prevention_rules": [],
       "prevention_notes": "Resolve CLI wrappers to their binary before passing multi-line arguments",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-200",
+      "date": "2026-10-26",
+      "title": "Labeller lost 11 answers: Claude's reply decoded as cp1252 on Windows",
+      "status": "fixed",
+      "severity": "low",
+      "symptom": "11 of 1,216 breadth labels failed with UnicodeDecodeError then TypeError: the JSON object must be str, not NoneType",
+      "how_detected": "label-breadth.log after the run",
+      "root_cause": "subprocess.run(text=True) uses the locale encoding (cp1252) on Windows; replies containing other characters could not be decoded, so stdout was None",
+      "requirement": "ARB-163",
+      "affected": [
+        "tools/label_models.py"
+      ],
+      "fix_summary": "decode the CLI's output as UTF-8 with replacement; resumed run labelled the 11 remaining items",
+      "fix_commits": [],
+      "regression_tests": [
+        "resume run: 1216/1216 labelled",
+        "0 errors"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Every subprocess read in the labeller names its encoding",
+      "recurrence_of": ""
     }
   ]
 }

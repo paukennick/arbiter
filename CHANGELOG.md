@@ -7,6 +7,11 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-163 | Breadth r7 Python labels: 1,216 held-out findings labelled with v3
+  prompts ($47.62 plus the 11 retried after FAIL-200), ledger rebuilt with every
+  label file. Only Python rules moved. Closest: `http-no-timeout` 352/5 (lower
+  0.968), `error-message-to-client` 154/3 (0.945); `swallowed-error-in-worker-loop`
+  0/121. No Python rule admitted yet.
 - ARB-169 | Accuracy plan gains Workstream D: twelve statistical methods (SPRT,
   hierarchical Beta priors, importance-sampled active learning, Dawid–Skene,
   Rogan–Gladen, capture–recapture, Good–Turing, conformal prediction,

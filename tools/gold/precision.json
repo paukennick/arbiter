@@ -4702,18 +4702,18 @@
    }
   },
   "arbiter/python.command-injection": {
-   "tp": 10,
-   "fp": 13,
-   "unsure": 0,
-   "n": 23,
+   "tp": 42,
+   "fp": 39,
+   "unsure": 3,
+   "n": 81,
    "held_out": {
-    "tp": 10,
-    "fp": 13,
-    "unsure": 0
+    "tp": 42,
+    "fp": 39,
+    "unsure": 3
    },
-   "precision": 0.4348,
-   "wilson_lower": 0.2563,
-   "wilson_upper": 0.6319,
+   "precision": 0.5185,
+   "wilson_lower": 0.4114,
+   "wilson_upper": 0.624,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
@@ -4723,14 +4723,29 @@
     "ground-truth"
    ],
    "sources": [
+    "breadth-r7-python-model",
     "heldout-r7-python-model",
     "owasp-python"
    ],
    "dates": {},
-   "population": 23,
-   "held_out_population": 23,
+   "population": 84,
+   "held_out_population": 84,
    "population_unknown": 0,
    "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 61,
+     "held_out_population": 61,
+     "tp": 32,
+     "fp": 26,
+     "unsure": 3,
+     "held_out": {
+      "tp": 32,
+      "fp": 26,
+      "unsure": 3
+     }
+    },
     {
      "source": "heldout-r7-python-model",
      "language": "python",
@@ -4761,6 +4776,10 @@
     }
    ],
    "source_population": {
+    "breadth-r7-python-model": {
+     "population": 61,
+     "held_out_population": 61
+    },
     "heldout-r7-python-model": {
      "population": 10,
      "held_out_population": 10
@@ -4771,18 +4790,18 @@
     }
    },
    "weighted": {
-    "precision": 0.4348,
-    "wilson_lower": 0.2563,
-    "wilson_upper": 0.6319,
-    "n_eff": 23.0,
-    "n_eff_kish": 23.0,
-    "tp": 10,
-    "fp": 13,
-    "population": 23,
-    "strata": 2,
+    "precision": 0.5197,
+    "wilson_lower": 0.4125,
+    "wilson_upper": 0.6252,
+    "n_eff": 81.0,
+    "n_eff_kish": 81.0,
+    "tp": 42,
+    "fp": 39,
+    "population": 84,
+    "strata": 3,
     "pooled": {
-     "precision": 0.4348,
-     "wilson_lower": 0.2563
+     "precision": 0.5185,
+     "wilson_lower": 0.4114
     }
    },
    "dimension": "security",
@@ -4791,7 +4810,7 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "23 label(s), 30 needed",
+   "admitted_reason": "lower bound 0.411 on 81 labels, below 0.97",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 5,
@@ -4874,33 +4893,126 @@
     "ai-corpus": 0
    }
   },
-  "arbiter/python.decompress-unbounded": {
-   "tp": 1,
-   "fp": 0,
+  "arbiter/python.debug-mode-enabled": {
+   "tp": 0,
+   "fp": 9,
    "unsure": 0,
-   "n": 1,
+   "n": 9,
    "held_out": {
-    "tp": 1,
-    "fp": 0,
+    "tp": 0,
+    "fp": 9,
     "unsure": 0
    },
-   "precision": 1.0,
-   "wilson_lower": 0.2065,
-   "wilson_upper": 1.0,
+   "precision": 0.0,
+   "wilson_lower": 0.0,
+   "wilson_upper": 0.2991,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
    "labellers": [
-    "claude-opus-5-5:prosecutor+defender+adjudicator/v3"
+    "claude-opus-5-5:prosecutor+defender/v3"
    ],
    "sources": [
+    "breadth-r7-python-model"
+   ],
+   "dates": {},
+   "population": 9,
+   "held_out_population": 9,
+   "population_unknown": 0,
+   "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 9,
+     "held_out_population": 9,
+     "tp": 0,
+     "fp": 9,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 9,
+      "unsure": 0
+     }
+    }
+   ],
+   "source_population": {
+    "breadth-r7-python-model": {
+     "population": 9,
+     "held_out_population": 9
+    }
+   },
+   "weighted": {
+    "precision": 0.0,
+    "wilson_lower": 0.0,
+    "wilson_upper": 0.2991,
+    "n_eff": 9.0,
+    "n_eff_kish": 9.0,
+    "tp": 0,
+    "fp": 9,
+    "population": 9,
+    "strata": 1,
+    "pooled": {
+     "precision": 0.0,
+     "wilson_lower": 0.0
+    }
+   },
+   "dimension": "security",
+   "cwe": [
+    "CWE-200",
+    "CWE-489"
+   ],
+   "fp_notes": [],
+   "admitted": false,
+   "admitted_reason": "9 label(s), 30 needed",
+   "updated": "2026-10-26",
+   "snapshot_counts": {
+    "planted": 2,
+    "ai-corpus": 0
+   }
+  },
+  "arbiter/python.decompress-unbounded": {
+   "tp": 7,
+   "fp": 3,
+   "unsure": 0,
+   "n": 10,
+   "held_out": {
+    "tp": 7,
+    "fp": 3,
+    "unsure": 0
+   },
+   "precision": 0.7,
+   "wilson_lower": 0.3968,
+   "wilson_upper": 0.8922,
+   "kappa": null,
+   "kappa_pairs": 0,
+   "observed_agreement": null,
+   "labellers": [
+    "claude-opus-5-5:prosecutor+defender+adjudicator/v3",
+    "claude-opus-5-5:prosecutor+defender/v3"
+   ],
+   "sources": [
+    "breadth-r7-python-model",
     "heldout-r7-python-model"
    ],
    "dates": {},
-   "population": 1,
-   "held_out_population": 1,
+   "population": 10,
+   "held_out_population": 10,
    "population_unknown": 0,
    "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 9,
+     "held_out_population": 9,
+     "tp": 6,
+     "fp": 3,
+     "unsure": 0,
+     "held_out": {
+      "tp": 6,
+      "fp": 3,
+      "unsure": 0
+     }
+    },
     {
      "source": "heldout-r7-python-model",
      "language": "python",
@@ -4917,24 +5029,28 @@
     }
    ],
    "source_population": {
+    "breadth-r7-python-model": {
+     "population": 9,
+     "held_out_population": 9
+    },
     "heldout-r7-python-model": {
      "population": 1,
      "held_out_population": 1
     }
    },
    "weighted": {
-    "precision": 1.0,
-    "wilson_lower": 0.2065,
-    "wilson_upper": 1.0,
-    "n_eff": 1.0,
-    "n_eff_kish": 1.0,
-    "tp": 1,
-    "fp": 0,
-    "population": 1,
-    "strata": 1,
+    "precision": 0.7,
+    "wilson_lower": 0.3968,
+    "wilson_upper": 0.8922,
+    "n_eff": 10.0,
+    "n_eff_kish": 10.0,
+    "tp": 7,
+    "fp": 3,
+    "population": 10,
+    "strata": 2,
     "pooled": {
-     "precision": 1.0,
-     "wilson_lower": 0.2065
+     "precision": 0.7,
+     "wilson_lower": 0.3968
     }
    },
    "dimension": "quality",
@@ -4944,7 +5060,7 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "1 label(s), 30 needed",
+   "admitted_reason": "10 label(s), 30 needed",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -4952,32 +5068,48 @@
    }
   },
   "arbiter/python.error-message-to-client": {
-   "tp": 7,
-   "fp": 0,
+   "tp": 154,
+   "fp": 3,
    "unsure": 0,
-   "n": 7,
+   "n": 157,
    "held_out": {
-    "tp": 7,
-    "fp": 0,
+    "tp": 154,
+    "fp": 3,
     "unsure": 0
    },
-   "precision": 1.0,
-   "wilson_lower": 0.6457,
-   "wilson_upper": 1.0,
+   "precision": 0.9809,
+   "wilson_lower": 0.9453,
+   "wilson_upper": 0.9935,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
    "labellers": [
+    "claude-opus-5-5:prosecutor+defender+adjudicator/v3",
     "claude-opus-5-5:prosecutor+defender/v3"
    ],
    "sources": [
+    "breadth-r7-python-model",
     "heldout-r7-python-model"
    ],
    "dates": {},
-   "population": 7,
-   "held_out_population": 7,
+   "population": 633,
+   "held_out_population": 633,
    "population_unknown": 0,
    "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 626,
+     "held_out_population": 626,
+     "tp": 147,
+     "fp": 3,
+     "unsure": 0,
+     "held_out": {
+      "tp": 147,
+      "fp": 3,
+      "unsure": 0
+     }
+    },
     {
      "source": "heldout-r7-python-model",
      "language": "python",
@@ -4994,24 +5126,28 @@
     }
    ],
    "source_population": {
+    "breadth-r7-python-model": {
+     "population": 626,
+     "held_out_population": 626
+    },
     "heldout-r7-python-model": {
      "population": 7,
      "held_out_population": 7
     }
    },
    "weighted": {
-    "precision": 1.0,
-    "wilson_lower": 0.6457,
-    "wilson_upper": 1.0,
-    "n_eff": 7.0,
-    "n_eff_kish": 7.0,
-    "tp": 7,
-    "fp": 0,
-    "population": 7,
-    "strata": 1,
+    "precision": 0.9802,
+    "wilson_lower": 0.9435,
+    "wilson_upper": 0.9933,
+    "n_eff": 151.7,
+    "n_eff_kish": 153.0,
+    "tp": 154,
+    "fp": 3,
+    "population": 633,
+    "strata": 2,
     "pooled": {
-     "precision": 1.0,
-     "wilson_lower": 0.6457
+     "precision": 0.9809,
+     "wilson_lower": 0.9453
     }
    },
    "dimension": "security",
@@ -5021,7 +5157,7 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "7 label(s), 30 needed",
+   "admitted_reason": "lower bound 0.945 on 157 labels, below 0.97",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -5029,18 +5165,18 @@
    }
   },
   "arbiter/python.error-traceback-to-client": {
-   "tp": 0,
+   "tp": 1,
    "fp": 2,
    "unsure": 0,
-   "n": 2,
+   "n": 3,
    "held_out": {
-    "tp": 0,
+    "tp": 1,
     "fp": 2,
     "unsure": 0
    },
-   "precision": 0.0,
-   "wilson_lower": 0.0,
-   "wilson_upper": 0.6576,
+   "precision": 0.3333,
+   "wilson_lower": 0.0615,
+   "wilson_upper": 0.7923,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
@@ -5048,13 +5184,28 @@
     "claude-opus-5-5:prosecutor+defender/v3"
    ],
    "sources": [
+    "breadth-r7-python-model",
     "heldout-r7-python-model"
    ],
    "dates": {},
-   "population": 2,
-   "held_out_population": 2,
+   "population": 3,
+   "held_out_population": 3,
    "population_unknown": 0,
    "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 1,
+     "held_out_population": 1,
+     "tp": 1,
+     "fp": 0,
+     "unsure": 0,
+     "held_out": {
+      "tp": 1,
+      "fp": 0,
+      "unsure": 0
+     }
+    },
     {
      "source": "heldout-r7-python-model",
      "language": "python",
@@ -5071,24 +5222,28 @@
     }
    ],
    "source_population": {
+    "breadth-r7-python-model": {
+     "population": 1,
+     "held_out_population": 1
+    },
     "heldout-r7-python-model": {
      "population": 2,
      "held_out_population": 2
     }
    },
    "weighted": {
-    "precision": 0.0,
-    "wilson_lower": 0.0,
-    "wilson_upper": 0.6576,
-    "n_eff": 2.0,
-    "n_eff_kish": 2.0,
-    "tp": 0,
+    "precision": 0.3333,
+    "wilson_lower": 0.0615,
+    "wilson_upper": 0.7923,
+    "n_eff": 3.0,
+    "n_eff_kish": 3.0,
+    "tp": 1,
     "fp": 2,
-    "population": 2,
-    "strata": 1,
+    "population": 3,
+    "strata": 2,
     "pooled": {
-     "precision": 0.0,
-     "wilson_lower": 0.0
+     "precision": 0.3333,
+     "wilson_lower": 0.0615
     }
    },
    "dimension": "security",
@@ -5098,7 +5253,7 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "2 label(s), 30 needed",
+   "admitted_reason": "3 label(s), 30 needed",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -5106,18 +5261,18 @@
    }
   },
   "arbiter/python.http-no-timeout": {
-   "tp": 45,
-   "fp": 2,
+   "tp": 352,
+   "fp": 5,
    "unsure": 0,
-   "n": 47,
+   "n": 357,
    "held_out": {
-    "tp": 43,
-    "fp": 1,
+    "tp": 350,
+    "fp": 4,
     "unsure": 0
    },
-   "precision": 0.9574,
-   "wilson_lower": 0.8575,
-   "wilson_upper": 0.9883,
+   "precision": 0.986,
+   "wilson_lower": 0.9676,
+   "wilson_upper": 0.994,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
@@ -5125,14 +5280,29 @@
     "claude-opus-5-5:prosecutor+defender/v3"
    ],
    "sources": [
+    "breadth-r7-python-model",
     "gold-model",
     "heldout-r7-python-model"
    ],
    "dates": {},
-   "population": 47,
-   "held_out_population": 44,
+   "population": 357,
+   "held_out_population": 354,
    "population_unknown": 0,
    "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 310,
+     "held_out_population": 310,
+     "tp": 307,
+     "fp": 3,
+     "unsure": 0,
+     "held_out": {
+      "tp": 307,
+      "fp": 3,
+      "unsure": 0
+     }
+    },
     {
      "source": "gold-model",
      "language": "python",
@@ -5163,6 +5333,10 @@
     }
    ],
    "source_population": {
+    "breadth-r7-python-model": {
+     "population": 310,
+     "held_out_population": 310
+    },
     "gold-model": {
      "population": 3,
      "held_out_population": 0
@@ -5173,18 +5347,18 @@
     }
    },
    "weighted": {
-    "precision": 0.9574,
-    "wilson_lower": 0.8575,
-    "wilson_upper": 0.9883,
-    "n_eff": 47.0,
-    "n_eff_kish": 47.0,
-    "tp": 45,
-    "fp": 2,
-    "population": 47,
-    "strata": 2,
+    "precision": 0.986,
+    "wilson_lower": 0.9676,
+    "wilson_upper": 0.994,
+    "n_eff": 357.0,
+    "n_eff_kish": 357.0,
+    "tp": 352,
+    "fp": 5,
+    "population": 357,
+    "strata": 3,
     "pooled": {
-     "precision": 0.9574,
-     "wilson_lower": 0.8575
+     "precision": 0.986,
+     "wilson_lower": 0.9676
     }
    },
    "dimension": "quality",
@@ -5193,14 +5367,14 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "lower bound 0.858 on 47 labels, below 0.97",
+   "admitted_reason": "lower bound 0.968 on 357 labels, below 0.97",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 2,
     "ai-corpus": 0
    }
   },
-  "arbiter/python.image-bomb-check-disabled": {
+  "arbiter/python.http-timeout-disabled": {
    "tp": 0,
    "fp": 1,
    "unsure": 0,
@@ -5220,7 +5394,7 @@
     "claude-opus-5-5:prosecutor+defender/v3"
    ],
    "sources": [
-    "heldout-r7-python-model"
+    "breadth-r7-python-model"
    ],
    "dates": {},
    "population": 1,
@@ -5228,7 +5402,7 @@
    "population_unknown": 0,
    "strata": [
     {
-     "source": "heldout-r7-python-model",
+     "source": "breadth-r7-python-model",
      "language": "python",
      "population": 1,
      "held_out_population": 1,
@@ -5243,7 +5417,7 @@
     }
    ],
    "source_population": {
-    "heldout-r7-python-model": {
+    "breadth-r7-python-model": {
      "population": 1,
      "held_out_population": 1
     }
@@ -5265,12 +5439,107 @@
    },
    "dimension": "quality",
    "cwe": [
+    "CWE-400"
+   ],
+   "fp_notes": [],
+   "admitted": false,
+   "admitted_reason": "1 label(s), 30 needed",
+   "updated": "2026-10-26",
+   "snapshot_counts": {
+    "planted": 2,
+    "ai-corpus": 0
+   }
+  },
+  "arbiter/python.image-bomb-check-disabled": {
+   "tp": 1,
+   "fp": 2,
+   "unsure": 0,
+   "n": 3,
+   "held_out": {
+    "tp": 1,
+    "fp": 2,
+    "unsure": 0
+   },
+   "precision": 0.3333,
+   "wilson_lower": 0.0615,
+   "wilson_upper": 0.7923,
+   "kappa": null,
+   "kappa_pairs": 0,
+   "observed_agreement": null,
+   "labellers": [
+    "claude-opus-5-5:prosecutor+defender/v3"
+   ],
+   "sources": [
+    "breadth-r7-python-model",
+    "heldout-r7-python-model"
+   ],
+   "dates": {},
+   "population": 3,
+   "held_out_population": 3,
+   "population_unknown": 0,
+   "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 2,
+     "held_out_population": 2,
+     "tp": 1,
+     "fp": 1,
+     "unsure": 0,
+     "held_out": {
+      "tp": 1,
+      "fp": 1,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "heldout-r7-python-model",
+     "language": "python",
+     "population": 1,
+     "held_out_population": 1,
+     "tp": 0,
+     "fp": 1,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 1,
+      "unsure": 0
+     }
+    }
+   ],
+   "source_population": {
+    "breadth-r7-python-model": {
+     "population": 2,
+     "held_out_population": 2
+    },
+    "heldout-r7-python-model": {
+     "population": 1,
+     "held_out_population": 1
+    }
+   },
+   "weighted": {
+    "precision": 0.3333,
+    "wilson_lower": 0.0615,
+    "wilson_upper": 0.7923,
+    "n_eff": 3.0,
+    "n_eff_kish": 3.0,
+    "tp": 1,
+    "fp": 2,
+    "population": 3,
+    "strata": 2,
+    "pooled": {
+     "precision": 0.3333,
+     "wilson_lower": 0.0615
+    }
+   },
+   "dimension": "quality",
+   "cwe": [
     "CWE-400",
     "CWE-409"
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "1 label(s), 30 needed",
+   "admitted_reason": "3 label(s), 30 needed",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -5278,18 +5547,18 @@
    }
   },
   "arbiter/python.insecure-random-for-secret": {
-   "tp": 99,
-   "fp": 2,
+   "tp": 101,
+   "fp": 11,
    "unsure": 0,
-   "n": 101,
+   "n": 112,
    "held_out": {
-    "tp": 99,
-    "fp": 2,
+    "tp": 101,
+    "fp": 11,
     "unsure": 0
    },
-   "precision": 0.9802,
-   "wilson_lower": 0.9307,
-   "wilson_upper": 0.9946,
+   "precision": 0.9018,
+   "wilson_lower": 0.8327,
+   "wilson_upper": 0.9443,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
@@ -5298,14 +5567,29 @@
     "ground-truth"
    ],
    "sources": [
+    "breadth-r7-python-model",
     "heldout-r5-model",
     "owasp-python"
    ],
    "dates": {},
-   "population": 101,
-   "held_out_population": 101,
+   "population": 112,
+   "held_out_population": 112,
    "population_unknown": 0,
    "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 11,
+     "held_out_population": 11,
+     "tp": 2,
+     "fp": 9,
+     "unsure": 0,
+     "held_out": {
+      "tp": 2,
+      "fp": 9,
+      "unsure": 0
+     }
+    },
     {
      "source": "heldout-r5-model",
      "language": "python",
@@ -5336,6 +5620,10 @@
     }
    ],
    "source_population": {
+    "breadth-r7-python-model": {
+     "population": 11,
+     "held_out_population": 11
+    },
     "heldout-r5-model": {
      "population": 2,
      "held_out_population": 2
@@ -5346,18 +5634,18 @@
     }
    },
    "weighted": {
-    "precision": 0.9802,
-    "wilson_lower": 0.9307,
-    "wilson_upper": 0.9946,
-    "n_eff": 101.0,
-    "n_eff_kish": 101.0,
-    "tp": 99,
-    "fp": 2,
-    "population": 101,
-    "strata": 2,
+    "precision": 0.9018,
+    "wilson_lower": 0.8327,
+    "wilson_upper": 0.9443,
+    "n_eff": 112.0,
+    "n_eff_kish": 112.0,
+    "tp": 101,
+    "fp": 11,
+    "population": 112,
+    "strata": 3,
     "pooled": {
-     "precision": 0.9802,
-     "wilson_lower": 0.9307
+     "precision": 0.9018,
+     "wilson_lower": 0.8327
     }
    },
    "dimension": "security",
@@ -5366,26 +5654,104 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "lower bound 0.931 on 101 labels, below 0.97",
-   "updated": "2026-10-24",
+   "admitted_reason": "lower bound 0.833 on 112 labels, below 0.97",
+   "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 3,
     "ai-corpus": 0
    }
   },
+  "arbiter/python.jwt-unverified-decode": {
+   "tp": 1,
+   "fp": 12,
+   "unsure": 0,
+   "n": 13,
+   "held_out": {
+    "tp": 1,
+    "fp": 12,
+    "unsure": 0
+   },
+   "precision": 0.0769,
+   "wilson_lower": 0.0137,
+   "wilson_upper": 0.3331,
+   "kappa": null,
+   "kappa_pairs": 0,
+   "observed_agreement": null,
+   "labellers": [
+    "claude-opus-5-5:prosecutor+defender+adjudicator/v3",
+    "claude-opus-5-5:prosecutor+defender/v3"
+   ],
+   "sources": [
+    "breadth-r7-python-model"
+   ],
+   "dates": {},
+   "population": 13,
+   "held_out_population": 13,
+   "population_unknown": 0,
+   "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 13,
+     "held_out_population": 13,
+     "tp": 1,
+     "fp": 12,
+     "unsure": 0,
+     "held_out": {
+      "tp": 1,
+      "fp": 12,
+      "unsure": 0
+     }
+    }
+   ],
+   "source_population": {
+    "breadth-r7-python-model": {
+     "population": 13,
+     "held_out_population": 13
+    }
+   },
+   "weighted": {
+    "precision": 0.0769,
+    "wilson_lower": 0.0137,
+    "wilson_upper": 0.3331,
+    "n_eff": 13.0,
+    "n_eff_kish": 13.0,
+    "tp": 1,
+    "fp": 12,
+    "population": 13,
+    "strata": 1,
+    "pooled": {
+     "precision": 0.0769,
+     "wilson_lower": 0.0137
+    }
+   },
+   "dimension": "security",
+   "cwe": [
+    "CWE-287",
+    "CWE-347"
+   ],
+   "fp_notes": [],
+   "admitted": false,
+   "admitted_reason": "13 label(s), 30 needed",
+   "updated": "2026-10-26",
+   "snapshot_counts": {
+    "planted": 1,
+    "ai-corpus": 0
+   }
+  },
   "arbiter/python.mail-tls-unverified": {
-   "tp": 4,
+   "tp": 27,
    "fp": 1,
    "unsure": 0,
-   "n": 5,
+   "n": 28,
    "held_out": {
-    "tp": 2,
+    "tp": 25,
     "fp": 1,
     "unsure": 0
    },
-   "precision": 0.8,
-   "wilson_lower": 0.3755,
-   "wilson_upper": 0.9638,
+   "precision": 0.9643,
+   "wilson_lower": 0.8229,
+   "wilson_upper": 0.9937,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
@@ -5394,11 +5760,12 @@
    ],
    "sources": [
     "ai-corpus-model",
+    "breadth-r7-python-model",
     "heldout-r7-python-model"
    ],
    "dates": {},
-   "population": 5,
-   "held_out_population": 3,
+   "population": 28,
+   "held_out_population": 26,
    "population_unknown": 0,
    "strata": [
     {
@@ -5411,6 +5778,20 @@
      "unsure": 0,
      "held_out": {
       "tp": 0,
+      "fp": 0,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 23,
+     "held_out_population": 23,
+     "tp": 23,
+     "fp": 0,
+     "unsure": 0,
+     "held_out": {
+      "tp": 23,
       "fp": 0,
       "unsure": 0
      }
@@ -5435,24 +5816,28 @@
      "population": 2,
      "held_out_population": 0
     },
+    "breadth-r7-python-model": {
+     "population": 23,
+     "held_out_population": 23
+    },
     "heldout-r7-python-model": {
      "population": 3,
      "held_out_population": 3
     }
    },
    "weighted": {
-    "precision": 0.8,
-    "wilson_lower": 0.3755,
-    "wilson_upper": 0.9638,
-    "n_eff": 5.0,
-    "n_eff_kish": 5.0,
-    "tp": 4,
+    "precision": 0.9643,
+    "wilson_lower": 0.8229,
+    "wilson_upper": 0.9937,
+    "n_eff": 28.0,
+    "n_eff_kish": 28.0,
+    "tp": 27,
     "fp": 1,
-    "population": 5,
-    "strata": 2,
+    "population": 28,
+    "strata": 3,
     "pooled": {
-     "precision": 0.8,
-     "wilson_lower": 0.3755
+     "precision": 0.9643,
+     "wilson_lower": 0.8229
     }
    },
    "dimension": "security",
@@ -5461,7 +5846,7 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "5 label(s), 30 needed",
+   "admitted_reason": "28 label(s), 30 needed",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 2,
@@ -5469,18 +5854,18 @@
    }
   },
   "arbiter/python.request-body-unbounded": {
-   "tp": 28,
-   "fp": 5,
-   "unsure": 1,
-   "n": 33,
+   "tp": 304,
+   "fp": 28,
+   "unsure": 3,
+   "n": 332,
    "held_out": {
-    "tp": 26,
-    "fp": 5,
-    "unsure": 1
+    "tp": 302,
+    "fp": 28,
+    "unsure": 3
    },
-   "precision": 0.8485,
-   "wilson_lower": 0.6908,
-   "wilson_upper": 0.9335,
+   "precision": 0.9157,
+   "wilson_lower": 0.8808,
+   "wilson_upper": 0.941,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
@@ -5490,11 +5875,12 @@
    ],
    "sources": [
     "ai-corpus-model",
+    "breadth-r7-python-model",
     "heldout-r7-python-model"
    ],
    "dates": {},
-   "population": 34,
-   "held_out_population": 32,
+   "population": 335,
+   "held_out_population": 333,
    "population_unknown": 0,
    "strata": [
     {
@@ -5509,6 +5895,20 @@
       "tp": 0,
       "fp": 0,
       "unsure": 0
+     }
+    },
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 301,
+     "held_out_population": 301,
+     "tp": 276,
+     "fp": 23,
+     "unsure": 2,
+     "held_out": {
+      "tp": 276,
+      "fp": 23,
+      "unsure": 2
      }
     },
     {
@@ -5531,24 +5931,28 @@
      "population": 2,
      "held_out_population": 0
     },
+    "breadth-r7-python-model": {
+     "population": 301,
+     "held_out_population": 301
+    },
     "heldout-r7-python-model": {
      "population": 32,
      "held_out_population": 32
     }
    },
    "weighted": {
-    "precision": 0.8482,
-    "wilson_lower": 0.6905,
-    "wilson_upper": 0.9333,
-    "n_eff": 33.0,
-    "n_eff_kish": 33.0,
-    "tp": 28,
-    "fp": 5,
-    "population": 34,
-    "strata": 2,
+    "precision": 0.9155,
+    "wilson_lower": 0.8806,
+    "wilson_upper": 0.9409,
+    "n_eff": 332.0,
+    "n_eff_kish": 332.0,
+    "tp": 304,
+    "fp": 28,
+    "population": 335,
+    "strata": 3,
     "pooled": {
-     "precision": 0.8485,
-     "wilson_lower": 0.6908
+     "precision": 0.9157,
+     "wilson_lower": 0.8808
     }
    },
    "dimension": "quality",
@@ -5558,7 +5962,7 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "lower bound 0.691 on 33 labels, below 0.97",
+   "admitted_reason": "lower bound 0.881 on 332 labels, below 0.97",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 3,
@@ -5566,18 +5970,18 @@
    }
   },
   "arbiter/python.retry-constant-delay": {
-   "tp": 5,
-   "fp": 3,
+   "tp": 47,
+   "fp": 29,
    "unsure": 0,
-   "n": 8,
+   "n": 76,
    "held_out": {
-    "tp": 4,
-    "fp": 3,
+    "tp": 46,
+    "fp": 29,
     "unsure": 0
    },
-   "precision": 0.625,
-   "wilson_lower": 0.3057,
-   "wilson_upper": 0.8632,
+   "precision": 0.6184,
+   "wilson_lower": 0.506,
+   "wilson_upper": 0.7194,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
@@ -5587,11 +5991,12 @@
    ],
    "sources": [
     "ai-corpus-model",
+    "breadth-r7-python-model",
     "heldout-r7-python-model"
    ],
    "dates": {},
-   "population": 8,
-   "held_out_population": 7,
+   "population": 76,
+   "held_out_population": 75,
    "population_unknown": 0,
    "strata": [
     {
@@ -5605,6 +6010,20 @@
      "held_out": {
       "tp": 0,
       "fp": 0,
+      "unsure": 0
+     }
+    },
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 68,
+     "held_out_population": 68,
+     "tp": 42,
+     "fp": 26,
+     "unsure": 0,
+     "held_out": {
+      "tp": 42,
+      "fp": 26,
       "unsure": 0
      }
     },
@@ -5628,24 +6047,28 @@
      "population": 1,
      "held_out_population": 0
     },
+    "breadth-r7-python-model": {
+     "population": 68,
+     "held_out_population": 68
+    },
     "heldout-r7-python-model": {
      "population": 7,
      "held_out_population": 7
     }
    },
    "weighted": {
-    "precision": 0.625,
-    "wilson_lower": 0.3057,
-    "wilson_upper": 0.8632,
-    "n_eff": 8.0,
-    "n_eff_kish": 8.0,
-    "tp": 5,
-    "fp": 3,
-    "population": 8,
-    "strata": 2,
+    "precision": 0.6184,
+    "wilson_lower": 0.506,
+    "wilson_upper": 0.7194,
+    "n_eff": 76.0,
+    "n_eff_kish": 76.0,
+    "tp": 47,
+    "fp": 29,
+    "population": 76,
+    "strata": 3,
     "pooled": {
-     "precision": 0.625,
-     "wilson_lower": 0.3057
+     "precision": 0.6184,
+     "wilson_lower": 0.506
     }
    },
    "dimension": "quality",
@@ -5654,7 +6077,7 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "8 label(s), 30 needed",
+   "admitted_reason": "lower bound 0.506 on 76 labels, below 0.97",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -5662,32 +6085,48 @@
    }
   },
   "arbiter/python.retry-loop-no-backoff": {
-   "tp": 0,
-   "fp": 7,
+   "tp": 5,
+   "fp": 19,
    "unsure": 0,
-   "n": 7,
+   "n": 24,
    "held_out": {
-    "tp": 0,
-    "fp": 7,
+    "tp": 5,
+    "fp": 19,
     "unsure": 0
    },
-   "precision": 0.0,
-   "wilson_lower": 0.0,
-   "wilson_upper": 0.3543,
+   "precision": 0.2083,
+   "wilson_lower": 0.0924,
+   "wilson_upper": 0.4047,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
    "labellers": [
+    "claude-opus-5-5:prosecutor+defender+adjudicator/v3",
     "claude-opus-5-5:prosecutor+defender/v3"
    ],
    "sources": [
+    "breadth-r7-python-model",
     "heldout-r7-python-model"
    ],
    "dates": {},
-   "population": 7,
-   "held_out_population": 7,
+   "population": 24,
+   "held_out_population": 24,
    "population_unknown": 0,
    "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 17,
+     "held_out_population": 17,
+     "tp": 5,
+     "fp": 12,
+     "unsure": 0,
+     "held_out": {
+      "tp": 5,
+      "fp": 12,
+      "unsure": 0
+     }
+    },
     {
      "source": "heldout-r7-python-model",
      "language": "python",
@@ -5704,24 +6143,28 @@
     }
    ],
    "source_population": {
+    "breadth-r7-python-model": {
+     "population": 17,
+     "held_out_population": 17
+    },
     "heldout-r7-python-model": {
      "population": 7,
      "held_out_population": 7
     }
    },
    "weighted": {
-    "precision": 0.0,
-    "wilson_lower": 0.0,
-    "wilson_upper": 0.3543,
-    "n_eff": 7.0,
-    "n_eff_kish": 7.0,
-    "tp": 0,
-    "fp": 7,
-    "population": 7,
-    "strata": 1,
+    "precision": 0.2083,
+    "wilson_lower": 0.0924,
+    "wilson_upper": 0.4047,
+    "n_eff": 24.0,
+    "n_eff_kish": 24.0,
+    "tp": 5,
+    "fp": 19,
+    "population": 24,
+    "strata": 2,
     "pooled": {
-     "precision": 0.0,
-     "wilson_lower": 0.0
+     "precision": 0.2083,
+     "wilson_lower": 0.0924
     }
    },
    "dimension": "quality",
@@ -5730,7 +6173,7 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "7 label(s), 30 needed",
+   "admitted_reason": "24 label(s), 30 needed",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 3,
@@ -5891,19 +6334,19 @@
     "ai-corpus": 0
    }
   },
-  "arbiter/python.swallowed-error-in-worker-loop": {
-   "tp": 0,
-   "fp": 21,
+  "arbiter/python.ssrf-check-then-connect": {
+   "tp": 1,
+   "fp": 20,
    "unsure": 0,
    "n": 21,
    "held_out": {
-    "tp": 0,
-    "fp": 19,
+    "tp": 1,
+    "fp": 20,
     "unsure": 0
    },
-   "precision": 0.0,
-   "wilson_lower": 0.0,
-   "wilson_upper": 0.1546,
+   "precision": 0.0476,
+   "wilson_lower": 0.0085,
+   "wilson_upper": 0.2267,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
@@ -5911,14 +6354,183 @@
     "claude-opus-5-5:prosecutor+defender/v3"
    ],
    "sources": [
+    "breadth-r7-python-model"
+   ],
+   "dates": {},
+   "population": 21,
+   "held_out_population": 21,
+   "population_unknown": 0,
+   "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 21,
+     "held_out_population": 21,
+     "tp": 1,
+     "fp": 20,
+     "unsure": 0,
+     "held_out": {
+      "tp": 1,
+      "fp": 20,
+      "unsure": 0
+     }
+    }
+   ],
+   "source_population": {
+    "breadth-r7-python-model": {
+     "population": 21,
+     "held_out_population": 21
+    }
+   },
+   "weighted": {
+    "precision": 0.0476,
+    "wilson_lower": 0.0085,
+    "wilson_upper": 0.2267,
+    "n_eff": 21.0,
+    "n_eff_kish": 21.0,
+    "tp": 1,
+    "fp": 20,
+    "population": 21,
+    "strata": 1,
+    "pooled": {
+     "precision": 0.0476,
+     "wilson_lower": 0.0085
+    }
+   },
+   "dimension": "security",
+   "cwe": [
+    "CWE-367",
+    "CWE-918"
+   ],
+   "fp_notes": [],
+   "admitted": false,
+   "admitted_reason": "21 label(s), 30 needed",
+   "updated": "2026-10-26",
+   "snapshot_counts": {
+    "planted": 1,
+    "ai-corpus": 1
+   }
+  },
+  "arbiter/python.ssrf-stored-callback": {
+   "tp": 20,
+   "fp": 30,
+   "unsure": 4,
+   "n": 50,
+   "held_out": {
+    "tp": 20,
+    "fp": 30,
+    "unsure": 4
+   },
+   "precision": 0.4,
+   "wilson_lower": 0.2761,
+   "wilson_upper": 0.5382,
+   "kappa": null,
+   "kappa_pairs": 0,
+   "observed_agreement": null,
+   "labellers": [
+    "claude-opus-5-5:prosecutor+defender+adjudicator/v3",
+    "claude-opus-5-5:prosecutor+defender/v3"
+   ],
+   "sources": [
+    "breadth-r7-python-model"
+   ],
+   "dates": {},
+   "population": 54,
+   "held_out_population": 54,
+   "population_unknown": 0,
+   "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 54,
+     "held_out_population": 54,
+     "tp": 20,
+     "fp": 30,
+     "unsure": 4,
+     "held_out": {
+      "tp": 20,
+      "fp": 30,
+      "unsure": 4
+     }
+    }
+   ],
+   "source_population": {
+    "breadth-r7-python-model": {
+     "population": 54,
+     "held_out_population": 54
+    }
+   },
+   "weighted": {
+    "precision": 0.4,
+    "wilson_lower": 0.2761,
+    "wilson_upper": 0.5382,
+    "n_eff": 50.0,
+    "n_eff_kish": 50.0,
+    "tp": 20,
+    "fp": 30,
+    "population": 54,
+    "strata": 1,
+    "pooled": {
+     "precision": 0.4,
+     "wilson_lower": 0.2761
+    }
+   },
+   "dimension": "security",
+   "cwe": [
+    "CWE-918"
+   ],
+   "fp_notes": [],
+   "admitted": false,
+   "admitted_reason": "lower bound 0.276 on 50 labels, below 0.97",
+   "updated": "2026-10-26",
+   "snapshot_counts": {
+    "planted": 1,
+    "ai-corpus": 0
+   }
+  },
+  "arbiter/python.swallowed-error-in-worker-loop": {
+   "tp": 0,
+   "fp": 121,
+   "unsure": 0,
+   "n": 121,
+   "held_out": {
+    "tp": 0,
+    "fp": 119,
+    "unsure": 0
+   },
+   "precision": 0.0,
+   "wilson_lower": 0.0,
+   "wilson_upper": 0.0308,
+   "kappa": null,
+   "kappa_pairs": 0,
+   "observed_agreement": null,
+   "labellers": [
+    "claude-opus-5-5:prosecutor+defender/v3"
+   ],
+   "sources": [
+    "breadth-r7-python-model",
     "gold-model",
     "heldout-r7-python-model"
    ],
    "dates": {},
-   "population": 21,
-   "held_out_population": 19,
+   "population": 382,
+   "held_out_population": 380,
    "population_unknown": 0,
    "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 361,
+     "held_out_population": 361,
+     "tp": 0,
+     "fp": 100,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 100,
+      "unsure": 0
+     }
+    },
     {
      "source": "gold-model",
      "language": "python",
@@ -5949,6 +6561,10 @@
     }
    ],
    "source_population": {
+    "breadth-r7-python-model": {
+     "population": 361,
+     "held_out_population": 361
+    },
     "gold-model": {
      "population": 2,
      "held_out_population": 0
@@ -5961,13 +6577,13 @@
    "weighted": {
     "precision": 0.0,
     "wilson_lower": 0.0,
-    "wilson_upper": 0.1546,
-    "n_eff": 21.0,
-    "n_eff_kish": 21.0,
+    "wilson_upper": 0.0337,
+    "n_eff": 110.2,
+    "n_eff_kish": 110.2,
     "tp": 0,
-    "fp": 21,
-    "population": 21,
-    "strata": 2,
+    "fp": 121,
+    "population": 382,
+    "strata": 3,
     "pooled": {
      "precision": 0.0,
      "wilson_lower": 0.0
@@ -5980,7 +6596,7 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "21 label(s), 30 needed",
+   "admitted_reason": "lower bound 0.000 on 121 labels, below 0.97",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -5988,18 +6604,18 @@
    }
   },
   "arbiter/python.thread-not-daemon-never-joined": {
-   "tp": 3,
-   "fp": 3,
+   "tp": 22,
+   "fp": 30,
    "unsure": 1,
-   "n": 6,
+   "n": 52,
    "held_out": {
-    "tp": 3,
-    "fp": 2,
+    "tp": 22,
+    "fp": 29,
     "unsure": 1
    },
-   "precision": 0.5,
-   "wilson_lower": 0.1876,
-   "wilson_upper": 0.8124,
+   "precision": 0.4231,
+   "wilson_lower": 0.2987,
+   "wilson_upper": 0.5581,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
@@ -6008,14 +6624,29 @@
     "claude-opus-5-5:prosecutor+defender/v3"
    ],
    "sources": [
+    "breadth-r7-python-model",
     "gold-model",
     "heldout-r7-python-model"
    ],
    "dates": {},
-   "population": 7,
-   "held_out_population": 6,
+   "population": 53,
+   "held_out_population": 52,
    "population_unknown": 0,
    "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 46,
+     "held_out_population": 46,
+     "tp": 19,
+     "fp": 27,
+     "unsure": 0,
+     "held_out": {
+      "tp": 19,
+      "fp": 27,
+      "unsure": 0
+     }
+    },
     {
      "source": "gold-model",
      "language": "python",
@@ -6046,6 +6677,10 @@
     }
    ],
    "source_population": {
+    "breadth-r7-python-model": {
+     "population": 46,
+     "held_out_population": 46
+    },
     "gold-model": {
      "population": 1,
      "held_out_population": 0
@@ -6056,18 +6691,18 @@
     }
    },
    "weighted": {
-    "precision": 0.5143,
-    "wilson_lower": 0.196,
-    "wilson_upper": 0.8214,
-    "n_eff": 6.0,
-    "n_eff_kish": 6.0,
-    "tp": 3,
-    "fp": 3,
-    "population": 7,
-    "strata": 2,
+    "precision": 0.4264,
+    "wilson_lower": 0.3015,
+    "wilson_upper": 0.5615,
+    "n_eff": 51.8,
+    "n_eff_kish": 51.8,
+    "tp": 22,
+    "fp": 30,
+    "population": 53,
+    "strata": 3,
     "pooled": {
-     "precision": 0.5,
-     "wilson_lower": 0.1876
+     "precision": 0.4231,
+     "wilson_lower": 0.2987
     }
    },
    "dimension": "quality",
@@ -6076,7 +6711,7 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "6 label(s), 30 needed",
+   "admitted_reason": "lower bound 0.299 on 52 labels, below 0.97",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
@@ -6258,17 +6893,17 @@
   },
   "arbiter/python.weak-password-hash": {
    "tp": 74,
-   "fp": 3,
+   "fp": 8,
    "unsure": 0,
-   "n": 77,
+   "n": 82,
    "held_out": {
     "tp": 73,
-    "fp": 3,
+    "fp": 8,
     "unsure": 0
    },
-   "precision": 0.961,
-   "wilson_lower": 0.8916,
-   "wilson_upper": 0.9867,
+   "precision": 0.9024,
+   "wilson_lower": 0.8191,
+   "wilson_upper": 0.9497,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
@@ -6278,16 +6913,31 @@
     "ground-truth"
    ],
    "sources": [
+    "breadth-r7-python-model",
     "gold-model",
     "heldout-r5-model",
     "heldout-r7-python-model",
     "owasp-python"
    ],
    "dates": {},
-   "population": 77,
-   "held_out_population": 76,
+   "population": 82,
+   "held_out_population": 81,
    "population_unknown": 0,
    "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 5,
+     "held_out_population": 5,
+     "tp": 0,
+     "fp": 5,
+     "unsure": 0,
+     "held_out": {
+      "tp": 0,
+      "fp": 5,
+      "unsure": 0
+     }
+    },
     {
      "source": "gold-model",
      "language": "python",
@@ -6346,6 +6996,10 @@
     }
    ],
    "source_population": {
+    "breadth-r7-python-model": {
+     "population": 5,
+     "held_out_population": 5
+    },
     "gold-model": {
      "population": 1,
      "held_out_population": 0
@@ -6364,18 +7018,18 @@
     }
    },
    "weighted": {
-    "precision": 0.961,
-    "wilson_lower": 0.8916,
-    "wilson_upper": 0.9867,
-    "n_eff": 77.0,
-    "n_eff_kish": 77.0,
+    "precision": 0.9024,
+    "wilson_lower": 0.8191,
+    "wilson_upper": 0.9497,
+    "n_eff": 82.0,
+    "n_eff_kish": 82.0,
     "tp": 74,
-    "fp": 3,
-    "population": 77,
-    "strata": 4,
+    "fp": 8,
+    "population": 82,
+    "strata": 5,
     "pooled": {
-     "precision": 0.961,
-     "wilson_lower": 0.8916
+     "precision": 0.9024,
+     "wilson_lower": 0.8191
     }
    },
    "dimension": "security",
@@ -6385,7 +7039,7 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "lower bound 0.892 on 77 labels, below 0.97",
+   "admitted_reason": "lower bound 0.819 on 82 labels, below 0.97",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 3,
@@ -6393,32 +7047,48 @@
    }
   },
   "arbiter/python.worker-loop-no-stop-signal": {
-   "tp": 0,
-   "fp": 1,
-   "unsure": 0,
-   "n": 1,
+   "tp": 5,
+   "fp": 6,
+   "unsure": 4,
+   "n": 11,
    "held_out": {
-    "tp": 0,
-    "fp": 1,
-    "unsure": 0
+    "tp": 5,
+    "fp": 6,
+    "unsure": 4
    },
-   "precision": 0.0,
-   "wilson_lower": 0.0,
-   "wilson_upper": 0.7935,
+   "precision": 0.4545,
+   "wilson_lower": 0.2127,
+   "wilson_upper": 0.7199,
    "kappa": null,
    "kappa_pairs": 0,
    "observed_agreement": null,
    "labellers": [
+    "claude-opus-5-5:prosecutor+defender+adjudicator/v3",
     "claude-opus-5-5:prosecutor+defender/v3"
    ],
    "sources": [
+    "breadth-r7-python-model",
     "heldout-r7-python-model"
    ],
    "dates": {},
-   "population": 1,
-   "held_out_population": 1,
+   "population": 15,
+   "held_out_population": 15,
    "population_unknown": 0,
    "strata": [
+    {
+     "source": "breadth-r7-python-model",
+     "language": "python",
+     "population": 14,
+     "held_out_population": 14,
+     "tp": 5,
+     "fp": 5,
+     "unsure": 4,
+     "held_out": {
+      "tp": 5,
+      "fp": 5,
+      "unsure": 4
+     }
+    },
     {
      "source": "heldout-r7-python-model",
      "language": "python",
@@ -6435,24 +7105,28 @@
     }
    ],
    "source_population": {
+    "breadth-r7-python-model": {
+     "population": 14,
+     "held_out_population": 14
+    },
     "heldout-r7-python-model": {
      "population": 1,
      "held_out_population": 1
     }
    },
    "weighted": {
-    "precision": 0.0,
-    "wilson_lower": 0.0,
-    "wilson_upper": 0.7935,
-    "n_eff": 1.0,
-    "n_eff_kish": 1.0,
-    "tp": 0,
-    "fp": 1,
-    "population": 1,
-    "strata": 1,
+    "precision": 0.4667,
+    "wilson_lower": 0.2207,
+    "wilson_upper": 0.73,
+    "n_eff": 10.9,
+    "n_eff_kish": 10.9,
+    "tp": 5,
+    "fp": 6,
+    "population": 15,
+    "strata": 2,
     "pooled": {
-     "precision": 0.0,
-     "wilson_lower": 0.0
+     "precision": 0.4545,
+     "wilson_lower": 0.2127
     }
    },
    "dimension": "quality",
@@ -6461,7 +7135,7 @@
    ],
    "fp_notes": [],
    "admitted": false,
-   "admitted_reason": "1 label(s), 30 needed",
+   "admitted_reason": "11 label(s), 30 needed",
    "updated": "2026-10-26",
    "snapshot_counts": {
     "planted": 1,
