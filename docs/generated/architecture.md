@@ -217,7 +217,6 @@ Open requirements that carry risk notes, with the notes that fit on one line (`-
 - ARB-101 (needs_review): Labels are model labels; not human labels. 993 tp / 12 fp / 5 unsure. Only supply.unpinned-action reaches Wilson lower >= 0.99 (0.9924 (more: `omni requirement show ARB-101`; 2 more notes)
 - ARB-110 (pending): Model labels are not independent truth; Learned triage can overfit tuned corpora; Labeller cost and code leaving the machine as bounded excerpts only for public code
 - ARB-153 (needs_review): Only the first repository's profile is consulted because quality thresholds are resolved once for the whole run; a multi-repo system scan cannot yet hold one set per repository (more: `omni requirement show ARB-153`; 3 more notes)
-- ARB-159 (pending): Generated-document freshness remains opt-in at the gate. (more: `omni requirement show ARB-159`; 1 more note)
 
 ## 11. Glossary
 

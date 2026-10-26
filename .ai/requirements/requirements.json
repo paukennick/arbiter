@@ -3584,7 +3584,7 @@
       "title": "Adopt Omni automatic engineering document generation",
       "description": "Update Arbiter to OmniEngineering eeffebd so omni docs build generates deterministic engineering documentation and requirement changes regenerate it automatically.",
       "priority": "low",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         ".ai/omni-version.json",
         ".ai/requirements/requirements.json",
@@ -3626,7 +3626,8 @@
       ],
       "risk_notes": [
         "Generated-document freshness remains opt-in at the gate.",
-        "Full native-Windows pytest reaches 29 passing tests before the pre-existing POSIX-shell adapter test fails because sh is unavailable; this change does not touch Arbiter source or tests."
+        "Full native-Windows pytest reaches 29 passing tests before the pre-existing POSIX-shell adapter test fails because sh is unavailable; this change does not touch Arbiter source or tests.",
+        "arbiter check skipped: ARB-159 changes workspace tooling only; claim integrity passed and the Arbiter source tree was unchanged."
       ]
     }
   ]

@@ -12,10 +12,10 @@ Which tests and files belong to each requirement is in the [Requirements Traceab
 
 | Status | Requirements |
 | --- | --- |
-| pending | 7 |
+| pending | 6 |
 | needs_review | 2 |
 | proposed | 14 |
-| completed | 85 |
+| completed | 86 |
 | withdrawn | 1 |
 
 ## Functional requirements
@@ -194,7 +194,7 @@ Which tests and files belong to each requirement is in the [Requirements Traceab
 
 | ID | Requirement | Status | Priority | Tests | Statement |
 | --- | --- | --- | --- | --- | --- |
-| ARB-159 | Adopt Omni automatic engineering document generation | pending | low | 1 | Update Arbiter to OmniEngineering eeffebd so omni docs build generates deterministic engineering documentation and requirement changes regenerate it automatically. |
+| ARB-159 | Adopt Omni automatic engineering document generation | completed | low | 1 | Update Arbiter to OmniEngineering eeffebd so omni docs build generates deterministic engineering documentation and requirement changes regenerate it automatically. |
 
 ### training-evidence
 
@@ -369,12 +369,6 @@ Completed and withdrawn requirements are left out; their criteria are in the reg
 3. profiles are keyed so two repositories never share an entry
 4. a profile under 30 samples leaves the fixed threshold in place
 5. the configured threshold caps the adaptive one; so a uniformly bad codebase cannot raise its own limit and a tenfold uniform degradation cannot leave the flagged set unchanged
-
-### ARB-159: Adopt Omni automatic engineering document generation
-
-1. omni docs build generates the engineering document set deterministically
-2. Requirement lifecycle commands regenerate existing generated docs automatically
-3. Generated documentation is committed for Arbiter
 
 ## Archived requirements
 

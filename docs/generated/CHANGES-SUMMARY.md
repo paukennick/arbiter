@@ -6,6 +6,7 @@
 
 _The last 10 completed, newest registry entry first._
 
+- ARB-159: Adopt Omni automatic engineering document generation
 - ARB-158: CI scans use the analyzers CI installs
 - ARB-157: PR checks pass on every matrix cell again
 - ARB-156: Tests that pin bytes or timing pass on Windows checkouts
@@ -15,7 +16,6 @@ _The last 10 completed, newest registry entry first._
 - ARB-106: Expanding labeled RealVuln baseline beyond CWE-89
 - ARB-105: Research external AI-code sources and define differential conformance study
 - ARB-104: Define blinded accuracy review protocol
-- ARB-155: Point semgrep at the C#, Kotlin and Swift rules it already fetches
 
 ## In progress
 
@@ -27,7 +27,6 @@ _The last 10 completed, newest registry entry first._
 - ARB-101: Held-out set r5: 50 repositories frozen before scanning, 1,010 model labels (needs_review)
 - ARB-110: Close recall gap without human reviewers: development-only recall analysis and preregistered model-labelled sample (pending)
 - ARB-153: Turn on adaptive quality thresholds and pin them per repository (needs_review)
-- ARB-159: Adopt Omni automatic engineering document generation (pending)
 
 ## Blocked
 
@@ -87,6 +86,6 @@ Documents a requirement lists in `documentation_required` that none of its commi
 | ARB-152 | completed | `docs/configuration.md` | 1 |
 | ARB-152 | completed | `CHANGELOG.md` | 1 |
 
-Not checked, no commit names them in the scanned history: ARB-055, ARB-056, ARB-057, ARB-058, ARB-063, ARB-068, ARB-069, ARB-070, ARB-072, ARB-073, ARB-074, ARB-093, ARB-094, ARB-095, ARB-096, ARB-105, ARB-106, ARB-107, ARB-108, ARB-131, ARB-132, ARB-144, ARB-145, ARB-146, ARB-147, ARB-149, ARB-150, ARB-151, ARB-156, ARB-159.
+Not checked, no commit names them in the scanned history: ARB-055, ARB-056, ARB-057, ARB-058, ARB-063, ARB-068, ARB-069, ARB-070, ARB-072, ARB-073, ARB-074, ARB-093, ARB-094, ARB-095, ARB-096, ARB-105, ARB-106, ARB-107, ARB-108, ARB-131, ARB-132, ARB-144, ARB-145, ARB-146, ARB-147, ARB-149, ARB-150, ARB-151, ARB-156.
 
 Not checked, entry is not a file path: ARB-130: docs/supply-chain.md.

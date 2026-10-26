@@ -225,7 +225,7 @@
 | ARB-156 | completed | PYTHONPATH=src python -m pytest tests/test_adapter_cache.py tests/test_realvuln_conformance.py -q |
 | ARB-157 | completed | PYTHONPATH=src python -m pytest tests/ -q |
 | ARB-158 | completed | PYTHONPATH=src python -m pytest tests/test_tooling.py -q |
-| ARB-159 | pending | python omni docs build --check; python -m pytest -q; PYTHONPATH=src python tools/integrity.py; python omni doctor; python omni gate |
+| ARB-159 | completed | python omni docs build --check; python -m pytest -q; PYTHONPATH=src python tools/integrity.py; python omni doctor; python omni gate |
 
 ## 4. Requirements with no linked test
 

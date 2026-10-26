@@ -114,7 +114,7 @@ Tests are linked by data, not by name matching: test paths in the requirement's 
 | ARB-156: Tests that pin bytes or timing pass on Windows checkouts | completed | .gitattributes, tests/test_adapter_cache.py, docs/accuracy-realvuln-multicwe-run.json | tests/test_adapter_cache.py | - |
 | ARB-157: PR checks pass on every matrix cell again | completed | .github/workflows/pr-check.yml, src/arbiter/authored.py, ci/github-action/action.yml, tests/test_probes_quality.py | tests/test_ecosystems_java.py, tests/test_probes_quality.py | - |
 | ARB-158: CI scans use the analyzers CI installs | completed | .github/workflows/pr-check.yml, .github/workflows/train.yml, src/arbiter/tooling.py, tests/test_tooling.py | tests/test_tooling.py, tests/test_tools_training.py | - |
-| ARB-159: Adopt Omni automatic engineering document generation | pending | .ai/omni-version.json, .ai/requirements/requirements.json, .ai/context-brief.md, .ai/project-context.md, .ai/playbooks/testing.md, .ai/rules/completion-workflow.json, .ai/rules/data-governance.json, .ai/rules/universal-engineering-ruleset.json, +12 more | tests/test_omni_graph_findings.py | - |
+| ARB-159: Adopt Omni automatic engineering document generation | completed | .ai/omni-version.json, .ai/requirements/requirements.json, .ai/context-brief.md, .ai/project-context.md, .ai/playbooks/testing.md, .ai/rules/completion-workflow.json, .ai/rules/data-governance.json, .ai/rules/universal-engineering-ruleset.json, +12 more | tests/test_omni_graph_findings.py | - |
 
 ## Open failures
 
