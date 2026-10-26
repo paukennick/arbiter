@@ -3654,6 +3654,30 @@
         "changelog"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-171",
+      "category": "accuracy",
+      "title": "Multiple-comparison control (Holm, Benjamini-Hochberg) for rule admission, reported beside admission",
+      "description": "Plan item D9. Each rule is an exact one-sided binomial test of H0 precision <= bar at 0.97 and 0.99 (alpha = q = 0.025 one-sided, fixed before reading results). Holm (FWER), Benjamini-Hochberg (FDR, PRDS) and Benjamini-Yekutieli (any dependence) over a family fixed by held-out label count (>= rule_min_n), overall and per language; adjusted p-values, Bonferroni/Holm-level Clopper-Pearson lower bounds, survivors among admitted rules and the per-language claim under each method go in precision.json key multiplicity and the ledger report. Admission unchanged until the owner switches. src/arbiter/multiplicity.py.",
+      "priority": "medium",
+      "status": "pending",
+      "minimum_access_scope": [],
+      "acceptance_criteria": [
+        "simulation: Holm any-false-admission rate <= alpha and BH false share <= q within Monte Carlo error",
+        "a family of one equals the unadjusted test",
+        "deterministic output",
+        "committed ledger carries the block it rebuilds to",
+        "docs/precision.md plain-language section with current numbers"
+      ],
+      "validation_required": [
+        "doctor",
+        "validate"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
     }
   ]
 }

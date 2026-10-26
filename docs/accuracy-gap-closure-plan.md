@@ -133,7 +133,7 @@ when the owner switches it, and the doc then states which rules move.
 | D6 | Capture–recapture (Lincoln–Petersen, Chao) | Estimate defects missed by Arbiter, Semgrep and CodeQL from the overlap of what they find: a catch-rate estimate without a human audit | planned |
 | D7 | Good–Turing estimation | Chance that the next repository holds a defect kind never seen before | planned |
 | D8 | Conformal prediction | Per-finding confidence with a guaranteed error rate, for Workstream C's learned triage | planned |
-| D9 | Multiple-comparison control (Benjamini–Hochberg, Holm) | With 100+ rules tested against the bar, keep the number passing by luck bounded | planned |
+| D9 | Multiple-comparison control (Benjamini–Hochberg, Holm) | With 100+ rules tested against the bar, keep the number passing by luck bounded | reported beside admission (ARB-171) |
 | D10 | Repository clustering / design effect | Findings from one repository are not independent; widen the interval accordingly | in progress (ARB-168) |
 | D11 | Multi-armed bandit (Thompson sampling) | Decide which language, rule and repositories get the next labelling budget | planned |
 | D12 | Value of information / information gain | Rank rule fixes and labelling batches by how far they move a language toward its claim | planned |

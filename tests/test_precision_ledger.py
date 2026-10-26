@@ -513,7 +513,7 @@ def test_report_prints_a_row_per_language(tmp_path, monkeypatch, capsys):
     PL.write(_two_language_ledger(), (path,))
     monkeypatch.setattr(PL, "declared_verified", lambda config=None: {TS_RULE})
     assert PL.main(["report", "--ledger", str(path)]) == 0
-    out = capsys.readouterr().out
+    out = capsys.readouterr().out.split("\n\n")[0]   # the multiplicity section follows
     rows = {line.split()[0]: line.split() for line in out.splitlines()[2:]}
     assert set(rows) == {"javascript", "typescript"}
     assert rows["javascript"][2] == "1" and rows["javascript"][3] == "100"

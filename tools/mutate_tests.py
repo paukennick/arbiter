@@ -188,6 +188,32 @@ MUTATIONS = [
         new='            if isinstance(entry, dict) and isinstance(entry.get("version"), str):',
         test="tests/test_tool_version_memo.py::test_touching_the_executable_invalidates_its_entry",
     ),
+    Mutation(
+        name="holm-without-the-family",
+        defect="Holm stops multiplying by the number of rules left, so each rule is "
+               "tested alone again and some at-bar rule passes by luck (ARB-171).",
+        path="src/arbiter/multiplicity.py",
+        old="        run = max(run, min(1.0, (m - rank) * ps[i]))",
+        new="        run = max(run, min(1.0, ps[i]))",
+        test="tests/test_multiplicity.py::test_holm_keeps_any_false_admission_within_alpha_and_bh_the_false_share_within_q",
+    ),
+    Mutation(
+        name="adjusted-pass-strict",
+        defect="An adjusted p-value exactly at the level no longer passes (`<` for `<=`).",
+        path="src/arbiter/multiplicity.py",
+        old='            row[f"pass_{meth}"] = adj[meth][i] <= LEVEL[meth]',
+        new='            row[f"pass_{meth}"] = adj[meth][i] < LEVEL[meth]',
+        test="tests/test_multiplicity.py::test_a_p_value_exactly_at_the_threshold_passes",
+    ),
+    Mutation(
+        name="family-chosen-by-all-labels",
+        defect="The family is drawn on every label instead of held-out labels, so a "
+               "rule with development labels only joins it (ARB-171).",
+        path="src/arbiter/multiplicity.py",
+        old='    return counts_for(entry, "held_out")[1] >= int(bar["rule_min_n"])',
+        new='    return counts_for(entry, "all")[1] >= int(bar["rule_min_n"])',
+        test="tests/test_multiplicity.py::test_the_family_is_held_out_labels_not_results",
+    ),
 ]
 
 

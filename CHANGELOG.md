@@ -7,6 +7,14 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-171 | Multiple-comparison control for rule admission, reported beside it (admission
+  unchanged): each rule is an exact one-sided binomial test against 0.97 and 0.99,
+  adjusted by Holm, Benjamini–Hochberg and Benjamini–Yekutieli over the 14 rules with at
+  least 30 held-out labels, overall and per language (`src/arbiter/multiplicity.py`;
+  `multiplicity` key in `precision.json`; a section of `precision_ledger.py report`).
+  Of the three admitted rules, `supply.unpinned-action` and
+  `assurance.blanket-suppression` survive every method; `java.weak-random-for-secret`
+  (218 of 219) does not (Holm 0.118, BH 0.046). yaml's 99% claim is unaffected.
 - ARB-169 | Accuracy plan gains Workstream D: twelve statistical methods (SPRT,
   hierarchical Beta priors, importance-sampled active learning, Dawid–Skene,
   Rogan–Gladen, capture–recapture, Good–Turing, conformal prediction,

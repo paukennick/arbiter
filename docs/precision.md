@@ -479,6 +479,119 @@ ARB-087 supply chain, ARB-088 interface and contract consistency, ARB-089
 written claims checked against code, ARB-090 assurance census. A
 `<rule>.not-assessed` finding carries the requirements of its rule.
 
+## Multiple-comparison control (ARB-171)
+
+**What it guards against.** Each rule is admitted on its own test: a 95%
+lower bound of at least 0.97. A rule that is really *at* 0.97 still gets
+through that test about one time in forty. Test 14 such rules and the
+chance that at least one of them gets through by luck is far higher. In a
+simulation with 20 rules exactly at their bar (150 labels each), at least
+one passed in 22% of runs; with Holm, 1%. Multiple-comparison control makes the set of admitted rules carry one
+guarantee for the whole set, not one per rule.
+
+**This is reported, not enforced.** Admission still reads the per-rule
+bound. The adjusted result is written beside it: the `multiplicity` key in
+`tools/gold/precision.json`, and a section of `tools/precision_ledger.py
+report`. Nick decides whether the gate switches to it.
+
+**The test.** For each rule and each bar (0.97 to admit, 0.99 to stand
+without a model check), the question is "could a rule exactly at the bar
+have produced at least this many true positives?" That chance is the
+p-value, computed exactly from the binomial distribution. It is the same
+test the Clopper–Pearson lower bound inverts: the p-value is at most a
+level exactly when the Clopper–Pearson bound at that level reaches the bar.
+The ledger's bound is Wilson, which runs a little higher near 1, so the two
+can disagree on a rule right at the bar. The exact test is used because
+only an exact p-value keeps its stated error rate. The level is 0.025,
+one-sided: the half of the two-sided 95% interval that sits below the lower
+bound. That level was fixed before any result was read, so one rule tested
+alone gets exactly today's test.
+
+**The family** is every rule with at least 30 decided held-out labels,
+whatever its result and whether or not it is declared verified. It is
+counted overall (14 rules today) and per language (a rule with labels in
+three languages is in three language families). The family is set by how
+much held-out evidence a rule has, never by how it scored, because a family
+picked after looking at the results would be peeking under another name. A
+rule admitted with fewer held-out labels than that is outside the family
+and is listed as carrying no family-wide guarantee (none today).
+
+**The counts.** A rule is tested on the same labels admission reads today
+(all decided labels, development and held-out), so "survives" means
+"today's decision, corrected". Development labels were seen while the
+rules were tuned, which flatters the rule, so the held-out-only result is
+reported beside it. Which counts the gate should read is also Nick's
+decision.
+
+**The methods.**
+
+- **Holm** keeps the chance that *any* admitted rule is really below the
+  bar at or under 2.5%. It holds whatever the dependence between rules.
+- **Benjamini–Hochberg (BH)** keeps the expected *share* of admitted rules
+  that are really below the bar at or under 2.5%. It admits more than Holm
+  when many rules pass. It assumes the rules' results are independent or
+  move together (positive dependence). Rules labelled on the same
+  repositories by the same labellers plausibly move together, but that is
+  not proven.
+- **Benjamini–Yekutieli (BY)** is BH made safe under any dependence by
+  dividing the level by 1 + 1/2 + … + 1/m (3.25 for 14 rules). Use it if the
+  BH assumption is not accepted.
+
+Because the ledger thinks in lower bounds, each rule also gets its
+**adjusted lower bound**: the Clopper–Pearson bound at level 0.025/m
+(`lower_bonferroni`), and at the level Holm gives the rule at its rank,
+0.025/(m − rank + 1) (`lower_holm`). A rule passes Bonferroni exactly when
+its adjusted bound reaches the bar.
+
+**The current numbers (2026-10-26, family of 14).** Three rules are
+admitted today. At the 0.97 bar:
+
+| Rule | TP of n | p | Holm | BH | BY | Bonferroni lower bound |
+|---|---|---|---|---|---|---|
+| `supply.unpinned-action` (yaml) | 690 of 690 | 7.5e-10 | passes | passes | passes | 0.9909 |
+| `assurance.blanket-suppression` | 445 of 448 | 0.00065 | passes (0.0085) | passes (0.0046) | passes (0.0149) | 0.9728 |
+| `java.weak-random-for-secret` | 218 of 219 | 0.0099 | **fails** (0.118) | **fails** (0.046) | **fails** (0.150) | 0.9615 |
+
+`java.weak-random-for-secret` passes alone (its exact p-value 0.0099 is
+under 0.025) but not once the other 13 tests are counted. It also fails
+inside the Java family alone (four rules). The other two survive every
+method. At the 0.99 bar only `supply.unpinned-action` passes, under Holm
+and BH (adjusted 0.0136) but not BY (0.0443).
+
+On held-out labels only, `assurance.blanket-suppression` (315 of 318) no
+longer survives Holm or BH at 0.97. `supply.unpinned-action` (524 of 524)
+survives at 0.97 but not at 0.99.
+
+**Effect on the per-language claims: none today.** The only language with
+a claim is yaml, on its one verified rule, `supply.unpinned-action`. That
+rule survives every method, so yaml's claim (lower bound 0.9926) stands
+under all three. `java.weak-random-for-secret` and
+`assurance.blanket-suppression` are admitted but not declared verified, so
+no language claim rests on them.
+
+**What changes if adopted.** A rule would need its adjusted p-value under
+0.025 instead of its own bound over 0.97. Today that would drop
+`java.weak-random-for-secret` from the admitted set and change nothing
+else. As the family grows, each rule needs more labels to pass. For an
+all-true-positive rule at 0.97, 122 labels are enough alone. In a
+family of 14, under Holm's strictest rank, it takes about 208.
+
+**With sequential testing (D1).** The family level is shared out first,
+then spent over time. Holm/Bonferroni give each rule its share of 0.025
+(0.025/m, or 0.025/(m − rank + 1) under Holm). A rule's sequential test
+spends that share across its looks with an alpha-spending function, never
+the whole 0.025. Each rule's sequential error stays within its share, and
+the family's within 0.025. For BH, the sequential test's always-valid
+p-values (or e-values, with e-BH) go into the BH step in place of the
+fixed-sample ones.
+
+**With Dawid–Skene and clustering (D4, D10).** The p-values should come
+from the corrected estimate once it exists. `multiplicity.counts_for` is
+the one place a rule's counts are read, and `family_block(counts=...)`
+takes a replacement. A clustered or Dawid–Skene effective sample size is
+not a whole number, and the exact tail refuses it rather than rounding.
+That step needs the regularised incomplete beta function.
+
 ## Model panel (ARB-122)
 
 `tools/panel/panel.py` asks models from **different companies** to label

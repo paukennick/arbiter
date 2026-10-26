@@ -11092,5 +11092,1558 @@
     "population_unknown": []
    }
   }
+ },
+ "multiplicity": {
+  "about": "ARB-171: exact one-sided binomial test of H0 precision <= bar per rule, adjusted over the family (rules with >= rule_min_n held-out labels), overall and per language. Reported beside admission; admission is unchanged. docs/precision.md",
+  "alpha": 0.025,
+  "q": 0.025,
+  "test": "exact binomial, one-sided (Clopper-Pearson)",
+  "family": "rules with >= rule_min_n decided held-out labels",
+  "counts": "all decided labels (as admission); held_out = sensitivity",
+  "admitted": [
+   "arbiter/assurance.blanket-suppression",
+   "arbiter/java.weak-random-for-secret",
+   "arbiter/supply.unpinned-action"
+  ],
+  "outside_family": [],
+  "survive": {
+   "rule_lower": {
+    "unadjusted": [
+     "arbiter/assurance.blanket-suppression",
+     "arbiter/java.weak-random-for-secret",
+     "arbiter/supply.unpinned-action"
+    ],
+    "holm": [
+     "arbiter/assurance.blanket-suppression",
+     "arbiter/supply.unpinned-action"
+    ],
+    "bh": [
+     "arbiter/assurance.blanket-suppression",
+     "arbiter/supply.unpinned-action"
+    ],
+    "by": [
+     "arbiter/assurance.blanket-suppression",
+     "arbiter/supply.unpinned-action"
+    ]
+   },
+   "offline_lower": {
+    "unadjusted": [
+     "arbiter/supply.unpinned-action"
+    ],
+    "holm": [
+     "arbiter/supply.unpinned-action"
+    ],
+    "bh": [
+     "arbiter/supply.unpinned-action"
+    ],
+    "by": []
+   }
+  },
+  "survive_by_language": {
+   "rule_lower": {
+    "go": {
+     "unadjusted": [
+      "arbiter/assurance.blanket-suppression"
+     ],
+     "holm": [
+      "arbiter/assurance.blanket-suppression"
+     ],
+     "bh": [
+      "arbiter/assurance.blanket-suppression"
+     ],
+     "by": [
+      "arbiter/assurance.blanket-suppression"
+     ]
+    },
+    "java": {
+     "unadjusted": [
+      "arbiter/java.weak-random-for-secret"
+     ],
+     "holm": [],
+     "bh": [],
+     "by": []
+    },
+    "javascript": {
+     "unadjusted": [
+      "arbiter/assurance.blanket-suppression"
+     ],
+     "holm": [
+      "arbiter/assurance.blanket-suppression"
+     ],
+     "bh": [
+      "arbiter/assurance.blanket-suppression"
+     ],
+     "by": [
+      "arbiter/assurance.blanket-suppression"
+     ]
+    },
+    "python": {
+     "unadjusted": [
+      "arbiter/assurance.blanket-suppression"
+     ],
+     "holm": [
+      "arbiter/assurance.blanket-suppression"
+     ],
+     "bh": [
+      "arbiter/assurance.blanket-suppression"
+     ],
+     "by": [
+      "arbiter/assurance.blanket-suppression"
+     ]
+    },
+    "typescript": {
+     "unadjusted": [
+      "arbiter/assurance.blanket-suppression"
+     ],
+     "holm": [
+      "arbiter/assurance.blanket-suppression"
+     ],
+     "bh": [
+      "arbiter/assurance.blanket-suppression"
+     ],
+     "by": [
+      "arbiter/assurance.blanket-suppression"
+     ]
+    },
+    "yaml": {
+     "unadjusted": [
+      "arbiter/supply.unpinned-action"
+     ],
+     "holm": [
+      "arbiter/supply.unpinned-action"
+     ],
+     "bh": [
+      "arbiter/supply.unpinned-action"
+     ],
+     "by": [
+      "arbiter/supply.unpinned-action"
+     ]
+    }
+   },
+   "offline_lower": {
+    "go": {
+     "unadjusted": [],
+     "holm": [],
+     "bh": [],
+     "by": []
+    },
+    "java": {
+     "unadjusted": [],
+     "holm": [],
+     "bh": [],
+     "by": []
+    },
+    "javascript": {
+     "unadjusted": [],
+     "holm": [],
+     "bh": [],
+     "by": []
+    },
+    "python": {
+     "unadjusted": [],
+     "holm": [],
+     "bh": [],
+     "by": []
+    },
+    "typescript": {
+     "unadjusted": [],
+     "holm": [],
+     "bh": [],
+     "by": []
+    },
+    "yaml": {
+     "unadjusted": [
+      "arbiter/supply.unpinned-action"
+     ],
+     "holm": [
+      "arbiter/supply.unpinned-action"
+     ],
+     "bh": [
+      "arbiter/supply.unpinned-action"
+     ],
+     "by": [
+      "arbiter/supply.unpinned-action"
+     ]
+    }
+   }
+  },
+  "tests": {
+   "rule_lower": {
+    "bar": 0.97,
+    "m": 14,
+    "overall": {
+     "arbiter/assurance.blanket-suppression": {
+      "k": 445,
+      "n": 448,
+      "p": 0.000652964,
+      "pass_unadjusted": true,
+      "p_holm": 0.00848854,
+      "pass_holm": true,
+      "p_bh": 0.00457075,
+      "pass_bh": true,
+      "p_by": 0.0148621,
+      "pass_by": true,
+      "lower_unadjusted": 0.9806,
+      "lower_bonferroni": 0.9728,
+      "lower_holm": 0.973
+     },
+     "arbiter/java.command-injection": {
+      "k": 571,
+      "n": 874,
+      "p": 1.0,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.6207,
+      "lower_bonferroni": 0.6049,
+      "lower_holm": 0.6135
+     },
+     "arbiter/java.sql-string-built": {
+      "k": 2492,
+      "n": 3632,
+      "p": 1.0,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.6707,
+      "lower_bonferroni": 0.6633,
+      "lower_holm": 0.6685
+     },
+     "arbiter/java.weak-random-for-secret": {
+      "k": 218,
+      "n": 219,
+      "p": 0.00985393,
+      "pass_unadjusted": true,
+      "p_holm": 0.118247,
+      "pass_holm": false,
+      "p_bh": 0.045985,
+      "pass_bh": false,
+      "p_by": 0.149523,
+      "pass_by": false,
+      "lower_unadjusted": 0.9748,
+      "lower_bonferroni": 0.9615,
+      "lower_holm": 0.9622
+     },
+     "arbiter/java.xss-unescaped-html": {
+      "k": 382,
+      "n": 435,
+      "p": 1.0,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.8437,
+      "lower_bonferroni": 0.8261,
+      "lower_holm": 0.8339
+     },
+     "arbiter/python.code-injection": {
+      "k": 22,
+      "n": 34,
+      "p": 1.0,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.4649,
+      "lower_bonferroni": 0.3853,
+      "lower_holm": 0.4079
+     },
+     "arbiter/python.http-no-timeout": {
+      "k": 45,
+      "n": 47,
+      "p": 0.833298,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.8546,
+      "lower_bonferroni": 0.7952,
+      "lower_holm": 0.8071
+     },
+     "arbiter/python.insecure-random-for-secret": {
+      "k": 99,
+      "n": 101,
+      "p": 0.41302,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.9303,
+      "lower_bonferroni": 0.9,
+      "lower_holm": 0.9027
+     },
+     "arbiter/python.request-body-unbounded": {
+      "k": 28,
+      "n": 33,
+      "p": 0.999598,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.681,
+      "lower_bonferroni": 0.5973,
+      "lower_holm": 0.6173
+     },
+     "arbiter/python.sql-injection": {
+      "k": 28,
+      "n": 251,
+      "p": 1.0,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.0754,
+      "lower_bonferroni": 0.0614,
+      "lower_holm": 0.0662
+     },
+     "arbiter/python.unsafe-deserialization": {
+      "k": 18,
+      "n": 33,
+      "p": 1.0,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.3635,
+      "lower_bonferroni": 0.2892,
+      "lower_holm": 0.3635
+     },
+     "arbiter/python.weak-password-hash": {
+      "k": 74,
+      "n": 77,
+      "p": 0.799489,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.8903,
+      "lower_bonferroni": 0.8494,
+      "lower_holm": 0.8558
+     },
+     "arbiter/supply.unpinned-action": {
+      "k": 690,
+      "n": 690,
+      "p": 7.45584e-10,
+      "pass_unadjusted": true,
+      "p_holm": 1.04382e-08,
+      "pass_holm": true,
+      "p_bh": 1.04382e-08,
+      "pass_bh": true,
+      "p_by": 3.39404e-08,
+      "pass_by": true,
+      "lower_unadjusted": 0.9947,
+      "lower_bonferroni": 0.9909,
+      "lower_holm": 0.9909
+     },
+     "arbiter/typescript.fetch-no-timeout": {
+      "k": 145,
+      "n": 149,
+      "p": 0.536448,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.9327,
+      "lower_bonferroni": 0.9091,
+      "lower_holm": 0.9119
+     }
+    },
+    "languages": {
+     "go": {
+      "m": 1,
+      "rules": {
+       "arbiter/assurance.blanket-suppression": {
+        "k": 445,
+        "n": 448,
+        "p": 0.000652964,
+        "pass_unadjusted": true,
+        "p_holm": 0.000652964,
+        "pass_holm": true,
+        "p_bh": 0.000652964,
+        "pass_bh": true,
+        "p_by": 0.000652964,
+        "pass_by": true,
+        "lower_unadjusted": 0.9806,
+        "lower_bonferroni": 0.9806,
+        "lower_holm": 0.9806
+       }
+      }
+     },
+     "java": {
+      "m": 4,
+      "rules": {
+       "arbiter/java.command-injection": {
+        "k": 571,
+        "n": 874,
+        "p": 1.0,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.6207,
+        "lower_bonferroni": 0.6118,
+        "lower_holm": 0.6161
+       },
+       "arbiter/java.sql-string-built": {
+        "k": 2492,
+        "n": 3632,
+        "p": 1.0,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.6707,
+        "lower_bonferroni": 0.6665,
+        "lower_holm": 0.6707
+       },
+       "arbiter/java.weak-random-for-secret": {
+        "k": 218,
+        "n": 219,
+        "p": 0.00985393,
+        "pass_unadjusted": true,
+        "p_holm": 0.0394157,
+        "pass_holm": false,
+        "p_bh": 0.0394157,
+        "pass_bh": false,
+        "p_by": 0.0821161,
+        "pass_by": false,
+        "lower_unadjusted": 0.9748,
+        "lower_bonferroni": 0.9677,
+        "lower_holm": 0.9677
+       },
+       "arbiter/java.xss-unescaped-html": {
+        "k": 382,
+        "n": 435,
+        "p": 1.0,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.8437,
+        "lower_bonferroni": 0.8339,
+        "lower_holm": 0.8358
+       }
+      }
+     },
+     "javascript": {
+      "m": 2,
+      "rules": {
+       "arbiter/assurance.blanket-suppression": {
+        "k": 445,
+        "n": 448,
+        "p": 0.000652964,
+        "pass_unadjusted": true,
+        "p_holm": 0.00130593,
+        "pass_holm": true,
+        "p_bh": 0.00130593,
+        "pass_bh": true,
+        "p_by": 0.00195889,
+        "pass_by": true,
+        "lower_unadjusted": 0.9806,
+        "lower_bonferroni": 0.9784,
+        "lower_holm": 0.9784
+       },
+       "arbiter/typescript.fetch-no-timeout": {
+        "k": 145,
+        "n": 149,
+        "p": 0.536448,
+        "pass_unadjusted": false,
+        "p_holm": 0.536448,
+        "pass_holm": false,
+        "p_bh": 0.536448,
+        "pass_bh": false,
+        "p_by": 0.804672,
+        "pass_by": false,
+        "lower_unadjusted": 0.9327,
+        "lower_bonferroni": 0.9261,
+        "lower_holm": 0.9327
+       }
+      }
+     },
+     "python": {
+      "m": 8,
+      "rules": {
+       "arbiter/assurance.blanket-suppression": {
+        "k": 445,
+        "n": 448,
+        "p": 0.000652964,
+        "pass_unadjusted": true,
+        "p_holm": 0.00522371,
+        "pass_holm": true,
+        "p_bh": 0.00522371,
+        "pass_bh": true,
+        "p_by": 0.0141973,
+        "pass_by": true,
+        "lower_unadjusted": 0.9806,
+        "lower_bonferroni": 0.9744,
+        "lower_holm": 0.9744
+       },
+       "arbiter/python.code-injection": {
+        "k": 22,
+        "n": 34,
+        "p": 1.0,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.4649,
+        "lower_bonferroni": 0.4,
+        "lower_holm": 0.4282
+       },
+       "arbiter/python.http-no-timeout": {
+        "k": 45,
+        "n": 47,
+        "p": 0.833298,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.8546,
+        "lower_bonferroni": 0.8071,
+        "lower_holm": 0.8173
+       },
+       "arbiter/python.insecure-random-for-secret": {
+        "k": 99,
+        "n": 101,
+        "p": 0.41302,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.9303,
+        "lower_bonferroni": 0.9062,
+        "lower_holm": 0.9076
+       },
+       "arbiter/python.request-body-unbounded": {
+        "k": 28,
+        "n": 33,
+        "p": 0.999598,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.681,
+        "lower_bonferroni": 0.6133,
+        "lower_holm": 0.6343
+       },
+       "arbiter/python.sql-injection": {
+        "k": 28,
+        "n": 251,
+        "p": 1.0,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.0754,
+        "lower_bonferroni": 0.0639,
+        "lower_holm": 0.0711
+       },
+       "arbiter/python.unsafe-deserialization": {
+        "k": 18,
+        "n": 33,
+        "p": 1.0,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.3635,
+        "lower_bonferroni": 0.3026,
+        "lower_holm": 0.3635
+       },
+       "arbiter/python.weak-password-hash": {
+        "k": 74,
+        "n": 77,
+        "p": 0.799489,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.8903,
+        "lower_bonferroni": 0.8576,
+        "lower_holm": 0.8619
+       }
+      }
+     },
+     "typescript": {
+      "m": 2,
+      "rules": {
+       "arbiter/assurance.blanket-suppression": {
+        "k": 445,
+        "n": 448,
+        "p": 0.000652964,
+        "pass_unadjusted": true,
+        "p_holm": 0.00130593,
+        "pass_holm": true,
+        "p_bh": 0.00130593,
+        "pass_bh": true,
+        "p_by": 0.00195889,
+        "pass_by": true,
+        "lower_unadjusted": 0.9806,
+        "lower_bonferroni": 0.9784,
+        "lower_holm": 0.9784
+       },
+       "arbiter/typescript.fetch-no-timeout": {
+        "k": 145,
+        "n": 149,
+        "p": 0.536448,
+        "pass_unadjusted": false,
+        "p_holm": 0.536448,
+        "pass_holm": false,
+        "p_bh": 0.536448,
+        "pass_bh": false,
+        "p_by": 0.804672,
+        "pass_by": false,
+        "lower_unadjusted": 0.9327,
+        "lower_bonferroni": 0.9261,
+        "lower_holm": 0.9327
+       }
+      }
+     },
+     "yaml": {
+      "m": 1,
+      "rules": {
+       "arbiter/supply.unpinned-action": {
+        "k": 690,
+        "n": 690,
+        "p": 7.45584e-10,
+        "pass_unadjusted": true,
+        "p_holm": 7.45584e-10,
+        "pass_holm": true,
+        "p_bh": 7.45584e-10,
+        "pass_bh": true,
+        "p_by": 7.45584e-10,
+        "pass_by": true,
+        "lower_unadjusted": 0.9947,
+        "lower_bonferroni": 0.9947,
+        "lower_holm": 0.9947
+       }
+      }
+     }
+    }
+   },
+   "offline_lower": {
+    "bar": 0.99,
+    "m": 14,
+    "overall": {
+     "arbiter/assurance.blanket-suppression": {
+      "k": 445,
+      "n": 448,
+      "p": 0.344418,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.9806,
+      "lower_bonferroni": 0.9728,
+      "lower_holm": 0.973
+     },
+     "arbiter/java.command-injection": {
+      "k": 571,
+      "n": 874,
+      "p": 1.0,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.6207,
+      "lower_bonferroni": 0.6049,
+      "lower_holm": 0.6118
+     },
+     "arbiter/java.sql-string-built": {
+      "k": 2492,
+      "n": 3632,
+      "p": 1.0,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.6707,
+      "lower_bonferroni": 0.6633,
+      "lower_holm": 0.6673
+     },
+     "arbiter/java.weak-random-for-secret": {
+      "k": 218,
+      "n": 219,
+      "p": 0.355549,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.9748,
+      "lower_bonferroni": 0.9615,
+      "lower_holm": 0.9622
+     },
+     "arbiter/java.xss-unescaped-html": {
+      "k": 382,
+      "n": 435,
+      "p": 1.0,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.8437,
+      "lower_bonferroni": 0.8261,
+      "lower_holm": 0.8324
+     },
+     "arbiter/python.code-injection": {
+      "k": 22,
+      "n": 34,
+      "p": 1.0,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.4649,
+      "lower_bonferroni": 0.3853,
+      "lower_holm": 0.4411
+     },
+     "arbiter/python.http-no-timeout": {
+      "k": 45,
+      "n": 47,
+      "p": 0.988314,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.8546,
+      "lower_bonferroni": 0.7952,
+      "lower_holm": 0.8046
+     },
+     "arbiter/python.insecure-random-for-secret": {
+      "k": 99,
+      "n": 101,
+      "p": 0.918778,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.9303,
+      "lower_bonferroni": 0.9,
+      "lower_holm": 0.9027
+     },
+     "arbiter/python.request-body-unbounded": {
+      "k": 28,
+      "n": 33,
+      "p": 0.999999,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.681,
+      "lower_bonferroni": 0.5973,
+      "lower_holm": 0.6173
+     },
+     "arbiter/python.sql-injection": {
+      "k": 28,
+      "n": 251,
+      "p": 1.0,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.0754,
+      "lower_bonferroni": 0.0614,
+      "lower_holm": 0.0653
+     },
+     "arbiter/python.unsafe-deserialization": {
+      "k": 18,
+      "n": 33,
+      "p": 1.0,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.3635,
+      "lower_bonferroni": 0.2892,
+      "lower_holm": 0.3635
+     },
+     "arbiter/python.weak-password-hash": {
+      "k": 74,
+      "n": 77,
+      "p": 0.992415,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.8903,
+      "lower_bonferroni": 0.8494,
+      "lower_holm": 0.8576
+     },
+     "arbiter/supply.unpinned-action": {
+      "k": 690,
+      "n": 690,
+      "p": 0.000973384,
+      "pass_unadjusted": true,
+      "p_holm": 0.0136274,
+      "pass_holm": true,
+      "p_bh": 0.0136274,
+      "pass_bh": true,
+      "p_by": 0.0443103,
+      "pass_by": false,
+      "lower_unadjusted": 0.9947,
+      "lower_bonferroni": 0.9909,
+      "lower_holm": 0.9909
+     },
+     "arbiter/typescript.fetch-no-timeout": {
+      "k": 145,
+      "n": 149,
+      "p": 0.982472,
+      "pass_unadjusted": false,
+      "p_holm": 1.0,
+      "pass_holm": false,
+      "p_bh": 1.0,
+      "pass_bh": false,
+      "p_by": 1.0,
+      "pass_by": false,
+      "lower_unadjusted": 0.9327,
+      "lower_bonferroni": 0.9091,
+      "lower_holm": 0.9119
+     }
+    },
+    "languages": {
+     "go": {
+      "m": 1,
+      "rules": {
+       "arbiter/assurance.blanket-suppression": {
+        "k": 445,
+        "n": 448,
+        "p": 0.344418,
+        "pass_unadjusted": false,
+        "p_holm": 0.344418,
+        "pass_holm": false,
+        "p_bh": 0.344418,
+        "pass_bh": false,
+        "p_by": 0.344418,
+        "pass_by": false,
+        "lower_unadjusted": 0.9806,
+        "lower_bonferroni": 0.9806,
+        "lower_holm": 0.9806
+       }
+      }
+     },
+     "java": {
+      "m": 4,
+      "rules": {
+       "arbiter/java.command-injection": {
+        "k": 571,
+        "n": 874,
+        "p": 1.0,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.6207,
+        "lower_bonferroni": 0.6118,
+        "lower_holm": 0.6161
+       },
+       "arbiter/java.sql-string-built": {
+        "k": 2492,
+        "n": 3632,
+        "p": 1.0,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.6707,
+        "lower_bonferroni": 0.6665,
+        "lower_holm": 0.6707
+       },
+       "arbiter/java.weak-random-for-secret": {
+        "k": 218,
+        "n": 219,
+        "p": 0.355549,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.9748,
+        "lower_bonferroni": 0.9677,
+        "lower_holm": 0.9677
+       },
+       "arbiter/java.xss-unescaped-html": {
+        "k": 382,
+        "n": 435,
+        "p": 1.0,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.8437,
+        "lower_bonferroni": 0.8339,
+        "lower_holm": 0.8358
+       }
+      }
+     },
+     "javascript": {
+      "m": 2,
+      "rules": {
+       "arbiter/assurance.blanket-suppression": {
+        "k": 445,
+        "n": 448,
+        "p": 0.344418,
+        "pass_unadjusted": false,
+        "p_holm": 0.688836,
+        "pass_holm": false,
+        "p_bh": 0.688836,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.9806,
+        "lower_bonferroni": 0.9784,
+        "lower_holm": 0.9784
+       },
+       "arbiter/typescript.fetch-no-timeout": {
+        "k": 145,
+        "n": 149,
+        "p": 0.982472,
+        "pass_unadjusted": false,
+        "p_holm": 0.982472,
+        "pass_holm": false,
+        "p_bh": 0.982472,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.9327,
+        "lower_bonferroni": 0.9261,
+        "lower_holm": 0.9327
+       }
+      }
+     },
+     "python": {
+      "m": 8,
+      "rules": {
+       "arbiter/assurance.blanket-suppression": {
+        "k": 445,
+        "n": 448,
+        "p": 0.344418,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.9806,
+        "lower_bonferroni": 0.9744,
+        "lower_holm": 0.9744
+       },
+       "arbiter/python.code-injection": {
+        "k": 22,
+        "n": 34,
+        "p": 1.0,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.4649,
+        "lower_bonferroni": 0.4,
+        "lower_holm": 0.4411
+       },
+       "arbiter/python.http-no-timeout": {
+        "k": 45,
+        "n": 47,
+        "p": 0.988314,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.8546,
+        "lower_bonferroni": 0.8071,
+        "lower_holm": 0.8133
+       },
+       "arbiter/python.insecure-random-for-secret": {
+        "k": 99,
+        "n": 101,
+        "p": 0.918778,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.9303,
+        "lower_bonferroni": 0.9062,
+        "lower_holm": 0.9076
+       },
+       "arbiter/python.request-body-unbounded": {
+        "k": 28,
+        "n": 33,
+        "p": 0.999999,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.681,
+        "lower_bonferroni": 0.6133,
+        "lower_holm": 0.6343
+       },
+       "arbiter/python.sql-injection": {
+        "k": 28,
+        "n": 251,
+        "p": 1.0,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.0754,
+        "lower_bonferroni": 0.0639,
+        "lower_holm": 0.0688
+       },
+       "arbiter/python.unsafe-deserialization": {
+        "k": 18,
+        "n": 33,
+        "p": 1.0,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.3635,
+        "lower_bonferroni": 0.3026,
+        "lower_holm": 0.3635
+       },
+       "arbiter/python.weak-password-hash": {
+        "k": 74,
+        "n": 77,
+        "p": 0.992415,
+        "pass_unadjusted": false,
+        "p_holm": 1.0,
+        "pass_holm": false,
+        "p_bh": 1.0,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.8903,
+        "lower_bonferroni": 0.8576,
+        "lower_holm": 0.8646
+       }
+      }
+     },
+     "typescript": {
+      "m": 2,
+      "rules": {
+       "arbiter/assurance.blanket-suppression": {
+        "k": 445,
+        "n": 448,
+        "p": 0.344418,
+        "pass_unadjusted": false,
+        "p_holm": 0.688836,
+        "pass_holm": false,
+        "p_bh": 0.688836,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.9806,
+        "lower_bonferroni": 0.9784,
+        "lower_holm": 0.9784
+       },
+       "arbiter/typescript.fetch-no-timeout": {
+        "k": 145,
+        "n": 149,
+        "p": 0.982472,
+        "pass_unadjusted": false,
+        "p_holm": 0.982472,
+        "pass_holm": false,
+        "p_bh": 0.982472,
+        "pass_bh": false,
+        "p_by": 1.0,
+        "pass_by": false,
+        "lower_unadjusted": 0.9327,
+        "lower_bonferroni": 0.9261,
+        "lower_holm": 0.9327
+       }
+      }
+     },
+     "yaml": {
+      "m": 1,
+      "rules": {
+       "arbiter/supply.unpinned-action": {
+        "k": 690,
+        "n": 690,
+        "p": 0.000973384,
+        "pass_unadjusted": true,
+        "p_holm": 0.000973384,
+        "pass_holm": true,
+        "p_bh": 0.000973384,
+        "pass_bh": true,
+        "p_by": 0.000973384,
+        "pass_by": true,
+        "lower_unadjusted": 0.9947,
+        "lower_bonferroni": 0.9947,
+        "lower_holm": 0.9947
+       }
+      }
+     }
+    }
+   }
+  },
+  "held_out": {
+   "rule_lower": {
+    "m": 14,
+    "overall": {
+     "arbiter/assurance.blanket-suppression": {
+      "k": 315,
+      "n": 318,
+      "p": 0.0134303,
+      "p_holm": 0.161163,
+      "p_bh": 0.0626745,
+      "pass_unadjusted": true,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/java.command-injection": {
+      "k": 571,
+      "n": 873,
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/java.sql-string-built": {
+      "k": 2492,
+      "n": 3632,
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/java.weak-random-for-secret": {
+      "k": 218,
+      "n": 219,
+      "p": 0.00985393,
+      "p_holm": 0.128101,
+      "p_bh": 0.0626745,
+      "pass_unadjusted": true,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/java.xss-unescaped-html": {
+      "k": 382,
+      "n": 435,
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.code-injection": {
+      "k": 20,
+      "n": 31,
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.http-no-timeout": {
+      "k": 43,
+      "n": 44,
+      "p": 0.618045,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.insecure-random-for-secret": {
+      "k": 99,
+      "n": 101,
+      "p": 0.41302,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.request-body-unbounded": {
+      "k": 26,
+      "n": 31,
+      "p": 0.999719,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.sql-injection": {
+      "k": 28,
+      "n": 247,
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.unsafe-deserialization": {
+      "k": 18,
+      "n": 30,
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.weak-password-hash": {
+      "k": 73,
+      "n": 76,
+      "p": 0.805652,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/supply.unpinned-action": {
+      "k": 524,
+      "n": 524,
+      "p": 1.17055e-07,
+      "p_holm": 1.63877e-06,
+      "p_bh": 1.63877e-06,
+      "pass_unadjusted": true,
+      "pass_holm": true,
+      "pass_bh": true
+     },
+     "arbiter/typescript.fetch-no-timeout": {
+      "k": 139,
+      "n": 143,
+      "p": 0.571525,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     }
+    },
+    "survive": {
+     "unadjusted": [
+      "arbiter/assurance.blanket-suppression",
+      "arbiter/java.weak-random-for-secret",
+      "arbiter/supply.unpinned-action"
+     ],
+     "holm": [
+      "arbiter/supply.unpinned-action"
+     ],
+     "bh": [
+      "arbiter/supply.unpinned-action"
+     ],
+     "by": [
+      "arbiter/supply.unpinned-action"
+     ]
+    }
+   },
+   "offline_lower": {
+    "m": 14,
+    "overall": {
+     "arbiter/assurance.blanket-suppression": {
+      "k": 315,
+      "n": 318,
+      "p": 0.606774,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/java.command-injection": {
+      "k": 571,
+      "n": 873,
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/java.sql-string-built": {
+      "k": 2492,
+      "n": 3632,
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/java.weak-random-for-secret": {
+      "k": 218,
+      "n": 219,
+      "p": 0.355549,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/java.xss-unescaped-html": {
+      "k": 382,
+      "n": 435,
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.code-injection": {
+      "k": 20,
+      "n": 31,
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.http-no-timeout": {
+      "k": 43,
+      "n": 44,
+      "p": 0.928217,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.insecure-random-for-secret": {
+      "k": 99,
+      "n": 101,
+      "p": 0.918778,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.request-body-unbounded": {
+      "k": 26,
+      "n": 31,
+      "p": 0.999999,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.sql-injection": {
+      "k": 28,
+      "n": 247,
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.unsafe-deserialization": {
+      "k": 18,
+      "n": 30,
+      "p": 1.0,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/python.weak-password-hash": {
+      "k": 73,
+      "n": 76,
+      "p": 0.992752,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/supply.unpinned-action": {
+      "k": 524,
+      "n": 524,
+      "p": 0.00516228,
+      "p_holm": 0.072272,
+      "p_bh": 0.072272,
+      "pass_unadjusted": true,
+      "pass_holm": false,
+      "pass_bh": false
+     },
+     "arbiter/typescript.fetch-no-timeout": {
+      "k": 139,
+      "n": 143,
+      "p": 0.985065,
+      "p_holm": 1.0,
+      "p_bh": 1.0,
+      "pass_unadjusted": false,
+      "pass_holm": false,
+      "pass_bh": false
+     }
+    },
+    "survive": {
+     "unadjusted": [
+      "arbiter/supply.unpinned-action"
+     ],
+     "holm": [],
+     "bh": [],
+     "by": []
+    }
+   }
+  },
+  "language_claims": {
+   "yaml": {
+    "now": {
+     "claim": true,
+     "claim_lower": 0.9926,
+     "rules_admitted": 1
+    },
+    "holm": {
+     "claim": true,
+     "claim_lower": 0.9926,
+     "rules_admitted": 1
+    },
+    "bh": {
+     "claim": true,
+     "claim_lower": 0.9926,
+     "rules_admitted": 1
+    },
+    "by": {
+     "claim": true,
+     "claim_lower": 0.9926,
+     "rules_admitted": 1
+    }
+   }
+  }
  }
 }

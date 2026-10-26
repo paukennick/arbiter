@@ -43,6 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from arbiter import precision as P  # noqa: E402
+from arbiter import multiplicity as M  # noqa: E402
 
 LEDGER = ROOT / "tools" / "gold" / "precision.json"
 PACKAGED = ROOT / "src" / "arbiter" / "packs" / "precision.json"
@@ -592,7 +593,13 @@ def build(records: list[dict], previous: dict | None, today: str, verified: set[
                            "admitted_reason": "0 label(s)", "updated": old.get("updated", today),
                            "snapshot_counts": {}}
     return {"_about": ABOUT, "version": 1, "bar": bar, "generated": today,
-            "rules": dict(sorted(rules.items())), "tier": tier_claim(rules, bar, verified)}
+            "rules": dict(sorted(rules.items())), "tier": tier_claim(rules, bar, verified),
+            "multiplicity": multiplicity(rules, bar, verified)}
+
+
+def multiplicity(rules: dict[str, dict], bar: dict, verified: set[str]) -> dict:
+    """The `multiplicity` key (ARB-171): Holm / BH beside admission."""
+    return M.family_block(rules, bar, lambda rr: language_claims(rr, bar, verified))
 
 
 def declared_verified(config: dict | None = None) -> set[str]:
@@ -661,6 +668,8 @@ def main(argv: list[str] | None = None) -> int:
         ledger = P.load_ledger(args.ledger)
         bar = {**P.DEFAULT_BAR, **(ledger.get("bar") or {})}
         print(render_languages(language_claims(ledger.get("rules") or {}, bar, declared_verified()), bar))
+        print()
+        print(M.render(multiplicity(ledger.get("rules") or {}, bar, declared_verified())))
         return 0
     if args.cmd == "check":
         same = LEDGER.read_bytes() == PACKAGED.read_bytes()
