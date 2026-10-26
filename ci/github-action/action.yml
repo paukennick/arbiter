@@ -25,6 +25,14 @@ inputs:
     description: The arbiter.yaml to trust in full (ARB-148); a path that does not exist means the defaults
     required: false
     default: "arbiter.yaml"
+  post-review:
+    description: Post trusted findings on the pull request's changed lines as one review, updated on each push (ARB-173); needs permissions pull-requests write
+    required: false
+    default: "false"
+  token:
+    description: Token the review is posted with; composite actions do not receive one automatically
+    required: false
+    default: ${{ github.token }}
 outputs:
   report:
     description: Path to report.json
@@ -36,11 +44,14 @@ runs:
       run: pip install --quiet ${{ github.action_path }}/../..
     - id: run
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.post-review == 'true' && inputs.token || '' }}
       run: |
         set +e
         ARGS="--profile ${{ inputs.profile }} --out arbiter-out --format json,sarif,markdown --github"
         if [ -n "${{ inputs.baseline }}" ]; then ARGS="$ARGS --baseline ${{ inputs.baseline }}"; fi
         if [ -n "${{ inputs.config }}" ]; then ARGS="$ARGS --config ${{ inputs.config }}"; fi
+        if [ "${{ inputs.post-review }}" = "true" ]; then ARGS="$ARGS --post-review"; fi
         if [ -n "${{ inputs.system }}" ]; then
           arbiter gate --system "${{ inputs.system }}" $ARGS
         else

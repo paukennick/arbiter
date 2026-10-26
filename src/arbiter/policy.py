@@ -80,6 +80,13 @@ DEFAULTS: dict[str, Any] = {
     # gate reads `gate.tier_mode`, whatever this says. report.json always
     # holds every finding.
     "report": {"show": "all"},
+    # Pull-request review comments (`arbiter gate --post-review`, ARB-173,
+    # docs/pr-review.md). `min_tier`: `advisory` posts rules at the ledger's
+    # advisory bar (or, while the ledger has none, high-severity
+    # high-confidence findings); `verified` posts ledger-admitted rules only.
+    # `max_comments` caps inline comments; the rest go in the summary.
+    # `suggestions` turns the mechanical ```suggestion blocks on or off.
+    "review": {"min_tier": "advisory", "max_comments": 20, "suggestions": True},
     # Precision tiers (precision.py, docs/precision.md). `ledger: null` reads
     # the ledger shipped with Arbiter; `verified_rules` declares more rules
     # verified (globs), which still need the ledger to admit them.
@@ -161,6 +168,7 @@ def load_config(path: str | None, repo_root: str | None = None) -> dict:
     merged = _merge(DEFAULTS, data)
     check_gate_config(merged, str(candidate))
     check_report_config(merged, str(candidate))
+    check_review_config(merged, str(candidate))
     check_suppress_config(merged, str(candidate))
     resolve_ledger_path(merged, candidate)
     merged["config_source"] = {"path": str(candidate), "explicit": explicit, "ignored": ignored}
@@ -379,6 +387,24 @@ def check_report_config(config: dict, where: str = "config") -> None:
     show = show_mode(config)
     if show not in SHOW_MODES:
         raise RuntimeError(f"{where}: report.show is one of {SHOW_MODES}, got {show!r}")
+
+
+REVIEW_MIN_TIERS = ("verified", "advisory")
+
+
+def check_review_config(config: dict, where: str = "config") -> None:
+    """`review` (ARB-173): a misspelt tier must not quietly post more or less."""
+    review = config.get("review") or {}
+    if not isinstance(review, dict):
+        raise RuntimeError(f"{where}: review must be a mapping")
+    if review.get("min_tier") not in REVIEW_MIN_TIERS:
+        raise RuntimeError(f"{where}: review.min_tier is one of {REVIEW_MIN_TIERS}, "
+                           f"got {review.get('min_tier')!r}")
+    cap = review.get("max_comments")
+    if isinstance(cap, bool) or not isinstance(cap, int) or not 0 <= cap <= 100:
+        raise RuntimeError(f"{where}: review.max_comments is a whole number from 0 to 100, got {cap!r}")
+    if not isinstance(review.get("suggestions"), bool):
+        raise RuntimeError(f"{where}: review.suggestions is true or false")
 
 
 def show_mode(config: dict | None) -> str:

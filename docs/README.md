@@ -14,6 +14,7 @@ first scan, and gating. Then pick what you need below.
 | [configuration.md](configuration.md) | Every `arbiter.yaml` key: profiles, gating, precision tiers, model verification, suppressions, house rules, scoring |
 | [probes.md](probes.md) | Every check, what it needs, what it catches; language packs and `taint:` data flow |
 | [ci.md](ci.md) | GitHub Actions, GitLab, partial scans with `--changed`, Arbiter's own CI |
+| [pr-review.md](pr-review.md) | Trusted findings as pull-request review comments, suggested fixes, reactions as labels |
 | [systems.md](systems.md) | Multi-repository systems and seam checks |
 | [compliance.md](compliance.md) | The ten control packs and coverage states |
 | [cwe-top25.md](cwe-top25.md) | The 2024 CWE Top 25, per language: assessed, gap, out of reach, not applicable |

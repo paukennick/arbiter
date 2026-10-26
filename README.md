@@ -168,6 +168,10 @@ requests, a full scan nightly) is in `examples/pull-request-gate/`; the
 composite action, SARIF upload, annotations and GitLab are in
 [docs/ci.md](docs/ci.md). `arbiter gate . --changed origin/main` reads only
 what a branch changed and records whole-tree checks as not assessed.
+`arbiter gate . --post-review` posts the trusted findings on the lines a pull
+request changed as one GitHub review, updated in place on each push, with
+mechanical fixes as suggestion blocks; `arbiter review-feedback collect`
+reads the 👍/👎 reactions back as labels ([docs/pr-review.md](docs/pr-review.md)).
 
 ## Configuring
 
@@ -210,6 +214,7 @@ or a model. `assisted` is `ci` plus an optional model check of each finding
 | [docs/probes.md](docs/probes.md) | every check, what it needs and what it catches |
 | [docs/precision.md](docs/precision.md) | precision tiers, the ledger, the model verification pass, current numbers |
 | [docs/ci.md](docs/ci.md) | GitHub Actions, GitLab, partial scans |
+| [docs/pr-review.md](docs/pr-review.md) | review comments on pull requests, suggested fixes, reaction feedback |
 
 ## Principles
 

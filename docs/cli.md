@@ -35,6 +35,7 @@ every flag of a command; this page explains them and shows what to type.
 | `ab` | run two arms over the same target and compare ([ab-testing.md](ab-testing.md)) |
 | `review` | adjudicate a batch of findings in one pass |
 | `feedback` | adjudicate one or more findings by id |
+| `review-feedback` | read 👍/👎 reactions on Arbiter's pull-request comments back as labels ([pr-review.md](pr-review.md)) |
 | `learn` | show what calibration has learned |
 | `profile` | learn this repository's size distributions so adaptive thresholds can use them ([calibration.md](calibration.md)) |
 | `verify` | check a report's claims against their basis (no model involved) |
@@ -91,6 +92,13 @@ Flags shared by `scan` and `gate`:
 | `--advisory` | show every tier. A no-op under the default, which already does; kept for scripts written when the verified tier was the default (ARB-100), and overrides `report.show: verified` for one run. Cannot be combined with `--verified-only` |
 | `--no-history` | do not append to `<out>/history.jsonl` |
 | `--out DIR`, `--format LIST` | output directory (default `arbiter-out`) and formats (default `json,console`) |
+
+`gate` also takes `--post-review`: post the trusted findings on the pull
+request's changed lines as one GitHub review, updated in place on each push
+([pr-review.md](pr-review.md)). It needs `GITHUB_TOKEN` with `pull-requests:
+write`; without one it prints what it would post, from `git diff
+<base>...HEAD` where the base is `--review-base REF`, else `--changed`, else
+`origin/$GITHUB_BASE_REF`. It never changes the gate's exit code.
 
 `scan` also takes `--limit N` (findings shown on the console, default 40),
 `--open` / `--no-open` (open the HTML report when done; on by default at a
@@ -224,6 +232,17 @@ Verdicts are attributed to `--reviewer` (default: `git config user.email`).
 then marks the verdicts as a batch import; `review --interactive` needs a
 terminal. Why this ledger is the only input to calibration, and
 how the batch is chosen, is covered in [calibration.md](calibration.md).
+
+```bash
+arbiter review-feedback collect --repo owner/name --pr 123   # reactions -> .arbiter/labels/human-pr.jsonl
+```
+
+`arbiter review-feedback collect` reads the 👍/👎 reactions on Arbiter's
+inline review comments (`--post-review`) and merges one label per person per
+finding into `--out` (default `.arbiter/labels/human-pr.jsonl`), labeller
+`human:pr-reaction`, the reactor's login hashed. It needs `GITHUB_TOKEN`;
+`--api` points it at GitHub Enterprise. The precision ledger build drops
+these labels until it is decided how they count ([pr-review.md](pr-review.md#feedback-reactions-become-labels)).
 
 These verdicts calibrate *confidence* in your repository. They are not the
 labels behind the precision ledger, which are built separately

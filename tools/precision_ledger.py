@@ -109,6 +109,20 @@ def drop_calibration(records: list[dict]) -> tuple[list[dict], int]:
     return keep, len(records) - len(keep)
 
 
+HUMAN_PR_LABELLER = "human:pr-reaction"
+
+
+def drop_pr_reactions(records: list[dict]) -> tuple[list[dict], int]:
+    """Reactions on pull-request comments (`arbiter review-feedback collect`,
+    ARB-173) answer "was this useful", from whoever happened to react, on
+    findings already filtered to the trusted ones. They are human spot-check
+    evidence kept apart until it is decided how they may count; until then
+    they never reach admission, wherever the file is put."""
+    keep = [r for r in records if r.get("labeller") != HUMAN_PR_LABELLER
+            and r.get("provenance") != HUMAN_PR_LABELLER]
+    return keep, len(records) - len(keep)
+
+
 _MODEL_LABELLER = re.compile(r":prosecutor\+defender(?:\+adjudicator)?/(v\d+)$")
 # The panel (tools/panel/panel.py, ARB-122): one record per model,
 # `<seat>-<model>:panel/<version>`.
@@ -672,6 +686,10 @@ def main(argv: list[str] | None = None) -> int:
         records += (read_jsonl(p) if p.name.endswith((".jsonl", ".jsonl.gz"))
                     else read_sheet(p, args.sheet_batch, args.sheet_source, args.sheet_held_out))
     records, skipped = drop_calibration(records)
+    records, reactions = drop_pr_reactions(records)
+    if reactions:
+        print(f"left out {reactions} pull-request reaction labels (human spot checks, not "
+              f"admission evidence; docs/pr-review.md)", file=sys.stderr)
     if skipped:
         print(f"left out {skipped} labeller-calibration records (they measure the labellers, not the rules)",
               file=sys.stderr)

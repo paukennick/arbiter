@@ -7,6 +7,23 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-173 | `arbiter gate --post-review` posts trusted findings as GitHub
+  pull-request review comments, only on lines the pull request added, as one
+  review per push: the summary comment is edited in place, inline comments are
+  matched by fingerprint and edited rather than reposted, and a comment whose
+  finding went away is marked as such. A finding is posted only if its rule is
+  ledger-admitted, at the advisory bar once the ledger has one, or (while it
+  has none) high severity and high confidence and not measured below 0.85.
+  `review.min_tier` / `max_comments` / `suggestions` in `arbiter.yaml`. A fix
+  registry adds ```suggestion blocks, starting with `timeout=30` for
+  `python.http-no-timeout`, proved in scope by re-parsing the file. No token
+  gives a dry run; a fork, or a refused write, goes to the job summary; API
+  errors never change the exit code. `arbiter review-feedback collect` reads
+  👍/👎 reactions into `.arbiter/labels/human-pr.jsonl` (labeller
+  `human:pr-reaction`, login hashed), and `tools/precision_ledger.py` drops
+  them from admission. The composite action gains `post-review` and `token`
+  inputs and a README. docs/pr-review.md.
+
 - ARB-163 | Breadth r7 Python labels: 1,216 held-out findings labelled with v3
   prompts ($47.62 plus the 11 retried after FAIL-200), ledger rebuilt with every
   label file. Only Python rules moved. Closest: `http-no-timeout` 352/5 (lower

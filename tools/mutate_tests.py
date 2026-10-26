@@ -188,6 +188,33 @@ MUTATIONS = [
         new='            if isinstance(entry, dict) and isinstance(entry.get("version"), str):',
         test="tests/test_tool_version_memo.py::test_touching_the_executable_invalidates_its_entry",
     ),
+    Mutation(
+        name="review-comments-on-untouched-lines",
+        defect="The review stops checking that a finding's line was added by the pull "
+               "request, so it comments on code the author never touched (ARB-173).",
+        path="src/arbiter/pr_review.py",
+        old="        if not added or line not in added:",
+        new="        if added is None:",
+        test="tests/test_pr_review.py::test_only_changed_lines_are_planned",
+    ),
+    Mutation(
+        name="review-reposts-existing-comments",
+        defect="Each push posts every finding again instead of editing the comment "
+               "already there, so a pull request fills with duplicates (ARB-173).",
+        path="src/arbiter/pr_review.py",
+        old="        prior = existing.get(c.finding.id)",
+        new="        prior = None",
+        test="tests/test_pr_review.py::test_second_run_edits_instead_of_duplicating",
+    ),
+    Mutation(
+        name="reaction-labels-reach-admission",
+        defect="Pull-request reaction labels are counted by the ledger build, so a few "
+               "thumbs-up could admit a rule before anyone decided they may (ARB-173).",
+        path="tools/precision_ledger.py",
+        old="    records, reactions = drop_pr_reactions(records)",
+        new="    reactions = 0",
+        test="tests/test_pr_review.py::test_reaction_labels_never_reach_admission",
+    ),
 ]
 
 

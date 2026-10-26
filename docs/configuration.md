@@ -55,6 +55,7 @@ Whatever the ledger declares, its `bar` is never read below Arbiter's
 - [Model verification](#model-verification)
 - [Gating](#gating)
 - [Precision tiers](#precision-tiers)
+- [Pull-request review comments](#pull-request-review-comments)
 - [Scoring](#scoring)
 - [Choosing probes](#choosing-probes)
 - [Suppressions](#suppressions)
@@ -254,6 +255,24 @@ plus a top-level `tiers` block (`shown`, `counts`, `shown_count`,
 `not_shown`) recording which view was in force. Baselines and `new` /
 `existing` status are computed over the full set
 ([precision.md](precision.md#tiers)).
+
+## Pull-request review comments
+
+```yaml
+review:
+  min_tier: advisory      # advisory (default) | verified
+  max_comments: 20        # 0-100
+  suggestions: true
+```
+
+| Key | Default | Effect |
+|---|---|---|
+| `min_tier` | `advisory` | which findings `arbiter gate --post-review` may post. `verified`: rules the precision ledger admits. `advisory`: also rules at the ledger's advisory bar, or, while the ledger has none, high-severity high-confidence findings whose rule the ledger has not measured below 0.85 |
+| `max_comments` | `20` | inline comments per run; the rest are listed in the summary comment |
+| `suggestions` | `true` | post mechanical fixes as ```` ```suggestion ```` blocks |
+
+Any other value is an error. Only findings on lines the pull request changed
+are ever posted, whatever these say ([pr-review.md](pr-review.md)).
 
 ## Scoring
 

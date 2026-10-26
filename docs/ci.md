@@ -52,6 +52,9 @@ Action inputs (`ci/github-action/action.yml`):
 | `profile` | `ci` | capability profile |
 | `baseline` | `""` | baseline JSON for new/existing labelling |
 | `fail` | `"true"` | `"false"` makes the step exit 0 whatever the gate returned |
+| `config` | `arbiter.yaml` | the config to trust in full |
+| `post-review` | `"false"` | `"true"` posts trusted findings on changed lines as a pull-request review ([pr-review.md](pr-review.md)); needs `permissions: pull-requests: write` |
+| `token` | `${{ github.token }}` | the token `post-review` writes with |
 
 The output `report` is the path to `report.json`. Three things the action does
 not do: it installs Arbiter without extras, so the external analyzers and the

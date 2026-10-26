@@ -1904,3 +1904,32 @@ Next families by defect count: unhandled-input-error, path-traversal, swallowed-
 2026-10-26 ARB-110 second batch: five swallowed-exception rules (Java x2, Ruby x2, TypeScript x1), dev-corpus code recall 37 -> 41 of 117, 0 new false alarms, real-repo guard and held-out aggregate unchanged; packs 182 rules (269 in all). Remaining: path-traversal (optional-root shape), ssrf, unbounded-memory, unhandled-input-error. Model-labelled conformance on development data only; no 99% claim.
 
 2026-10-26 ARB-110 third batch: path-confinement-optional (py/ts/ruby/java) and ssrf-check-then-connect (py/ts/java), dev-corpus code recall 41 -> 48 of 117, 0 new false alarms, real-repo guard and held-out aggregate unchanged; packs 189 rules (276 in all). Remaining: unbounded-memory, unhandled-input-error, Go symlink path-traversal, Ruby SSRF blocklist gaps. Model-labelled conformance on development data only; no 99% claim.
+
+## 2026-10-26 — Findings as pull-request review comments (ARB-173)
+
+`arbiter gate --post-review` (module `src/arbiter/pr_review.py`) posts
+findings into the pull request where the author is looking. Decisions:
+
+- **Trust is read from the ledger at run time.** The advisory admission is
+  being added on r7-advisory under names not yet settled, so every candidate
+  key is listed in one place (`ADVISORY_ENTRY_KEYS`, `ADVISORY_BAR_KEYS`,
+  `DEFAULT_OFF_KEYS`). Until one exists, the fallback is admitted rules plus
+  high-severity, high-confidence findings, except rules the ledger measured on
+  30 or more labels below 0.85. On today's ledger that keeps 13 rules off
+  pull requests, `python.sql-injection` (0.078) among them.
+  `src/arbiter/precision.py` was deliberately not touched, to stay clear of
+  r7-advisory.
+- **Changed lines are checked twice.** The line must be a `+` line in the
+  diff, and the checked-out line must read exactly what the diff added,
+  because a `pull_request` checkout is the merge commit and its line numbers
+  can differ from the head the review attaches to.
+- **Posting never decides the gate.** The exit code is computed before
+  posting. Every error is a log line; a 422 retries the comments one at a
+  time.
+- **Reaction labels are kept out of admission** until Nick decides how they
+  count: the ledger build drops `human:pr-reaction` records wherever they
+  sit, and a test and a mutation hold that.
+- **Not done:** resolving threads (needs GraphQL), posting from other
+  repositories of a `--system` scan, and posting from the API or MCP
+  surfaces.
+

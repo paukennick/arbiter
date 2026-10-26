@@ -161,6 +161,15 @@ def _add_scan_commands(sub) -> None:
     gt.add_argument("--out", default="arbiter-out", help="output directory")
     gt.add_argument("--format", default="json,console",
                     help="json,sarif,html,markdown,console,pr-comment,annotations")
+    gt.add_argument("--post-review", action="store_true",
+                    help="post trusted findings on the pull request's changed lines as one "
+                         "GitHub review, updated in place on each push (docs/pr-review.md). "
+                         "Needs GITHUB_TOKEN with pull-requests: write; without one it prints "
+                         "what it would post. Never changes the gate's exit code")
+    gt.add_argument("--review-base", metavar="REF", default=None,
+                    help="with --post-review and no pull request from the API: diff "
+                         "REF...HEAD to find the changed lines (default: --changed, then "
+                         "origin/$GITHUB_BASE_REF)")
 
 
 def _add_report_commands(sub) -> None:
@@ -260,6 +269,17 @@ def _add_report_commands(sub) -> None:
                     help="walk the findings in the terminal, one keypress each")
     rv.add_argument("--repo", action="append", default=[],
                     help="id=path, so the review can show code context; repeatable")
+
+    rf = sub.add_parser("review-feedback",
+                        help="read reactions on Arbiter's pull-request comments back as labels")
+    rf_sub = rf.add_subparsers(dest="rf_cmd", required=True)
+    rc = rf_sub.add_parser("collect", help="turn thumbs-up/down reactions into human labels")
+    rc.add_argument("--repo", required=True, metavar="OWNER/NAME", help="the repository")
+    rc.add_argument("--pr", required=True, type=int, metavar="N", help="the pull request number")
+    rc.add_argument("--out", default=".arbiter/labels/human-pr.jsonl",
+                    help="label file to merge into (default .arbiter/labels/human-pr.jsonl); "
+                         "the precision ledger never reads these labels")
+    rc.add_argument("--api", default="https://api.github.com", help="GitHub API base URL")
 
     ct = sub.add_parser("controls",
                         help="control coverage per framework, including what was NOT assessed")
@@ -581,8 +601,52 @@ def cmd_scan(args, gate_mode: bool = False) -> int:
         except Exception as exc:  # noqa: BLE001 - a browser that will not open must never fail the scan
             print(f"  (could not open the report automatically: {exc})")
 
-    if gate_mode and not (report.gate or {}).get("passed"):
-        return EXIT_GATE_FAIL
+    code = EXIT_GATE_FAIL if gate_mode and not (report.gate or {}).get("passed") else EXIT_OK
+    if gate_mode and getattr(args, "post_review", False):
+        # After the verdict: nothing the review does can change `code`.
+        _post_review(args, report, config, root)
+    return code
+
+
+def _post_review(args, report: Report, config: dict, root: str | None) -> None:
+    """`--post-review` (ARB-173). Every failure is a log line, never an exit code."""
+    from . import pr_review as pr
+    try:
+        ctx = pr.context_from_env()
+        token = pr.token_from_env()
+        gh = pr.GitHubClient(token) if token else None
+        workspace = root if root and not root.startswith("http") else "."
+        prefix = pr.git_prefix(workspace)
+        changed, note = None, ""
+        if gh is None or not ctx.pr:
+            base = (getattr(args, "review_base", None) or getattr(args, "changed", None)
+                    or (f"origin/{ctx.base_ref}" if ctx.base_ref else None))
+            if base:
+                changed, note = pr.git_diff_added(workspace, base)
+                changed = changed if not note else None
+            else:
+                note = "no base to diff against: pass --review-base REF"
+        pr.post_review_safely(report, config, changed=changed, ctx=ctx, client=gh,
+                              workspace=workspace, prefix=prefix, diff_note=note,
+                              step_summary=os.environ.get("GITHUB_STEP_SUMMARY"))
+    except Exception as exc:  # noqa: BLE001 - posting must never fail the gate
+        print(f"  review: not posted ({type(exc).__name__}: {exc}); the gate result is unaffected")
+
+
+def cmd_review_feedback(args) -> int:
+    from . import pr_review as pr
+    token = pr.token_from_env()
+    if not token:
+        print("arbiter: review-feedback collect needs GITHUB_TOKEN (or GH_TOKEN) to read "
+              "reactions", file=sys.stderr)
+        return EXIT_ERROR
+    labels, stats = pr.collect_reactions(pr.GitHubClient(token, args.api), args.repo, args.pr)
+    added, changed = pr.merge_labels(Path(args.out), labels)
+    print(f"  {stats['comments']} Arbiter comment(s), {stats['reactions']} reaction(s) from people; "
+          f"{stats['conflicting']} person/finding pair(s) with both 👍 and 👎 skipped, "
+          f"{stats['ignored']} bot or self reaction(s) ignored")
+    print(f"  {added} new label(s), {changed} changed, written to {args.out} "
+          f"(labeller {pr.HUMAN_LABELLER}; kept out of ledger admission)")
     return EXIT_OK
 
 
@@ -1395,6 +1459,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_profile(args)
         if args.cmd == "review":
             return cmd_review(args)
+        if args.cmd == "review-feedback":
+            return cmd_review_feedback(args)
         if args.cmd == "controls":
             return cmd_controls(args)
         if args.cmd == "explain":

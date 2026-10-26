@@ -3654,6 +3654,45 @@
         "changelog"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-173",
+      "category": "developer-tooling",
+      "title": "Post trusted Arbiter findings as pull-request review comments, with reaction feedback",
+      "description": "arbiter gate --post-review posts ledger-trusted findings on changed lines only as one GitHub review per push (summary comment edited in place, inline comments deduplicated by fingerprint, mechanical suggestion blocks from a fix registry starting with python.http-no-timeout); arbiter review-feedback collect reads thumbs-up/down reactions back as human:pr-reaction labels kept out of ledger admission.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "src/arbiter/pr_review.py",
+        "src/arbiter/cli.py",
+        "src/arbiter/policy.py",
+        "tools/precision_ledger.py",
+        "ci/github-action",
+        "docs",
+        "README.md",
+        "tests"
+      ],
+      "acceptance_criteria": [
+        "comments only on added lines",
+        "only ledger-trusted findings",
+        "second run edits not duplicates",
+        "API errors never fail the gate",
+        "reaction labels never reach admission"
+      ],
+      "validation_required": [
+        "python -m pytest -q",
+        "python tools/mutate_tests.py",
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "docs/pr-review.md",
+        "docs/cli.md",
+        "docs/configuration.md",
+        "ci/github-action/README.md",
+        "CHANGELOG.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": []
     }
   ]
 }
