@@ -1436,3 +1436,277 @@ The thresholds adapt to a repository's shape, not to whether anyone agreed
 with the findings they produced; `docs/proposal-usage-learning.md` argues for
 the latter and remains a proposal, on the grounds that a weak signal nobody
 can calibrate against is how a tool starts grading itself on a curve.
+
+## 2026-10-24 — External conformance scorecard (ARB-120)
+
+**Why.** The 99% program needs evidence from code and labels Arbiter's
+authors did not write. OWASP Benchmark, Juliet and the GHSA fix pairs were
+already fetched and pinned, but they were only used per *finding* (ground-truth
+labels for the precision ledger). Nothing measured recall or safe-case
+false positives on them in the manifest's run-record format.
+
+**Decisions.**
+- **Score per case, not per finding.** Recall and safe-case FPR need a
+  denominator of cases. OWASP's are its `expectedresults` rows, and the
+  OWASP matching is `gold_benchmark.score_recall`'s, with a test holding the
+  two equal. Juliet and the CVE pairs publish no safe-case list, so their
+  units are Arbiter-defined, and the scorecard and docs say so:
+  - Juliet: one case stem, a `bad` unit and a `good*` unit, decided by
+    `benchmarks_gt.juliet_side`.
+  - CVE: the hunks the fix changed ±2 lines, vulnerable side versus fixed
+    side, using the same window on both. `cve_pairs.classify` uses exact
+    changed lines on the vulnerable side. A pure-insertion fix leaves the
+    sink line unchanged and could never match there.
+- **One cluster means case-level intervals.** OWASP and Juliet are single
+  repositories, so their Wilson intervals are stated as case-level only.
+  The CVE pairs (70 repositories) also get the RealVuln pilot's
+  repository-cluster percentile bootstrap (8198df7: 10,000 replicates,
+  seed 0). That code is reimplemented, not shared, until that branch
+  merges.
+- **The manifest and schema are not edited.** Copilot's unmerged 8198df7
+  rewrites both. The run records live in `docs/external-scorecard.json` and
+  a test validates them against the template subschema. `counts` and
+  `metrics` hold exactly the template's keys; everything else sits beside
+  them.
+- **Weak spots are ranked by `0.99 - min(precision lower, recall lower)`,**
+  shown in two lists. With dozens of zero-detection rules tied at 0.99, one
+  list hid the rules that fire but miss the bar.
+
+**What it showed** (Arbiter `f52484f`):
+- No benchmark, CWE or rule meets the 0.99 lower bound on both precision
+  and recall.
+- OWASP in-scope recall is about 0.97, against 0.34 on Juliet and 0.08 on
+  the CVE pairs. OWASP and Juliet were used to measure earlier rule changes
+  (ARB-065), so the OWASP figure is development-exposed, not holdout
+  evidence.
+- Injection rules trade precision for recall on safe cases: Juliet CWE-89
+  FPR 0.486 and CWE-78 FPR 0.457, at about 0.99 recall.
+
+**Holdout consequence.** Once a rule is tuned on these weak spots, OWASP,
+Juliet and the 70 CVE pairs are spent as sealed sets for it. ARB-121's
+frozen GHSA split is the fresh holdout.
+
+**Follow-up.**
+- Extend RealVuln beyond CWE-89 and share one bootstrap once 8198df7 merges.
+- The license and provenance inventory for Juliet and the CVE pairs is
+  still open.
+
+## 2026-10-24 — External real-CVE benchmark from GHSA (ARB-121)
+
+The first measurement of Arbiter against outside code at scale in all five
+languages: 500 reviewed GitHub advisories (100 per language) whose fix is a
+small single-parent GitHub commit, restricted to the CWEs the language pack's
+security rules are tagged with, so that a miss is a miss of a weakness
+Arbiter claims. Criteria, seeded order and the repository split were fixed in
+code and committed (02df982) before anything was scanned; repositories of
+every existing sealed set are excluded, gold development repositories are kept
+in development. The sealed half (188 repositories, `held_out_ghsa_r1`) is
+reported in aggregate only and was used once, for this baseline.
+
+Baseline primary recall is 9.4% on development (26/277) and 8.1% sealed
+(18/223); Python is highest (19.0% / 13.5%), Java and Go lowest. Looser regions
+add little (file level 12.6% / 10.8%): mostly nothing matching fires at all.
+The development misses, per CWE, are the recall work list (Phase 4 of
+docs/accuracy-roadmap.md); the sealed split must stay closed while rules change.
+Labels are patch-derived and not human-adjudicated: these are
+benchmark-conformance figures, not a population claim.
+
+## 2026-10-24 — A panel of models from different companies (ARB-122)
+
+The precision study's model labels came from one vendor's model with two
+prompts, so the ledger's unanimity and κ never saw two independent
+labellers. `tools/panel/` adds a panel: Claude, Codex (OpenAI) and Gemini
+(Google) CLIs on the user's subscriptions, plus Copilot as an optional
+fourth seat. Each labels the same blind packet alone, and each answer is its
+own label record (`<seat>-<model>:panel/v1`).
+
+- **Independence is a vendor property, not a prompt property.** The panel
+  refuses two seats of one vendor. It discards an answer that came from
+  another vendor's model, because Copilot's auto routing moved from
+  Microsoft's `mai-code-1.1-flash` to OpenAI's `gpt-6-luna` within one
+  session. The ledger's κ now pairs the first labeller with the first from
+  another vendor (`kappa_pair`), so two Anthropic labellers no longer count
+  as a pair. Existing ledger numbers did not move: a rebuild is
+  byte-identical.
+- **Tool-off is tested with a canary file, not read off `--help`.**
+  Copilot's empty `--available-tools` left every tool on, and the model read
+  the canary file (FAIL-074). Codex's remaining exec tool fails closed with
+  its code-mode host off, and every answer showing a tool event is refused.
+- **Gemini runs on an API key and sees public code only.** Google ended
+  personal Code Assist logins, so the seat uses an AI Studio key from
+  `~/.config/arbiter/gemini.key`, passed only to the child process. The free
+  tier may train on prompts, so the seat is public-only in code: it gets
+  gold, held-out, CVE and benchmark packets, never planted, AI-corpus or
+  private-repository ones.
+- **A `mechanical` role sits between ground truth and the adjudicator.** It
+  lets the planned sandbox checkers (fact re-derivation, exploit runs, mutation, fault
+  injection) decide findings by observed behaviour.
+- **Records stay one per model** so that Dawid–Skene can later replace
+  strict unanimity with labeller-weighted votes.
+- **Smoke, 2026-10-24.** Two vendors only: Claude and Codex agreed with
+  benchmark truth on every decided item of 24. Gemini was logged in, but
+  Google refused the personal account ("no longer supported for Gemini Code
+  Assist for individuals"). Copilot's only route was OpenAI, already
+  seated. A three-vendor calibration of 60 or more items is still owed
+  before panel labels feed any claim. Panel labels are reported as
+  model-labelled conformance, never as certified.
+
+## 2026-10-24 — A target may not grade itself; unassessed source says so (ARB-143..147)
+
+A core audit of main 8a12926 reproduced five false-clean / false-verified
+gaps. All five share one shape: an input the scan did not control (the
+target's config, a language with no pack, a mistyped path, a tool's
+unreadable output, a glob) was read as "nothing to report".
+
+**Config trust (ARB-143).** `load_config` now distinguishes the file it
+found in the target root from one the operator named with `--config`. The
+target's file may *tighten* the gate and may use every feature meant for it
+(suppressions, house rules, scoring, quality thresholds); it may not set
+`precision` or `verify`, and may not *loosen* the gate. Tighten versus
+loosen is decided key by key against `DEFAULTS["gate"]`: a known severity
+for `fail_on.severity`/`new` (none ranks above the default `critical`), a
+numeric `coverage_below`, `true` for `gate_on_inferred`/`fail_on_probe_error`,
+`tier_mode: legacy`, and a `tiers` list that keeps every default tier.
+Anything else under `gate` is dropped. A malformed value (`teired`) still
+raises, as before. Dropped keys land in `scan_scope.config.ignored` and are
+printed, so the drop is never silent. A ledger named by any config is
+resolved relative to that file and refused if it escapes the file's
+directory; `effective_bar` floors every bar threshold at `DEFAULT_BAR`.
+*Open to review:* whether `suppress` should also be restricted for a target
+root config (it was left alone: suppressions stay visible in the report and
+`assurance.blanket-suppression` already counts them), and whether
+`fail_on.severity` below `critical` should be treated as tightening when
+the operator's `--config` would have set something else (today a target
+root config is only ever compared with the defaults, never with an
+operator's file, since `--config` replaces it).
+
+**Unassessed languages (ARB-144).** The existing withholding mechanism is
+coverage; the fix adds to the denominator rather than inventing a second
+rule. `lang_rules.not_assessed_outcome` emits one `skipped`, `applicable`
+outcome named `lang_unsupported`, sized as the mean pack size times the
+number of missing languages, so three unsupported languages weigh like
+three packs. A second check withholds the grade outright when more than
+half the source lines are in such languages even if coverage clears the
+threshold, with the same wording a partial scan uses. The inventory now
+recognises the common languages it cannot assess, so they are reported as
+unassessed source rather than as `unknown` data.
+
+**`--only-files` (ARB-145).** `lstrip("./")` strips characters. The path is
+now normalised with a prefix loop, an absolute path under a target is made
+relative, and a path the inventory does not hold is an error that names it.
+
+**Adapters failing inside `ok_exit` (ARB-146).** `Adapter.decode` and
+`rows_of` raise `AdapterOutputError` for output that is not what the
+manifest describes; `map.errors` declares where a tool reports its own
+failures, and any non-warning entry raises `AnalyzerErrors`. Decision: an
+analyzer that reports errors is recorded `error` with its findings set
+aside (counted in the reason) rather than kept, because invariant CI-7
+says an errored probe reports no findings and a half-read tree is not the
+tool's answer. The alternative, a new `partial` status, would have touched
+every consumer of `status` for one adapter case.
+
+**Globs (ARB-147).** `arbiter/globs.py` is a small globstar matcher (`*`
+within a segment, `**` across segments, `[...]`, case-sensitive). House
+rules use it; the gitignore reader, suppression `path:` globs and language
+pack `files:` keep `fnmatch`, since their documented semantics are
+fnmatch's and changing them was out of scope.
+
+
+## 2026-10-24 — Nothing leaves the scan silently (ARB-148..152)
+
+The second batch from the core audit of main 8a12926 (CORE-013..025). The
+shape is the same as ARB-143..147: an input the scan did not control -- a
+file it would not read, a directory it would not enter, a config key with a
+typo, a change with nothing readable in it -- was read as "nothing to
+report". Each fix extends the mechanism ARB-143/144 built rather than adding
+one: dropped config keys go through `restrict_target_config` and
+`scan_scope.config.ignored`; unread files become one more `skipped` outcome
+in the coverage denominator; withholding goes through the one
+`_withhold()` helper with a token the gate reads.
+
+**Config trust, second pass (ARB-148).** The question ARB-143 left open --
+whether `suppress` should be restricted for a target-root config -- is
+answered yes: `suppress` and `probes.severity_overrides` are dropped, and a
+`score.coverage_threshold` below the default is dropped. The cost is real
+and deliberate: a repository that keeps its suppressions in its own
+`arbiter.yaml` must now pass `--config arbiter.yaml` to have them honoured.
+Arbiter's own pr-check, the `omni gate` rule in
+`.ai/rules/completion-workflow.json`, the shipped GitHub action (new
+`config` input defaulting to `arbiter.yaml`; a missing file means the
+defaults) and the GitLab template do so. `probes.disable`, `rules`,
+`quality` and `score.weights` are left to the target: a disabled probe
+lowers coverage, which the gate now reads (ARB-152); the others add findings
+or re-weigh a grade the gate does not read. *Open:* `quality` thresholds
+raised to absurd values hide quality findings; `score.weights` can zero a
+dimension in the grade.
+
+**Nothing read (ARB-149).** `Inventory.assessable_files` -- text files in
+roles source/test/config/iac/ci -- is the definition of "something a probe
+reads". Docs, data and generated files are opened by a probe or two but no
+rule pack or quality check assesses them, so a tree of only those has had
+nothing assessed. Zero assessable files withholds the grade with
+`withheld_by: nothing_read`. In a partial scan the equivalent question is
+asked of the changed files (ARB-151) and the whole-tree check is skipped.
+
+**Skipped files (ARB-150).** `walk_repo` takes a `skipped` list and
+appends an entry with a fixed reason string for every file it will not read
+and every directory it will not enter. Decisions: (1) `vendor/`,
+`node_modules/`, `target/`, `site-packages/` and the rest of `SKIP_DIRS`
+are reported with a bounded file count (500+), never counted against
+coverage -- what is vendored did not change, and counting node_modules
+would wreck every Node repository's coverage; the gap is visible and that is
+the brief. (2) Source-like means a known text extension in an assessable
+role, so a skipped `.png` or `package-lock.json` is counted by reason but
+does not lower coverage; a skipped `.py` does. (3) BOM-less UTF-16 is
+detected by its NUL stride (half the odd offsets NUL and no even one, or
+the mirror) and reported with a fix-it reason, not decoded: `probes._read`
+could decode it, but `ast.py` hands tree-sitter the raw bytes and the pack
+reader uses `read_text(encoding="utf-8")`, so decoding in one place would
+make one reader right and the rest silently wrong. (4) A file symlink whose
+resolved target is outside the root is not read: before, a hostile pull
+request could point a `.py` at a runner file and have its content echoed
+into the evidence. Links inside the tree are read as before. (5) One
+`files_not_read` outcome sized as one rule pack joins the denominator;
+above 50% of source-like files skipped (`UNASSESSED_SOURCE_LIMIT`, shared
+with ARB-144) the grade is withheld.
+
+**--changed (ARB-151).** `narrow()` now counts a changed file as read only
+when it is text and not `generated`; `unread_reason()` says why otherwise.
+Deletions are named by a new `git_deleted` (the existing `git_changed`
+filters them with `--diff-filter=d`, correctly, since there is nothing to
+read). Decision: a change with changed files present and none read fails
+the gate ("none of the N changed file(s) was read (...)"); a delete-only
+change passes with a line saying so. A deletion cannot introduce a finding
+and repo-scoped probes do not run in a partial scan, so failing it would be
+a gate with no remedy.
+
+**Fail closed (ARB-152).** Three validations and one gate rule.
+`check_gate_config` normalises `fail_on.severity`/`new` case-insensitively
+and raises on an unknown name, from a target root as from `--config`
+(ARB-143 used to drop a misspelt name as "would loosen"; a typo is an error,
+not a loosening). `suppression_problems` enforces what the docstring and
+docs had always claimed -- `reason`, `expires`, a selector -- at load, and
+`apply_suppressions` ignores an invalid entry as a backstop for configs
+built in code. `Scorecard.withheld_by` names the cause of a withholding and
+`evaluate_gate` fails on any cause but the operator's own: `partial`
+(`--changed`, `--only-files`) and `probes_selected` (`--only`, `--skip`,
+`--no-adapters`). `probes_selected` is granted only when the operator's
+choice explains the gap: the engine recomputes coverage with the
+operator-skipped outcomes out of the denominator and the rest must reach
+the bar (`scan_scope.probes_selected.coverage_without`), so a target config
+that disables probes under an operator's `--no-adapters` still fails. An
+analyzer the operator switched off reads `external analyzers disabled for
+this run` whether or not it is installed (the check moved ahead of
+`prevented` and the binary check), and a `--skip` reads `skipped on the
+command line`, so claims.py's CI-12 list gained "on the command line".
+*Consequence to know:* a machine without the analyzers installed now fails
+`arbiter gate .` with `grade withheld (coverage): 24%` where it passed
+before; the remedies are `arbiter tools install`, `--no-adapters`, or
+`gate.fail_on.withheld_grade: false` in a `--config` file. A target root
+may not set it false.
+
+**Out of scope, listed as follow-ups:** CORE-024 (the sqrt(LOC) size
+factor lets five criticals grade 96/100 at 5M lines), CORE-027 (unsure
+labels leave the precision denominator), CORE-026 (`ignore:` is declared in
+DEFAULTS and read nowhere; unknown top-level keys are not validated),
+CORE-021 (CR-only line endings reach the regex rules as one line).

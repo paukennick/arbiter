@@ -11,6 +11,43 @@ passes, `ARBITER_CACHE_DIR`, `ARBITER_NO_VERSION_MEMO`), never policy.
 
 This repository's own [`arbiter.yaml`](../arbiter.yaml) is a working example.
 
+## Which config is trusted
+
+A file found in the target root is the target's own, and the target is what
+the scan judges (ARB-143, ARB-148). It may use the features that add to the
+scan -- `probes.disable`, `rules`, `quality`, `score.weights`, `report`,
+`cache` -- and it may make the gate **stricter**. It may not:
+
+- set `precision` (`ledger`, `verified_rules`, `deterministic_profiles`) or
+  `verify`, which decide which of its findings are called `verified`;
+- **hide or downgrade** its findings: `suppress` and
+  `probes.severity_overrides` are dropped whole (a selector-less `suppress`
+  entry set every finding aside and the repository graded 100), and a
+  `score.coverage_threshold` below the default 0.6 is dropped (a higher one
+  withholds more and is kept);
+- **loosen** the gate: `fail_on.severity: null`, `fail_on.coverage_below:
+  null`, `fail_on.withheld_grade: false`, `gate_on_inferred: false` or
+  `fail_on_probe_error: false` where the file would otherwise have set them
+  true, or a `tiers` list that drops a default gating tier. Tightening is
+  honoured: a lower `fail_on.severity`, a `fail_on.new`, a `coverage_below`,
+  `tier_mode: legacy` (gates on more tiers), `tiers` that add to the default.
+
+Dropped keys are not silent: `report.json` records them under
+`scan_scope.config.ignored`, and the console, markdown and pull-request
+renderings print one line naming them. A misspelt gate value (`tier_mode:
+teired`, `fail_on.severity: crtical`) is an error (exit 2), never a quiet
+fallback; `Critical` is read as `critical`.
+
+**A repository that keeps its suppressions in its own `arbiter.yaml` passes
+the file explicitly**: `arbiter gate . --config arbiter.yaml`. That is the
+operator saying the file is theirs. Arbiter's own CI and `omni gate` do so.
+
+`--config FILE` is the operator's choice and is trusted in full. A
+`precision.ledger` path is resolved relative to the config file that names it
+and must stay inside that file's directory; a path that escapes is an error.
+Whatever the ledger declares, its `bar` is never read below Arbiter's
+`DEFAULT_BAR`.
+
 ## Contents
 
 - [The file](#the-file)
@@ -125,6 +162,7 @@ gate:
 | `fail_on.severity` | `critical` | any finding at or above this severity fails |
 | `fail_on.new` | none | findings at or above this severity that are absent from the baseline (`--baseline`) fail |
 | `fail_on.coverage_below` | none | the run fails if rubric coverage falls below this fraction |
+| `fail_on.withheld_grade` | `true` | a withheld grade fails the gate (coverage below `score.coverage_threshold`, most of the source in languages no pack reads or in files the walk did not read, or nothing assessable read), unless the withholding is the operator's own narrowing: `--changed`, `--only-files`, `--only`, `--skip`, `--no-adapters`. Only a `--config` file may set it `false` (ARB-152) |
 | `gate_on_inferred` | `false` | when false, findings with `provenance: inferred` (from a model) never fail a build |
 | `fail_on_probe_error` | `false` | when true, a probe that errored fails the build |
 | `tier_mode` | `tiered` | `tiered`: `fail_on` reads only findings whose precision tier is in `tiers` ([below](#precision-tiers)), and the gate block records what it set aside as `excluded_by_tier`. `legacy`: `fail_on` reads every active finding, as before tiers. Any other value is an error |
@@ -136,7 +174,36 @@ gate outcome. (Older docs mention a `use_calibration` key; nothing reads it.)
 
 `coverage_below` is the guard against a reassuring result from a scan that
 barely ran. Without it, uninstalling an analyzer looks identical to fixing every
-finding it produced.
+finding it produced. Since ARB-152 the grade's own bar backs it: a scan whose
+grade is withheld fails the gate (`withheld_grade`), so a machine without the
+analyzers installed reports `grade withheld (coverage)` rather than PASS --
+install them (`arbiter tools install`), or say `--no-adapters` and own the
+narrowing. `scorecard.withheld_by` names the cause (`coverage`,
+`unassessed_languages`, `files_not_read`, `nothing_read`, or the operator's
+`partial` / `probes_selected`).
+
+Source in a language no rule pack reads (Kotlin, Swift, Scala, C#, Rust, PHP,
+...) counts against coverage too: one `lang_unsupported` outcome, skipped and
+sized like the packs that are missing, names the languages and their share of
+the source lines (`scan_scope.languages_not_assessed`), and when more than
+half the source lines are in such languages the grade is withheld
+(ARB-144). The language-neutral probes (secrets, IaC, supply chain, drift)
+still run over the whole tree.
+
+Files the walk saw and did not read count the same way (ARB-150): a file with
+a NUL byte in its first 4KB, one over 2,000,000 bytes, UTF-16 saved without a
+byte-order mark, a symbolic link to a file outside the tree. Each is listed
+with its reason under `scan_scope.skipped` (`by_reason`, `entries` for the
+source-like ones, `dirs` for every directory the walk did not enter --
+`vendor/`, `node_modules/`, a symlinked directory -- with a bounded file
+count), one `files_not_read` outcome sits in the coverage denominator, the
+console and markdown print a `NOT READ` line, and when more than half the
+source-like files were skipped the grade is withheld. A scan that read
+nothing a probe assesses -- an empty directory, docs only, binaries only --
+withholds the grade outright (ARB-149). Under `--changed`, a changed file
+no probe read (moved under `dist/`, binary, in a skipped directory) is
+listed in `scan_scope.changed_not_read`; when none of the changed files was
+read the gate fails, and a delete-only change is named as such (ARB-151).
 
 ## Precision tiers
 
@@ -152,6 +219,10 @@ precision:
   verified_rules: []      # rule ids or globs declared verified; the ledger must still admit them
   deterministic_profiles: [offline, ci]   # profiles that cannot ask a model
 ```
+
+Only a config passed with `--config` can set this block; a target's own
+`arbiter.yaml` cannot ([above](#which-config-is-trusted)). `ledger` is
+relative to the config file and must stay beside it.
 
 Today one rule is declared verified, `supply.unpinned-action` (ARB-101), so
 every other deterministic finding is `advisory`: the default `tiered` gate
@@ -228,7 +299,11 @@ suppress:
 
 Three properties, each deliberate:
 
-- **`reason` and `expires` are mandatory.** An expired suppression stops
+- **`reason`, `expires` and a selector (`rule`, `path` or `id`) are
+  mandatory**, and checked when the config loads: an entry missing any of
+  them is a config error (exit 2), and `apply_suppressions` ignores such an
+  entry even in a config built in code (ARB-152; before, an entry with only
+  a `reason` matched every finding forever). An expired suppression stops
   suppressing rather than failing the run, so the finding returns and is
   re-decided instead of quietly persisting forever.
 - **Suppressed findings stay in the report**, marked and attributed. They are
@@ -267,6 +342,14 @@ rules:
 
 `ast_query` requires the `ast` extra (tree-sitter). Without it the rule reports
 as not assessed, naming the missing dependency.
+
+`files:` and `paths:` are globstar patterns matched against the whole
+repo-relative path, case-sensitively on every OS (ARB-147): `*` stays inside
+one path segment, `**` spans any number of segments, so `**/*.py` is every
+Python file at any depth (the root included), `src/**/*.py` includes
+`src/a.py`, and `*.py` is the root's Python files only. Before ARB-147 these
+went through `fnmatch`, where `**/*` missed every root file and `src/**/*.py`
+missed `src/a.py`.
 
 ## Adaptive thresholds
 

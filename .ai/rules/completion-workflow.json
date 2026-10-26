@@ -202,7 +202,7 @@
       ],
       "validation": {
         "type": "command",
-        "run": "arbiter gate . --changed {base} --profile offline --baseline .arbiter/baseline.json --out arbiter-out/omni-gate --format json,sarif,pr-comment",
+        "run": "arbiter gate . --changed {base} --profile offline --config arbiter.yaml --baseline .arbiter/baseline.json --out arbiter-out/omni-gate --format json,sarif,pr-comment",
         "when_changed": [
           "src/**",
           "tests/**",

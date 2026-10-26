@@ -125,10 +125,26 @@ rules:
     requirements: [ARB-086]
   - id: arbiter/supply.pull-request-target
     requirements: [ARB-087]
+  - id: arbiter/supply.remote-script-piped
+    requirements: [ARB-130]
   - id: arbiter/supply.unpinned-action
-    requirements: [ARB-087, ARB-101]
+    requirements: [ARB-087, ARB-101, ARB-130]
     tier: verified            # ledger 690/0, Wilson 95% lower 0.9945 (ARB-101)
+  - id: arbiter/supply.unpinned-ci-include
+    requirements: [ARB-130]
+  - id: arbiter/supply.unpinned-container-image
+    requirements: [ARB-130]
+  - id: arbiter/supply.unpinned-install-in-build
+    requirements: [ARB-130]
+  - id: arbiter/supply.unpinned-java-dep
+    requirements: [ARB-132]
   - id: arbiter/supply.unpinned-npm-dep
-    requirements: [ARB-087]
+    requirements: [ARB-087, ARB-131]
+  - id: arbiter/supply.unpinned-precommit
+    requirements: [ARB-130]
   - id: arbiter/supply.unpinned-python-dep
-    requirements: [ARB-087]
+    requirements: [ARB-087, ARB-131]
+  - id: arbiter/supply.unpinned-ruby-dep
+    requirements: [ARB-132]
+  - id: arbiter/supply.unpinned-terraform
+    requirements: [ARB-132]

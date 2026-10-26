@@ -256,6 +256,130 @@
         "Synthetic benchmark cases do not represent arbitrary Java repositories.",
         "Do not inspect held-out source examples while tuning rules."
       ]
+    },
+    {
+      "id": "ghsa-cve-fix-pairs-development",
+      "path": "tools/ground_truth/ghsa_pairs.json",
+      "role": "development_and_validation",
+      "source_type": "GitHub Advisory Database reviewed advisories with a GitHub fix commit (before/after fix pairs)",
+      "languages": [
+        "python",
+        "typescript",
+        "go",
+        "java",
+        "ruby"
+      ],
+      "selection": "tools/ground_truth/ghsa_select.py (ARB-121): predeclared, seeded, in-scope CWEs per language pack; criteria in ghsa_pairs.json; frozen before any scan",
+      "split": "repositories with split == development",
+      "license_status": "Advisory data CC-BY-4.0 (GitHub Advisory Database); source files are fetched at pinned commits outside the repository and never redistributed; each repository's SPDX licence is recorded per pair.",
+      "label_provenance": "Patch-derived: the advisory's CWE and the lines its fix commit changed.",
+      "sealed": false,
+      "human_adjudication": "not_performed",
+      "accuracy_claim_eligible": false,
+      "documentation": "docs/external-cve-benchmark.md",
+      "limits": [
+        "Labels are patch-derived from the advisory's fix commit, not human-adjudicated; report GHSA fix-pair benchmark conformance only.",
+        "A fix can contain unrelated edits and does not mark every vulnerable variant.",
+        "Only the files the fix changed are scanned, with native probes only; cross-file flow in the full project is not seen.",
+        "Fixed-side persistence is a false-positive or partial-fix signal, not proof."
+      ],
+      "freeze_commit": "02df982ac12bf734ccb9d47e890804666cfc4af1",
+      "results": "tools/gold/results/2026-10-24-ghsa-dev.json",
+      "baseline_run": {
+        "arbiter_commit": "02df982ac12bf734ccb9d47e890804666cfc4af1",
+        "arbiter_worktree_clean": true,
+        "benchmark_manifest_digest": null,
+        "benchmark_snapshot_or_pin": "tools/ground_truth/ghsa_pairs.json sha256 930690543d62363ea952a8d1b3fe42f86afda882a08e621b886e1db4c9b86542",
+        "evaluator_commit": "02df982ac12bf734ccb9d47e890804666cfc4af1",
+        "configuration_digest": "criteria sha256 b04dbf91e542e45a6d7638c7d3dd6504c218d5f6e4777e930a4272af4b5b5e25",
+        "analyzer_and_ruleset_versions": "native probes and language packs at arbiter_commit; no external analyzers",
+        "vulnerability_database_snapshot": "GitHub Advisory Database, reviewed advisories as read on 2026-10-24",
+        "operating_system_image": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "architecture": "x86_64",
+        "python_version": "3.14.4",
+        "profile": "native probes only (gt_common.scan_tree: use_adapters=False, use_cache=False)",
+        "cache_policy": "use_cache=False",
+        "started_at_utc": "2026-10-24T22:07:35Z",
+        "completed_at_utc": "2026-10-24T22:08:32Z",
+        "counts": {
+          "repositories": 224,
+          "clusters": 224,
+          "labelled_findings": null,
+          "unlabelled_findings": null,
+          "known_defects": 277,
+          "not_assessed_strata": 0
+        },
+        "metrics": {
+          "precision": null,
+          "precision_lower_95": null,
+          "recall": 0.0939,
+          "recall_lower_95": 0.0649,
+          "effective_sample_size": 261.5,
+          "method_and_version": "primary hunk-region recall (ghsa_pairs.py at arbiter_commit); Wilson 95% lower bound; repository-cluster bootstrap in results file"
+        }
+      }
+    },
+    {
+      "id": "ghsa-cve-fix-pairs-sealed",
+      "path": "tools/gold/heldout.json",
+      "role": "sealed_aggregate_evaluation",
+      "source_type": "GitHub Advisory Database reviewed advisories with a GitHub fix commit (before/after fix pairs)",
+      "languages": [
+        "python",
+        "typescript",
+        "go",
+        "java",
+        "ruby"
+      ],
+      "selection": "Same selection as ghsa-cve-fix-pairs-development; repositories with split == sealed, listed under held_out_ghsa_r1",
+      "license_status": "As ghsa-cve-fix-pairs-development.",
+      "label_provenance": "Patch-derived: the advisory's CWE and the lines its fix commit changed.",
+      "sealed": true,
+      "human_adjudication": "not_performed",
+      "accuracy_claim_eligible": false,
+      "documentation": "docs/external-cve-benchmark.md",
+      "limits": [
+        "Labels are patch-derived from the advisory's fix commit, not human-adjudicated; report GHSA fix-pair benchmark conformance only.",
+        "A fix can contain unrelated edits and does not mark every vulnerable variant.",
+        "Only the files the fix changed are scanned, with native probes only; cross-file flow in the full project is not seen.",
+        "Fixed-side persistence is a false-positive or partial-fix signal, not proof.",
+        "Aggregate-only: rule authors must not open per-pair outcomes, findings or code of the sealed repositories."
+      ],
+      "freeze_commit": "02df982ac12bf734ccb9d47e890804666cfc4af1",
+      "results": "tools/gold/results/2026-10-24-ghsa-sealed-aggregate.json",
+      "baseline_run": {
+        "arbiter_commit": "02df982ac12bf734ccb9d47e890804666cfc4af1",
+        "arbiter_worktree_clean": true,
+        "benchmark_manifest_digest": null,
+        "benchmark_snapshot_or_pin": "tools/ground_truth/ghsa_pairs.json sha256 930690543d62363ea952a8d1b3fe42f86afda882a08e621b886e1db4c9b86542",
+        "evaluator_commit": "02df982ac12bf734ccb9d47e890804666cfc4af1",
+        "configuration_digest": "criteria sha256 b04dbf91e542e45a6d7638c7d3dd6504c218d5f6e4777e930a4272af4b5b5e25",
+        "analyzer_and_ruleset_versions": "native probes and language packs at arbiter_commit; no external analyzers",
+        "vulnerability_database_snapshot": "GitHub Advisory Database, reviewed advisories as read on 2026-10-24",
+        "operating_system_image": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "architecture": "x86_64",
+        "python_version": "3.14.4",
+        "profile": "native probes only (gt_common.scan_tree: use_adapters=False, use_cache=False)",
+        "cache_policy": "use_cache=False",
+        "started_at_utc": "2026-10-24T22:07:35Z",
+        "completed_at_utc": "2026-10-24T22:08:32Z",
+        "counts": {
+          "repositories": 188,
+          "clusters": 188,
+          "labelled_findings": null,
+          "unlabelled_findings": null,
+          "known_defects": 223,
+          "not_assessed_strata": 0
+        },
+        "metrics": {
+          "precision": null,
+          "precision_lower_95": null,
+          "recall": 0.0807,
+          "recall_lower_95": 0.0517,
+          "effective_sample_size": 221.1,
+          "method_and_version": "primary hunk-region recall (ghsa_pairs.py at arbiter_commit); Wilson 95% lower bound; repository-cluster bootstrap in results file"
+        }
+      }
     }
   ],
   "candidate_sources": [

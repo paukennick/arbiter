@@ -357,6 +357,54 @@ def requirement_block(findings: list[Finding], heading: str = "## By requirement
     return L
 
 
+def config_ignored_line(report: Report) -> str:
+    """What the target's own arbiter.yaml tried to set and the scan refused
+    (ARB-143): printed wherever the report is read, so a dropped
+    `precision:` block is never a silent drop."""
+    cfg = (report.scan_scope or {}).get("config") or {}
+    ignored = cfg.get("ignored") or []
+    if not ignored:
+        return ""
+    where = cfg.get("path") or "the target's arbiter.yaml"
+    return (f"{len(ignored)} key(s) in {where} were ignored because a target's own config "
+            f"may not set them ({'; '.join(ignored)}). Pass the file with --config to apply them.")
+
+
+def skipped_lines(report: Report) -> list[str]:
+    """What the walk saw and did not read (ARB-150), and the changed files
+    a partial scan did not read (ARB-151): one line each, or none."""
+    ss = report.scan_scope or {}
+    sk = ss.get("skipped") or {}
+    out: list[str] = []
+    if sk.get("files"):
+        reasons = ", ".join(f"{n} {r}" for r, n in (sk.get("by_reason") or {}).items())
+        named = sk.get("source_like_files", 0)
+        out.append(
+            f"{sk['files']} file(s) were not read ({reasons}); "
+            + (f"{named} of them look like source and count as not assessed."
+               if named else "none of them looks like source.")
+        )
+    dirs = sk.get("dirs") or []
+    if dirs:
+        shown = ", ".join(
+            f"{d['path']}/ ({d['files']}{'+' if d['files'] >= 500 else ''} files)"
+            for d in dirs[:6])
+        more = f", and {len(dirs) - 6} more" if len(dirs) > 6 else ""
+        out.append(f"{len(dirs)} directory(ies) were not walked: {shown}{more}.")
+    if ss.get("mode") == "partial":
+        unread = ss.get("files_changed_not_read", 0)
+        deleted = ss.get("files_changed_deleted", 0)
+        if unread:
+            why = ss.get("changed_not_read") or []
+            names = ", ".join(w["path"] for w in why[:5]) + (", ..." if unread > 5 else "")
+            out.append(f"{unread} changed file(s) were not read ({names}): "
+                       + "; ".join(sorted({w["reason"] for w in why})) + ".")
+        if deleted and not ss.get("files_changed_read"):
+            out.append(f"Delete-only change: {deleted} changed path(s) no longer exist and "
+                       "nothing was read; the gate had nothing to judge.")
+    return out
+
+
 def _bluf_lines(report: Report) -> list[str]:
     """What this report can and cannot claim, worst news first.
 
@@ -376,6 +424,10 @@ def _bluf_lines(report: Report) -> list[str]:
         )
     if sc.withheld:
         lines.append(f"Grade withheld -- {sc.withheld_reason}")
+    note = config_ignored_line(report)
+    if note:
+        lines.append(note)
+    lines.extend(skipped_lines(report))
     skipped = [p for p in report.probes if p.status != "ran"]
     if skipped:
         lines.append(f"{len(skipped)} probe(s) not assessed: {', '.join(p.name for p in skipped)}.")
@@ -561,6 +613,10 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
     if report.stacks:
         L.append(_color(color, "dim", f"  stacks: {', '.join(report.stacks)}"))
     ss = report.scan_scope or {}
+    note = config_ignored_line(report)
+    if note:
+        L.append("")
+        L.append(_color(color, "medium", f"  CONFIG — {note}"))
     if ss.get("mode") == "partial":
         # Loud, and above the findings. Somebody scrolling to the counts must
         # not be able to reach them without passing this line.
@@ -576,6 +632,8 @@ def render_console(report: Report, color: bool | None = None, limit: int = 40) -
             L.append(_color(color, "dim",
                             f"  {outside} finding(s) are in context files this change did "
                             "not touch (tagged outside-this-change)"))
+    for line in skipped_lines(report):
+        L.append(_color(color, "medium", f"  NOT READ — {line}"))
     L.append("")
 
     head = "  " + "  ".join(

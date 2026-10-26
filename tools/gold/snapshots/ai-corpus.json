@@ -1,9 +1,9 @@
 {
  "target": "ai-corpus",
  "pinned_sha": "",
- "arbiter_commit": "e58947fde01689a3ad006c9e99347f3ced7b6a1a",
- "recorded": "2026-10-23",
- "count": 127,
+ "arbiter_commit": "8a1292690cb29a20406a0c496c388ee9cd9f67a7",
+ "recorded": "2026-10-24",
+ "count": 129,
  "by_rule": {
   "arbiter/aiapp.store-never-evicted": 5,
   "arbiter/assurance.suppression-census": 1,
@@ -31,6 +31,7 @@
   "arbiter/ruby.swallowed-error": 1,
   "arbiter/supply.unpinned-npm-dep": 47,
   "arbiter/supply.unpinned-python-dep": 18,
+  "arbiter/supply.unpinned-ruby-dep": 2,
   "arbiter/typescript.mail-starttls-not-required": 1,
   "arbiter/typescript.promise-catch-noop": 3,
   "arbiter/typescript.ssrf-stored-callback": 1
@@ -158,6 +159,8 @@
   "arbiter/supply.unpinned-python-dep\tpython/webhook-receiver/app/requirements.txt\t2",
   "arbiter/supply.unpinned-python-dep\tpython/webhook-receiver/app/requirements.txt\t3",
   "arbiter/supply.unpinned-python-dep\tpython/webhook-receiver/app/requirements.txt\t4",
+  "arbiter/supply.unpinned-ruby-dep\truby/notes-api/app/Gemfile\t4",
+  "arbiter/supply.unpinned-ruby-dep\truby/notes-api/app/Gemfile\t6",
   "arbiter/typescript.mail-starttls-not-required\ttypescript/job-queue/app/src/handlers.ts\t37",
   "arbiter/typescript.promise-catch-noop\ttypescript/file-upload/app/src/app.ts\t148",
   "arbiter/typescript.promise-catch-noop\ttypescript/url-shortener/app/src/app.ts\t82",

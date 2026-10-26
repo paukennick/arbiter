@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>planted</groupId>
+  <artifactId>planted-java-dynamic</artifactId>
+  <version>1.4.0</version>
+  <properties>
+    <collections.range>[4.4,)</collections.range>
+    <sibling.version>1.5.0-SNAPSHOT</sibling.version>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>LATEST</version> <!-- expect: arbiter/supply.unpinned-java-dep -->
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>${collections.range}</version> <!-- expect: arbiter/supply.unpinned-java-dep -->
+    </dependency>
+    <dependency>
+      <groupId>org.example</groupId>
+      <artifactId>client</artifactId>
+      <version>2.1.0-SNAPSHOT</version> <!-- expect: arbiter/supply.unpinned-java-dep -->
+    </dependency>
+    <dependency>
+      <groupId>planted</groupId>
+      <artifactId>planted-java-sibling</artifactId>
+      <version>${sibling.version}</version>
+    </dependency>
+  </dependencies>
+</project>

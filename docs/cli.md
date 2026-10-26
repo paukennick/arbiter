@@ -81,7 +81,7 @@ Flags shared by `scan` and `gate`:
 | `--no-adapters` | native probes only |
 | `--baseline FILE` | label each finding `new` or `existing` against a baseline |
 | `--knowledge FILE`, `--pin-knowledge HASH` | calibration file (default `.arbiter/knowledge.json`), and fail unless it is exactly this version |
-| `--changed REF`, `--only-files PATHS` | partial scan: only these files; checks that need the whole tree are recorded as not assessed ([ci.md](ci.md#scanning-only-what-changed)) |
+| `--changed REF`, `--only-files PATHS` | partial scan: only these files; checks that need the whole tree are recorded as not assessed ([ci.md](ci.md#scanning-only-what-changed)). `--only-files` paths are relative to the target root (a literal leading `./` is fine, as is an absolute path under the target); a path that names no file the scan can read is an error, never an empty scan (ARB-145) |
 | `--tfplan [REPO=]PATH` | Terraform plan or state JSON; repeatable |
 | `--model-verify`, `--no-model-verify` | turn the model verification pass on or off for this run; it never runs under `offline` or `ci` ([configuration.md](configuration.md#model-verification)) |
 | `--no-cache`, `--cache-path FILE` | bypass or relocate the result cache ([below](#the-result-cache)) |

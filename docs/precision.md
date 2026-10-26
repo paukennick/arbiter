@@ -321,7 +321,7 @@ Optional:
 
 | Key | |
 |---|---|
-| `role` | `labeller` (default), `adjudicator` (decides a disagreement; wins over labellers) or `ground_truth` (published truth; wins over everything) |
+| `role` | `labeller` (default), `adjudicator` (decides a disagreement; wins over labellers), `mechanical` (a checker's observed result -- a fact re-derived by a second implementation, an exploit that ran, a mutant a test never caught; wins over adjudicators and labellers; checkers that contradict each other make the finding `unsure`, one that could not decide passes it on) or `ground_truth` (published truth; wins over everything) |
 | `date` | ISO date of the label |
 | `note` | free text; on an `fp` label it is added to the rule's `fp_notes`, which the verify pass reads |
 | `language`, `stratum_size` | the sampling stratum (with `rule_id` and `source`) and how many findings it held when the sample was drawn; required for a rule to be verified (`### Population weights`). `label_models.py`, the ground-truth writers and label_sample.py sheets write it |
@@ -333,7 +333,10 @@ Optional:
 Rules for producers:
 
 * Two labellers per finding, different `labeller` names; κ is computed over
-  the first two (by name) that gave TP or FP.
+  the first (by name) that gave TP or FP and the first after it **from
+  another vendor** (`labeller_vendor` in `tools/precision_ledger.py` reads
+  the model's maker from the name). Two models of one company are not an
+  independent pair, so they give κ nothing.
 * The verifier never labels: a `labeller` must not be the verify pass's
   model and prompt, and labels used to measure the verify pass must predate
   its verdicts.
@@ -360,6 +363,26 @@ reaches the 0.99 a rule needs without a model check, so its findings are
 `verified` under `offline` and `ci`. Every other finding is advisory. These
 are model labels, not human ones; the verified-tier held-out claim below
 still awaits human labels. The paragraphs that follow are the earlier state.
+
+**2026-10-24 (supply-chain pinning, ARB-130; FAIL-100).** The population
+behind the one verified rule, `supply.unpinned-action`, changed. The rule now reads `uses:` with a
+YAML parser, so a quoted pin (`uses: "actions/checkout@<sha>"`) is pinned
+rather than reported with its closing quote in the ref, and a
+`docker://image@sha256:...` digest is no longer reported as an action with
+a non-SHA ref; `docker://` references (digest, tag or none) move to the
+advisory `supply.unpinned-container-image`. Composite actions
+(`action.yml`/`action.yaml` with `runs:`) are now checked too. Measured on
+the development corpora (held-out repositories not scanned): 441
+maintained-code findings before and after, all the same lines; 5 evidence
+strings lost a stray quote (httpx's four `"actions/checkout@v4"`-style
+steps, one quoted reusable workflow in bullmq) and 1 composite-action
+finding was added (WebGoat `actions/setup-java@v5`). planted and ai-corpus
+contain no workflow, so their snapshot count for the rule is 0 before and
+after. None of the 690 labels sampled a quoted or `docker://` reference,
+so the 0 FP there said nothing about either form; the ledger numbers are
+unchanged, and the new shapes are unlabelled until the next labelling
+round. Eight rules were added at the same time, all advisory
+([probes.md](probes.md#supply-chain-pinning)).
 
 As of 2026-10-23 (relabel at labeller `v3`): the ledger holds ground-truth
 and `v3` model labels for 120 rules. **2 are admitted**:
@@ -448,6 +471,141 @@ complexity, ARB-085 IaC resource policy, ARB-086 provider token patterns,
 ARB-087 supply chain, ARB-088 interface and contract consistency, ARB-089
 written claims checked against code, ARB-090 assurance census. A
 `<rule>.not-assessed` finding carries the requirements of its rule.
+
+## Model panel (ARB-122)
+
+`tools/panel/panel.py` asks models from **different companies** to label
+the same finding, each on its own, and writes one label record per model.
+It exists because the labeller above is one vendor's model with two prompts:
+its prosecutor and defender share training and blind spots, so their
+agreement is weak evidence. Labels from the panel are still model labels.
+Precision built on them is reported as **model-labelled conformance**,
+never as a certified or human-verified number.
+
+```sh
+python tools/panel/panel.py calibrate --n 60 --markdown cal.md        # measure the panel first
+python tools/panel/panel.py prioritise --top 30 --per-rule-out want.json
+python tools/panel/panel.py label --report gold-report.json --per-rule want.json \
+    --source heldout-r6-model --max-calls 300 --budget-usd 15
+```
+
+**Seats.** One command-line model per seat, each on the user's own
+subscription (no API keys): Claude (`claude -p`, Anthropic), Codex
+(`codex exec`, OpenAI) and Gemini (`gemini -p`, Google). Copilot
+(`copilot -p`) is an optional fourth seat. It is seated only when its model
+routing lands on a vendor no other seat holds, and never on an Anthropic
+model. A seat that is not installed or not logged in, or whose service
+refuses the account, is skipped, not failed. A usage limit stops that seat
+only. `--max-calls` (and `--cap seat=N`) caps each seat's new calls, and
+`--budget-usd` caps Claude's spend, the only CLI that reports USD. Answers
+are cached, and a rerun resumes. `prioritise` ranks rules by the fewest
+further labels, all of them TP (the best case), that would lift the rule's
+Wilson 95% lower bound to 0.99. Its `--per-rule-out` file feeds
+`label --per-rule`.
+
+**Gemini's key and data rule.** Google no longer serves the Gemini CLI to
+personal Code Assist logins, so the Gemini seat uses an AI Studio API key
+(`security.auth.selectedType = gemini-api-key` in `~/.gemini/settings.json`).
+The key lives in `~/.config/arbiter/gemini.key` (mode 600). It is read at
+each call and passed only to the gemini child process as `GEMINI_API_KEY`.
+It is never put in argv, logs, the cache or a label record, and it is
+scrubbed from error text. A missing or empty key file means the seat is
+skipped.
+
+The free tier may use prompts for model training, so the seat is
+**public-only**. It receives packets only from public sources
+(`PUBLIC_SOURCES` in `tools/panel/panel.py`):
+
+- the open-source gold and held-out corpora (`gold-model`,
+  `heldout-*-model`), and for a report, only with `--corpus` under
+  `~/wt/corpus-gold` or `~/wt/corpus-gt`;
+- CVE fix pairs and suspects;
+- the OWASP and Juliet benchmarks.
+
+Planted fixtures, the AI-written corpus and any other source are withheld
+from it before any call. The run counts them as `withheld_private`. This is
+enforced in code and tested (`test_a_public_only_seat_never_receives_private_code`).
+
+**Independence rule.** No two seats may resolve to one vendor. The later
+seat is refused, and the run lists it under `refused`. Every answer carries
+the model that produced it. An answer from a model of another vendor than
+its seat's is discarded and stops that seat: Copilot's automatic routing
+changed vendor within one session on 2026-10-24. The panel's prompt
+(`panel/v1`) is never the verify pass's (`verify-v3`), so the rule under
+"Label format" holds: the verifier never labels.
+
+**What each model sees.** The same blind packet `tools/label_models.py`
+builds (`make_item`, `item_prompt`, `SYSTEM`): the code excerpt, the file
+path and a neutral claim, never Arbiter's rule text, confidence or the
+verify pass's verdict. There is no role prompt and no adjudicator: each
+seat answers alone. The packet is data. Each CLI runs in a fresh empty
+temporary directory, with stdin closed, an allowlisted environment (HOME,
+PATH, locale; no tokens, keys or proxy settings) and every tool turned
+off:
+
+- Claude: `--tools ""`, no settings, no MCP.
+- Codex: `--sandbox read-only --ephemeral --ignore-user-config`, every
+  tool-like feature it lists disabled, answer constrained by
+  `--output-schema`.
+- Gemini: an admin-tier policy denying every tool, `--extensions none`, no
+  MCP server, the CLI's system prompt replaced, the workspace trusted only
+  because it is the empty temp dir (headless runs refuse an untrusted one).
+- Copilot: `--available-tools` set to a tool that does not exist. An empty
+  value leaves every tool on (FAIL-074).
+
+The Claude, Codex and Copilot setups were tested with a canary file in the
+working directory, and none read it. Gemini's setup has not been canary-tested yet: its service refused the
+OAuth login, and the API key file was still empty when this was written. Any answer whose events show a tool call is
+refused at run time. A reply must be exactly one JSON object (`label`,
+`reason`). Anything else is asked once more, then left unlabelled.
+
+**Records.** Labeller `<seat>-<model>:panel/v1`, for example
+`claude-opus-5-5:panel/v1`, `codex-gpt-6-astra:panel/v1` or
+`gemini-<model>:panel/v1`, with `panel_seat`, `model`, `vendor`, `cost` and
+the population fields. Records go to
+`tools/gold/labels/panel-<source>.jsonl`, keyed by the finding id of the
+labelled finding, so the ledger merges them with every other label of that
+finding. The ledger keeps `panel/v1` as current and drops other panel
+versions, as it does for the labeller's prompt versions. Today a finding's
+verdict needs every decided label to agree, the panel's included.
+**Dawid–Skene** will later replace that strict unanimity: it estimates each
+labeller's error rates from the labels and weighs votes by them. That is why
+records stay one per model and are never merged into a panel verdict on
+disk.
+
+**Self-measurement.** `calibrate` runs the panel on ground-truth items it
+never saw (OWASP, Juliet, CVE fix pairs and, with `--planted`, planted
+twins). The `calibration:` source keeps these records out of the ledger.
+It reports the following:
+
+- per model, per family (`label_models.category`) and for the unanimous
+  panel: accuracy on decided labels and tp-call precision, each with a
+  Wilson 95% interval;
+- false tp and missed tp counts;
+- pairwise agreement and κ;
+- cost.
+
+A family's panel labels are used only where the panel's measured error rate
+on that family is low enough.
+
+**Smoke, 2026-10-24.** 24 calibration items (owasp-python 9, owasp-java 7,
+juliet-java 5, cve-fix 3). Seats: `claude-opus-5-5` and Codex
+`gpt-6-astra`. Gemini was skipped: the CLI was logged in, but Google
+refused the personal account at the first call (`IneligibleTierError`, "no
+longer supported for Gemini Code Assist for individuals"). The API-key
+setup came after the run. Copilot was
+skipped: its only route was OpenAI's `gpt-6-luna`, already seated.
+
+| Model | Decided | Correct | Accuracy, Wilson 95% | TP calls right | Cost |
+|---|---:|---:|---|---:|---|
+| Claude | 24/24 | 24 | 0.862–1.000 | 16/16 | $0.39 (CLI-reported) |
+| Codex | 22/24 | 22 | 0.851–1.000 | 14/14 | 216,505 input / 1,568 output tokens |
+
+The panel (unanimous of 2) decided 24/24, all right, with no false tp. The
+two models agreed on all 22 items both decided (κ 1.0). This is a smoke test
+of the plumbing on easy benchmark items with two vendors, not a measurement
+to rely on. Run `calibrate --n 60` or more, with three vendors seated,
+before using panel labels in a claim.
 
 ## Model verification
 

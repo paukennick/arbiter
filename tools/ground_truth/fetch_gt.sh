@@ -8,6 +8,8 @@
 # * CVE fix pairs: the files each pinned fix commit changed, at the fix and at
 #   its parent (tools/ground_truth/cve_pairs.json, chosen by cve_select.py).
 # * OWASP Benchmark Java and Python come from tools/fetch_corpus.sh (pinned).
+# * GHSA fix pairs (ARB-121), only with GHSA=1 (after the rest) or GHSA=only
+#   (nothing else): tools/ground_truth/ghsa_pairs.json, into DEST/cve-ghsa.
 #
 # Everything fetched is data: it is scanned and read, never built or run, and
 # stays out of git (DEST is outside the repository).
@@ -20,6 +22,16 @@ JULIET_SHA256="d985f4177c2bcd7b03455a05c1c8f2e755f55c9eb250accd052f05f877347e60"
 JULIET_DIRS=(CWE80_XSS CWE81_XSS_Error_Message CWE83_XSS_Attribute CWE23_Relative_Path_Traversal
              CWE36_Absolute_Path_Traversal CWE78_OS_Command_Injection CWE89_SQL_Injection
              CWE190_Integer_Overflow)
+
+fetch_ghsa() {
+  PYTHONPATH="$ROOT/src" python "$ROOT/tools/ground_truth/ghsa_pairs.py" fetch \
+    --pairs "$ROOT/tools/ground_truth/ghsa_pairs.json" --dest "$DEST/cve-ghsa"
+}
+if [ "${GHSA:-0}" = only ]; then
+  fetch_ghsa
+  echo "GHSA fix pairs fetched under $DEST/cve-ghsa"
+  exit 0
+fi
 
 mkdir -p "$DEST/juliet-java-dl" "$DEST/juliet-java"
 zip="$DEST/juliet-java-dl/juliet-java-1.3.zip"
@@ -34,4 +46,5 @@ for d in "${JULIET_DIRS[@]}"; do pats+=("Java/src/testcases/$d/*"); done
 
 PYTHONPATH="$ROOT/src" python "$ROOT/tools/ground_truth/cve_pairs.py" fetch \
   --pairs "$ROOT/tools/ground_truth/cve_pairs.json" --dest "$DEST/cve"
+if [ "${GHSA:-0}" = 1 ]; then fetch_ghsa; fi
 echo "ground truth fetched under $DEST"

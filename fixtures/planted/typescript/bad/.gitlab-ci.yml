@@ -1,0 +1,27 @@
+include:
+  - remote: https://gitlab.example.com/templates/-/raw/main/node.yml # expect: arbiter/supply.unpinned-ci-include
+  - project: platform/ci-templates # expect: arbiter/supply.unpinned-ci-include
+    ref: main
+    file: /node.yml
+  - project: platform/ci-templates
+    ref: 8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+    file: /audit.yml
+  - local: /ci/lint.yml
+  - template: Jobs/SAST.gitlab-ci.yml
+
+image: node:20 # expect: arbiter/supply.unpinned-container-image
+
+services:
+  - name: redis # expect: arbiter/supply.unpinned-container-image
+
+test:
+  script:
+    - npm ci
+    - npm install -g pnpm # expect: arbiter/supply.unpinned-install-in-build
+    - npm test
+
+release:
+  image:
+    name: node:latest # expect: arbiter/supply.unpinned-container-image
+  script:
+    - wget -qO- https://get.example.com/release-cli | sh # expect: arbiter/supply.remote-script-piped

@@ -78,7 +78,10 @@ jobs:
           python -m pip install --upgrade pip
           # mcp: omni doctor starts the `arbiter mcp` server .mcp.json
           # registers and asks it for its tools, so the SDK has to be there.
-          pip install -e .[dev,mcp]
+          # ast: without the parser most rule packs cannot run, coverage
+          # falls below the bar and the grade is withheld (ARB-152), so the
+          # self-gate and the scan tests need it on every platform.
+          pip install -e .[dev,mcp,ast]
 
       # Linux only: the five external analyzers and the hosted-API extra.
       # Without them the adapter code paths ran only in the nightly job and
@@ -161,7 +164,7 @@ jobs:
         if: runner.os == 'Linux'
         env:
           PYTHONIOENCODING: utf-8
-        run: arbiter gate . --out arbiter-out --format json,sarif,markdown,pr-comment --github --no-cache --sarif-min-severity medium
+        run: arbiter gate . --config arbiter.yaml --out arbiter-out --format json,sarif,markdown,pr-comment --github --no-cache --sarif-min-severity medium
 
       # The same findings under the Security tab. always(): the upload is
       # most useful on the run that failed. continue-on-error: code scanning

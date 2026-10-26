@@ -22,6 +22,7 @@ recorded there, that reproducibility gap is stated rather than guessed.
 | Pinned public gold repositories | Development and repository-level holdout | 24 repos across Go, Java, Python, Ruby, TypeScript; 17 development and 7 held out | Arbiter finding labels include model labels; the harness describes a 60-row human sheet from 5 repos/41 strata as not yet labelled | Public projects are not a random sample of all repositories. Four repositories report `NOASSERTION` license metadata; resolve license/provenance before external publication. |
 | OWASP Benchmark Java/Python | Sealed ground-truth sources | Java: 2,740 cases/11 CWEs; Python: 1,230 cases/14 CWEs | Benchmark expected results; human audit status not recorded | Java source is GPL-2.0; Python is GPL-3.0. Both are fetched at pins and have restrictions recorded in `tools/gold/benchmarks.json`. Synthetic benchmark scope is not production-repository scope. |
 | CVE fix pairs and Juliet Java | Sealed ground-truth sources | CVE language mix and Juliet license status not inventoried here; Juliet is Java | Patch-derived or benchmark-provided labels; independent human audit not recorded | License/provenance and label audit are gaps. These sources are held out; do not inspect them while tuning. |
+| GHSA fix pairs (ARB-121, [external-cve-benchmark.md](external-cve-benchmark.md)) | Development (277 pairs) and sealed aggregate-only evaluation (223 pairs), split by repository | 500 real advisories, 100 per language (Python, TypeScript/JavaScript, Go, Java, Ruby), in CWEs the language's native rules claim; frozen in commit 02df982 before any scan | Patch-derived (advisory CWE plus the lines the fix changed); not human-adjudicated | Baseline primary recall 9.4% development (26/277), 8.1% sealed (18/223), Wilson and repository-cluster intervals in the results files. Advisory data is CC-BY-4.0; code is fetched at pins outside the repository and never redistributed; 119 of the 500 pairs' repositories report `NOASSERTION` or no licence. |
 
 The existing precision ledger reports labels for 120 rules and three admitted
 rules. One rule, `supply.unpinned-action`, is declared verified (ARB-101: 690
@@ -107,6 +108,96 @@ the CI setup does not establish equivalent analyzer coverage on Windows.
    retain the Arbiter commit, clean/dirty state, exact configuration,
    evaluator revision, host image, architecture, and all tool/database pins.
    Populate the run record in the benchmark manifest for every new evaluation.
+
+## External conformance scorecard (ARB-120)
+
+On 2026-10-24, `tools/ground_truth/external_scorecard.py` ran Arbiter
+`f52484f` (clean worktree, offline profile, no adapters, no cache, native
+probes only) over the outside benchmarks already wired. It wrote one run
+record per benchmark in the `run_record_template` shape (checked against
+the manifest schema) to [external-scorecard.json](external-scorecard.json),
+with per-CWE and per-rule tables in
+[external-scorecard.md](external-scorecard.md). Output is aggregate-only:
+counts and rates, with no case names, paths, advisory IDs or excerpts.
+
+| benchmark | units (vuln/safe) | clusters | case precision [Wilson 95%] | recall | in-scope recall | safe-case FPR |
+|---|---:|---:|---:|---:|---:|---:|
+| OWASP Benchmark Java 1.2 | 2,740 (1,415/1,325) | 1 | 0.808 [0.783, 0.831] | 0.591 [0.565, 0.616] | 0.970 [0.956, 0.979] | 0.149 [0.131, 0.170] |
+| OWASP Benchmark Python 0.1 | 1,230 (452/778) | 1 | 0.883 [0.838, 0.918] | 0.487 [0.441, 0.533] | 0.974 [0.943, 0.988] | 0.037 [0.026, 0.053] |
+| Juliet Java 1.3 (8 CWE dirs) | 18,310 (9,155/9,155) | 1 | 0.688 [0.673, 0.702] | 0.309 [0.299, 0.318] | 0.342 [0.332, 0.352] | 0.140 [0.133, 0.147] |
+| CVE fix pairs (70 GHSA) | 140 (70/70) | 70 | 0.556 [0.267, 0.811] | 0.071 [0.031, 0.157] | 0.079 [0.034, 0.173] | 0.057 [0.022, 0.138] |
+
+The CVE repository-cluster bootstrap (10,000 replicates, seed 0) gives
+precision [0.333, 0.800], recall [0.014, 0.143] and safe-case FPR
+[0.014, 0.114].
+
+**How to read it.**
+
+- These are **benchmark-conformance** results only. They describe agreement
+  with each benchmark's own labels under the matching rules stated in the
+  scorecard. They are not finding precision as the precision ledger
+  defines it, not production-population accuracy, and not a 99% claim.
+  *Case precision* is the share of the units Arbiter flagged that the
+  benchmark marks vulnerable.
+- OWASP and Juliet are each a single synthetic repository, so each is one
+  cluster. Their Wilson intervals are case-level only and do not generalise
+  beyond the benchmark.
+- The OWASP units are the benchmark's own `expectedresults` rows. The
+  Juliet and CVE vulnerable/safe units are **Arbiter-defined**, not lists
+  those benchmarks publish:
+  - Juliet: one case is all the files sharing a case stem. Its `bad` code
+    is the vulnerable unit and its `good*` code the safe unit.
+  - CVE: the vulnerable unit is the hunks the fix changed, ±2 lines, on the
+    vulnerable side. The safe unit is the same window on the fixed side.
+- "In scope" means some Arbiter rule for that language claims the CWE. Out
+  of scope:
+  - OWASP Java: 7 of 11 CWEs.
+  - OWASP Python: 8 of 14.
+  - Juliet: CWE-23 and CWE-36.
+
+  These are coverage gaps marked not assessed, not passes.
+- **No benchmark, CWE or rule reaches a 0.99 lower bound on both precision
+  and recall.** The closest are:
+  - OWASP Java CWE-330: 218/218 vulnerable units flagged and 0 of 275
+    safe units, lower bound 0.983 on both.
+  - OWASP Python CWE-330: 99/99, lower bound 0.963.
+  - OWASP Python CWE-328: 71/71, lower bound 0.949.
+- **Largest weak spots** (gap to 0.99, from the scorecard's ranking):
+  - Rules that claim a CWE but flag nothing:
+    - Juliet CWE-190: 4,257 vulnerable units; `java.parsed-count-overflow`
+      and `java.parsed-number-narrowed` never fire.
+    - Juliet CWE-81: 335 units.
+    - `java.argument-injection` on Juliet CWE-78 and OWASP Java CWE-78.
+    - `python.argument-injection` on OWASP Python.
+    - Most CVE strata (CWE-22, 79, 200, 287, 798, 918: 0 detected each).
+  - Rules that fire but are far from the bar:
+    - Juliet XSS recall 0.16 at precision 1.0 (CWE-80 and CWE-83).
+    - Safe-case false positives on the injection rules: Juliet CWE-89 FPR
+      0.486 and CWE-78 FPR 0.457 at about 0.99 recall; OWASP Java CWE-78
+      FPR 0.688; OWASP Python CWE-78 FPR 0.857, CWE-94 0.333, CWE-502
+      0.333.
+    - CVE overall: 5 of 70 fixes detected.
+- **Development exposure.** OWASP Java/Python and Juliet have already been
+  used to measure earlier rule changes (for example ARB-065's
+  before-and-after false-positive rates, recorded in the CHANGELOG). The
+  CWEs that were worked on, such as OWASP injection recall near 1.0, are
+  therefore not untouched-holdout evidence. The large difference between
+  in-scope recall on OWASP (0.97) and on Juliet (0.34) and the CVE pairs
+  (0.08) is consistent with that.
+- **Holdout status.** Once rules are tuned on this scorecard's weak spots,
+  OWASP Benchmark, Juliet and the 70 CVE pairs are **spent as sealed sets**
+  for those rules. From then on, their results for those rules are
+  development evidence. ARB-121's frozen GHSA split becomes the fresh
+  holdout for any claim about them.
+
+Reproduce (about 8 minutes on the recorded host; needs
+`tools/fetch_corpus.sh` and `tools/ground_truth/fetch_gt.sh` first):
+
+```bash
+python tools/ground_truth/external_scorecard.py --aggregate-only \
+    --corpus ~/wt/corpus-gold --gt ~/wt/corpus-gt \
+    --out docs/external-scorecard.json --markdown docs/external-scorecard.md
+```
 
 ## Baseline decision
 

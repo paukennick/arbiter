@@ -96,6 +96,9 @@ ok_exit = [0, 1]
 
 [map]
 findings = "$.results[*]"
+# The tool's own failures (files it could not parse, rules it could not
+# load). Any entry here makes the run an error, findings kept (ARB-146).
+errors = "$.errors[*]"
 rule_id = "check_id"
 title = "extra.message"
 path = "path"

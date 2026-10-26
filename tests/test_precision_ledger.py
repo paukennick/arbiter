@@ -126,6 +126,45 @@ def test_final_verdicts_agree_adjudicate_and_abstain():
     assert v["split"]["pair"] == ("tp", "fp")
 
 
+def test_a_mechanical_result_ranks_between_ground_truth_and_the_adjudicator(tmp_path):
+    v = PL.final_verdicts([
+        _rec("m", "tp", "a"), _rec("m", "tp", "b"), _rec("m", "fp", "judge", role="adjudicator"),
+        _rec("m", "fp", "facts", role="mechanical"),
+        _rec("t", "fp", "facts", role="mechanical"), _rec("t", "tp", "owasp", role="ground_truth"),
+        _rec("u", "unsure", "exec", role="mechanical"), _rec("u", "tp", "judge", role="adjudicator"),
+        _rec("c", "tp", "exec", role="mechanical"), _rec("c", "fp", "mutation", role="mechanical"),
+        _rec("c", "tp", "a"), _rec("c", "tp", "b"),
+    ])
+    assert {k: x["label"] for k, x in v.items()} == {
+        "m": "fp",          # the checker's observed result beats an adjudicator
+        "t": "tp",          # published truth beats a checker
+        "u": "tp",          # a checker that could not decide passes the finding on
+        "c": "unsure"}      # checkers that contradict each other decide nothing
+    p = tmp_path / "l.jsonl"
+    p.write_text(json.dumps(_rec("x", "tp", "facts", role="mechanical")) + "\n")
+    assert PL.read_jsonl(p)[0]["role"] == "mechanical"
+    p.write_text(json.dumps(_rec("x", "tp", "facts", role="oracle")) + "\n")
+    with pytest.raises(SystemExit, match="mechanical"):
+        PL.read_jsonl(p)
+
+
+def test_panel_records_one_per_model_need_unanimity_and_kappa_pairs_two_vendors():
+    claude, v3 = "claude-opus-5-5:panel/v1", "claude-opus-5-5:prosecutor+defender/v3"
+    codex, copilot = "codex-gpt-6-astra:panel/v1", "copilot-mai-code-1.1-flash:panel/v1"
+    v = PL.final_verdicts([
+        _rec("all", "tp", claude), _rec("all", "tp", codex), _rec("all", "tp", copilot),
+        _rec("one-off", "tp", claude), _rec("one-off", "fp", codex), _rec("one-off", "tp", copilot),
+        _rec("abstain", "tp", claude), _rec("abstain", "unsure", codex), _rec("abstain", "tp", copilot),
+        _rec("same", "tp", claude), _rec("same", "fp", v3),
+        _rec("mixed", "fp", claude), _rec("mixed", "fp", v3), _rec("mixed", "tp", copilot),
+    ])
+    assert {k: x["label"] for k, x in v.items()} == {
+        "all": "tp", "one-off": "unsure", "abstain": "tp", "same": "unsure", "mixed": "unsure"}
+    assert v["one-off"]["pair"] == ("tp", "fp")       # claude vs codex: two vendors
+    assert v["same"]["pair"] is None                  # two Anthropic labellers are not a pair
+    assert v["mixed"]["pair"] == ("fp", "tp")         # claude vs copilot, skipping the v3 record
+
+
 def test_one_finding_under_two_rules_is_refused():
     with pytest.raises(SystemExit, match="more than one rule"):
         PL.final_verdicts([_rec("x", "tp", rule=RULE), _rec("x", "tp", rule=OTHER)])
@@ -306,6 +345,17 @@ def test_model_labels_from_a_superseded_prompt_are_left_out():
     assert [r["finding_id"] for r in keep] == ["b", "c", "d"] and dropped == 1
     assert PL.drop_superseded_model_labels(recs, "")[1] == 0
     assert PL.current_model_prompt() == _load("label_models").PROMPT_VERSION
+
+
+def test_panel_labels_are_current_and_a_superseded_panel_prompt_is_left_out():
+    recs = [{"finding_id": "a", "labeller": "codex-gpt-6-astra:panel/v1"},
+            {"finding_id": "b", "labeller": "copilot-mai-code-1.1-flash:panel/v0"},
+            {"finding_id": "c", "labeller": "claude-opus-5-5:prosecutor+defender/v3"}]
+    assert PL.drop_superseded_model_labels(recs, "v3")[1] == 0      # panel names are not v3's line
+    keep, dropped = PL.drop_superseded_panel_labels(recs, PL.current_panel_prompt())
+    assert [r["finding_id"] for r in keep] == ["a", "c"] and dropped == 1
+    assert PL.current_panel_prompt() == "panel/v1"
+    assert PL.drop_superseded_panel_labels(recs, "")[1] == 0
 
 
 def test_a_new_labeller_with_the_same_counts_is_a_relabel():
