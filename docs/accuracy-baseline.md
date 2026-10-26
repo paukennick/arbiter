@@ -341,3 +341,20 @@ of them in the SQL generator sqlglot). Full table and reading in
 `docs/accuracy-prereg-b-results.md`. Model-labelled conformance on a
 convenience cohort, no rule changed or promoted, not a 99% claim.
 
+## ARB-113: learned-triage CPU baseline on development labels
+
+Workstream C has started with a repository-family-disjoint split and a cheap CPU
+baseline (`tools/triage_baseline.py`), using only development model labels
+(`ai-corpus-model`, non-held-out rows of `gold-model`). Training input excludes
+held-out labels, calibration labels and ARB-109 labels by loader policy.
+
+Frozen split (`tools/gold/labels/triage/dev-split-v1.json`): seed 113, 25%
+target, six validation families (`go-etcd`, `py-aiohttp`, `py-celery`,
+`py-django`, `ruby-rails`, `ts-jose`). Stats: train 339 findings (248 tp,
+91 fp), valid 354 findings (290 tp, 64 fp).
+
+CPU baseline metrics: AP 0.980 on the frozen split; 5-fold family CV pooled AP
+0.976 (fold mean 0.955, min 0.860, max 0.997). This is a development-only
+ranking baseline and a spend gate for any GPU run; no dependency changes, no
+GPU training and no ARB-109 evaluation happened in this step.
+

@@ -1,0 +1,44 @@
+{
+ "seed": 113,
+ "valid_ratio": 0.25,
+ "valid_families": [
+  "go-etcd",
+  "py-aiohttp",
+  "py-celery",
+  "py-django",
+  "ruby-rails",
+  "ts-jose"
+ ],
+ "train_families": [
+  "ai-corpus:file-upload",
+  "ai-corpus:job-queue",
+  "ai-corpus:notes-api",
+  "ai-corpus:url-shortener",
+  "ai-corpus:webhook-receiver",
+  "go-caddy",
+  "go-coredns",
+  "java-netty",
+  "java-spring-security",
+  "java-tomcat",
+  "py-cryptography",
+  "ruby-puma",
+  "ruby-rubygems",
+  "ts-nest",
+  "ts-otel-js",
+  "ts-undici"
+ ],
+ "train_stats": {
+  "n": 339,
+  "tp": 248,
+  "fp": 91,
+  "repos": 31,
+  "families": 16
+ },
+ "valid_stats": {
+  "n": 354,
+  "tp": 290,
+  "fp": 64,
+  "repos": 6,
+  "families": 6
+ }
+}
