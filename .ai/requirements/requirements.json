@@ -3587,6 +3587,30 @@
         "CHANGELOG.md"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-162",
+      "category": "accuracy",
+      "title": "Held-out set r7 (Python): 20 pinned repositories frozen before scanning",
+      "description": "Round 7 measures Python precision on repositories no rule was tuned against. 10 well-run (OpenSSF Scorecard >= 7.0) and 10 applications, chosen from GitHub and Scorecard metadata only with the r5 criteria, pinned to default-branch HEAD on 2026-10-26, frozen before any clone or scan. Scored aggregate-only; findings are sampled and model-labelled for the per-rule, per-language ledger (ARB-159).",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "tools/gold/heldout-r7-python-repos.json",
+        "tools/fetch_heldout_r7_python.sh"
+      ],
+      "acceptance_criteria": [
+        "the list was committed before any repository was cloned",
+        "every repository is pinned to a commit SHA",
+        "every skipped candidate is recorded with a reason"
+      ],
+      "validation_required": [
+        "bash -n tools/fetch_heldout_r7_python.sh"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
     }
   ]
 }

@@ -1,0 +1,452 @@
+{
+  "_about": "Held-out set r7, Python (round 7, ARB-162), frozen 2026-10-26 before any scan. 20 repositories: 10 well-run (OpenSSF Scorecard >= 7.0, top by stars) and 10 applications (deployed services, self-hosted tools, web apps), each with >= 1000 stars, pushed since 2026-08-26, not archived/fork/template, an OSI licence, Python >= 60% of bytes, size <= 400000 KB, a .github/workflows directory, and not used before in Arbiter's corpora (r5 held-out, gold repos, ground-truth sources, fetch scripts). Chosen from GitHub and Scorecard metadata and descriptions only: nothing was cloned, scanned or read as source before this list was frozen. Each repo is pinned to its default-branch HEAD at freeze time. `rejected` records every candidate skipped and why.",
+  "frozen": "2026-10-26",
+  "repos": {
+    "py-black": {
+      "github": "psf/black",
+      "stars": 42045,
+      "license": "MIT",
+      "default_branch": "main",
+      "size_kb": 8955,
+      "python_share": 0.9972,
+      "workflows": true,
+      "scorecard": 7.5,
+      "pinned_sha": "05de7d12c78620b8cc8b0eafb463a8c767b8cc92",
+      "pinned_commit_date": "2026-10-26T02:35:44Z",
+      "description": "The uncompromising Python code formatter",
+      "languages": {
+        "Python": 0.9972,
+        "Vim Script": 0.0021,
+        "Jupyter Notebook": 0.0005,
+        "Dockerfile": 0.0002
+      },
+      "language": "python",
+      "kind": "well-run"
+    },
+    "py-cognee": {
+      "github": "topoteretes/cognee",
+      "stars": 32753,
+      "license": "Apache-2.0",
+      "default_branch": "main",
+      "size_kb": 282529,
+      "python_share": 0.8822,
+      "workflows": true,
+      "scorecard": 7.1,
+      "pinned_sha": "37f788bd287750e10d7610173e5332b3843f6ebd",
+      "pinned_commit_date": "2026-10-16T20:07:34Z",
+      "description": "Cognee is the open-source AI memory platform for agents. Give your AI agents persistent long-term memory with small models for free",
+      "languages": {
+        "Python": 0.8822,
+        "TypeScript": 0.1034,
+        "JavaScript": 0.0099,
+        "HTML": 0.0019,
+        "Shell": 0.0013
+      },
+      "language": "python",
+      "kind": "well-run"
+    },
+    "py-openai-python": {
+      "github": "openai/openai-python",
+      "stars": 31955,
+      "license": "Apache-2.0",
+      "default_branch": "main",
+      "size_kb": 21562,
+      "python_share": 0.9971,
+      "workflows": true,
+      "scorecard": 7.9,
+      "pinned_sha": "5d72315876ffd8b72b958623ef4db26da3fb1e61",
+      "pinned_commit_date": "2026-10-25T20:43:21Z",
+      "description": "The official Python library for the OpenAI API",
+      "languages": {
+        "Python": 0.9971,
+        "JavaScript": 0.0022,
+        "Shell": 0.0007,
+        "Dockerfile": 0.0,
+        "Ruby": 0.0
+      },
+      "language": "python",
+      "kind": "well-run"
+    },
+    "py-theharvester": {
+      "github": "laramies/theHarvester",
+      "stars": 18054,
+      "license": "GPL-2.0",
+      "default_branch": "master",
+      "size_kb": 12884,
+      "python_share": 0.933,
+      "workflows": true,
+      "scorecard": 7.3,
+      "pinned_sha": "6790b147f52309e4eee22ed941db1d285ab2ec23",
+      "pinned_commit_date": "2026-10-20T21:51:05Z",
+      "description": "E-mails, subdomains and names Harvester - OSINT ",
+      "languages": {
+        "Python": 0.933,
+        "JavaScript": 0.0357,
+        "CSS": 0.0171,
+        "HTML": 0.0135,
+        "Dockerfile": 0.0007
+      },
+      "language": "python",
+      "kind": "well-run"
+    },
+    "py-click": {
+      "github": "pallets/click",
+      "stars": 17801,
+      "license": "BSD-3-Clause",
+      "default_branch": "main",
+      "size_kb": 5091,
+      "python_share": 0.9998,
+      "workflows": true,
+      "scorecard": 7.2,
+      "pinned_sha": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "pinned_commit_date": "2026-10-04T22:19:53Z",
+      "description": "Python composable command line interface toolkit",
+      "languages": {
+        "Python": 0.9998,
+        "Shell": 0.0002
+      },
+      "language": "python",
+      "kind": "well-run"
+    },
+    "py-ipython": {
+      "github": "ipython/ipython",
+      "stars": 16797,
+      "license": "BSD-3-Clause",
+      "default_branch": "main",
+      "size_kb": 82315,
+      "python_share": 0.9973,
+      "workflows": true,
+      "scorecard": 8,
+      "pinned_sha": "4e529543e57b6dd88cd838254ac8aeec1e61af9e",
+      "pinned_commit_date": "2026-10-23T08:54:22Z",
+      "description": "Official repository for IPython itself. Other repos in the IPython organization contain things like the website, documentation builds, etc.",
+      "languages": {
+        "Python": 0.9973,
+        "Shell": 0.0021,
+        "Makefile": 0.0005,
+        "Batchfile": 0.0001
+      },
+      "language": "python",
+      "kind": "well-run"
+    },
+    "py-memray": {
+      "github": "bloomberg/memray",
+      "stars": 15395,
+      "license": "Apache-2.0",
+      "default_branch": "main",
+      "size_kb": 33657,
+      "python_share": 0.6993,
+      "workflows": true,
+      "scorecard": 8.6,
+      "pinned_sha": "f33242337e1a95606ba6f0533fbbf2be98900647",
+      "pinned_commit_date": "2026-10-17T20:49:44Z",
+      "description": "Memray is a memory profiler for Python",
+      "languages": {
+        "Python": 0.6993,
+        "C++": 0.1948,
+        "Cython": 0.0525,
+        "JavaScript": 0.0257,
+        "HTML": 0.0141
+      },
+      "language": "python",
+      "kind": "well-run"
+    },
+    "py-playwright-python": {
+      "github": "microsoft/playwright-python",
+      "stars": 15066,
+      "license": "Apache-2.0",
+      "default_branch": "main",
+      "size_kb": 15492,
+      "python_share": 0.9211,
+      "workflows": true,
+      "scorecard": 7.2,
+      "pinned_sha": "f4619963b6a345755ca83142d3540d3eb3066dde",
+      "pinned_commit_date": "2026-10-24T03:14:56Z",
+      "description": "Python version of the Playwright testing and automation library.",
+      "languages": {
+        "Python": 0.9211,
+        "HTML": 0.0445,
+        "JavaScript": 0.0297,
+        "CSS": 0.0033,
+        "Shell": 0.0014
+      },
+      "language": "python",
+      "kind": "well-run"
+    },
+    "py-optuna": {
+      "github": "optuna/optuna",
+      "stars": 14969,
+      "license": "MIT",
+      "default_branch": "master",
+      "size_kb": 23692,
+      "python_share": 0.9998,
+      "workflows": true,
+      "scorecard": 8.2,
+      "pinned_sha": "b37c43f8037fed3859e9e01253d13267726d21d7",
+      "pinned_commit_date": "2026-10-23T08:17:01Z",
+      "description": "A hyperparameter optimization framework",
+      "languages": {
+        "Python": 0.9998,
+        "Mako": 0.0002
+      },
+      "language": "python",
+      "kind": "well-run"
+    },
+    "py-pytest": {
+      "github": "pytest-dev/pytest",
+      "stars": 14644,
+      "license": "MIT",
+      "default_branch": "main",
+      "size_kb": 42016,
+      "python_share": 1.0,
+      "workflows": true,
+      "scorecard": 7,
+      "pinned_sha": "082ed70e314ee8e1ab117763d17fe801648f7508",
+      "pinned_commit_date": "2026-10-25T17:49:59Z",
+      "description": "The pytest framework makes it easy to write small tests, yet scales to support complex functional testing",
+      "languages": {
+        "Python": 1.0,
+        "Gherkin": 0.0
+      },
+      "language": "python",
+      "kind": "well-run"
+    },
+    "py-paperless-ngx": {
+      "github": "paperless-ngx/paperless-ngx",
+      "stars": 47098,
+      "license": "GPL-3.0",
+      "default_branch": "dev",
+      "size_kb": 231062,
+      "python_share": 0.6329,
+      "workflows": true,
+      "scorecard": null,
+      "pinned_sha": "5f17b1a310aa011f43b56474221d97f8d6bfe689",
+      "pinned_commit_date": "2026-10-24T21:12:29Z",
+      "description": "A community-supported supercharged document management system: scan, index and archive all your documents",
+      "languages": {
+        "Python": 0.6329,
+        "TypeScript": 0.2844,
+        "HTML": 0.0665,
+        "SCSS": 0.0099,
+        "Shell": 0.002
+      },
+      "language": "python",
+      "kind": "application"
+    },
+    "py-mitmproxy": {
+      "github": "mitmproxy/mitmproxy",
+      "stars": 46349,
+      "license": "MIT",
+      "default_branch": "main",
+      "size_kb": 69471,
+      "python_share": 0.7831,
+      "workflows": true,
+      "scorecard": 6.4,
+      "pinned_sha": "e139573eb9eebcce3c67a3fb51aa376c39d98074",
+      "pinned_commit_date": "2026-10-25T23:25:09Z",
+      "description": "An interactive TLS-capable intercepting HTTP proxy for penetration testers and software developers.",
+      "languages": {
+        "Python": 0.7831,
+        "TypeScript": 0.1616,
+        "JavaScript": 0.0333,
+        "Less": 0.0152,
+        "HTML": 0.0034
+      },
+      "language": "python",
+      "kind": "application"
+    },
+    "py-searxng": {
+      "github": "searxng/searxng",
+      "stars": 38845,
+      "license": "AGPL-3.0",
+      "default_branch": "master",
+      "size_kb": 125022,
+      "python_share": 0.8185,
+      "workflows": true,
+      "scorecard": null,
+      "pinned_sha": "54ca1d9cfb08674f66261d7f351b063558dfcc62",
+      "pinned_commit_date": "2026-10-25T18:34:17Z",
+      "description": "SearXNG is a free internet metasearch engine which aggregates results from various search services and databases. Users are neither tracked nor profiled.",
+      "languages": {
+        "Python": 0.8185,
+        "Shell": 0.0585,
+        "HTML": 0.0531,
+        "Less": 0.0382,
+        "TypeScript": 0.028
+      },
+      "language": "python",
+      "kind": "application"
+    },
+    "py-changedetection.io": {
+      "github": "dgtlmoon/changedetection.io",
+      "stars": 35298,
+      "license": "Apache-2.0",
+      "default_branch": "master",
+      "size_kb": 52893,
+      "python_share": 0.795,
+      "workflows": true,
+      "scorecard": null,
+      "pinned_sha": "7c1b74b52ed7a504aaeaad03b604556b29660847",
+      "pinned_commit_date": "2026-10-25T11:45:24Z",
+      "description": "Best and simplest tool for website change detection, web page monitoring, and website change alerts. Perfect for tracking content changes, price drops, restock alerts, and website defacement monitoring—all for free or enjoy our SaaS plan!",
+      "languages": {
+        "Python": 0.795,
+        "HTML": 0.0801,
+        "JavaScript": 0.0721,
+        "SCSS": 0.0456,
+        "Shell": 0.0054
+      },
+      "language": "python",
+      "kind": "application"
+    },
+    "py-jumpserver": {
+      "github": "jumpserver/jumpserver",
+      "stars": 31833,
+      "license": "GPL-3.0",
+      "default_branch": "dev",
+      "size_kb": 177080,
+      "python_share": 0.9607,
+      "workflows": true,
+      "scorecard": 6.5,
+      "pinned_sha": "ef6499663e81d4e04b2c772c490ee9974dc46818",
+      "pinned_commit_date": "2026-10-26T03:05:44Z",
+      "description": "JumpServer is an Open-source Privileged Access Management (PAM) platform with AI-powered capabilities, providing DevOps and IT teams a unified workspace to securely access SSH, RDP, Kubernetes, databases, websites, RemoteApp, VirtualApp, and more.",
+      "languages": {
+        "Python": 0.9607,
+        "CSS": 0.035,
+        "Shell": 0.002,
+        "Go": 0.0011,
+        "Java": 0.0006
+      },
+      "language": "python",
+      "kind": "application"
+    },
+    "py-private-gpt": {
+      "github": "zylon-ai/private-gpt",
+      "stars": 57613,
+      "license": "Apache-2.0",
+      "default_branch": "main",
+      "size_kb": 226848,
+      "python_share": 0.8721,
+      "workflows": true,
+      "scorecard": null,
+      "pinned_sha": "0f6a2de226374a7ccc7ac5e739054be8da9929d9",
+      "pinned_commit_date": "2026-10-23T08:54:01Z",
+      "description": "Complete API layer for private AI applications on local models: RAG, skills, tools, MCP, text-to-sql, and more. Works with any OpenAI-compatible inference server.",
+      "languages": {
+        "Python": 0.8721,
+        "HTML": 0.0916,
+        "MDX": 0.0228,
+        "Jinja": 0.0115,
+        "Dockerfile": 0.0013
+      },
+      "language": "python",
+      "kind": "application"
+    },
+    "py-astrbot": {
+      "github": "AstrBotDevs/AstrBot",
+      "stars": 43501,
+      "license": "AGPL-3.0",
+      "default_branch": "master",
+      "size_kb": 82295,
+      "python_share": 0.7197,
+      "workflows": true,
+      "scorecard": null,
+      "pinned_sha": "832fc6d98ac25facd54b07424c16067435c118e6",
+      "pinned_commit_date": "2026-10-25T11:51:08Z",
+      "description": "AI Agent Assistant & development framework that integrates lots of IM platforms, LLMs, plugins and AI feature, and can be your openclaw alternative. ✨",
+      "languages": {
+        "Python": 0.7197,
+        "Vue": 0.2038,
+        "TypeScript": 0.0481,
+        "JavaScript": 0.0195,
+        "HTML": 0.0026
+      },
+      "language": "python",
+      "kind": "application"
+    },
+    "py-ocrmypdf": {
+      "github": "ocrmypdf/OCRmyPDF",
+      "stars": 35152,
+      "license": "MPL-2.0",
+      "default_branch": "main",
+      "size_kb": 72451,
+      "python_share": 0.9848,
+      "workflows": true,
+      "scorecard": null,
+      "pinned_sha": "b457e9efa68c3a46be2470ffb222ed1bccc4dcbc",
+      "pinned_commit_date": "2026-10-25T07:47:33Z",
+      "description": "OCRmyPDF adds an OCR text layer to scanned PDF files, allowing them to be searched",
+      "languages": {
+        "Python": 0.9848,
+        "Shell": 0.0131,
+        "Dockerfile": 0.0021
+      },
+      "language": "python",
+      "kind": "application"
+    },
+    "py-maigret": {
+      "github": "soxoj/maigret",
+      "stars": 39362,
+      "license": "MIT",
+      "default_branch": "main",
+      "size_kb": 29842,
+      "python_share": 0.8342,
+      "workflows": true,
+      "scorecard": 4.8,
+      "pinned_sha": "1a03f863e58a17cc24a0f5b5eb6141529ad16e91",
+      "pinned_commit_date": "2026-10-24T22:05:12Z",
+      "description": "🕵️‍♂️ Collect a dossier on a person by username from 6K websites",
+      "languages": {
+        "Python": 0.8342,
+        "HTML": 0.1457,
+        "Go Template": 0.0121,
+        "Batchfile": 0.0036,
+        "Makefile": 0.001
+      },
+      "language": "python",
+      "kind": "application"
+    },
+    "py-lightrag": {
+      "github": "HKUDS/LightRAG",
+      "stars": 40327,
+      "license": "MIT",
+      "default_branch": "main",
+      "size_kb": 117648,
+      "python_share": 0.8989,
+      "workflows": true,
+      "scorecard": null,
+      "pinned_sha": "aaebfe1bb8d55deb6a4304d357a3bf4c92fcd40a",
+      "pinned_commit_date": "2026-10-14T14:55:37Z",
+      "description": "[EMNLP2025] LightRAG: Simple and Fast Retrieval-Augmented Generation",
+      "languages": {
+        "Python": 0.8989,
+        "TypeScript": 0.0823,
+        "Shell": 0.0165,
+        "JavaScript": 0.0006,
+        "CSS": 0.0005
+      },
+      "language": "python",
+      "kind": "application"
+    }
+  },
+  "rejected": [
+    {
+      "github": "onnx/onnx",
+      "stars": 21617,
+      "kind": "well-run",
+      "reason": "Python 55% of bytes (< 60%)"
+    },
+    {
+      "github": "triton-inference-server/server",
+      "stars": 11113,
+      "kind": "well-run",
+      "reason": "Python 59% of bytes (< 60%)"
+    },
+    {
+      "github": "inventree/InvenTree",
+      "kind": "application",
+      "reason": "not in candidate metadata"
+    }
+  ]
+}

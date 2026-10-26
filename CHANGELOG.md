@@ -7,6 +7,10 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-162 | Held-out set r7 for Python frozen before any scan: 20 repositories
+  (10 well-run with OpenSSF Scorecard >= 7.0, 10 applications), chosen from GitHub
+  and Scorecard metadata only, each pinned to a commit. `tools/gold/heldout-r7-python-repos.json`,
+  fetched by `tools/fetch_heldout_r7_python.sh`.
 - ARB-159 | Precision is reported per language, with JavaScript apart from
   TypeScript. A finding's language in the ledger comes from its file
   extension, not the TypeScript pack that flagged it; label populations
