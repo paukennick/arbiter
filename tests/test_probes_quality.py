@@ -543,6 +543,21 @@ def test_imports_that_are_not_runtime_requirements_are_not_undeclared(tmp_path):
     assert found == ["undeclared:python:attrs_typo", "undeclared:python:lazy_missing"]
 
 
+def test_newer_stdlib_modules_are_stdlib_whatever_python_runs_the_scan(tmp_path, monkeypatch):
+    """`sys.stdlib_module_names` describes the interpreter running Arbiter, so a
+    3.10 scan once reported `import tomllib` as undeclared and a 3.11 scan did not
+    (FAIL-133). Simulate 3.10 by removing the newer modules from `sys`."""
+    import sys
+    older = frozenset(sys.stdlib_module_names) - {"tomllib", "annotationlib", "compression"}
+    monkeypatch.setattr(sys, "stdlib_module_names", older)
+    found = _undeclared(tmp_path, {
+        "requirements.txt": "requests==2.31.0\n",
+        "pkg/a.py": "import tomllib\nimport annotationlib\nfrom compression import zstd\n"
+                    "import not_a_real_pkg\n",
+    })
+    assert found == ["undeclared:python:not_a_real_pkg"]
+
+
 def test_a_module_its_declared_provider_guarantees_is_declared(tmp_path):
     found = _undeclared(tmp_path, {
         "requirements/extras/gevent.txt": "gevent==24.0\n",

@@ -82,6 +82,11 @@ jobs:
           # falls below the bar and the grade is withheld (ARB-152), so the
           # self-gate and the scan tests need it on every platform.
           pip install -e .[dev,mcp,ast]
+          # The parser package downloads a grammar the first time something
+          # asks for it, so without this the grammars present depended on test
+          # order: Windows, which skips install_tools.sh, reported the TypeScript
+          # pack as not assessed whenever tsx had not been fetched yet (FAIL-132).
+          python -c "import json, tree_sitter_language_pack as t; t.download(json.load(open('src/arbiter/tooling.json'))['tree_sitter']['default_grammars'])"
 
       # Linux only: the five external analyzers and the hosted-API extra.
       # Without them the adapter code paths ran only in the nightly job and

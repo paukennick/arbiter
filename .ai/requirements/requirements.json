@@ -3525,6 +3525,32 @@
         "CHANGELOG.md"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-157",
+      "category": "developer-tooling",
+      "title": "PR checks pass on every matrix cell again",
+      "description": "PR #21's CI failed on three cells; round 6 and Copilot's branches had failed the same way. Fixed: Windows grammars are downloaded up front (FAIL-132); undeclared-import no longer depends on which Python runs the scan (FAIL-133); the shipped GitHub Action pins upload-sarif to a SHA (FAIL-134).",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        ".github/workflows/pr-check.yml",
+        "src/arbiter/authored.py",
+        "ci/github-action/action.yml",
+        "tests/test_probes_quality.py"
+      ],
+      "acceptance_criteria": [
+        "windows-latest typescript control tests pass",
+        "ubuntu-latest 3.10 held-out total matches 3.11",
+        "the self-gate passes"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/ -q"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md"
+      ],
+      "risk_notes": []
     }
   ]
 }

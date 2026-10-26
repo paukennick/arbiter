@@ -2370,6 +2370,77 @@
       "prevention_rules": [],
       "prevention_notes": "Any file whose bytes are hashed elsewhere gets an eol=lf rule when it is added",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-132",
+      "date": "2026-10-25",
+      "title": "Windows CI reported the TypeScript pack as not assessed when tsx had not been downloaded",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "test_controls_cwe_top25 [typescript] (not_assessed 12) and test_controls_lang_packs [typescript] (lang_typescript skipped) failed on windows-latest in PR #21 and in round 6's CI",
+      "how_detected": "PR #21 CI",
+      "root_cause": "The TypeScript pack needs both the typescript and tsx grammars. tree-sitter-language-pack downloads a grammar on first use and the Windows job skips install_tools.sh, so tsx was present or not depending on which test asked for it first. The tests' skip guard checked only the typescript grammar, so they ran and found the pack skipped for a missing tsx",
+      "requirement": "",
+      "affected": [
+        ".github/workflows/pr-check.yml"
+      ],
+      "fix_summary": "The CI install step downloads every default grammar from src/arbiter/tooling.json on all platforms",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_controls_cwe_top25.py::test_a_real_scan_of_the_planted_corpus_reports_per_language",
+        "tests/test_controls_lang_packs.py::test_a_real_scan_reports_a_language_control_as_assessed"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "CI fetches grammars up front; nothing may depend on first-use downloads",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-133",
+      "date": "2026-10-25",
+      "title": "undeclared-import judged stdlib by the scanning interpreter, so 3.10 flagged import tomllib",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "test_heldout_aggregate_snapshot_matches failed on ubuntu-latest 3.10 only: 163 -> 164 findings; reproduced in WSL, the extra finding was arbiter/authored.undeclared-import",
+      "how_detected": "PR #21 CI, reproduced on Python 3.10 in WSL",
+      "root_cause": "authored.py used sys.stdlib_module_names, which lists the modules of the Python running Arbiter, not of the code scanned. tomllib joined the stdlib in 3.11, so a 3.10 scan reported it as a missing dependency",
+      "requirement": "",
+      "affected": [
+        "src/arbiter/authored.py"
+      ],
+      "fix_summary": "Union in the stdlib modules added after 3.10 (tomllib, annotationlib, compression and others); held-out total is 163 on both 3.10 and 3.11",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_probes_quality.py::test_newer_stdlib_modules_are_stdlib_whatever_python_runs_the_scan",
+        "tests/test_regression_guard.py::test_heldout_aggregate_snapshot_matches"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Facts about scanned code must not come from the scanning interpreter's version",
+      "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-134",
+      "date": "2026-10-25",
+      "title": "Shipped GitHub Action used upload-sarif@v3, failing Arbiter's own self-gate",
+      "status": "fixed",
+      "severity": "medium",
+      "symptom": "The CI self-gate exited 1 with 'Action github/codeql-action/upload-sarif pinned to a mutable ref (v3)'",
+      "how_detected": "PR #21 CI self-gate",
+      "root_cause": "ci/github-action/action.yml, the action Arbiter ships to users, referenced upload-sarif by tag. FAIL-046 pinned every workflow action but this composite action was missed; supply.unpinned-action (verified tier) correctly blocks it",
+      "requirement": "",
+      "affected": [
+        "ci/github-action/action.yml"
+      ],
+      "fix_summary": "Pinned to commit 9f759ee644a3e7c15c1390abf49868036c00067b, the same SHA pr-check.yml uses",
+      "fix_commits": [],
+      "regression_tests": [
+        "arbiter gate self-scan in pr-check.yml"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Composite actions under ci/ are pinned like workflows",
+      "recurrence_of": ""
     }
   ]
 }

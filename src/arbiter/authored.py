@@ -197,6 +197,19 @@ _PY_TRANSITIVE = {
 # `js` bridge and `pyodide` itself (urllib3's emscripten backend).
 _PY_RUNTIME_PROVIDED = frozenset({"js", "pyodide"})
 
+# Standard-library modules added after the oldest Python Arbiter supports
+# (3.10). `sys.stdlib_module_names` describes the interpreter running the scan,
+# not the code being scanned, so without these a 3.10 scan reported
+# `import tomllib` as an undeclared dependency and a 3.11 scan did not (FAIL-133).
+# Removed modules (binhex, asynchat, ...) are kept by `sys` on the versions
+# that still had them, so only additions need listing.
+_PY_STDLIB_ADDED_AFTER_310 = frozenset({"tomllib", "_tokenize", "_typing",
+                                        "_interpchannels", "_interpqueues",
+                                        "_interpreters", "_pyrepl", "_colorize",
+                                        "_suggestions", "_sysconfig", "_opcode_metadata",
+                                        "annotationlib", "compression", "string.templatelib",
+                                        "_zstd"})
+
 # Build scripts declare their own build-time requirements elsewhere (PEP 518),
 # so an import here says nothing about the runtime manifest.
 _BUILD_SCRIPT = re.compile(r"(^|/)(setup\.py|conftest\.py|noxfile\.py|tasks\.py)$")
@@ -662,7 +675,8 @@ def _undeclared_imports(f, text, declared, local, has_manifest,
             return []
         if f.role == "test":
             return []   # as for Go, Java and Ruby: `t/` (celery) is not `tests/`
-        stdlib = set(getattr(sys, "stdlib_module_names", ())) | _PY_RUNTIME_PROVIDED
+        stdlib = (set(getattr(sys, "stdlib_module_names", ())) | _PY_RUNTIME_PROVIDED
+                  | _PY_STDLIB_ADDED_AFTER_310)
         clean = _strip_prose(text)
         # Spans covered by a try: block, where an absent package is deliberate.
         optional = [(m.start(), m.end()) for m in _OPTIONAL_IMPORT_BLOCK.finditer(clean)]

@@ -5,6 +5,16 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 `REQ-###` they serve. Rationale belongs in `.ai/project-context.md`.
 
 ## [Unreleased]
+### 2026-10-26
+
+- ARB-157 | PR checks pass on every matrix cell again. Windows CI downloads
+  every default tree-sitter grammar up front, so the TypeScript pack no longer
+  depends on test order for `tsx` (FAIL-132). `authored.undeclared-import`
+  treats standard-library modules added after Python 3.10 (`tomllib` and
+  others) as standard library whichever Python runs the scan; a 3.10 scan
+  reported `import tomllib` as undeclared (FAIL-133). The shipped GitHub
+  Action pins `upload-sarif` to a commit SHA (FAIL-134).
+
 ### 2026-10-25
 
 - ARB-156 | Two tests that failed only on Windows checkouts now pass there. The
