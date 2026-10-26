@@ -53,6 +53,7 @@ import json
 import math
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -346,13 +347,26 @@ class Cache:
                 fh.write(json.dumps(rec, sort_keys=True) + "\n")
 
 
+def _claude_executable() -> str:
+    """The Claude CLI binary itself. On Windows npm installs `claude.cmd`, which
+    subprocess cannot start without a shell, and a shell would mangle the
+    multi-line prompts passed as arguments; the wrapper only launches
+    bin/claude.exe beside it, so run that directly (FAIL-142)."""
+    found = shutil.which("claude") or "claude"
+    if os.name == "nt" and found.lower().endswith((".cmd", ".bat")):
+        exe = Path(found).parent / "node_modules" / "@anthropic-ai" / "claude-code" / "bin" / "claude.exe"
+        if exe.is_file():
+            return str(exe)
+    return found
+
+
 def call_cli(system: str, prompt: str, model: str, timeout: int = 240,
              env: dict | None = None) -> tuple[str, float, str]:
     """(reply text, cost in USD, resolved model) from one headless CLI run.
     `env` replaces the inherited environment (the panel passes an allowlist,
     tools/panel/providers.py `clean_env`); by default it is this process's
     environment without ANTHROPIC_API_KEY."""
-    cmd = ["claude", "-p", prompt, "--model", model, "--tools", "", "--setting-sources", "",
+    cmd = [_claude_executable(), "-p", prompt, "--model", model, "--tools", "", "--setting-sources", "",
            "--strict-mcp-config", "--system-prompt", system, "--output-format", "json",
            "--no-session-persistence"]
     with tempfile.TemporaryDirectory(prefix="label-") as cwd:
