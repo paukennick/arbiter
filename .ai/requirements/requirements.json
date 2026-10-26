@@ -3809,6 +3809,58 @@
         "CHANGELOG.md"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-159",
+      "category": "Tooling",
+      "title": "Adopt Omni automatic engineering document generation",
+      "description": "Update Arbiter to OmniEngineering eeffebd so omni docs build generates deterministic engineering documentation and requirement changes regenerate it automatically.",
+      "priority": "low",
+      "status": "completed",
+      "minimum_access_scope": [
+        ".ai/omni-version.json",
+        ".ai/requirements/requirements.json",
+        ".ai/context-brief.md",
+        ".ai/project-context.md",
+        ".ai/playbooks/testing.md",
+        ".ai/rules/completion-workflow.json",
+        ".ai/rules/data-governance.json",
+        ".ai/rules/universal-engineering-ruleset.json",
+        ".ai/schemas/requirements.schema.json",
+        ".ai/adapters/deepseek.md",
+        ".ai/adapters/generic-llm.md",
+        ".ai/graph-viewer/viewer.html",
+        ".claude/skills/swe-docs/SKILL.md",
+        "CHANGELOG.md",
+        "make_ai.py",
+        "omni",
+        "omni_docs.py",
+        "omni_graph.py",
+        "omni_mcp.py",
+        "docs/generated"
+      ],
+      "acceptance_criteria": [
+        "omni docs build generates the engineering document set deterministically",
+        "Requirement lifecycle commands regenerate existing generated docs automatically",
+        "Generated documentation is committed for Arbiter"
+      ],
+      "validation_required": [
+        "python omni docs build --check",
+        "python -m pytest -q",
+        "PYTHONPATH=src python tools/integrity.py",
+        "python omni doctor",
+        "python omni gate"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md",
+        ".ai/project-context.md",
+        "docs/generated"
+      ],
+      "risk_notes": [
+        "Generated-document freshness remains opt-in at the gate.",
+        "Full native-Windows pytest reaches 29 passing tests before the pre-existing POSIX-shell adapter test fails because sh is unavailable; this change does not touch Arbiter source or tests.",
+        "arbiter check skipped: ARB-159 changes workspace tooling only; claim integrity passed and the Arbiter source tree was unchanged."
+      ]
     }
   ]
 }

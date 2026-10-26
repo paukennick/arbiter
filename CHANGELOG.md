@@ -7,6 +7,11 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-159 | OmniEngineering is updated through `eeffebd`, adding deterministic
+  `omni docs build` output for architecture, design, requirements,
+  traceability, test planning, modules, class diagrams, and change summaries.
+  Existing generated docs now refresh automatically after requirement status
+  changes.
 - ARB-158 | CI scans now use the analyzers CI installs. Since the tooling
   lock (2026-10-23) scans read analyzers from the lock-keyed cache that only
   `arbiter tools install` fills, while CI ran `install_tools.sh` alone, so the

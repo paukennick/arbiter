@@ -1952,3 +1952,14 @@ ARB-113 (Workstream C start): added `tools/triage_baseline.py` + tests, froze `t
   clustered decision depends on an assumption the data cannot test: the
   worst case (lower bound 0.8292) or the pooled ICC (0.9855). Under either,
   the 99% tier claim (0.7687 or 0.9797) would not hold today.
+
+## 2026-10-26 - Generated engineering documents (ARB-159)
+
+Arbiter now carries OmniEngineering's deterministic document generator from
+upstream `eeffebd`. `omni docs build` derives architecture, design,
+requirements, traceability, test-plan, module, class-diagram, and change-summary
+documents from the repository, requirement registry, test registry, and code
+graph without a model call. Once `docs/generated/index.md` exists, requirement
+add, status-update, and completion commands refresh affected documents
+automatically. Gate freshness remains opt-in so adopting the generator does not
+turn a documentation convenience into an unrequested blocking policy.
