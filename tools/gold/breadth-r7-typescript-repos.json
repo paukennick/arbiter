@@ -1,0 +1,2790 @@
+{
+  "_about": "Breadth set r7, TypeScript (ARB-166), frozen before any clone or scan. TypeScript applications and services drawn from GitHub topics ['self-hosted', 'web-application', 'webapp', 'dashboard', 'cms', 'api-server', 'rest-api', 'backend', 'monitoring', 'automation', 'bot', 'discord-bot', 'telegram-bot', 'chatbot', 'scraper', 'crawler', 'cli', 'proxy', 'saas', 'workflow', 'llm-app', 'rag', 'mcp-server', 'electron-app', 'home-automation', 'media-server', 'whatsapp-bot'], each with >= 1000 stars, pushed since 2026-08-26, not archived/fork/template, an OSI licence, TypeScript >= 60% of bytes, size <= 400000 KB, a .github/workflows directory, no path Windows cannot check out, a description and topics that do not name a library/SDK/plugin/component kit/tutorial/boilerplate/list, a file showing it is deployed or installed as an application (Dockerfile or compose file, Procfile, fly.toml/render.yaml, systemd unit, electron-builder/forge/tauri config, platformio.ini/sdkconfig, debian/control, or man pages; some real CLIs lack all of these and are lost), and not named anywhere in Arbiter's tools, packs, docs or fixtures (held-out sets, gold repos, ground-truth sources, every other breadth manifest). Chosen from metadata and file names only; candidates shuffled with seed 20261026, then split with seed 20261027 into 'dev' (30: rule fixes may read these) and 'heldout' (measurement only, never used for tuning). Each repo is pinned to its default-branch HEAD at freeze time.",
+  "language": "typescript",
+  "requirement": "ARB-166",
+  "frozen": "2026-10-26",
+  "seed": 20261026,
+  "split_seed": 20261027,
+  "min_stars": 1000,
+  "candidates": 608,
+  "target": 120,
+  "repos": {
+    "ts-cloudbeaver": {
+      "github": "dbeaver/cloudbeaver",
+      "url": "https://github.com/dbeaver/cloudbeaver.git",
+      "sha": "ddc77623cf18f924816b04a5eeb3c40b33be924e",
+      "branch": "devel",
+      "stars": 5204,
+      "license": "Apache-2.0",
+      "language_share": 0.674,
+      "description": "Cloud Database Manager",
+      "slice": "dev"
+    },
+    "ts-answeroverflow": {
+      "github": "AnswerOverflow/AnswerOverflow",
+      "url": "https://github.com/AnswerOverflow/AnswerOverflow.git",
+      "sha": "80b1dceb10e1abbf42ce3c301697e8958727b791",
+      "branch": "main",
+      "stars": 2020,
+      "license": "MIT",
+      "language_share": 0.989,
+      "description": "Powering Discord content discovery by making web pages from threads for some of the largest servers, including Valorant, Cloudflare, C#, and Nuxt.",
+      "slice": "heldout"
+    },
+    "ts-karakeep": {
+      "github": "karakeep-app/karakeep",
+      "url": "https://github.com/karakeep-app/karakeep.git",
+      "sha": "ba2acc3cb9f89973df0ed74a3c6b0681c910503a",
+      "branch": "main",
+      "stars": 30024,
+      "license": "AGPL-3.0",
+      "language_share": 0.982,
+      "description": "A self-hostable bookmark-everything app (links, notes and images) with AI-based automatic tagging and full text search",
+      "slice": "heldout"
+    },
+    "ts-agent-teams-ai": {
+      "github": "777genius/agent-teams-ai",
+      "url": "https://github.com/777genius/agent-teams-ai.git",
+      "sha": "d1a0832c89a7e250389755ae83bcb5424ebd12e9",
+      "branch": "main",
+      "stars": 2338,
+      "license": "AGPL-3.0",
+      "language_share": 0.956,
+      "description": "You're the boss, agents are your team. They handle tasks on their own, message each other, and review each other's work. You just watch the kanban board and give high-level commands. Codex/Claude/OpenCode/Cursor/Grok/GitHub/Kiro/Z.AI/Xiaomi/MiniMax/Kimi(300+ models, 200+ LLM providers, free models no auth) Build your AI company with multiple teams",
+      "slice": "heldout"
+    },
+    "ts-builderbot": {
+      "github": "codigoencasa/builderbot",
+      "url": "https://github.com/codigoencasa/builderbot.git",
+      "sha": "b4da9287518be64acf97140b6e9e39123d78c88e",
+      "branch": "builderbot",
+      "stars": 2976,
+      "license": "MIT",
+      "language_share": 0.806,
+      "description": "🤖 Crear Chatbot WhatsApp en minutos. Únete a este proyecto OpenSource",
+      "slice": "dev"
+    },
+    "ts-neko-master": {
+      "github": "foru17/neko-master",
+      "url": "https://github.com/foru17/neko-master.git",
+      "sha": "752ddf9a8e3b9c48e33ace0551eb9ad669dc6516",
+      "branch": "main",
+      "stars": 4211,
+      "license": "MIT",
+      "language_share": 0.907,
+      "description": "A modern and elegant dashboard for network traffic visualization and analysis.",
+      "slice": "heldout"
+    },
+    "ts-mirrai": {
+      "github": "Ch1rpys/Mirrai",
+      "url": "https://github.com/Ch1rpys/Mirrai.git",
+      "sha": "17a6944cf2a5369c87de13b6976f7b3c8782127d",
+      "branch": "main",
+      "stars": 1267,
+      "license": "MIT",
+      "language_share": 0.867,
+      "description": "不在身边的时候，TA 还在这里。Upload real chat logs, rebuild a digital persona — open-source AI companion with persona distillation, an emotion engine, 11 LLM providers, and a graduation mechanism.",
+      "slice": "heldout"
+    },
+    "ts-mongodb-mcp-server": {
+      "github": "mongodb-js/mongodb-mcp-server",
+      "url": "https://github.com/mongodb-js/mongodb-mcp-server.git",
+      "sha": "1b117c7c3cfdd5a6cc84b78792de23220fd03fe7",
+      "branch": "main",
+      "stars": 1151,
+      "license": "Apache-2.0",
+      "language_share": 0.99,
+      "description": "A Model Context Protocol server to connect to MongoDB databases and MongoDB Atlas Clusters.",
+      "slice": "dev"
+    },
+    "ts-tracearr": {
+      "github": "connorgallopo/Tracearr",
+      "url": "https://github.com/connorgallopo/Tracearr.git",
+      "sha": "9c625a9c112f772d57e3388ae0fd8edbdcaa0804",
+      "branch": "main",
+      "stars": 2750,
+      "license": "AGPL-3.0",
+      "language_share": 0.991,
+      "description": "Real-time monitoring for Plex, Jellyfin, and Emby servers. Track streams, analyze playback, and detect account sharing from a single dashboard.",
+      "slice": "heldout"
+    },
+    "ts-emdash": {
+      "github": "generalaction/emdash",
+      "url": "https://github.com/generalaction/emdash.git",
+      "sha": "85dfa910ac92e69b09ed5df70ea60ee625a83f07",
+      "branch": "main",
+      "stars": 6086,
+      "license": "Apache-2.0",
+      "language_share": 0.992,
+      "description": "Emdash is the Open-Source Agentic Development Environment (🧡 YC W26). Run multiple coding agents in parallel. Use any provider.",
+      "slice": "heldout"
+    },
+    "ts-greentunnel": {
+      "github": "SadeghHayeri/GreenTunnel",
+      "url": "https://github.com/SadeghHayeri/GreenTunnel.git",
+      "sha": "b1cca954e944e5243d71e36a27b1eb3811ffa8cd",
+      "branch": "main",
+      "stars": 4933,
+      "license": "MIT",
+      "language_share": 0.831,
+      "description": "GreenTunnel is an anti-censorship utility designed to bypass the DPI system that is put in place by various ISPs to block access to certain websites.",
+      "slice": "heldout"
+    },
+    "ts-dnschanger-desktop": {
+      "github": "DnsChanger/dnsChanger-desktop",
+      "url": "https://github.com/DnsChanger/dnsChanger-desktop.git",
+      "sha": "000a58491913aafa7699a191a925f0a1e617d2f0",
+      "branch": "main",
+      "stars": 1341,
+      "license": "MIT",
+      "language_share": 0.973,
+      "description": "DNS Changer for Windows, Linux, Mac operating systems",
+      "slice": "heldout"
+    },
+    "ts-emdash-cms-emdash": {
+      "github": "emdash-cms/emdash",
+      "url": "https://github.com/emdash-cms/emdash.git",
+      "sha": "2da70d71beaf2920110190c4a625630cd4ea70e9",
+      "branch": "main",
+      "stars": 13988,
+      "license": "MIT",
+      "language_share": 0.946,
+      "description": "EmDash is a full-stack TypeScript CMS based on Astro; the spiritual successor to WordPress",
+      "slice": "heldout"
+    },
+    "ts-aider-desk": {
+      "github": "hotovo/aider-desk",
+      "url": "https://github.com/hotovo/aider-desk.git",
+      "sha": "2b97b7652915a068c2e3194c95c2e7962fedb91c",
+      "branch": "main",
+      "stars": 1459,
+      "license": "Apache-2.0",
+      "language_share": 0.923,
+      "description": "Platform for AI-powered software engineers",
+      "slice": "dev"
+    },
+    "ts-vercel": {
+      "github": "vercel/vercel",
+      "url": "https://github.com/vercel/vercel.git",
+      "sha": "c628be7835e03a965b93e9cf9e2bd5ac2acbf5eb",
+      "branch": "main",
+      "stars": 16449,
+      "license": "Apache-2.0",
+      "language_share": 0.815,
+      "description": "Develop. Preview. Ship.",
+      "slice": "heldout"
+    },
+    "ts-trigger.dev": {
+      "github": "triggerdotdev/trigger.dev",
+      "url": "https://github.com/triggerdotdev/trigger.dev.git",
+      "sha": "2df9860b4c736da3ba3b8dd61b8f08a4d9b03521",
+      "branch": "main",
+      "stars": 16621,
+      "license": "Apache-2.0",
+      "language_share": 0.992,
+      "description": "Trigger.dev – build and deploy durable AI agents and workflows",
+      "slice": "heldout"
+    },
+    "ts-workers-sdk": {
+      "github": "cloudflare/workers-sdk",
+      "url": "https://github.com/cloudflare/workers-sdk.git",
+      "sha": "1b3bde19708ba82fbbfaeaaab8691ffa148d7d02",
+      "branch": "main",
+      "stars": 4666,
+      "license": "Apache-2.0",
+      "language_share": 0.983,
+      "description": "⛅️ Home to Wrangler, the CLI for Cloudflare Workers®",
+      "slice": "heldout"
+    },
+    "ts-enclosed": {
+      "github": "CorentinTh/enclosed",
+      "url": "https://github.com/CorentinTh/enclosed.git",
+      "sha": "a5cf88ef74b80f0abcfdedbf2c22ba489af52535",
+      "branch": "main",
+      "stars": 2102,
+      "license": "Apache-2.0",
+      "language_share": 0.953,
+      "description": "Minimalistic web app designed for sending private and secure notes.",
+      "slice": "heldout"
+    },
+    "ts-rote": {
+      "github": "Rabithua/Rote",
+      "url": "https://github.com/Rabithua/Rote.git",
+      "sha": "f7cc56ba4c1d8632c4c4d2d12d6867fd0b4376ec",
+      "branch": "main",
+      "stars": 1045,
+      "license": "MIT",
+      "language_share": 0.983,
+      "description": "A personal note repository that looks different🤔",
+      "slice": "heldout"
+    },
+    "ts-wppconnect-server": {
+      "github": "wppconnect-team/wppconnect-server",
+      "url": "https://github.com/wppconnect-team/wppconnect-server.git",
+      "sha": "974df5ef5674a5bca65fd254f90c96538348235a",
+      "branch": "main",
+      "stars": 1060,
+      "license": "Apache-2.0",
+      "language_share": 0.99,
+      "description": "Wppconnect Server is a ready-to-use API, just download, install, and start using, simple as that.",
+      "slice": "heldout"
+    },
+    "ts-wiredoor": {
+      "github": "wiredoor/wiredoor",
+      "url": "https://github.com/wiredoor/wiredoor.git",
+      "sha": "74cdf091266d38018e08a6cb12f4bdb72a515d04",
+      "branch": "main",
+      "stars": 1625,
+      "license": "Apache-2.0",
+      "language_share": 0.653,
+      "description": "Self hosted ingress-as-a-service platform that allows you to expose applications and services running in private or local networks to the internet",
+      "slice": "dev"
+    },
+    "ts-deskcommcrm": {
+      "github": "melgarafael/DeskcommCRM",
+      "url": "https://github.com/melgarafael/DeskcommCRM.git",
+      "sha": "028b40c118af6346c759186a40a67bdcf3748b63",
+      "branch": "main",
+      "stars": 4855,
+      "license": "MIT",
+      "language_share": 0.906,
+      "description": "Open-source AI sales OS — self-hosted CRM with native AI agents + WhatsApp (WAHA). Open alternative to Kommo, Octadesk & Intercom for any business that sells by chat. MCP-ready, multi-tenant, LGPD.",
+      "slice": "heldout"
+    },
+    "ts-dcm": {
+      "github": "ajnart/dcm",
+      "url": "https://github.com/ajnart/dcm.git",
+      "sha": "78c9dcdf8f60dbe4ddd89650811333d174cf609f",
+      "branch": "main",
+      "stars": 1448,
+      "license": "AGPL-3.0",
+      "language_share": 0.973,
+      "description": "DockerComposeMaker (DCM) is a self-hostable website to help you pick and create a docker-compose.yml file for your home server. Discover new containers, discover and share a config in a couple of clicks!",
+      "slice": "heldout"
+    },
+    "ts-zerobyte": {
+      "github": "nicotsx/zerobyte",
+      "url": "https://github.com/nicotsx/zerobyte.git",
+      "sha": "b3d6cc271d32309e7fa27227e874266700665dde",
+      "branch": "main",
+      "stars": 7076,
+      "license": "AGPL-3.0",
+      "language_share": 0.935,
+      "description": "Backup automation for self-hosters. Built on top of restic",
+      "slice": "dev"
+    },
+    "ts-foloup": {
+      "github": "FoloUp/FoloUp",
+      "url": "https://github.com/FoloUp/FoloUp.git",
+      "sha": "d33546cd02b811749a024ece7c1e0174fab30a69",
+      "branch": "main",
+      "stars": 1275,
+      "license": "MIT",
+      "language_share": 0.984,
+      "description": "💼 Your own AI-powered voice interviewer for hiring.",
+      "slice": "heldout"
+    },
+    "ts-meelo": {
+      "github": "Arthi-chaud/Meelo",
+      "url": "https://github.com/Arthi-chaud/Meelo.git",
+      "sha": "82e0a2caf075280d04fedd97a7baf0ebfee91082",
+      "branch": "main",
+      "stars": 1444,
+      "license": "GPL-3.0",
+      "language_share": 0.866,
+      "description": "Self-hosted Music Server. Focused on metadata integration & UI",
+      "slice": "heldout"
+    },
+    "ts-cloudflare-ai-web": {
+      "github": "Jazee6/cloudflare-ai-web",
+      "url": "https://github.com/Jazee6/cloudflare-ai-web.git",
+      "sha": "50d49147225010eff862053604c453d34910bd5b",
+      "branch": "main",
+      "stars": 2190,
+      "license": "Apache-2.0",
+      "language_share": 0.976,
+      "description": "Cloudflare AI Platform with one-click deployment",
+      "slice": "heldout"
+    },
+    "ts-lobsterai": {
+      "github": "netease-youdao/LobsterAI",
+      "url": "https://github.com/netease-youdao/LobsterAI.git",
+      "sha": "cbbe6492a02684218376102f383569affeac4b2b",
+      "branch": "main",
+      "stars": 6149,
+      "license": "MIT",
+      "language_share": 0.899,
+      "description": "Open-source, desktop-grade AI agent that gets real work done — data analysis, slides, docs, video & web research. Built on OpenClaw; runs tools on your real desktop and takes commands from your phone via WeChat, Feishu, DingTalk & Telegram.",
+      "slice": "heldout"
+    },
+    "ts-homarr": {
+      "github": "homarr-labs/homarr",
+      "url": "https://github.com/homarr-labs/homarr.git",
+      "sha": "c9c8eaa8d395d6507eb4504c1176073a8a47f72c",
+      "branch": "dev",
+      "stars": 5214,
+      "license": "Apache-2.0",
+      "language_share": 0.876,
+      "description": "A modern and easy to use dashboard. 80+ integrations. 20K+ icons built in. Authentication out of the box. No YAML, drag and drop configuration.",
+      "slice": "dev"
+    },
+    "ts-invio": {
+      "github": "kittendevv/Invio",
+      "url": "https://github.com/kittendevv/Invio.git",
+      "sha": "cade02da5efcb8113e01e6631692c6006945f2af",
+      "branch": "main",
+      "stars": 1195,
+      "license": "Unlicense",
+      "language_share": 0.609,
+      "description": "Self-hosted invoicing without the bloat.",
+      "slice": "heldout"
+    },
+    "ts-instatic": {
+      "github": "CoreBunch/Instatic",
+      "url": "https://github.com/CoreBunch/Instatic.git",
+      "sha": "1a7ab33ff1614e80b2f618b284dd55b0e2b9d9ae",
+      "branch": "main",
+      "stars": 9018,
+      "license": "MIT",
+      "language_share": 0.956,
+      "description": "The open-source alternative to Webflow, Framer and WordPress. Agentic self-hosted visual CMS outputting clean static pages. Users, roles, plugins, content, database, it's all there. ",
+      "slice": "heldout"
+    },
+    "ts-marp-cli": {
+      "github": "marp-team/marp-cli",
+      "url": "https://github.com/marp-team/marp-cli.git",
+      "sha": "ffc4128626cbc64965fe1cc805717c6d4438c384",
+      "branch": "main",
+      "stars": 3890,
+      "license": "MIT",
+      "language_share": 0.884,
+      "description": "A CLI interface for Marp and Marpit based converters",
+      "slice": "dev"
+    },
+    "ts-norish": {
+      "github": "norish-recipes/norish",
+      "url": "https://github.com/norish-recipes/norish.git",
+      "sha": "c79a86b3271a7801401e65c88228874c7a648bb6",
+      "branch": "main",
+      "stars": 1412,
+      "license": "AGPL-3.0",
+      "language_share": 0.858,
+      "description": "Norish - A realtime, self-hosted recipe app for families & friends ",
+      "slice": "heldout"
+    },
+    "ts-jobsync": {
+      "github": "Gsync/jobsync",
+      "url": "https://github.com/Gsync/jobsync.git",
+      "sha": "2bd2284879d2037883cbd21ee3283cf27138a671",
+      "branch": "main",
+      "stars": 1457,
+      "license": "MIT",
+      "language_share": 0.996,
+      "description": "Job application tracker and AI-powered job search assistant. Helps job seekers manage their search journey with AI resume review, job matching, task logging, and application analytics, all while keeping your data private.",
+      "slice": "heldout"
+    },
+    "ts-aitoearn": {
+      "github": "yikart/AiToEarn",
+      "url": "https://github.com/yikart/AiToEarn.git",
+      "sha": "cb894a43b2d23cc1ad67d9e7729b1d86cf9360bd",
+      "branch": "main",
+      "stars": 26921,
+      "license": "MIT",
+      "language_share": 0.839,
+      "description": "Let's use AI to Earn!",
+      "slice": "heldout"
+    },
+    "ts-squad": {
+      "github": "bradygaster/squad",
+      "url": "https://github.com/bradygaster/squad.git",
+      "sha": "c3f54c2cf18b7424676708929c782f276cc7fffb",
+      "branch": "dev",
+      "stars": 3306,
+      "license": "MIT",
+      "language_share": 0.858,
+      "description": "Squad: AI agent teams for any project",
+      "slice": "dev"
+    },
+    "ts-omni-tools": {
+      "github": "iib0011/omni-tools",
+      "url": "https://github.com/iib0011/omni-tools.git",
+      "sha": "9244e02923d99cde143ddd5b8d761d9ed0997da4",
+      "branch": "main",
+      "stars": 10433,
+      "license": "MIT",
+      "language_share": 0.865,
+      "description": "Self-hosted collection of powerful web-based tools for everyday tasks. No ads, no tracking, just fast, accessible utilities right from your browser!",
+      "slice": "dev"
+    },
+    "ts-pigallery2": {
+      "github": "bpatrik/pigallery2",
+      "url": "https://github.com/bpatrik/pigallery2.git",
+      "sha": "2d3bcb2ddde5aea6e7e170cca68f9a795309792d",
+      "branch": "master",
+      "stars": 2306,
+      "license": "MIT",
+      "language_share": 0.88,
+      "description": "A fast directory-first photo gallery website, with rich UI,  optimized for running on low resource servers (especially on raspberry pi)",
+      "slice": "heldout"
+    },
+    "ts-korean-law-mcp": {
+      "github": "chrisryugj/korean-law-mcp",
+      "url": "https://github.com/chrisryugj/korean-law-mcp.git",
+      "sha": "32c294e63b5a182a0e4166ab2ee38184e0b330ed",
+      "branch": "main",
+      "stars": 2790,
+      "license": "MIT",
+      "language_share": 0.935,
+      "description": "법제처 국가법령정보를 LLM에서 바로 조회하는 MCP 서버. 법령·판례·조례 검색과 인용 검증 | MCP server for Korean law — search statutes, precedents, and ordinances, and verify citations",
+      "slice": "heldout"
+    },
+    "ts-worklenz": {
+      "github": "Worklenz/worklenz",
+      "url": "https://github.com/Worklenz/worklenz.git",
+      "sha": "452161666af0eea72ce069ea1acbb80c40bdccba",
+      "branch": "main",
+      "stars": 3272,
+      "license": "AGPL-3.0",
+      "language_share": 0.721,
+      "description": "All in one project management tool for efficient teams",
+      "slice": "heldout"
+    },
+    "ts-effect": {
+      "github": "Effect-TS/effect",
+      "url": "https://github.com/Effect-TS/effect.git",
+      "sha": "20e5ba813ca014bc841672325b5e824b8100d976",
+      "branch": "main",
+      "stars": 17394,
+      "license": "MIT",
+      "language_share": 0.999,
+      "description": "Build production-ready applications in TypeScript",
+      "slice": "heldout"
+    },
+    "ts-hunk": {
+      "github": "modem-dev/hunk",
+      "url": "https://github.com/modem-dev/hunk.git",
+      "sha": "3910f11fd8b1c83efce5b35e4335d18252c6321a",
+      "branch": "main",
+      "stars": 9694,
+      "license": "MIT",
+      "language_share": 0.956,
+      "description": "Review-first terminal diff viewer for agentic coders",
+      "slice": "heldout"
+    },
+    "ts-faved": {
+      "github": "denho/faved",
+      "url": "https://github.com/denho/faved.git",
+      "sha": "c21fd89270c8471c4cc02e8c2efb022663bc7d8e",
+      "branch": "main",
+      "stars": 1341,
+      "license": "MIT",
+      "language_share": 0.758,
+      "description": "Free open-source bookmark manager with customisable nested tags. Super fast and lightweight. All data is stored locally.",
+      "slice": "dev"
+    },
+    "ts-forsaken-mail": {
+      "github": "denghongcai/forsaken-mail",
+      "url": "https://github.com/denghongcai/forsaken-mail.git",
+      "sha": "7eca41534d12abb9cb30a937218349a4fa5be099",
+      "branch": "master",
+      "stars": 1551,
+      "license": "GPL-2.0",
+      "language_share": 0.934,
+      "description": "a self-hosted disposable mail service",
+      "slice": "dev"
+    },
+    "ts-ccmanager": {
+      "github": "kbwo/ccmanager",
+      "url": "https://github.com/kbwo/ccmanager.git",
+      "sha": "c6c6a418c8fe02026db89ccad21a6160f10db916",
+      "branch": "main",
+      "stars": 1274,
+      "license": "MIT",
+      "language_share": 0.981,
+      "description": "Coding Agent Session Manager for Claude Code / Gemini CLI / Codex CLI / Cursor Agent / Copilot CLI / Cline CLI / OpenCode / Kimi CLI",
+      "slice": "dev"
+    },
+    "ts-ztnet": {
+      "github": "sinamics/ztnet",
+      "url": "https://github.com/sinamics/ztnet.git",
+      "sha": "716e28776546644a55878936c17678de03f6799c",
+      "branch": "main",
+      "stars": 1260,
+      "license": "GPL-3.0",
+      "language_share": 0.913,
+      "description": "ZTNET - ZeroTier Web UI for Private Controllers with Multiuser and Organization Support.",
+      "slice": "heldout"
+    },
+    "ts-apps": {
+      "github": "dailydotdev/apps",
+      "url": "https://github.com/dailydotdev/apps.git",
+      "sha": "669f49f27ee8f471fdc1666ab3e7b42437da586a",
+      "branch": "main",
+      "stars": 1003,
+      "license": "AGPL-3.0",
+      "language_share": 0.982,
+      "description": "daily.dev application suite",
+      "slice": "heldout"
+    },
+    "ts-hocuspocus": {
+      "github": "ueberdosis/hocuspocus",
+      "url": "https://github.com/ueberdosis/hocuspocus.git",
+      "sha": "9def0469c9cd6e9c09d3f51bd4ee282637929c9a",
+      "branch": "main",
+      "stars": 2632,
+      "license": "MIT",
+      "language_share": 0.983,
+      "description": "The Yjs CRDT WebSocket backend for conflict-free real-time collaboration in your app.",
+      "slice": "heldout"
+    },
+    "ts-ui-tars-desktop": {
+      "github": "bytedance/UI-TARS-desktop",
+      "url": "https://github.com/bytedance/UI-TARS-desktop.git",
+      "sha": "3ac2cb8d946d78d5ff92ad17b318eaafa18c178c",
+      "branch": "main",
+      "stars": 39394,
+      "license": "Apache-2.0",
+      "language_share": 0.894,
+      "description": "The Open-Source Multimodal AI Agent Stack: Connecting Cutting-Edge AI Models and Agent Infra",
+      "slice": "heldout"
+    },
+    "ts-autorag": {
+      "github": "Marker-Inc-Korea/AutoRAG",
+      "url": "https://github.com/Marker-Inc-Korea/AutoRAG.git",
+      "sha": "8e2a5af1960173295973d6d2a6b3664fb109daf3",
+      "branch": "main",
+      "stars": 5195,
+      "license": "Apache-2.0",
+      "language_share": 0.803,
+      "description": "Your Personal Librarian Agent. Ask anything on your computer, organize files, remember important info and files.",
+      "slice": "heldout"
+    },
+    "ts-ref-tools-mcp": {
+      "github": "ref-tools/ref-tools-mcp",
+      "url": "https://github.com/ref-tools/ref-tools-mcp.git",
+      "sha": "f5feb829cc7bdd18fb9b276c27e3f391b2c4132c",
+      "branch": "main",
+      "stars": 1183,
+      "license": "MIT",
+      "language_share": 0.964,
+      "description": "Helping coding agents never make mistakes working with public or private libraries without wasting the context window.",
+      "slice": "heldout"
+    },
+    "ts-twinny": {
+      "github": "twinnydotdev/twinny",
+      "url": "https://github.com/twinnydotdev/twinny.git",
+      "sha": "0337b265bf3b9f8f00ff45d597ae1f2e99ef230a",
+      "branch": "main",
+      "stars": 3680,
+      "license": "MIT",
+      "language_share": 0.953,
+      "description": "Open-source AI coding assistant for VS Code. Coding agent, code completion, chat, edits and reviews with local or hosted models. Your models, your infrastructure.",
+      "slice": "dev"
+    },
+    "ts-clipforge": {
+      "github": "xixihhhh/clipforge",
+      "url": "https://github.com/xixihhhh/clipforge.git",
+      "sha": "1aab133dd75f4db57c3f62e6da2fdd121c5d509b",
+      "branch": "main",
+      "stars": 1092,
+      "license": "AGPL-3.0",
+      "language_share": 0.958,
+      "description": "ClipForge（原『带货剪手』/ daihuo-jianshou）：开源 AI 带货短视频神器——上传一张商品图，AI 自动提炼卖点 + 写种草脚本 + 锁定商品原图不变形 + 配画面/配音/字幕，一键产出抖音小店 / 快手 / 小红书 / TikTok Shop 卖货短视频。0 成本批量出片、开源无水印、本地自部署。也支持一句话主题成片。Open-source AI e-commerce/UGC short-video generator.",
+      "slice": "heldout"
+    },
+    "ts-binance-trading-bot": {
+      "github": "chrisleekr/binance-trading-bot",
+      "url": "https://github.com/chrisleekr/binance-trading-bot.git",
+      "sha": "7ccd7eb08b72c9e809188c04e63de053ab0a80ce",
+      "branch": "main",
+      "stars": 5592,
+      "license": "Apache-2.0",
+      "language_share": 0.969,
+      "description": "Automated Binance trading bot with pluggable strategies, historical backtesting, and a live dashboard",
+      "slice": "heldout"
+    },
+    "ts-gitlab-mcp": {
+      "github": "zereight/gitlab-mcp",
+      "url": "https://github.com/zereight/gitlab-mcp.git",
+      "sha": "f6de8e008be5d9ffb5a84ab912421332ad1cba13",
+      "branch": "main",
+      "stars": 2067,
+      "license": "MIT",
+      "language_share": 0.983,
+      "description": "MCP server for GitLab: 277 tools for projects, MRs, issues, pipelines, wikis and more via the GitLab REST/GraphQL API",
+      "slice": "dev"
+    },
+    "ts-cloddsbot": {
+      "github": "alsk1992/CloddsBot",
+      "url": "https://github.com/alsk1992/CloddsBot.git",
+      "sha": "c930628c47a4a745f497e29035a3b64622f97cc7",
+      "branch": "main",
+      "stars": 3008,
+      "license": "MIT",
+      "language_share": 0.978,
+      "description": "Open Source AI trading agent that operates autonomously across 1000+ markets - Polymarket, Kalshi, Binance, Hyperliquid, Solana DEXs, 5 EVM chains. Scans    for edge, executes instantly, manages risk while you sleep. Agent commerce protocol for machine-to-machine payments. Self-hosted. Built on Claude.",
+      "slice": "heldout"
+    },
+    "ts-epicgames-freegames-node": {
+      "github": "claabs/epicgames-freegames-node",
+      "url": "https://github.com/claabs/epicgames-freegames-node.git",
+      "sha": "e0c9de6f2095205db52a1693e00fab6dcdec4955",
+      "branch": "master",
+      "stars": 1924,
+      "license": "MIT",
+      "language_share": 0.961,
+      "description": "Automatically login and find available free games the Epic Games Store. Sends you a prepopulated checkout link so you can complete the checkout after logging in. Supports multiple accounts, login sessions, and scheduled runs.",
+      "slice": "dev"
+    },
+    "ts-dashdot": {
+      "github": "MauriceNino/dashdot",
+      "url": "https://github.com/MauriceNino/dashdot.git",
+      "sha": "9d169fc77fefe6e50ce8a326584a8602588e6987",
+      "branch": "main",
+      "stars": 3747,
+      "license": "MIT",
+      "language_share": 0.87,
+      "description": "A simple, modern server dashboard, primarily used by smaller private servers",
+      "slice": "heldout"
+    },
+    "ts-trawl": {
+      "github": "germondai/trawl",
+      "url": "https://github.com/germondai/trawl.git",
+      "sha": "829e10c299851f1e7a501edcdfcfa874a1aeb1ba",
+      "branch": "dev",
+      "stars": 1074,
+      "license": "AGPL-3.0",
+      "language_share": 0.924,
+      "description": "Self-hosted scraping engine — bypasses any JS challenge & captcha: Cloudflare, Turnstile, reCAPTCHA, hCaptcha, GeeTest. FlareSolverr & Byparr alternative and drop-in replacement for your *arr stack.",
+      "slice": "heldout"
+    },
+    "ts-chat-on-steroids": {
+      "github": "totec448-spec/chat-on-steroids",
+      "url": "https://github.com/totec448-spec/chat-on-steroids.git",
+      "sha": "599cf7fef3f4b2313e54fb4119cc3da4ce82cd00",
+      "branch": "main",
+      "stars": 5086,
+      "license": "MIT",
+      "language_share": 0.816,
+      "description": "Cross-platform local MCP capabilities for ChatGPT with Chrome integration, Goal, Compact & Resume, and durable multi-agent workflows.",
+      "slice": "dev"
+    },
+    "ts-summarize": {
+      "github": "steipete/summarize",
+      "url": "https://github.com/steipete/summarize.git",
+      "sha": "72d28de39fa58e244231d1cda47a46f8a0422b05",
+      "branch": "main",
+      "stars": 6748,
+      "license": "MIT",
+      "language_share": 0.961,
+      "description": "Point at any URL/YouTube/Podcast or file. Get the gist. CLI and Chrome Extension.",
+      "slice": "dev"
+    },
+    "ts-multi-scrobbler": {
+      "github": "FoxxMD/multi-scrobbler",
+      "url": "https://github.com/FoxxMD/multi-scrobbler.git",
+      "sha": "f927314c83e413b566ba64eb81a4da885ae5cb48",
+      "branch": "master",
+      "stars": 1284,
+      "license": "MIT",
+      "language_share": 0.821,
+      "description": "Scrobble plays from multiple sources to multiple clients",
+      "slice": "heldout"
+    },
+    "ts-hermes-desktop": {
+      "github": "fathah/hermes-desktop",
+      "url": "https://github.com/fathah/hermes-desktop.git",
+      "sha": "171024862c849475634d217a5635fedff796360c",
+      "branch": "main",
+      "stars": 14455,
+      "license": "MIT",
+      "language_share": 0.922,
+      "description": "Desktop Companion for Hermes Agent",
+      "slice": "heldout"
+    },
+    "ts-desktop-app": {
+      "github": "getstation/desktop-app",
+      "url": "https://github.com/getstation/desktop-app.git",
+      "sha": "e6bc1dddf82918ecf606e723e304c92f5c843c9c",
+      "branch": "main",
+      "stars": 1684,
+      "license": "Apache-2.0",
+      "language_share": 0.877,
+      "description": "One app to rule them all!",
+      "slice": "heldout"
+    },
+    "ts-notesnook": {
+      "github": "streetwriters/notesnook",
+      "url": "https://github.com/streetwriters/notesnook.git",
+      "sha": "488e649810f9ccb0aa83b3e29d4fb38a46091080",
+      "branch": "master",
+      "stars": 14831,
+      "license": "GPL-3.0",
+      "language_share": 0.852,
+      "description": "A fully open source & end-to-end encrypted note taking alternative to Evernote.",
+      "slice": "heldout"
+    },
+    "ts-mockoon": {
+      "github": "mockoon/mockoon",
+      "url": "https://github.com/mockoon/mockoon.git",
+      "sha": "1e2e784fc3c7cb1066942a5e591e417c2b71fca6",
+      "branch": "main",
+      "stars": 8461,
+      "license": "MIT",
+      "language_share": 0.879,
+      "description": "Mockoon is the easiest and quickest way to run mock APIs locally. No remote deployment, no account required, open source.",
+      "slice": "heldout"
+    },
+    "ts-wacrm": {
+      "github": "ArnasDon/wacrm",
+      "url": "https://github.com/ArnasDon/wacrm.git",
+      "sha": "34bce1a8abf56281505d90bac165123b6ab7d51a",
+      "branch": "main",
+      "stars": 2617,
+      "license": "MIT",
+      "language_share": 0.932,
+      "description": "Self-hostable CRM template for WhatsApp — shared inbox, contacts, sales pipelines, broadcasts, and no-code automations. Fork it, brand it, host it.",
+      "slice": "heldout"
+    },
+    "ts-taxhacker": {
+      "github": "vas3k/TaxHacker",
+      "url": "https://github.com/vas3k/TaxHacker.git",
+      "sha": "603f40285f7a48a3638c4fd0dada3cfd4e7c4f06",
+      "branch": "main",
+      "stars": 6760,
+      "license": "MIT",
+      "language_share": 0.99,
+      "description": "Self-hosted AI accounting app. LLM analyzer for receipts, invoices, transactions with custom prompts and categories",
+      "slice": "heldout"
+    },
+    "ts-keeper.sh": {
+      "github": "ridafkih/keeper.sh",
+      "url": "https://github.com/ridafkih/keeper.sh.git",
+      "sha": "8bef31fe4eed73f13186832ad807bf29a5973de0",
+      "branch": "main",
+      "stars": 1422,
+      "license": "AGPL-3.0",
+      "language_share": 0.994,
+      "description": "Calendar sync tool & universal calendar MCP server. Aggregate, sync and control calendars on Google, Outlook, Office 365, iCloud, CalDAV or ICS.",
+      "slice": "heldout"
+    },
+    "ts-metacubexd": {
+      "github": "MetaCubeX/metacubexd",
+      "url": "https://github.com/MetaCubeX/metacubexd.git",
+      "sha": "8bbc8f58fef71148a94fb5c0ff808f79b057337d",
+      "branch": "main",
+      "stars": 4577,
+      "license": "MIT",
+      "language_share": 0.671,
+      "description": "Mihomo Dashboard, The Official One, XD",
+      "slice": "heldout"
+    },
+    "ts-runtipi": {
+      "github": "runtipi/runtipi",
+      "url": "https://github.com/runtipi/runtipi.git",
+      "sha": "5e4d7a5bb1d537782191fc1fbcb7e30c0423d566",
+      "branch": "develop",
+      "stars": 9701,
+      "license": "GPL-3.0",
+      "language_share": 0.963,
+      "description": "Runtipi is a homeserver for everyone! One command setup, one click installs for your favorites self-hosted apps. ✨",
+      "slice": "heldout"
+    },
+    "ts-telegram-search": {
+      "github": "groupultra/telegram-search",
+      "url": "https://github.com/groupultra/telegram-search.git",
+      "sha": "93ade381d9020e8177660432482427bb18705161",
+      "branch": "main",
+      "stars": 4131,
+      "license": "AGPL-3.0",
+      "language_share": 0.808,
+      "description": "🔍 导出并模糊搜索 Telegram 聊天记录 | Export and fuzzy search your Telegram chat history",
+      "slice": "heldout"
+    },
+    "ts-evidence": {
+      "github": "evidence-dev/evidence",
+      "url": "https://github.com/evidence-dev/evidence.git",
+      "sha": "505913ca3e03391fd4c1d06c1d2aa33653cdb27f",
+      "branch": "main",
+      "stars": 7061,
+      "license": "MIT",
+      "language_share": 0.822,
+      "description": "Business intelligence as code: build fast, interactive data visualizations in SQL and markdown",
+      "slice": "heldout"
+    },
+    "ts-mcp-searxng": {
+      "github": "ihor-sokoliuk/mcp-searxng",
+      "url": "https://github.com/ihor-sokoliuk/mcp-searxng.git",
+      "sha": "14872633a166762daf93d8b50bc37ae85fda4611",
+      "branch": "main",
+      "stars": 1329,
+      "license": "MIT",
+      "language_share": 0.954,
+      "description": "Private web search for AI assistants via SearXNG — supports Claude, Cursor, and any MCP client",
+      "slice": "dev"
+    },
+    "ts-netcatty": {
+      "github": "binaricat/Netcatty",
+      "url": "https://github.com/binaricat/Netcatty.git",
+      "sha": "a4999fdf1df19aa2214a83197479e55997635ea0",
+      "branch": "main",
+      "stars": 6816,
+      "license": "GPL-3.0",
+      "language_share": 0.645,
+      "description": "SSH workspace, SFTP, and terminals in one",
+      "slice": "heldout"
+    },
+    "ts-mission-control": {
+      "github": "crshdn/mission-control",
+      "url": "https://github.com/crshdn/mission-control.git",
+      "sha": "24d286350f5acee359bde1f3992080c3b9570666",
+      "branch": "main",
+      "stars": 2156,
+      "license": "MIT",
+      "language_share": 0.935,
+      "description": "The world's first Autonomous Product Engine (APE): AI agents research your market, generate features, and ship code as PRs. Convoy mode, crash recovery, cost tracking, 80+ API endpoints. Self-hosted via OpenClaw Gateway.",
+      "slice": "heldout"
+    },
+    "ts-stump": {
+      "github": "stumpapp/stump",
+      "url": "https://github.com/stumpapp/stump.git",
+      "sha": "d0f51c8e6da74d584a2a4cda8d9db02337de73ca",
+      "branch": "main",
+      "stars": 2760,
+      "license": "MIT",
+      "language_share": 0.609,
+      "description": "A free and open source comics, manga and digital book server with OPDS support",
+      "slice": "heldout"
+    },
+    "ts-convertx": {
+      "github": "C4illin/ConvertX",
+      "url": "https://github.com/C4illin/ConvertX.git",
+      "sha": "64cd0130d3ae1fdc9154b77a050a2e8a37efc7aa",
+      "branch": "main",
+      "stars": 19211,
+      "license": "AGPL-3.0",
+      "language_share": 0.948,
+      "description": "💾 Self-hosted online file converter. Supports 1000+ formats ⚙️",
+      "slice": "heldout"
+    },
+    "ts-voiden": {
+      "github": "VoidenHQ/voiden",
+      "url": "https://github.com/VoidenHQ/voiden.git",
+      "sha": "c9b169b4d0033271103319d5774740503dc395f9",
+      "branch": "main",
+      "stars": 1906,
+      "license": "Apache-2.0",
+      "language_share": 0.945,
+      "description": "Design, Test and Document APIs in plain Markdown. Compose Requests with API blocks. Reuse, Replace & Version everything just like code. Offline, Truly Git Native, No Lock-in.",
+      "slice": "heldout"
+    },
+    "ts-dbhub": {
+      "github": "bytebase/dbhub",
+      "url": "https://github.com/bytebase/dbhub.git",
+      "sha": "1f3fa031ed2c3f24b4f2259d3909548933fcd977",
+      "branch": "main",
+      "stars": 3728,
+      "license": "MIT",
+      "language_share": 0.986,
+      "description": "Token conscious database MCP server for Postgres, MySQL, SQL Server, Oracle, MariaDB, SQLite.",
+      "slice": "heldout"
+    },
+    "ts-payload": {
+      "github": "payloadcms/payload",
+      "url": "https://github.com/payloadcms/payload.git",
+      "sha": "aebbf75b93e218be4b53a3c7922e0bc82924830b",
+      "branch": "main",
+      "stars": 45513,
+      "license": "MIT",
+      "language_share": 0.959,
+      "description": "Payload is the open-source, fullstack Next.js framework, giving you instant backend superpowers. Get a full TypeScript backend and admin panel instantly. Use Payload as a headless CMS or for building powerful applications.",
+      "slice": "heldout"
+    },
+    "ts-graphql-cli": {
+      "github": "Urigo/graphql-cli",
+      "url": "https://github.com/Urigo/graphql-cli.git",
+      "sha": "aa709566b74a3ee177c54f7dca909c1c4f75a598",
+      "branch": "master",
+      "stars": 2019,
+      "license": "MIT",
+      "language_share": 0.912,
+      "description": "📟  Command line tool for common GraphQL development workflows",
+      "slice": "heldout"
+    },
+    "ts-editor": {
+      "github": "pascalorg/editor",
+      "url": "https://github.com/pascalorg/editor.git",
+      "sha": "d604f06a4e9b78747c8f199ad5a453686eab807e",
+      "branch": "main",
+      "stars": 25128,
+      "license": "MIT",
+      "language_share": 0.999,
+      "description": "Open-source 3D architectural editor with a local CLI, MCP tools, and practical workflows for humans and AI agents.",
+      "slice": "heldout"
+    },
+    "ts-sharkord": {
+      "github": "Sharkord/sharkord",
+      "url": "https://github.com/Sharkord/sharkord.git",
+      "sha": "d93f48fa785fd585b85595d755fe89159ac5ae03",
+      "branch": "development",
+      "stars": 1542,
+      "license": "MIT",
+      "language_share": 0.981,
+      "description": "Lightweight, self-hosted, open-source chat server with voice, video, text, and screen sharing. Built for small groups who want privacy, simplicity, and full control over their data.",
+      "slice": "dev"
+    },
+    "ts-ix": {
+      "github": "ix-infrastructure/Ix",
+      "url": "https://github.com/ix-infrastructure/Ix.git",
+      "sha": "e09f7aa50f670f2e383d865a657ee08ba3bd190f",
+      "branch": "main",
+      "stars": 1130,
+      "license": "Apache-2.0",
+      "language_share": 0.906,
+      "description": "Understand any codebase instantly. System intelligence for codebases, built for humans and AI.",
+      "slice": "heldout"
+    },
+    "ts-vane": {
+      "github": "ItzCrazyKns/Vane",
+      "url": "https://github.com/ItzCrazyKns/Vane.git",
+      "sha": "348feca3e378fb4157b217724ed508dc707f853f",
+      "branch": "master",
+      "stars": 37758,
+      "license": "MIT",
+      "language_share": 0.988,
+      "description": "Vane is an AI-powered answering engine.",
+      "slice": "heldout"
+    },
+    "ts-excalidash": {
+      "github": "ZimengXiong/ExcaliDash",
+      "url": "https://github.com/ZimengXiong/ExcaliDash.git",
+      "sha": "d83433a69a1270b8fa29fa8eec5ef8f8b2b7b1ba",
+      "branch": "main",
+      "stars": 1690,
+      "license": "LGPL-3.0",
+      "language_share": 0.924,
+      "description": "Self-hosted Excalidraw with Full Collaboration",
+      "slice": "heldout"
+    },
+    "ts-surrealist": {
+      "github": "surrealdb/surrealist",
+      "url": "https://github.com/surrealdb/surrealist.git",
+      "sha": "65b7b95109177deb486cc6254ed203fce257fddf",
+      "branch": "main",
+      "stars": 1309,
+      "license": "MIT",
+      "language_share": 0.939,
+      "description": "Surrealist is the ultimate way to visually manage your SurrealDB database",
+      "slice": "dev"
+    },
+    "ts-microsoft-rewards-script": {
+      "github": "TheNetsky/Microsoft-Rewards-Script",
+      "url": "https://github.com/TheNetsky/Microsoft-Rewards-Script.git",
+      "sha": "d0f07d74a0ed4dda127855d6e3dde98bf4c89d6e",
+      "branch": "v4",
+      "stars": 1134,
+      "license": "GPL-3.0",
+      "language_share": 0.765,
+      "description": "Automated Microsoft Rewards script, using TypeScript and Playwright.",
+      "slice": "dev"
+    },
+    "ts-plasmic": {
+      "github": "plasmicapp/plasmic",
+      "url": "https://github.com/plasmicapp/plasmic.git",
+      "sha": "82879d7ec49a644362ef653af0bea088f88df7de",
+      "branch": "master",
+      "stars": 7127,
+      "license": "MIT",
+      "language_share": 0.9,
+      "description": "Visual builder for React. Build apps, websites, and content. Integrate with your codebase.",
+      "slice": "heldout"
+    },
+    "ts-dittofeed": {
+      "github": "dittofeed/dittofeed",
+      "url": "https://github.com/dittofeed/dittofeed.git",
+      "sha": "91277939a9afcee797ab2562025f6b02d823b00c",
+      "branch": "main",
+      "stars": 3024,
+      "license": "MIT",
+      "language_share": 0.912,
+      "description": "Open-source customer engagement. Automate transactional and marketing messages across email, SMS, mobile push, WhatsApp, Slack, and more 📨",
+      "slice": "heldout"
+    },
+    "ts-open-dronelog": {
+      "github": "arpanghosh8453/open-dronelog",
+      "url": "https://github.com/arpanghosh8453/open-dronelog.git",
+      "sha": "536a88046591b1705dbf0cbd4118b0f7024806bf",
+      "branch": "main",
+      "stars": 1562,
+      "license": "AGPL-3.0",
+      "language_share": 0.667,
+      "description": "Drone Log analyzer: A high-performance universal dashboard application for organizing and analyzing DJI/Litchi flight logs privately in one place. Supports plugin for custom flight log formats. Built with Tauri v2, DuckDB, and React.",
+      "slice": "dev"
+    },
+    "ts-insomnia": {
+      "github": "Kong/insomnia",
+      "url": "https://github.com/Kong/insomnia.git",
+      "sha": "96edcab595126fe3cb6d946c87a96d6d39fc2caa",
+      "branch": "develop",
+      "stars": 40079,
+      "license": "Apache-2.0",
+      "language_share": 0.98,
+      "description": "The open-source, cross-platform API client for GraphQL, REST, WebSockets, SSE and gRPC. With Cloud, Local and Git storage.",
+      "slice": "heldout"
+    },
+    "ts-apify-mcp-server": {
+      "github": "apify/apify-mcp-server",
+      "url": "https://github.com/apify/apify-mcp-server.git",
+      "sha": "d3bee2ec2c0569911d379b79ac3d9097c5117723",
+      "branch": "master",
+      "stars": 13289,
+      "license": "MIT",
+      "language_share": 0.994,
+      "description": "The Apify MCP server enables your AI agents to extract data from social media, search engines, maps, e-commerce sites, or any other website using thousands of ready-made scrapers, crawlers, and automation tools available on the Apify Store.",
+      "slice": "heldout"
+    },
+    "ts-workout-cool": {
+      "github": "Snouzy/workout-cool",
+      "url": "https://github.com/Snouzy/workout-cool.git",
+      "sha": "3e65987f4f11bb86483ff9dfc82b831b9a94cb6d",
+      "branch": "main",
+      "stars": 8645,
+      "license": "MIT",
+      "language_share": 0.948,
+      "description": "🏋 Modern open-source fitness coaching platform. Create workout plans, track progress, and access a comprehensive exercise database.",
+      "slice": "heldout"
+    },
+    "ts-shardbrowser": {
+      "github": "ProxyShard/ShardBrowser",
+      "url": "https://github.com/ProxyShard/ShardBrowser.git",
+      "sha": "880fef120393a0707e258484a731784f5d39e7ae",
+      "branch": "main",
+      "stars": 1377,
+      "license": "MIT",
+      "language_share": 0.614,
+      "description": "Free, open-source anti-detect browser launcher for web scraping and multi-accounting. By the ProxyShard team. Engine-level fingerprint spoofing in Chromium 156 (WebGL / WebGPU / Client Hints / fonts / TLS), 220+ device profiles bundled, stable QUIC + WebRTC over SOCKS5.",
+      "slice": "heldout"
+    },
+    "ts-mcp-server-chart": {
+      "github": "antvis/mcp-server-chart",
+      "url": "https://github.com/antvis/mcp-server-chart.git",
+      "sha": "e2a8fb7c185e17c75c067817ff1a2acfddf49aa1",
+      "branch": "main",
+      "stars": 4405,
+      "license": "MIT",
+      "language_share": 0.984,
+      "description": "🤖 A visualization mcp & skills contains 25+ visual charts using @antvis. Using for chart generation and data analysis.",
+      "slice": "dev"
+    },
+    "ts-blinko": {
+      "github": "blinkospace/blinko",
+      "url": "https://github.com/blinkospace/blinko.git",
+      "sha": "b2586d03fddb796252f050a96922879bf4a41fad",
+      "branch": "main",
+      "stars": 11120,
+      "license": "GPL-3.0",
+      "language_share": 0.922,
+      "description": "An open-source, self-hosted personal AI note tool prioritizing privacy, built using TypeScript .",
+      "slice": "dev"
+    },
+    "ts-kaneo": {
+      "github": "usekaneo/kaneo",
+      "url": "https://github.com/usekaneo/kaneo.git",
+      "sha": "1a3a59ca5bbbf81bd7017b3ba36e0574011822e3",
+      "branch": "main",
+      "stars": 9616,
+      "license": "MIT",
+      "language_share": 0.919,
+      "description": "🎯 All you need. Nothing you don't. Open source project management that works for you, not against you.",
+      "slice": "dev"
+    },
+    "ts-kubewall": {
+      "github": "kubewall/kubewall",
+      "url": "https://github.com/kubewall/kubewall.git",
+      "sha": "6fbf5dee3752799630a4df6f773e27145d6dcd7a",
+      "branch": "main",
+      "stars": 1946,
+      "license": "Apache-2.0",
+      "language_share": 0.695,
+      "description": "kubewall - Kubernetes Dashboard for Multi-Cluster Management Real-Time, Self-Hosted, Single Binary, AI-powered. Manage, monitor & debug K8s clusters in your browser, no cloud, no agents.",
+      "slice": "dev"
+    },
+    "ts-note-gen": {
+      "github": "codexu/note-gen",
+      "url": "https://github.com/codexu/note-gen.git",
+      "sha": "2ac8f8fb53a0eb2c53f3aec577e0ec377a039506",
+      "branch": "dev",
+      "stars": 12917,
+      "license": "GPL-3.0",
+      "language_share": 0.884,
+      "description": "Capture first. Organize later. A local-first Markdown app that turns scattered records into clear notes with AI.",
+      "slice": "dev"
+    },
+    "ts-amical": {
+      "github": "amicalhq/amical",
+      "url": "https://github.com/amicalhq/amical.git",
+      "sha": "d5604ef548816d8729b1170696d315a35c00391a",
+      "branch": "main",
+      "stars": 1571,
+      "license": "MIT",
+      "language_share": 0.892,
+      "description": "🎙️ AI Dictation App - Open Source and Local-first ⚡ Type 3x faster, no keyboard needed. 🆓 Powered by open source models, works offline, fast and accurate.",
+      "slice": "heldout"
+    },
+    "ts-mcphub": {
+      "github": "samanhappy/mcphub",
+      "url": "https://github.com/samanhappy/mcphub.git",
+      "sha": "08740a13cf04532784a433ea3084cd01f644f8ba",
+      "branch": "main",
+      "stars": 2586,
+      "license": "Apache-2.0",
+      "language_share": 0.988,
+      "description": "Self-hosted MCP gateway and control plane for connecting, controlling, and operating MCP servers.",
+      "slice": "heldout"
+    },
+    "ts-razzia": {
+      "github": "Ralex91/Razzia",
+      "url": "https://github.com/Ralex91/Razzia.git",
+      "sha": "5161eb7022144ee26d46a5f94cdbc714ec8b560d",
+      "branch": "main",
+      "stars": 1070,
+      "license": "MIT",
+      "language_share": 0.989,
+      "description": "A self-hosted, open-source quiz platform for smaller events.",
+      "slice": "heldout"
+    },
+    "ts-bitterbot-desktop": {
+      "github": "Bitterbot-AI/bitterbot-desktop",
+      "url": "https://github.com/Bitterbot-AI/bitterbot-desktop.git",
+      "sha": "733b741952b627b1ca34aa892a8d1b4a9333e7b6",
+      "branch": "main",
+      "stars": 2478,
+      "license": "MIT",
+      "language_share": 0.949,
+      "description": "Bitterbot - a mesh of agents that turns shared experience into collective capability.",
+      "slice": "heldout"
+    },
+    "ts-create-better-t-stack": {
+      "github": "AmanVarshney01/create-better-t-stack",
+      "url": "https://github.com/AmanVarshney01/create-better-t-stack.git",
+      "sha": "a9bd456ccc9d80b8b90e65075aac99b08d7af43f",
+      "branch": "main",
+      "stars": 5847,
+      "license": "MIT",
+      "language_share": 0.729,
+      "description": "A modern CLI tool for scaffolding end-to-end type-safe TypeScript projects with best practices and customizable configurations",
+      "slice": "heldout"
+    },
+    "ts-libredb-studio": {
+      "github": "libredb/libredb-studio",
+      "url": "https://github.com/libredb/libredb-studio.git",
+      "sha": "eaa12cc32ecfdc6cfc450185662ecb1a0b77cc93",
+      "branch": "main",
+      "stars": 1285,
+      "license": "MIT",
+      "language_share": 0.979,
+      "description": "One browser tab for PostgreSQL, MySQL, Oracle, SQL Server, MongoDB, Redis, SQLite, Couchbase, ClickHouse, Druid, DuckDB, Turso and more. An open-source SQL IDE with SSO, audit trail and AI-assisted queries MIT licensed, with nothing held back behind an enterprise wall.",
+      "slice": "heldout"
+    },
+    "ts-subtitle-translator": {
+      "github": "rockbenben/subtitle-translator",
+      "url": "https://github.com/rockbenben/subtitle-translator.git",
+      "sha": "38c87601ce1f0dbf1fd342dd3db9afab9fa5e338",
+      "branch": "main",
+      "stars": 1180,
+      "license": "MIT",
+      "language_share": 0.976,
+      "description": "Translate a whole season of subtitles in one pass — .srt/.ass/.vtt/.lrc, 120+ languages, 27 LLM providers, timing untouched ｜ 整季字幕一次译完，时轴不动，支持 120+ 语言",
+      "slice": "heldout"
+    },
+    "ts-builderz-labs-mission-control": {
+      "github": "builderz-labs/mission-control",
+      "url": "https://github.com/builderz-labs/mission-control.git",
+      "sha": "e28edf8b28c85a32f1fd55ac577d325df6b16e4a",
+      "branch": "main",
+      "stars": 6399,
+      "license": "MIT",
+      "language_share": 0.946,
+      "description": "Self-hosted control plane for AI agents: dispatch tasks, review runs, track spend, and operate OpenClaw, Claude Code, Codex, and other runtimes.",
+      "slice": "heldout"
+    },
+    "ts-silex": {
+      "github": "silexlabs/Silex",
+      "url": "https://github.com/silexlabs/Silex.git",
+      "sha": "7778acb6fc9bd241c30a290c6668fc7f56f2ab41",
+      "branch": "main",
+      "stars": 3018,
+      "license": "AGPL-3.0",
+      "language_share": 0.614,
+      "description": "Silex is an online tool for visually creating static sites with dynamic data. With the free/libre spirit of internet, together.",
+      "slice": "heldout"
+    },
+    "ts-agency-orchestrator": {
+      "github": "jnMetaCode/agency-orchestrator",
+      "url": "https://github.com/jnMetaCode/agency-orchestrator.git",
+      "sha": "5d82e71dc94e67ca664b9914bdaa830e1b78a6d4",
+      "branch": "main",
+      "stars": 2406,
+      "license": "Apache-2.0",
+      "language_share": 0.82,
+      "description": "🚀 One sentence → your one-person company of AI experts → complete deliverable in minutes. 276 CN + 184 EN + 5 more languages (ko/ru/pt-BR/id/ar) · zero-code YAML · auto-verified acceptance · Web Studio / Desktop / Docker · 15 LLM providers (11 key-free). 一句话组建你的「一人公司」AI 专家团队，几分钟交付完整方案；验收自动核验，网页 / 桌面 / Docker 全渠道。",
+      "slice": "heldout"
+    },
+    "ts-chatgpt-telegram-workers": {
+      "github": "tbxark/ChatGPT-Telegram-Workers",
+      "url": "https://github.com/tbxark/ChatGPT-Telegram-Workers.git",
+      "sha": "0d152e567a2b3db159d013957b6a48879262d5d2",
+      "branch": "master",
+      "stars": 3813,
+      "license": "MIT",
+      "language_share": 0.962,
+      "description": "Easily deploy your Telegram ChatGPT bot on Cloudflare Workers (or Vercel, Docker...).",
+      "slice": "heldout"
+    },
+    "ts-kite": {
+      "github": "kite-org/kite",
+      "url": "https://github.com/kite-org/kite.git",
+      "sha": "0a25fc075e7cb6f746cd88b5e286f740d6524fcf",
+      "branch": "main",
+      "stars": 3180,
+      "license": "Apache-2.0",
+      "language_share": 0.607,
+      "description": "🪁 A lightweight, modern Kubernetes dashboard. All your clusters. One workspace.",
+      "slice": "heldout"
+    },
+    "ts-textbee": {
+      "github": "textbee/textbee",
+      "url": "https://github.com/textbee/textbee.git",
+      "sha": "40e51b34f46f7c4bcd2f4d2f770a6c1fe00037e9",
+      "branch": "main",
+      "stars": 3207,
+      "license": "MIT",
+      "language_share": 0.829,
+      "description": "Open-source SMS gateway. Turn your Android phone into an SMS API: send and receive SMS from your apps over REST and webhooks. Self-hostable, with a free hosted plan.",
+      "slice": "heldout"
+    },
+    "ts-chat-js": {
+      "github": "FranciscoMoretti/chat-js",
+      "url": "https://github.com/FranciscoMoretti/chat-js.git",
+      "sha": "9e1038448095a20b182fb6882758f8059b3930d6",
+      "branch": "main",
+      "stars": 1200,
+      "license": "Apache-2.0",
+      "language_share": 0.939,
+      "description": "Production-ready AI chat. Start here and make it your own. Formerly Sparka AI",
+      "slice": "heldout"
+    },
+    "ts-openship": {
+      "github": "oblien/openship",
+      "url": "https://github.com/oblien/openship.git",
+      "sha": "af3de387cdcccd83a55fe19396addb8e7a38aac3",
+      "branch": "main",
+      "stars": 14948,
+      "license": "Apache-2.0",
+      "language_share": 0.935,
+      "description": "Self-hosted deployment platform",
+      "slice": "heldout"
+    },
+    "ts-aiostreams": {
+      "github": "Viren070/AIOStreams",
+      "url": "https://github.com/Viren070/AIOStreams.git",
+      "sha": "ed8b085f081bc8442dc59ac9de4a4a2070b93f0a",
+      "branch": "main",
+      "stars": 3025,
+      "license": "AGPL-3.0",
+      "language_share": 0.829,
+      "description": "AIOStreams consolidates multiple Stremio addons and debrid/usenet services - including its own suite of built-in addons and a native Usenet streaming engine - into a single, highly customisable super-addon. ",
+      "slice": "heldout"
+    },
+    "ts-tianji": {
+      "github": "msgbyte/tianji",
+      "url": "https://github.com/msgbyte/tianji.git",
+      "sha": "532bcf1e451f576e86cd022ef167f71905118e89",
+      "branch": "master",
+      "stars": 3119,
+      "license": "Apache-2.0",
+      "language_share": 0.977,
+      "description": "Tianji: Insight into everything, Website Analytics + Uptime Monitor + Server Status. not only another GA alternatives",
+      "slice": "dev"
+    },
+    "ts-onecli": {
+      "github": "onecli/onecli",
+      "url": "https://github.com/onecli/onecli.git",
+      "sha": "6eaf8780f6310587ae86906eb9573ab531e92c12",
+      "branch": "main",
+      "stars": 3594,
+      "license": "Apache-2.0",
+      "language_share": 0.858,
+      "description": "Open-source sandboxed agent harness for teams. Giving every employee a secured personal agent.",
+      "slice": "dev"
+    },
+    "ts-itsaplan": {
+      "github": "croffasia/itsaplan",
+      "url": "https://github.com/croffasia/itsaplan.git",
+      "sha": "d752ff5f0cef312b91bb9889a2f66a17a49b99f5",
+      "branch": "main",
+      "stars": 1997,
+      "license": "AGPL-3.0",
+      "language_share": 0.994,
+      "description": "⭐️⭐️⭐️ Open-source, self-hosted alternative to Linear and Plane. Project management and issue tracking where teams and AI agents work side by side to plan and ship products.",
+      "slice": "heldout"
+    }
+  },
+  "rejected": [
+    {
+      "github": "measure-sh/measure",
+      "stars": 1419,
+      "reason": "size 406684 KB > 400000"
+    },
+    {
+      "github": "coder-hxl/x-crawl",
+      "stars": 1891,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "nlkitai/nlux",
+      "stars": 1388,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "c15t/c15t",
+      "stars": 2006,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "archestra-ai/archestra",
+      "stars": 4406,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "thedotmack/claude-mem",
+      "stars": 103348,
+      "reason": "size 660327 KB > 400000"
+    },
+    {
+      "github": "DaKheera47/job-ops",
+      "stars": 4073,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "chaitin/PandaWiki",
+      "stars": 10340,
+      "reason": "topic docs names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "oclif/oclif",
+      "stars": 9606,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "proxysoul/Empryo",
+      "stars": 1454,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "agentrhq/webcmd",
+      "stars": 2751,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "agentset-ai/agentset",
+      "stars": 2115,
+      "reason": "topic ai-sdk names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "callstack/agent-device",
+      "stars": 5154,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "homarr-labs/dashboard-icons",
+      "stars": 8939,
+      "reason": "size 1083877 KB > 400000"
+    },
+    {
+      "github": "pmndrs/valtio",
+      "stars": 10245,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "aws-samples/generative-ai-use-cases",
+      "stars": 1391,
+      "reason": "licence MIT-0 not in the OSI list"
+    },
+    {
+      "github": "hoppscotch/hoppscotch",
+      "stars": 80691,
+      "reason": "used before in Arbiter's corpora, docs or another breadth manifest"
+    },
+    {
+      "github": "huiliyi37/Tianshu-harness",
+      "stars": 1157,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "Privoce/vocechat-web",
+      "stars": 2270,
+      "reason": "size 488923 KB > 400000"
+    },
+    {
+      "github": "blackholll/loonflow",
+      "stars": 2094,
+      "reason": "TypeScript 55% of bytes (< 60%)"
+    },
+    {
+      "github": "nielsfaber/scheduler-card",
+      "stars": 1267,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "SigNoz/signoz",
+      "stars": 32460,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "ballerine-io/ballerine",
+      "stars": 2451,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "tonyantony300/dashbeam",
+      "stars": 10105,
+      "reason": "TypeScript 48% of bytes (< 60%)"
+    },
+    {
+      "github": "VoltAgent/voltagent",
+      "stars": 10873,
+      "reason": "topic framework names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "emqx/MQTTX",
+      "stars": 5085,
+      "reason": "TypeScript 58% of bytes (< 60%)"
+    },
+    {
+      "github": "prymitive/karma",
+      "stars": 2691,
+      "reason": "TypeScript 59% of bytes (< 60%)"
+    },
+    {
+      "github": "romgX/openrelay",
+      "stars": 2318,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "cortex-docs/cortex",
+      "stars": 3289,
+      "reason": "topic docs names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "windingwind/zotero-actions-tags",
+      "stars": 2861,
+      "reason": "topic plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "botswin/BotBrowser",
+      "stars": 2643,
+      "reason": "size 703557 KB > 400000"
+    },
+    {
+      "github": "glincker/thesvg",
+      "stars": 2904,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "AlephAITech/WorkBuddyGuide",
+      "stars": 3615,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "hsr88/mouzi",
+      "stars": 1107,
+      "reason": "size 968796 KB > 400000"
+    },
+    {
+      "github": "zhitongblog/solomd",
+      "stars": 1382,
+      "reason": "TypeScript 47% of bytes (< 60%)"
+    },
+    {
+      "github": "alibaba/ChatUI",
+      "stars": 4461,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "dtyq/magic",
+      "stars": 5057,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "labring/FastGPT",
+      "stars": 29914,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "react-native-community/cli",
+      "stars": 2941,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "graphile/starter",
+      "stars": 1831,
+      "reason": "template repository"
+    },
+    {
+      "github": "aws-amplify/amplify-cli",
+      "stars": 2875,
+      "reason": "size 724315 KB > 400000"
+    },
+    {
+      "github": "tong-io/tongflow",
+      "stars": 1046,
+      "reason": "topic dsh-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "guhcostan/mac-cleaner-cli",
+      "stars": 2013,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "alan345/AI-Fullstack-SaaS-Boilerplate",
+      "stars": 1438,
+      "reason": "description names a tutorial/boilerplate/list, not an application"
+    },
+    {
+      "github": "shadcn-labs/termcn",
+      "stars": 1219,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "can1357/oh-my-pi",
+      "stars": 36693,
+      "reason": "size 728063 KB > 400000"
+    },
+    {
+      "github": "adminsyspro/proxcenter-ui",
+      "stars": 1741,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "A9T9/RPA",
+      "stars": 2091,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "getsentry/MobileBuildMCP",
+      "stars": 6510,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "langfuse/langfuse",
+      "stars": 36529,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "first-fluke/oh-my-agent",
+      "stars": 1354,
+      "reason": "topic claude-code-hooks names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "satnaing/shadcn-admin",
+      "stars": 15919,
+      "reason": "template repository"
+    },
+    {
+      "github": "TencentCloudBase/CloudBase-AI-Toolkit",
+      "stars": 1150,
+      "reason": "topic dsh-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "influxdata/chronograf",
+      "stars": 1567,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "fancydirty/mediary-scout",
+      "stars": 1588,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "fengshao1227/ccg-workflow",
+      "stars": 5948,
+      "reason": "TypeScript 37% of bytes (< 60%)"
+    },
+    {
+      "github": "Companion-Inc/feynman",
+      "stars": 10028,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "assistant-ui/assistant-ui",
+      "stars": 12756,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "lmnr-ai/lmnr",
+      "stars": 3446,
+      "reason": "size 548242 KB > 400000"
+    },
+    {
+      "github": "reticlehq/reticle",
+      "stars": 1274,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "TailAdmin/free-nextjs-admin-dashboard",
+      "stars": 2588,
+      "reason": "topic admin-template names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "cloudflare/mcp",
+      "stars": 1006,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "nanobrowser/nanobrowser",
+      "stars": 14183,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "stegripe/rawon",
+      "stars": 1531,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "saas-js/saas-ui",
+      "stars": 1660,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "withcatai/node-llama-cpp",
+      "stars": 2193,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "ant-design/ant-design-pro",
+      "stars": 38900,
+      "reason": "template repository"
+    },
+    {
+      "github": "saifyxpro/HeadlessX",
+      "stars": 2342,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "shader-effects-inc/shaders",
+      "stars": 5495,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "kepano/defuddle",
+      "stars": 9786,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "tgdrive/teldrive",
+      "stars": 3132,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "zenhosta/9drive",
+      "stars": 2677,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "openworkflowdev/openworkflow",
+      "stars": 1340,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "oomol-lab/open-connector",
+      "stars": 6094,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "directus/directus",
+      "stars": 38638,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "microsoft/Agents",
+      "stars": 1092,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "genkit-ai/genkit",
+      "stars": 6550,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "LiuMengxuan04/MiniCode",
+      "stars": 1155,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "SBoudrias/Inquirer.js",
+      "stars": 21636,
+      "reason": "size 4792939 KB > 400000"
+    },
+    {
+      "github": "revokslab/ShipFree",
+      "stars": 1706,
+      "reason": "description names a tutorial/boilerplate/list, not an application"
+    },
+    {
+      "github": "nrwl/nx",
+      "stars": 29431,
+      "reason": "size 1033232 KB > 400000"
+    },
+    {
+      "github": "volcengine/SearchCLI",
+      "stars": 1189,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "jdalrymple/gitbeaker",
+      "stars": 1730,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "vadimdemedes/ink",
+      "stars": 40176,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "scalar/scalar",
+      "stars": 16321,
+      "reason": "size 445136 KB > 400000"
+    },
+    {
+      "github": "jau123/MeiGen-AI-Design-MCP",
+      "stars": 1789,
+      "reason": "TypeScript 55% of bytes (< 60%)"
+    },
+    {
+      "github": "Stirling-Tools/Stirling-PDF",
+      "stars": 95068,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "cobusgreyling/loop-engineering",
+      "stars": 11636,
+      "reason": "TypeScript 54% of bytes (< 60%)"
+    },
+    {
+      "github": "IliasHad/edit-mind",
+      "stars": 1818,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "tinacms/tinacms",
+      "stars": 13848,
+      "reason": "size 946328 KB > 400000"
+    },
+    {
+      "github": "shannonhochkins/ha-component-kit",
+      "stars": 1307,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "Foundry376/Mailspring",
+      "stars": 17944,
+      "reason": "TypeScript 45% of bytes (< 60%)"
+    },
+    {
+      "github": "Helicone/helicone",
+      "stars": 6239,
+      "reason": "size 779105 KB > 400000"
+    },
+    {
+      "github": "zuiidea/antd-admin",
+      "stars": 9764,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "Yeachan-Heo/oh-my-claudecode",
+      "stars": 40285,
+      "reason": "TypeScript 60% of bytes (< 60%)"
+    },
+    {
+      "github": "koishijs/koishi",
+      "stars": 6288,
+      "reason": "topic framework names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "CaviraOSS/PageLM",
+      "stars": 2047,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "code-yeongyu/lazycodex",
+      "stars": 3830,
+      "reason": "TypeScript 40% of bytes (< 60%)"
+    },
+    {
+      "github": "SpacingBat3/WebCord",
+      "stars": 2457,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "bloomberg/stricli",
+      "stars": 1098,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "leon-ai/leon",
+      "stars": 17607,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "refly-ai/refly",
+      "stars": 7540,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "peter-evans/create-pull-request",
+      "stars": 2871,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "supreme-gg-gg/instagram-cli",
+      "stars": 2185,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "n8n-io/n8n",
+      "stars": 208653,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "OvidijusParsiunas/deep-chat",
+      "stars": 3740,
+      "reason": "topic component names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "rociiu/talorys",
+      "stars": 1389,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "nizos/tdd-guard",
+      "stars": 2367,
+      "reason": "topic hooks names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "appwrite/appwrite",
+      "stars": 57764,
+      "reason": "size 1156472 KB > 400000"
+    },
+    {
+      "github": "elirantutia/vibeyard",
+      "stars": 1388,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "atomicstrata/llm-wiki-compiler",
+      "stars": 2217,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "aleksey-hoffman/sigma-file-manager",
+      "stars": 6732,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "iOfficeAI/AionUi",
+      "stars": 33793,
+      "reason": "size 699562 KB > 400000"
+    },
+    {
+      "github": "modelcontextprotocol/inspector",
+      "stars": 11156,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "nestjs/nest-cli",
+      "stars": 2206,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "ParabolInc/parabol",
+      "stars": 2017,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "AlexandrosGounis/pdfx",
+      "stars": 1084,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "open-cli-tools/concurrently",
+      "stars": 7864,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "TanStack/ai",
+      "stars": 3255,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "alpic-ai/skybridge",
+      "stars": 2178,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "Team-Commonly/commonly",
+      "stars": 1370,
+      "reason": "TypeScript 48% of bytes (< 60%)"
+    },
+    {
+      "github": "YILS-LIN/short-video-factory",
+      "stars": 5903,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "momozi1996/momo-code",
+      "stars": 1108,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "microsoft/flint-chart",
+      "stars": 4477,
+      "reason": "topic charting-library names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "unjs/ipx",
+      "stars": 2461,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "custom-cards/button-card",
+      "stars": 2516,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "any4ai/AnyCrawl",
+      "stars": 3484,
+      "reason": "TypeScript 59% of bytes (< 60%)"
+    },
+    {
+      "github": "darkroomengineering/satus",
+      "stars": 1012,
+      "reason": "template repository"
+    },
+    {
+      "github": "simonlin1212/Vibe-Research",
+      "stars": 2987,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "sanity-io/sanity",
+      "stars": 6376,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "prettier/pretty-quick",
+      "stars": 2290,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "simstudioai/sim",
+      "stars": 29921,
+      "reason": "size 727089 KB > 400000"
+    },
+    {
+      "github": "XiaomiMiMo/MiMo-Code",
+      "stars": 13728,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "remix-run/remix",
+      "stars": 33435,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "telegraf/telegraf",
+      "stars": 9202,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "salarcode/SmartProxy",
+      "stars": 2768,
+      "reason": "TypeScript 57% of bytes (< 60%)"
+    },
+    {
+      "github": "cs-lazy-tools/ChatGPT-On-CS",
+      "stars": 4519,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "boxlite-ai/boxlite",
+      "stars": 2640,
+      "reason": "TypeScript 45% of bytes (< 60%)"
+    },
+    {
+      "github": "flawiddsouza/Restfox",
+      "stars": 2773,
+      "reason": "TypeScript 42% of bytes (< 60%)"
+    },
+    {
+      "github": "rmanguinho/clean-ts-api",
+      "stars": 1914,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "wppconnect-team/wppconnect",
+      "stars": 3509,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "feder-cr/invisible_dots",
+      "stars": 32258,
+      "reason": "TypeScript 57% of bytes (< 60%)"
+    },
+    {
+      "github": "immich-app/immich",
+      "stars": 117304,
+      "reason": "TypeScript 54% of bytes (< 60%)"
+    },
+    {
+      "github": "kubernetes-sigs/headlamp",
+      "stars": 7519,
+      "reason": "topic plugins names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "MemTensor/MemOS",
+      "stars": 12111,
+      "reason": "topic dsh-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "open-mercato/open-mercato",
+      "stars": 1883,
+      "reason": "size 624179 KB > 400000"
+    },
+    {
+      "github": "heilcheng/awesome-agent-skills",
+      "stars": 6316,
+      "reason": "description names a tutorial/boilerplate/list, not an application"
+    },
+    {
+      "github": "expo/expo-github-action",
+      "stars": 1032,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "vynect/venom",
+      "stars": 6595,
+      "reason": "topic framework names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "cameraui/camera.ui",
+      "stars": 1139,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "voidcosmos/npkill",
+      "stars": 9484,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "Lifeforge-app/lifeforge",
+      "stars": 1709,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "zerodytrash/TikTok-Live-Connector",
+      "stars": 2232,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "bergside/typeui",
+      "stars": 2163,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "appium/appium",
+      "stars": 22129,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "Superior-Trade/trading-terminal",
+      "stars": 1004,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "afar1/fieldtheory-cli",
+      "stars": 2046,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "openai/codex-security",
+      "stars": 11212,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "AltanS/collie",
+      "stars": 1473,
+      "reason": "topic herdr-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "flyfish-dev/file-viewer",
+      "stars": 2630,
+      "reason": "topic web-components names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "TailAdmin/free-react-tailwind-admin-dashboard",
+      "stars": 1286,
+      "reason": "topic admin-template names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "ShaikhWarsi/free-ai-tools",
+      "stars": 1037,
+      "reason": "description names a tutorial/boilerplate/list, not an application"
+    },
+    {
+      "github": "vellum-ai/vellum-assistant",
+      "stars": 1450,
+      "reason": "size 470527 KB > 400000"
+    },
+    {
+      "github": "nitrocloudofficial/nitrostack",
+      "stars": 2527,
+      "reason": "paths Windows cannot check out: ['<tree truncated: cannot confirm>']"
+    },
+    {
+      "github": "allinssl/allinssl",
+      "stars": 3617,
+      "reason": "TypeScript 54% of bytes (< 60%)"
+    },
+    {
+      "github": "zhizhuodemao/js-reverse-mcp",
+      "stars": 3000,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "pwa-builder/PWABuilder",
+      "stars": 3809,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "steven-jianhao-li/zotero-AI-Butler",
+      "stars": 1835,
+      "reason": "topic plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "AmoyLab/Unla",
+      "stars": 2246,
+      "reason": "topic awesome names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "github-aws-runners/terraform-aws-github-runner",
+      "stars": 3162,
+      "reason": "TypeScript 48% of bytes (< 60%)"
+    },
+    {
+      "github": "MemTensor/memmy-agent",
+      "stars": 2144,
+      "reason": "topic dsh-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "fosrl/pangolin",
+      "stars": 23234,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "tianma-if/edgeever",
+      "stars": 2892,
+      "reason": "TypeScript 57% of bytes (< 60%)"
+    },
+    {
+      "github": "autonomous-ai/openharness",
+      "stars": 1371,
+      "reason": "size 564257 KB > 400000"
+    },
+    {
+      "github": "salgum1114/react-design-editor",
+      "stars": 1710,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "open-multi-agent/open-multi-agent",
+      "stars": 7024,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "morethanwords/tweb",
+      "stars": 2699,
+      "reason": "size 1528275 KB > 400000"
+    },
+    {
+      "github": "hunvreus/pagescms",
+      "stars": 4146,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "zenbu-labs/terminal-browser",
+      "stars": 4268,
+      "reason": "topic claude-code-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "strapi/strapi",
+      "stars": 73385,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "HelgeSverre/ollama-gui",
+      "stars": 1262,
+      "reason": "TypeScript 57% of bytes (< 60%)"
+    },
+    {
+      "github": "cdimascio/express-openapi-validator",
+      "stars": 1008,
+      "reason": "topic connect-middleware names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "codedogQBY/ReadAny",
+      "stars": 2890,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "louislam/dockge",
+      "stars": 24692,
+      "reason": "TypeScript 50% of bytes (< 60%)"
+    },
+    {
+      "github": "Kilo-Org/kilocode",
+      "stars": 27757,
+      "reason": "size 719606 KB > 400000"
+    },
+    {
+      "github": "baptisteArno/typebot.io",
+      "stars": 10580,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "VladSez/easy-invoice-pdf",
+      "stars": 1116,
+      "reason": "topic invoice-template names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "activeloopai/hivemind",
+      "stars": 1637,
+      "reason": "topic claude-agent-sdk names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "BuilderIO/builder",
+      "stars": 8873,
+      "reason": "topic webcomponents names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "crbnos/carbon",
+      "stars": 2765,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "ruvnet/ruflo",
+      "stars": 79460,
+      "reason": "size 660937 KB > 400000"
+    },
+    {
+      "github": "devswha/ovis",
+      "stars": 1512,
+      "reason": "topic herdr-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "smapiot/piral",
+      "stars": 1936,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "lightningpixel/modly",
+      "stars": 8397,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "appsmithorg/appsmith",
+      "stars": 41123,
+      "reason": "size 821393 KB > 400000"
+    },
+    {
+      "github": "convex/convex-backend",
+      "stars": 12761,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "jsynowiec/node-typescript-boilerplate",
+      "stars": 2960,
+      "reason": "template repository"
+    },
+    {
+      "github": "mishushakov/llm-scraper",
+      "stars": 6950,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "angular/angular-cli",
+      "stars": 27020,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "nyblnet/bento",
+      "stars": 5567,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "MacRimi/ProxMenux",
+      "stars": 3236,
+      "reason": "size 2155123 KB > 400000"
+    },
+    {
+      "github": "dream-num/univer-workspace",
+      "stars": 2251,
+      "reason": "topic dsh-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "LucasBassetti/react-simple-chatbot",
+      "stars": 1755,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "CodeWithCJ/SparkyFitness",
+      "stars": 6480,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "lidge-jun/opencodex",
+      "stars": 17926,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "crafter-station/petdex",
+      "stars": 4284,
+      "reason": "topic dsh-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "gitcoffee-os/postbot",
+      "stars": 1581,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "codeaholicguy/ai-devkit",
+      "stars": 1653,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "docker/compose-for-agents",
+      "stars": 1063,
+      "reason": "topic examples names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "TriliumNext/Trilium",
+      "stars": 38577,
+      "reason": "size 706528 KB > 400000"
+    },
+    {
+      "github": "liketrek/TREK",
+      "stars": 15127,
+      "reason": "size 636913 KB > 400000"
+    },
+    {
+      "github": "nocode-js/sequential-workflow-designer",
+      "stars": 1482,
+      "reason": "topic component names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "puppeteer/puppeteer",
+      "stars": 95744,
+      "reason": "size 1601173 KB > 400000"
+    },
+    {
+      "github": "bitwarden/clients",
+      "stars": 14066,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "aiko-chan-ai/DiscordBotClient",
+      "stars": 1487,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "smocker-dev/smocker",
+      "stars": 1288,
+      "reason": "TypeScript 56% of bytes (< 60%)"
+    },
+    {
+      "github": "codelitdev/courselit",
+      "stars": 1287,
+      "reason": "size 1462585 KB > 400000"
+    },
+    {
+      "github": "steedos/steedos-platform",
+      "stars": 1589,
+      "reason": "size 1947323 KB > 400000"
+    },
+    {
+      "github": "reactive-resume/reactive-resume",
+      "stars": 44896,
+      "reason": "size 539365 KB > 400000"
+    },
+    {
+      "github": "andremichelle/openDAW",
+      "stars": 2380,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "kortix-ai/suna",
+      "stars": 20320,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "activepieces/activepieces",
+      "stars": 25235,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "line/line-bot-sdk-nodejs",
+      "stars": 1080,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "Thinkmill/keystatic",
+      "stars": 2478,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "Ajaxy/telegram-tt",
+      "stars": 3621,
+      "reason": "size 1683948 KB > 400000"
+    },
+    {
+      "github": "nhost/nhost",
+      "stars": 9369,
+      "reason": "size 943223 KB > 400000"
+    },
+    {
+      "github": "0xGG/crossnote-app",
+      "stars": 1091,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "bytedance/flowgram.ai",
+      "stars": 8523,
+      "reason": "topic typescript-library names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "westpoint-io/mimik",
+      "stars": 1647,
+      "reason": "topic documentation names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "fatwang2/search2ai",
+      "stars": 1282,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "firecrawl/firecrawl",
+      "stars": 195601,
+      "reason": "used before in Arbiter's corpora, docs or another breadth manifest"
+    },
+    {
+      "github": "Kiranism/next-shadcn-dashboard-starter",
+      "stars": 7175,
+      "reason": "template repository"
+    },
+    {
+      "github": "hoangsonww/Claude-Code-Agent-Monitor",
+      "stars": 1120,
+      "reason": "TypeScript 45% of bytes (< 60%)"
+    },
+    {
+      "github": "statelyai/xstate",
+      "stars": 30361,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "honzaap/Systemizer",
+      "stars": 1471,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "vmoranv/jshookmcp",
+      "stars": 2065,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "antfu-collective/ni",
+      "stars": 8309,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "highlight/highlight",
+      "stars": 9384,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "elizaOS/eliza",
+      "stars": 19653,
+      "reason": "size 2087479 KB > 400000"
+    },
+    {
+      "github": "getnao/nao",
+      "stars": 1954,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "shuaiplus/nodewarden",
+      "stars": 4028,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "leaperone/MultiPost-Extension",
+      "stars": 3692,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "shaongitbd/doory",
+      "stars": 1846,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "Dokploy/dokploy",
+      "stars": 38050,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "AnotiaWang/deep-research-web-ui",
+      "stars": 2223,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "alfredfrancis/ai-chatbot-framework",
+      "stars": 2168,
+      "reason": "TypeScript 49% of bytes (< 60%)"
+    },
+    {
+      "github": "chimurai/http-proxy-middleware",
+      "stars": 11129,
+      "reason": "topic middleware names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "koala73/worldmonitor",
+      "stars": 89587,
+      "reason": "TypeScript 50% of bytes (< 60%)"
+    },
+    {
+      "github": "microsoft/inshellisense",
+      "stars": 10749,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "Termix-SSH/Termix",
+      "stars": 15680,
+      "reason": "topic plugins names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "KKKKhazix/AIHOT",
+      "stars": 8674,
+      "reason": "template repository"
+    },
+    {
+      "github": "MicrosoftDocs/mcp",
+      "stars": 1954,
+      "reason": "licence CC-BY-4.0 not in the OSI list"
+    },
+    {
+      "github": "zenstackhq/zenstack",
+      "stars": 2953,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "webdriverio/webdriverio",
+      "stars": 9860,
+      "reason": "size 417168 KB > 400000"
+    },
+    {
+      "github": "czlonkowski/n8n-mcp",
+      "stars": 23141,
+      "reason": "size 1098098 KB > 400000"
+    },
+    {
+      "github": "sidequestjs/sidequest",
+      "stars": 1017,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "ChatbotXIO/ChatbotX",
+      "stars": 1022,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "0x2E/fusion",
+      "stars": 2195,
+      "reason": "TypeScript 50% of bytes (< 60%)"
+    },
+    {
+      "github": "OpenHands/OpenHands",
+      "stars": 91909,
+      "reason": "size 550374 KB > 400000"
+    },
+    {
+      "github": "UfoMiao/zcf",
+      "stars": 6080,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "gxr404/yuque-dl",
+      "stars": 2379,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "TryGhost/Ghost",
+      "stars": 55612,
+      "reason": "size 621202 KB > 400000"
+    },
+    {
+      "github": "microsoft/skill-recorder",
+      "stars": 5192,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "Agenta-AI/agenta",
+      "stars": 4862,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "unjs/consola",
+      "stars": 7343,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "jordanrendric/claude-video-vision",
+      "stars": 1425,
+      "reason": "topic claude-code-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "Prismer-AI/PrismerCloud",
+      "stars": 1364,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "morluto/rea",
+      "stars": 390264,
+      "reason": "topic dsh-plugin names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "hasura/graphql-engine",
+      "stars": 32124,
+      "reason": "size 5206059 KB > 400000"
+    },
+    {
+      "github": "vercel-labs/knowledge-agent-template",
+      "stars": 1072,
+      "reason": "TypeScript 56% of bytes (< 60%)"
+    },
+    {
+      "github": "rajnandan1/kener",
+      "stars": 5221,
+      "reason": "topic awesome-list names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "open-telemetry/opentelemetry-js",
+      "stars": 3504,
+      "reason": "used before in Arbiter's corpora, docs or another breadth manifest"
+    },
+    {
+      "github": "KunAgent/Kun",
+      "stars": 6320,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "ixartz/SaaS-Boilerplate",
+      "stars": 7463,
+      "reason": "template repository"
+    },
+    {
+      "github": "apptension/saas-boilerplate",
+      "stars": 3022,
+      "reason": "description names a tutorial/boilerplate/list, not an application"
+    },
+    {
+      "github": "pacifio/atlas",
+      "stars": 9545,
+      "reason": "TypeScript 48% of bytes (< 60%)"
+    },
+    {
+      "github": "puppeteer/replay",
+      "stars": 1391,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "arhamkhnz/next-shadcn-admin-dashboard",
+      "stars": 3210,
+      "reason": "topic nextjs-template names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "openclaw/mcporter",
+      "stars": 5088,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "vriteio/andesine",
+      "stars": 2005,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "JamesIves/github-pages-deploy-action",
+      "stars": 4618,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "netlify/cli",
+      "stars": 1932,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "hhyqhh/inno-agent",
+      "stars": 1307,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "dzhng/jevgrep",
+      "stars": 2909,
+      "reason": "topic ai-sdk names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "samchon/nestia",
+      "stars": 2178,
+      "reason": "topic sdk names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "bbc/sqs-consumer",
+      "stars": 1908,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "bamlab/flashlight",
+      "stars": 1611,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "estruyf/vscode-front-matter",
+      "stars": 2549,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "Mobile-Artificial-Intelligence/maid",
+      "stars": 2743,
+      "reason": "no deployment marker (Dockerfile, compose, Procfile, service unit, app packager, firmware config, debian/, man/)"
+    },
+    {
+      "github": "mex-memory/mex",
+      "stars": 1779,
+      "reason": "topic documentation names a library/plugin/component/list, not an application"
+    },
+    {
+      "github": "mebtte/cicada",
+      "stars": 1114,
+      "reason": "TypeScript 52% of bytes (< 60%)"
+    }
+  ]
+}
