@@ -25,6 +25,11 @@ except ImportError:
     # other omni command must still work. Only `omni graph ...` needs it.
     omni_graph = None
 
+try:
+    import omni_docs
+except ImportError:
+    omni_docs = None
+
 GRAPH_DEFAULT_OUTPUT = ".ai/project-graph.json"
 GRAPH_SEMANTIC_API_URL_ENV = "OMNI_GRAPH_SEMANTIC_API_URL"
 RENDER_DEFAULT_OUTPUT = ".ai/project-graph.svg"
@@ -484,6 +489,7 @@ ALLOWED_ROOT_FILES = {
     "TRADEMARKS.md",
     "make_ai.py",
     "omni",
+    "omni_docs.py",
     "omni_graph.py",
     "omni_mcp.py",
     "pyproject.toml",
@@ -535,7 +541,7 @@ CONTEXT_PROFILE_ALIASES = {
 ADOPTION_TOOL_FILES = {
     "universal": ["LLM_CONTEXT.md"],
     "codex": ["AGENTS.md"],
-    "claude": ["CLAUDE.md"],
+    "claude": ["CLAUDE.md", ".claude/skills/swe-docs"],
     "cursor": [".cursorrules", ".cursorignore"],
     "copilot": [".github/copilot-instructions.md"],
     "kiro": [".kiro/steering/omnicontext.md"],
@@ -546,6 +552,7 @@ ADOPTION_CLI_FILES = [
     "make_ai.py",
     "omni_graph.py",
     "omni_mcp.py",
+    "omni_docs.py",
     ".ai/graph-viewer/viewer.html",
     ".ai/graph-viewer/3d-force-graph.min.js",
     ".ai/graph-viewer/THIRD_PARTY_NOTICES.md",
@@ -2360,6 +2367,108 @@ def run_graph_build(args: argparse.Namespace) -> int:
     else:
         print(f"  Semantic pass: skipped ({semantic_info.get('reason')})")
     return 0
+
+
+def docs_settings(root: Path | None = None) -> dict[str, Any]:
+    """Return the configured generated-document behavior."""
+    path = (root / RULESET_PATH) if root is not None else RULESET_PATH
+    try:
+        data = load_json(path)
+    except (OSError, json.JSONDecodeError):
+        data = {}
+    config = data.get("configuration") if isinstance(data, dict) else None
+    config = config if isinstance(config, dict) else {}
+    output = config.get("docs_output_dir")
+    fallback = omni_docs.DOCS_DEFAULT_OUTPUT if omni_docs is not None else "docs/generated"
+    return {
+        "output_dir": output if isinstance(output, str) and output.strip() else fallback,
+        "auto_regenerate": config.get("docs_auto_regenerate", True) is not False,
+        "gate_freshness": config.get("docs_gate_freshness", False) is True,
+    }
+
+
+def run_docs_build(args: argparse.Namespace) -> int:
+    if omni_docs is None:
+        print("omni_docs.py is missing next to make_ai.py, so `omni docs` is unavailable. Re-run `omni update`.", file=sys.stderr)
+        return 1
+    root = Path(args.root).resolve()
+    if not root.is_dir():
+        print(f"Project root not found: {root}", file=sys.stderr)
+        return 1
+    output = Path(args.output) if args.output else root / docs_settings(root)["output_dir"]
+    graph_file = Path(args.graph) if args.graph else root / GRAPH_DEFAULT_OUTPUT
+    if not args.no_graph_rebuild and not args.check and omni_graph is not None:
+        stale, reason = omni_graph.graph_stale(graph_file, root)
+        if stale:
+            try:
+                graph, semantic_info = omni_graph.build_graph(root, ["auto"], semantic=False, layers=set(omni_graph.LAYERS), max_commits=None)
+                write_json(graph_file, graph.to_json(str(root), ["auto"], semantic_info))
+                print(f"docs: rebuilt the code graph {graph_file.as_posix()} ({reason})")
+            except omni_graph.GraphDependencyError as exc:
+                print(f"docs: code graph not rebuilt ({str(exc).splitlines()[0]}); using what is on disk", file=sys.stderr)
+    if args.check:
+        stale_docs = omni_docs.check_docs(root, output, graph_file, args.detail)
+        if stale_docs:
+            print(f"docs: {output.as_posix()} is stale: {', '.join(stale_docs)}. Run `omni docs build`.")
+            return 1
+        print(f"docs: {output.as_posix()} is up to date")
+        return 0
+    detail = omni_docs.resolve_detail(output, args.detail)
+    result = omni_docs.build_docs(root, output, graph_file, detail)
+    print(
+        f"docs: {len(result['written'])} written, {len(result['unchanged'])} unchanged in {output.as_posix()} ({detail} detail)"
+        + (f" ({', '.join(result['written'])})" if result["written"] else "")
+    )
+    return 0
+
+
+def docs_regeneration_wanted(args: argparse.Namespace) -> bool:
+    if getattr(args, "no_docs", False):
+        return False
+    command = getattr(args, "requirement_command", None)
+    if command in ("add", "complete"):
+        return True
+    return command == "update" and bool(getattr(args, "status", None))
+
+
+def regenerate_docs_after_requirement_change(args: argparse.Namespace) -> None:
+    if omni_docs is None:
+        return
+    try:
+        settings = docs_settings()
+        if not settings["auto_regenerate"]:
+            return
+        output = Path(settings["output_dir"])
+        if not (output / "index.md").is_file():
+            return
+        graph_file = Path(GRAPH_DEFAULT_OUTPUT)
+        if not graph_file.is_file():
+            print("docs: not regenerated: no code graph (run `omni docs build`, which builds it)", file=sys.stderr)
+            return
+        result = omni_docs.build_docs(Path.cwd(), output, graph_file)
+        if result["written"]:
+            print(f"docs: regenerated {', '.join(result['written'])} in {output.as_posix()}")
+    except Exception as exc:
+        print(f"docs: not regenerated ({type(exc).__name__}: {exc}); run `omni docs build`", file=sys.stderr)
+
+
+def gate_docs_freshness_failure() -> str | None:
+    if omni_docs is None:
+        return None
+    settings = docs_settings()
+    if not settings["gate_freshness"]:
+        return None
+    graph_file = Path(GRAPH_DEFAULT_OUTPUT)
+    if not graph_file.is_file():
+        return None
+    output = Path(settings["output_dir"])
+    try:
+        stale = omni_docs.check_docs(Path.cwd(), output, graph_file)
+    except Exception:
+        return None
+    if not stale:
+        return None
+    return f"completion.docs_fresh: {output.as_posix()} is stale ({', '.join(stale)}); run ./omni docs build"
 
 
 def run_graph_trace(args: argparse.Namespace) -> int:
@@ -4889,6 +4998,15 @@ def run_arbiter_sync(args: argparse.Namespace) -> int:
     return 0
 
 
+UPDATE_SKILL_FILES = [".claude/skills/swe-docs/SKILL.md"]
+
+
+def update_skill_files(target_root: Path) -> list[str]:
+    if (target_root / "CLAUDE.md").is_file() or (target_root / ".claude").is_dir():
+        return list(UPDATE_SKILL_FILES)
+    return []
+
+
 def run_update(args: argparse.Namespace) -> int:
     source_root = Path(args.source).resolve()
     target_root = Path(".").resolve()
@@ -4945,6 +5063,7 @@ def run_update(args: argparse.Namespace) -> int:
         files.extend(ADOPTION_LEGAL_FILES)
     if args.include_presentation:
         files.extend(ADOPTION_PRESENTATION_FILES)
+    files.extend(update_skill_files(target_root))
 
     print(f"OmniEngineering update source: {source_root} @ {current_ref[:12]}")
     print(f"Base ref (last sync): {base_ref[:12]}")
@@ -6198,6 +6317,9 @@ def run_gate(args: argparse.Namespace) -> int:
         memo: dict[str, str] = {} if getattr(args, "no_memo", False) or not isinstance(stored, dict) else dict(stored)
         rule_failures, waived = gate_evaluate(changed, gate_waivers(base), base, memo=memo, outcomes=outcomes)
         failures.extend(rule_failures)
+        docs_failure = gate_docs_freshness_failure()
+        if docs_failure:
+            failures.append(docs_failure)
         gate_state_save({"memo": memo})
 
     graph_note = graph_rebuild_if_stale_note()  # ARB-064: advisory; a failed rebuild never fails the gate
@@ -6775,7 +6897,7 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Comma-separated shims to copy. Available: "
             f"{', '.join(sorted(ADOPTION_TOOL_FILES))}, all, none. "
-            "Defaults to codex,cursor,universal."
+            "Defaults to codex,cursor,universal. claude also copies .claude/skills/swe-docs."
         ),
     )
     adopt_parser.add_argument(
@@ -6939,6 +7061,41 @@ def build_parser() -> argparse.ArgumentParser:
     requirement_complete.add_argument(
         "--no-arbiter-check",
         help="Complete without a fresh, passing Arbiter report: why that is safe here (10+ characters, recorded as a risk note).",
+    )
+
+    for docs_aware in (requirement_add, requirement_update, requirement_complete):
+        docs_aware.add_argument(
+            "--no-docs",
+            action="store_true",
+            help="Do not regenerate the generated docs afterwards (see configuration.docs_auto_regenerate).",
+        )
+
+    docs_parser = subparsers.add_parser(
+        "docs",
+        help="Generate engineering documents and Mermaid diagrams (SAD, SDD, SRS, traceability, test plan) without a model.",
+    )
+    docs_subparsers = docs_parser.add_subparsers(dest="docs_command")
+    docs_build = docs_subparsers.add_parser(
+        "build",
+        help="Write the generated documents (default docs/generated, or configuration.docs_output_dir).",
+    )
+    docs_build.add_argument("--root", default=".", help="Project root to document. Defaults to the current directory.")
+    docs_build.add_argument("--output", help="Output directory. Defaults to <root>/docs/generated or configuration.docs_output_dir.")
+    docs_build.add_argument("--graph", help=f"Code graph to read. Defaults to <root>/{GRAPH_DEFAULT_OUTPUT}.")
+    docs_build.add_argument(
+        "--no-graph-rebuild",
+        action="store_true",
+        help="Use the graph as it is; by default a missing or stale graph is rebuilt first.",
+    )
+    docs_build.add_argument(
+        "--check",
+        action="store_true",
+        help="Write nothing; exit 1 when a document is missing or differs from a fresh render (the commit-SHA line is ignored).",
+    )
+    docs_build.add_argument(
+        "--detail",
+        choices=["summary", "full"],
+        help="How much each document says. summary (the default): one line per module, requirement and risk, linking to the document that owns the detail. full: every public signature, acceptance criterion and risk note. Without the flag, the level the docs were last built at is kept.",
     )
 
     test_parser = subparsers.add_parser(
@@ -7209,6 +7366,10 @@ def main(argv: list[str] | None = None) -> int:
         return run_adopt(args)
     if command == "update":
         return run_update(args)
+    if command == "docs":
+        if args.docs_command == "build":
+            return run_docs_build(args)
+        parser.error("docs requires a subcommand (build)")
     if command == "requirement":
         handlers = {
             "add": run_requirement_add,
@@ -7222,7 +7383,10 @@ def main(argv: list[str] | None = None) -> int:
             "renumber": run_requirement_renumber,  # REQ-044
         }
         if args.requirement_command in handlers:
-            return handlers[args.requirement_command](args)
+            code = handlers[args.requirement_command](args)
+            if code == 0 and docs_regeneration_wanted(args):
+                regenerate_docs_after_requirement_change(args)
+            return code
         parser.error("requirement requires a subcommand")
     if command == "gate":
         return run_gate(args)

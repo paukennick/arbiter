@@ -40,6 +40,7 @@
           ".ai/context-log.md",
           ".ai/gate-waivers.jsonl",
           ".ai/requirements/**",
+          "docs/generated/**",
           "training/**",
           ".arbiter/**",
           ".githooks/**"
@@ -71,6 +72,7 @@
           ".ai/context-log.md",
           ".ai/gate-waivers.jsonl",
           ".ai/requirements/**",
+          "docs/generated/**",
           "training/**",
           ".arbiter/**",
           ".githooks/**"
