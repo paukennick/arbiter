@@ -514,6 +514,8 @@ def test_report_prints_a_row_per_language(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(PL, "declared_verified", lambda config=None: {TS_RULE})
     assert PL.main(["report", "--ledger", str(path)]) == 0
     out = capsys.readouterr().out
-    rows = {line.split()[0]: line.split() for line in out.splitlines()[2:]}
+    table, alongside = out.split("\n\n", 1)   # the claim table, then the ARB-167/168 estimates beside it
+    rows = {line.split()[0]: line.split() for line in table.splitlines()[2:]}
     assert set(rows) == {"javascript", "typescript"}
+    assert "not used for admission or the claim" in alongside
     assert rows["javascript"][2] == "1" and rows["javascript"][3] == "100"

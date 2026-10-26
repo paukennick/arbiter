@@ -34,6 +34,7 @@ import argparse
 import csv
 import datetime as _dt
 import json
+import math
 import re
 import sys
 from collections import defaultdict
@@ -42,6 +43,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from arbiter import dawid_skene as DS  # noqa: E402
 from arbiter import precision as P  # noqa: E402
 
 LEDGER = ROOT / "tools" / "gold" / "precision.json"
@@ -303,7 +305,8 @@ def final_verdicts(records: list[dict]) -> dict[str, dict]:
         out[fid] = {"rule_id": rules.pop(), "label": label,
                     # A finding is held out only if every record says so.
                     "held_out": all(r["held_out"] for r in recs),
-                    "source": recs[0]["source"], "labellers": sorted({r["labeller"] for r in recs}),
+                    "source": recs[0]["source"], "cluster": finding_cluster(recs),
+                    "labellers": sorted({r["labeller"] for r in recs}),
                     "sources": sorted({r["source"] for r in recs}),
                     "dates": sorted(r["date"] for r in recs if r.get("date")),
                     "notes": [r["note"] for r in recs if r.get("note") and r["label"] == "fp"],
@@ -428,6 +431,41 @@ def rule_entries(verdicts: dict[str, dict], bar: dict) -> dict[str, dict]:
     return out
 
 
+def _row(rule: str, s: dict) -> dict:
+    return {"key": f"{rule}|{s['source']}/{s['language'] or '-'}", "rule": rule,
+            "stratum": f"{s['source']}/{s['language'] or '-'}", "tp": s["held_out"]["tp"],
+            "fp": s["held_out"]["fp"], "population": s["held_out_population"]}
+
+
+def tier_rows(rules: dict[str, dict], names: list[str]) -> tuple[list[dict], int]:
+    """The held-out strata of `names` (empty ones included; the weighting
+    skips them) and the held-out population the claim is over."""
+    rows, total = [], 0
+    for r in names:
+        strata = rules[r].get("strata") or []
+        sources = rules[r].get("source_population") or {}
+        rows += [_row(r, s) for s in strata]
+        for src in {s["source"] for s in strata}:
+            listed = sum(s["held_out_population"] for s in strata if s["source"] == src)
+            total += max(listed, (sources.get(src) or {}).get("held_out_population") or 0)
+    return rows, total
+
+
+def language_rows(rules: dict[str, dict], members: list[str], lang: str) -> tuple[list[dict], int]:
+    """`tier_rows` restricted to one language (see `language_claims`)."""
+    rows, total = [], 0
+    for r in members:
+        strata = rules[r].get("strata") or []
+        sources = rules[r].get("source_population") or {}
+        for src in sorted({s["source"] for s in strata if (s["language"] or "-") == lang}):
+            mine = [s for s in strata if s["source"] == src and (s["language"] or "-") == lang]
+            listed = sum(s["held_out_population"] for s in strata if s["source"] == src)
+            rest = max(0, ((sources.get(src) or {}).get("held_out_population") or 0) - listed)
+            total += sum(s["held_out_population"] for s in mine) + rest
+            rows += [_row(r, s) for s in mine]
+    return rows, total
+
+
 def stratified_claim(rules: dict[str, dict], names: list[str], bar: dict) -> dict:
     """The held-out, population-weighted precision over the strata of
     `names` (docs/precision.md, "Tier claim"). Unknown populations make it
@@ -437,17 +475,7 @@ def stratified_claim(rules: dict[str, dict], names: list[str], bar: dict) -> dic
                      or rules[r].get("held_out_population") is None)
     if unknown:
         return {"estimate": None, "claim": False, "population_unknown": unknown}
-    rows, total = [], 0
-    for r in names:
-        strata = rules[r].get("strata") or []
-        sources = rules[r].get("source_population") or {}
-        for s in strata:
-            if s["held_out"]["tp"] + s["held_out"]["fp"]:
-                rows.append({"key": f"{r}|{s['source']}/{s['language'] or '-'}", "tp": s["held_out"]["tp"],
-                             "fp": s["held_out"]["fp"], "population": s["held_out_population"]})
-        for src in {s["source"] for s in strata}:
-            listed = sum(s["held_out_population"] for s in strata if s["source"] == src)
-            total += max(listed, (sources.get(src) or {}).get("held_out_population") or 0)
+    rows, total = tier_rows(rules, names)
     w = P.weighted_precision(rows)
     if w is None:
         return {"estimate": None, "claim": False, "population_unknown": []}
@@ -514,17 +542,7 @@ def language_claims(rules: dict[str, dict], bar: dict, verified: set[str]) -> di
         if unknown:
             out[lang] = {**row, "population_unknown": unknown}
             continue
-        rows, total = [], 0
-        for r in members:
-            strata = rules[r].get("strata") or []
-            sources = rules[r].get("source_population") or {}
-            for src in sorted({s["source"] for s in strata if (s["language"] or "-") == lang}):
-                mine = [s for s in strata if s["source"] == src and (s["language"] or "-") == lang]
-                listed = sum(s["held_out_population"] for s in strata if s["source"] == src)
-                rest = max(0, ((sources.get(src) or {}).get("held_out_population") or 0) - listed)
-                total += sum(s["held_out_population"] for s in mine) + rest
-                rows += [{"key": f"{r}|{src}/{lang}", "tp": s["held_out"]["tp"], "fp": s["held_out"]["fp"],
-                          "population": s["held_out_population"]} for s in mine]
+        rows, total = language_rows(rules, members, lang)
         w = P.weighted_precision(rows)
         if w is None:
             out[lang] = row
@@ -535,6 +553,416 @@ def language_claims(rules: dict[str, dict], bar: dict, verified: set[str]) -> di
                      "n_eff": w["n_eff"], "held_out_population": total, "coverage": round(coverage, 4),
                      "claim_lower": lower, "claim": lower >= bar["tier_lower"]}
     return out
+
+
+# ---------------------------------------------------------------------------
+# Alongside the ledger: Dawid-Skene (ARB-167) and repository clustering
+# (ARB-168). Both are reported next to the unanimity, independent-finding
+# numbers; neither decides admission or the tier claim (docs/precision.md,
+# "Two more estimates").
+# ---------------------------------------------------------------------------
+
+# Benchmarks whose `repo` is the whole suite: their test cases are separate
+# programs, so the cluster is the test case, not the suite. A Juliet test
+# case's flow variants (`..._01.java` to `..._22.java`, `_81a`/`_81_bad`
+# parts) share one source and sink, so they are one cluster.
+_JULIET_VARIANT = re.compile(r"_\d+(?:[a-z]|_(?:bad|good\w*|base))?\.java$")
+SUITE_CLUSTERS = {"owasp-java": "test file", "owasp-python": "test file",
+                  "juliet-java": "Juliet functional variant (flow variants _01.._NN together)"}
+BOOT_N = 2000      # cluster-bootstrap resamples per rule (ARB-112 uses 10,000 on one cohort)
+
+
+def finding_cluster(recs: list[dict]) -> str:
+    """The repository a finding came from (ARB-168): `repo` of its first
+    record; for the benchmark suites in SUITE_CLUSTERS, the test case."""
+    r = next((x for x in recs if x.get("repo")), recs[0])
+    src = str(r.get("source", ""))
+    path = str(r.get("path") or "")
+    if src in SUITE_CLUSTERS and path:
+        if src == "juliet-java":
+            return f"{src}:{_JULIET_VARIANT.sub('', path.rsplit('/', 1)[-1])}"
+        return f"{src}:{path}"
+    return str(r.get("repo") or f"source:{src}")
+
+
+def _ds_votes(rec: dict) -> list[tuple[str, str]]:
+    """A record's votes, one per rater. A model labeller record carries
+    the prosecutor's, defender's and (on disputes) adjudicator's votes; each
+    is its own rater, keyed by model, role and prompt version, because each
+    makes its own mistakes. Anything else is one rater, its labeller."""
+    lab = str(rec.get("labeller", ""))
+    m = _MODEL_LABELLER.search(lab)
+    votes = rec.get("votes")
+    if m and isinstance(votes, dict) and votes:
+        model = lab.split(":", 1)[0]
+        out = []
+        for role, v in sorted(votes.items()):
+            label = v.get("label") if isinstance(v, dict) else v
+            try:
+                out.append((f"{model}:{role}/{m.group(1)}", norm_label(label)))
+            except ValueError:
+                continue
+        return out
+    return [(lab, rec["label"])]
+
+
+def _is_truth(r: dict) -> bool:
+    """Published truth: the ground-truth role, or the benchmark importers'
+    records (labeller `ground-truth`, role left at labeller), which the
+    unanimity verdict also takes as decided on their own."""
+    return r["role"] == "ground_truth" or r.get("labeller") == "ground-truth"
+
+
+def ds_items(records: list[dict]) -> list[dict]:
+    """Ledger findings as Dawid-Skene items: votes from labellers and
+    adjudicators; known truth from ground truth (or an agreeing mechanical
+    checker), as the unanimity verdict takes it."""
+    by: dict[str, list[dict]] = defaultdict(list)
+    for r in records:
+        by[r["finding_id"]].append(r)
+    out = []
+    for fid, recs in sorted(by.items()):
+        truth = [r["label"] for r in recs if _is_truth(r)]
+        mech = {r["label"] for r in recs if r["role"] == "mechanical" and r["label"] != "unsure"}
+        t = truth[-1] if truth else (next(iter(mech)) if len(mech) == 1 else None)
+        votes = [v for r in sorted(recs, key=lambda x: str(x.get("labeller", "")))
+                 if r["role"] in ("labeller", "adjudicator") and not _is_truth(r) for v in _ds_votes(r)]
+        out.append({"id": fid, "group": recs[0]["rule_id"], "truth": t if t in ("tp", "fp") else None,
+                    "category": next((r["category"] for r in recs if r.get("category")), "other"),
+                    "votes": votes})
+    return out
+
+
+def ds_anchors(calibration: list[dict]) -> list[dict]:
+    """Calibration records (blind labels on benchmark items with known
+    truth) as Dawid-Skene anchors."""
+    out = []
+    for i, r in enumerate(calibration):
+        if r.get("truth") not in ("tp", "fp"):
+            continue
+        out.append({"id": f"{r.get('source', '')}|{r.get('finding_id', '')}|{i}", "group": r.get("rule_id", ""),
+                    "category": r.get("category") or "other", "truth": r["truth"], "votes": _ds_votes(r)})
+    return out
+
+
+def _sums(ps: list) -> list:
+    ps = [p for p in ps if p is not None]
+    return [len(ps), round(math.fsum(ps), 6), round(math.fsum(p * (1 - p) for p in ps), 6)]
+
+
+def dawid_skene_block(records: list[dict], anchors: list[dict], verdicts: dict[str, dict],
+                      rules: dict[str, dict], bar: dict, names: list[str]) -> dict:
+    """Dawid-Skene over the ledger's findings, anchored on `anchors`
+    (calibration records): per-rule posterior summaries next to the
+    unanimity counts, the labellers' estimated error rates, and the tier
+    claim under it."""
+    fit = DS.fit(ds_items(records), ds_anchors(anchors))
+    post = fit["posteriors"]
+    per: dict[str, dict] = {}
+    for fid, v in sorted(verdicts.items()):
+        e = per.setdefault(v["rule_id"], {"all": [], "held_out": [], "strata": defaultdict(list), "changed": 0})
+        p = post.get(fid)
+        e["all"].append(p)
+        hard = None if p is None else ("tp" if p >= 0.5 else "fp")
+        if (hard or "unsure") != v["label"]:
+            e["changed"] += 1
+        if v["held_out"]:
+            e["held_out"].append(p)
+            st = v["stratum"]
+            e["strata"][f"{st['source']}/{st['language'] or '-'}"].append(p)
+    out_rules = {}
+    for rule, e in sorted(per.items()):
+        out_rules[rule] = {"all": DS.summarise(e["all"]), "held_out": DS.summarise(e["held_out"]),
+                           "verdicts_changed": e["changed"],
+                           "held_out_strata": {k: _sums(v) for k, v in sorted(e["strata"].items())}}
+    block = {"_about": "Dawid-Skene labeller-weighted precision (ARB-167, docs/precision.md). Reported "
+                       "alongside the unanimity numbers; admission and the tier claim do not use it.",
+             "method": {"rater_prior": list(DS.RATER_PRIOR), "category_shrink": DS.SHRINK,
+                        "prevalence_prior": list(DS.PREVALENCE_PRIOR), "max_iter": DS.MAX_ITER, "tol": DS.TOL,
+                        "iterations": fit["iterations"], "converged": fit["converged"],
+                        "anchors": len(ds_anchors(anchors)),
+                        "interval": "Wilson on (sum of posteriors, n), widened by the posteriors' label "
+                                    "variance; excludes uncertainty in the estimated labeller error rates"},
+             "raters": fit["raters"], "independence": _independence(anchors), "rules": out_rules}
+    block["tier"] = alt_claim(rules, names, bar, "dawid_skene", block)
+    return block
+
+
+def _independence(anchors: list[dict]) -> list[dict]:
+    items = ds_anchors(anchors)
+    raters = sorted({r for it in items for r, _ in it["votes"]})
+    out = []
+    for a in raters:
+        if ":prosecutor/" not in a:
+            continue
+        b = a.replace(":prosecutor/", ":defender/")
+        if b in raters:
+            out.append(DS.independence_check(items, a, b))
+    return out
+
+
+_PREREG = None
+
+
+def _prereg():
+    """tools/prereg_b_analysis.py (ARB-112), loaded by path: its cluster
+    bootstrap is preregistered, so it is reused, never copied or edited."""
+    global _PREREG
+    if _PREREG is None:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("prereg_b_analysis", ROOT / "tools" / "prereg_b_analysis.py")
+        _PREREG = importlib.util.module_from_spec(spec)
+        sys.modules["prereg_b_analysis"] = _PREREG
+        spec.loader.exec_module(_PREREG)
+    return _PREREG
+
+
+def _bootstrap(clusters: dict[str, list[int]]) -> dict:
+    """ARB-112's repository-cluster bootstrap (seed 109), BOOT_N resamples,
+    clusters in sorted order. Degenerate cases say so instead of giving a
+    number that looks like evidence."""
+    tp = sum(t for t, _ in clusters.values())
+    n = sum(t + f for t, f in clusters.values())
+    if len(clusters) < 2:
+        return {"lower": None, "note": "degenerate: one repository"}
+    if tp in (0, n):
+        return {"lower": None, "note": f"degenerate: every finding {'tp' if tp else 'fp'}, so every resample is too"}
+    recs = [{"repo": c, "label": lab} for c, (t, f) in sorted(clusters.items())
+            for lab in ["tp"] * t + ["fp"] * f]
+    iv = _prereg().cluster_bootstrap(recs, n_boot=BOOT_N).get("interval95")
+    return {"lower": iv[0], "upper": iv[1], "note": None} if iv else {"lower": None, "note": "degenerate"}
+
+
+def clustered_block(verdicts: dict[str, dict], rules: dict[str, dict], bar: dict, names: list[str]) -> dict:
+    """Repository-clustered bounds: per rule over all decided labels (as
+    `wilson_lower`), and held-out per-stratum cluster counts for the claims."""
+    per: dict[str, dict] = {}
+    for _, v in sorted(verdicts.items()):
+        if v["label"] not in ("tp", "fp"):
+            continue
+        e = per.setdefault(v["rule_id"], {"all": defaultdict(lambda: [0, 0]),
+                                          "strata": defaultdict(lambda: defaultdict(lambda: [0, 0]))})
+        i = 0 if v["label"] == "tp" else 1
+        e["all"][v["cluster"]][i] += 1
+        if v["held_out"]:
+            st = v["stratum"]
+            e["strata"][f"{st['source']}/{st['language'] or '-'}"][v["cluster"]][i] += 1
+    designs = {}
+    for rule, e in sorted(per.items()):
+        cl = {c: list(x) for c, x in sorted(e["all"].items())}
+        designs[rule] = (cl, P.cluster_design_effect([(t, t + f) for t, f in cl.values()]))
+    icc = pooled_icc([d for _, d in designs.values()])
+    out_rules = {}
+    for rule, e in sorted(per.items()):
+        cl, d = designs[rule]
+        tp = sum(t for t, _ in cl.values())
+        n = sum(t + f for t, f in cl.values())
+        ci = P.clustered_wilson(tp / n, n, d["deff"])
+        borrowed = {}
+        if d["deff_source"] != "estimated" and icc is not None:
+            b = P.cluster_design_effect([(t, t + f) for t, f in cl.values()], icc)
+            bci = P.clustered_wilson(tp / n, n, b["deff"])
+            borrowed = {"borrowed_icc": {"deff": b["deff"], "n_eff": b["n_eff"], "wilson_lower": _round(bci[0])}}
+        out_rules[rule] = {"design": d, "n_eff": d["n_eff"], "wilson_lower": _round(ci[0]),
+                           "wilson_upper": _round(ci[1]), **borrowed, "bootstrap": _bootstrap(cl),
+                           "held_out_clusters": {k: {c: list(x) for c, x in sorted(v.items())}
+                                                 for k, v in sorted(e["strata"].items())}}
+    block = {"_about": "Repository-clustered precision bounds (ARB-168, docs/precision.md). Reported alongside "
+                       "the independent-finding bounds; admission and the tier claim do not use them.",
+             "cluster_keys": {"default": "the finding's repository (`repo`)", **SUITE_CLUSTERS},
+             "bootstrap": {"resamples": BOOT_N, "seed": 109, "source": "tools/prereg_b_analysis.py"},
+             "pooled_icc": icc, "rules": out_rules}
+    block["tier"] = alt_claim(rules, names, bar, "clustered", block)
+    if icc is not None:
+        block["tier_borrowed_icc"] = alt_claim(rules, names, bar, "clustered", block, icc=icc)
+    return block
+
+
+def pooled_icc(designs: list) -> float | None:
+    """The intra-repository correlation pooled over the rules where it can
+    be estimated (two or more repositories, both labels present), weighted
+    by their finding counts and clipped to [0, 1]. Used, beside the worst
+    case, for the rules where it cannot be estimated."""
+    ok = [d for d in designs if d and d["deff_source"] == "estimated" and d["icc"] is not None]
+    n = sum(d["n"] for d in ok)
+    if not n:
+        return None
+    return round(sum(min(1.0, max(0.0, d["icc"])) * d["n"] for d in ok) / n, 4)
+
+
+def _alt_rows(rows: list[dict], mode: str, block: dict) -> list[dict]:
+    out = []
+    for r in rows:
+        alt = (block.get("rules") or {}).get(r["rule"]) or {}
+        if mode == "dawid_skene":
+            n, sp, spq = (alt.get("held_out_strata") or {}).get(r["stratum"], [0, 0.0, 0.0])
+            out.append({**r, "tp": sp, "fp": n - sp, "label_var": spq})
+        else:
+            out.append({**r, "clusters": (alt.get("held_out_clusters") or {}).get(r["stratum"]) or {}})
+    return out
+
+
+def alt_estimate(rows: list[dict], total: int, bar: dict, mode: str, block: dict,
+                 icc: float | None = None) -> dict | None:
+    """The tier arithmetic (`stratified_claim`) under one of the two
+    alternative methods. Dawid-Skene: each stratum's tp/fp are the
+    posterior pseudo-counts. Clustered: the unanimity estimate, with its
+    effective size divided by the design effect over the strata's
+    repositories."""
+    alt = _alt_rows(rows, mode, block)
+    w = P.weighted_precision(alt)
+    if w is None:
+        return None
+    coverage = w["population"] / total if total else 1.0
+    if mode == "dawid_skene":
+        # Label variance of the weighted estimate: sum W_h^2 sum p(1-p) / n_h^2.
+        live = [r for r in alt if r["tp"] + r["fp"] > 0]
+        tot = sum(r["population"] for r in live)
+        v_label = sum((r["population"] / tot) ** 2 * r["label_var"] / (r["tp"] + r["fp"]) ** 2 for r in live)
+        v_sampling = w["precision"] * (1 - w["precision"]) / w["n_eff"]
+        lower = round(DS.widen(w["wilson_lower"], w["wilson_upper"], v_sampling, v_label)[0], 4)
+        extra = {"n_eff": w["n_eff"], "expected_tp": round(w["tp"], 2), "n": round(w["tp"] + w["fp"]),
+                 "label_variance": v_label}
+    else:
+        d = P.cluster_design([{"weight": r["population"], "tp": r["tp"], "fp": r["fp"], "clusters": r["clusters"]}
+                              for r in alt if r["tp"] + r["fp"]], icc)
+        ci = P.clustered_wilson(w["precision"], w["n_eff"], d["deff"])
+        lower = round(ci[0], 4)
+        extra = {"n_eff_independent": w["n_eff"], "n_eff": round(w["n_eff"] / d["deff"], 1), "design": d}
+    return {"precision": round(w["precision"], 4), "wilson_lower": lower, **extra,
+            "coverage": round(coverage, 4), "claim_lower": round(lower * coverage, 4),
+            "would_claim": round(lower * coverage, 4) >= bar["tier_lower"]}
+
+
+def alt_claim(rules: dict[str, dict], names: list[str], bar: dict, mode: str, block: dict,
+              icc: float | None = None) -> dict:
+    unknown = sorted(r for r in names if rules[r].get("population_unknown")
+                     or rules[r].get("held_out_population") is None)
+    if unknown or not names:
+        return {"rules": names, "overall": None, "population_unknown": unknown}
+    rows, total = tier_rows(rules, names)
+    return {"rules": names, "overall": alt_estimate(rows, total, bar, mode, block, icc), "population_unknown": []}
+
+
+def alt_language_claims(ledger: dict, bar: dict, verified: set[str]) -> dict[str, dict]:
+    """Per language, the claim under unanimity (as `language_claims`),
+    Dawid-Skene and clustering, side by side."""
+    rules = ledger.get("rules") or {}
+    out = {}
+    for lang, row in language_claims(rules, bar, verified).items():
+        members = row["rule_ids"]
+        res = {"unanimity": row}
+        for mode in ("dawid_skene", "clustered"):
+            block = ledger.get(mode) or {}
+            est = None
+            if members and not row["population_unknown"] and block:
+                rows, total = language_rows(rules, members, lang)
+                est = alt_estimate(rows, total, bar, mode, block)
+            res[mode] = est
+        out[lang] = res
+    return out
+
+
+def language_pooled(ledger: dict) -> dict[str, dict]:
+    """Per language, every labelled rule's held-out findings pooled
+    (unweighted, admitted or not): the unanimity count and Wilson bound, the
+    Dawid-Skene mean posterior and bound, and the repository-clustered
+    bound. A description of the labels, not a claim: the claim is over
+    verified rules only and weighted by population."""
+    rules = ledger.get("rules") or {}
+    ds = (ledger.get("dawid_skene") or {}).get("rules") or {}
+    cl = (ledger.get("clustered") or {}).get("rules") or {}
+    acc: dict[str, dict] = {}
+    for rule, e in rules.items():
+        for s in e.get("strata") or []:
+            lang = s["language"] or "-"
+            key = f"{s['source']}/{lang}"
+            a = acc.setdefault(lang, {"tp": 0, "fp": 0, "ds": [0, 0.0, 0.0], "rows": []})
+            tp, fp = s["held_out"]["tp"], s["held_out"]["fp"]
+            a["tp"] += tp
+            a["fp"] += fp
+            for i, x in enumerate((ds.get(rule) or {}).get("held_out_strata", {}).get(key, [0, 0.0, 0.0])):
+                a["ds"][i] += x
+            if tp + fp:
+                # One stratum per rule, weighted by its labels, so the pooled
+                # estimate is the plain pooled share and each finding is
+                # compared with its own rule's rate: rules that differ are
+                # not mistaken for repositories that differ.
+                a["rows"].append({"weight": tp + fp, "tp": tp, "fp": fp,
+                                  "clusters": (cl.get(rule) or {}).get("held_out_clusters", {}).get(key) or {}})
+    out = {}
+    for lang, a in sorted(acc.items()):
+        n = a["tp"] + a["fp"]
+        if not n:
+            continue
+        w = P.wilson(a["tp"], n)
+        d = DS.summarise_sums(*a["ds"])
+        des = P.cluster_design(a["rows"])
+        ci = P.clustered_wilson(a["tp"] / n, n, des["deff"]) if des else None
+        out[lang] = {"tp": a["tp"], "fp": a["fp"], "precision": round(a["tp"] / n, 4), "lower": _round(w[0]),
+                     "ds_n": d["n"], "ds_precision": d["precision"], "ds_lower": d["lower"],
+                     "repos": des["clusters"] if des else None, "deff": des["deff"] if des else None,
+                     "deff_source": des["deff_source"] if des else None,
+                     "clustered_lower": _round(ci[0]) if ci else None}
+    return out
+
+
+def near_bar(ledger: dict, margin: float = 0.05) -> list[dict]:
+    """Rules whose unanimity lower bound is within `margin` of the
+    admission bar (or above it), with all three bounds side by side."""
+    bar = {**P.DEFAULT_BAR, **(ledger.get("bar") or {})}
+    out = []
+    for rule, e in (ledger.get("rules") or {}).items():
+        lo = e.get("wilson_lower")
+        if lo is None or lo < bar["rule_lower"] - margin:
+            continue
+        ds = (((ledger.get("dawid_skene") or {}).get("rules") or {}).get(rule) or {}).get("all") or {}
+        cl = ((ledger.get("clustered") or {}).get("rules") or {}).get(rule) or {}
+        d = cl.get("design") or {}
+        b = cl.get("bootstrap") or {}
+        out.append({"rule": rule, "tp": e["tp"], "fp": e["fp"], "n": e["n"], "lower": lo,
+                    "admitted": e.get("admitted", False), "ds_n": ds.get("n"), "ds_lower": ds.get("lower"),
+                    "repos": d.get("clusters"), "deff": d.get("deff"), "deff_source": d.get("deff_source"),
+                    "n_eff_clustered": cl.get("n_eff"), "clustered_lower": cl.get("wilson_lower"),
+                    "bootstrap_lower": b.get("lower"), "bootstrap_note": b.get("note")})
+    return out
+
+
+def render_alternatives(ledger: dict, bar: dict, verified: set[str]) -> str:
+    def f(x):
+        return "-" if x is None else f"{x:.4f}"
+    lines = ["", "alongside, not used for admission or the claim: Dawid-Skene (ds) and repository-clustered (clus)",
+             f"{'language':<12} {'claim_lo':>8} {'ds_lo':>8} {'clus_lo':>8} {'deff':>7} {'repos':>5}"]
+    for lang, c in alt_language_claims(ledger, bar, verified).items():
+        u, d, k = c["unanimity"], c["dawid_skene"] or {}, c["clustered"] or {}
+        if not u["rules_admitted"]:
+            continue
+        des = k.get("design") or {}
+        lines.append(f"{lang:<12} {f(u['claim_lower']):>8} {f(d.get('claim_lower')):>8} "
+                     f"{f(k.get('claim_lower')):>8} {des.get('deff', '-'):>7} {des.get('clusters', '-'):>5}")
+    for mode, key, name in (("dawid_skene", "tier", "Dawid-Skene"), ("clustered", "tier", "clustered, worst case"),
+                            ("clustered", "tier_borrowed_icc", "clustered, pooled ICC")):
+        o = ((ledger.get(mode) or {}).get(key) or {}).get("overall")
+        if o:
+            lines.append(f"verified tier, {name}: precision {o['precision']} (95% lower {o['wilson_lower']}, "
+                         f"n_eff {o['n_eff']}; claim lower {o['claim_lower']}; would claim: "
+                         f"{'yes' if o['would_claim'] else 'no'})")
+    lines += ["", "every labelled rule's held-out findings pooled per language (unweighted; a description, not a claim)",
+              f"{'language':<12} {'TP':>5} {'FP':>5} {'prec':>7} {'lower':>7} {'ds_n':>5} {'ds_prec':>7} "
+              f"{'ds_lo':>7} {'repos':>5} {'deff':>7} {'clus_lo':>7}"]
+    for lang, r in language_pooled(ledger).items():
+        lines.append(f"{lang:<12} {r['tp']:>5} {r['fp']:>5} {f(r['precision']):>7} {f(r['lower']):>7} "
+                     f"{r['ds_n']:>5} {f(r['ds_precision']):>7} {f(r['ds_lower']):>7} {r['repos'] or '-':>5} "
+                     f"{r['deff'] or '-':>7} {f(r['clustered_lower']):>7}")
+    lines += ["", f"rules within 0.05 of the admission bar ({bar['rule_lower']}) by the current lower bound",
+              f"{'rule':<46} {'TP':>5} {'FP':>4} {'lower':>7} {'ds_lo':>7} {'repos':>5} {'deff':>7} "
+              f"{'clus_lo':>7} {'boot_lo':>7}"]
+    for r in near_bar(ledger):
+        note = f"  ({r['bootstrap_note']})" if r["bootstrap_note"] else ""
+        lines.append(f"{r['rule']:<46} {r['tp']:>5} {r['fp']:>4} {f(r['lower']):>7} {f(r['ds_lower']):>7} "
+                     f"{r['repos'] or '-':>5} {r['deff'] or '-':>7} {f(r['clustered_lower']):>7} "
+                     f"{f(r['bootstrap_lower']):>7}{note}")
+    return "\n".join(lines)
 
 
 def render_languages(claims: dict[str, dict], bar: dict) -> str:
@@ -569,10 +997,14 @@ def _counts(e: dict) -> tuple:
 
 
 def build(records: list[dict], previous: dict | None, today: str, verified: set[str],
-          snapshots: dict[str, dict[str, int]] | None = None) -> dict:
+          snapshots: dict[str, dict[str, int]] | None = None, anchors: list[dict] | None = None) -> dict:
+    """The ledger from label records. `anchors` are the calibration records
+    (known truth, labelled blind) Dawid-Skene learns the labellers' error
+    rates from; they never count toward a rule."""
     prev = (previous or {}).get("rules") or {}
     bar = {**P.DEFAULT_BAR, **((previous or {}).get("bar") or {})}
-    rules = rule_entries(final_verdicts(records), bar)
+    verdicts = final_verdicts(records)
+    rules = rule_entries(verdicts, bar)
     snapshots = snapshots or {}
     for rule, e in rules.items():
         old = prev.get(rule) or {}
@@ -591,8 +1023,11 @@ def build(records: list[dict], previous: dict | None, today: str, verified: set[
                            "fp_notes": old["fp_notes"], "admitted": False,
                            "admitted_reason": "0 label(s)", "updated": old.get("updated", today),
                            "snapshot_counts": {}}
+    tier = tier_claim(rules, bar, verified)
     return {"_about": ABOUT, "version": 1, "bar": bar, "generated": today,
-            "rules": dict(sorted(rules.items())), "tier": tier_claim(rules, bar, verified)}
+            "rules": dict(sorted(rules.items())), "tier": tier,
+            "dawid_skene": dawid_skene_block(records, anchors or [], verdicts, rules, bar, tier["rules"]),
+            "clustered": clustered_block(verdicts, rules, bar, tier["rules"])}
 
 
 def declared_verified(config: dict | None = None) -> set[str]:
@@ -660,7 +1095,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "report":
         ledger = P.load_ledger(args.ledger)
         bar = {**P.DEFAULT_BAR, **(ledger.get("bar") or {})}
-        print(render_languages(language_claims(ledger.get("rules") or {}, bar, declared_verified()), bar))
+        verified = declared_verified()
+        print(render_languages(language_claims(ledger.get("rules") or {}, bar, verified), bar))
+        print(render_alternatives(ledger, bar, verified))
         return 0
     if args.cmd == "check":
         same = LEDGER.read_bytes() == PACKAGED.read_bytes()
@@ -671,6 +1108,7 @@ def main(argv: list[str] | None = None) -> int:
     for p in args.labels:
         records += (read_jsonl(p) if p.name.endswith((".jsonl", ".jsonl.gz"))
                     else read_sheet(p, args.sheet_batch, args.sheet_source, args.sheet_held_out))
+    calibration = [r for r in records if str(r.get("source", "")).startswith("calibration:")]
     records, skipped = drop_calibration(records)
     if skipped:
         print(f"left out {skipped} labeller-calibration records (they measure the labellers, not the rules)",
@@ -678,6 +1116,7 @@ def main(argv: list[str] | None = None) -> int:
     version = current_model_prompt() if args.model_prompt is None else \
         ("" if args.model_prompt == "any" else args.model_prompt)
     records, stale = drop_superseded_model_labels(records, version)
+    calibration, _ = drop_superseded_model_labels(calibration, version)
     if stale:
         print(f"left out {stale} model labels made with a labeller prompt other than {version}",
               file=sys.stderr)
@@ -688,7 +1127,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"left out {stale} panel labels made with a panel prompt other than {panel}",
               file=sys.stderr)
     previous = P.load_ledger(LEDGER) if LEDGER.is_file() else None
-    ledger = build(records, previous, args.date, declared_verified(), snapshot_counts())
+    ledger = build(records, previous, args.date, declared_verified(), snapshot_counts(), anchors=calibration)
     write(ledger, (args.out,) if args.out else (LEDGER, PACKAGED))
     print(render(ledger))
     return 0

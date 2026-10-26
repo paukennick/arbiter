@@ -179,6 +179,92 @@ def weighted_precision(strata: Iterable[dict]) -> dict | None:
                        "wilson_lower": round(wilson(tp, tp + fp)[0], 4)}}
 
 
+def cluster_design(rows: Iterable[dict], icc: float | None = None) -> dict | None:
+    """How much less a set of findings is worth when they come in clusters
+    (repositories) whose findings resemble each other (ARB-168).
+
+    `rows`: strata, each {"weight": W_h (any scale), "tp", "fp", "clusters":
+    {cluster: [tp, fp]}}; one row of weight 1 is the plain, unstratified
+    case. The estimator is the stratified p = sum W_h p_h, so finding i in
+    stratum h carries weight w_i = W_h / n_h and residual y_i - p_h.
+
+    design effect = V_cluster / V_independent, where V_independent =
+    sum w_i^2 (y_i - p_h)^2 and V_cluster = sum over clusters of
+    (sum of w_i (y_i - p_h) in the cluster)^2 (the CR0 cluster-robust
+    variance, no small-sample factor). It is floored at 1: clustering never
+    makes the data look better than independent findings.
+
+    Where it cannot be estimated -- fewer than two clusters, or every
+    stratum all tp (or all fp), so both variances are 0 -- the worst case is
+    used: a cluster's findings are copies of each other (ICC = 1), the
+    design effect is the weighted cluster size m_w = sum W_c^2 / sum w_i^2
+    (W_c the cluster's total weight), and the sample is worth the effective
+    number of clusters. The ICC reported is the one deff = 1 + (m_w - 1) *
+    ICC implies.
+
+    `icc`, when given, replaces the worst case where the correlation is not
+    estimable (an ICC borrowed from other rules); an estimable design is
+    never overridden.
+    """
+    rows = [r for r in rows if (r.get("tp", 0) + r.get("fp", 0)) > 0]
+    if icc is not None and not 0.0 <= icc <= 1.0:
+        raise ValueError(f"icc {icc} outside [0, 1]")
+    if not rows:
+        return None
+    total = math.fsum(float(r["weight"]) for r in rows)
+    v_ind = 0.0
+    sum_w2 = 0.0
+    resid: dict[str, float] = {}
+    mass: dict[str, float] = {}
+    n_all = 0
+    for r in rows:
+        n_h = r["tp"] + r["fp"]
+        n_all += n_h
+        p_h = r["tp"] / n_h
+        w = float(r["weight"]) / total / n_h
+        v_ind += w * w * n_h * p_h * (1.0 - p_h)
+        sum_w2 += w * w * n_h
+        listed = 0
+        for c, (t, f) in sorted((r.get("clusters") or {}).items()):
+            resid[c] = resid.get(c, 0.0) + w * (t - p_h * (t + f))
+            mass[c] = mass.get(c, 0.0) + w * (t + f)
+            listed += t + f
+        if listed != n_h:
+            raise ValueError(f"clusters list {listed} finding(s), the stratum has {n_h}")
+    c_n = len(mass)
+    m_w = math.fsum(x * x for x in mass.values()) / sum_w2
+    out = {"clusters": c_n, "n": n_all, "mean_cluster_size": round(n_all / c_n, 2),
+           "weighted_cluster_size": round(m_w, 2), "effective_clusters": round(1.0 / math.fsum(x * x for x in mass.values()), 1)}
+    if c_n < 2 or v_ind <= 0.0:
+        why = "one cluster" if c_n < 2 else "no within-stratum variation (all tp or all fp)"
+        if icc is not None:
+            return {**out, "deff": round(max(1.0, 1.0 + (m_w - 1.0) * icc), 3), "icc": round(icc, 4),
+                    "deff_source": f"borrowed ICC ({why}: correlation not estimable)"}
+        return {**out, "deff": round(max(1.0, m_w), 3), "icc": None,
+                "deff_source": f"worst case, ICC = 1 ({why}: correlation not estimable)"}
+    raw = math.fsum(x * x for x in resid.values()) / v_ind
+    icc = (raw - 1.0) / (m_w - 1.0) if m_w > 1.0 else None
+    return {**out, "deff": round(max(1.0, raw), 3), "deff_raw": round(raw, 3),
+            "icc": None if icc is None else round(icc, 4), "deff_source": "estimated"}
+
+
+def cluster_design_effect(clusters: Iterable[tuple[float, float]], icc: float | None = None) -> dict | None:
+    """`cluster_design` for one unstratified sample: (tp, tp+fp) per cluster."""
+    cl = {f"c{i}": [t, n - t] for i, (t, n) in enumerate(clusters) if n > 0}
+    if not cl:
+        return None
+    tp = sum(v[0] for v in cl.values())
+    fp = sum(v[1] for v in cl.values())
+    d = cluster_design([{"weight": 1.0, "tp": tp, "fp": fp, "clusters": cl}], icc)
+    return {**d, "n_eff": round(d["n"] / d["deff"], 1)}
+
+
+def clustered_wilson(p: float, n_eff: float, deff: float) -> tuple[float, float] | None:
+    """Wilson interval for precision p on n_eff / deff findings."""
+    n = n_eff / max(1.0, float(deff))
+    return wilson(p * n, n) if n > 0 else None
+
+
 # ---------------------------------------------------------------------------
 # Ledger
 # ---------------------------------------------------------------------------

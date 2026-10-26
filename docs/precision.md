@@ -479,6 +479,188 @@ ARB-087 supply chain, ARB-088 interface and contract consistency, ARB-089
 written claims checked against code, ARB-090 assurance census. A
 `<rule>.not-assessed` finding carries the requirements of its rule.
 
+## Two more estimates, reported alongside (ARB-167, ARB-168)
+
+The ledger's numbers rest on two simplifications. A finding counts only
+when every labeller agrees, so a disputed finding drops out. Every finding
+is also treated as independent, although findings from one repository
+tend to be right or wrong together. Since 2026-10-26, `precision_ledger.py
+build` computes an estimate without each simplification and writes it to
+`precision.json` under two new keys, `dawid_skene` and `clustered`.
+`precision_ledger.py report` prints them next to the current numbers.
+
+**Neither estimate decides anything yet.** Admission (`rule_lower` 0.97
+on at least 30 labels) and the 99% tier claim still use unanimity and
+independent findings, until Nick decides to switch. A test holds every
+rule entry and the `tier` block byte-identical with and without the new
+estimates.
+
+To get the labeller error rates, `build` needs the calibration files
+named alongside the label files. Without them, Dawid–Skene runs
+unanchored.
+
+```
+python tools/precision_ledger.py build tools/gold/labels/{gold-model,heldout-r5-model,ai-corpus-model,cve-fix,cve-suspects-model,owasp-java,owasp-python,heldout-r7-python-model}.jsonl \
+    tools/gold/labels/juliet-java.jsonl.gz tools/gold/labels/calibration*.jsonl
+```
+
+### Dawid–Skene: weighing labellers by how often they are right
+
+`src/arbiter/dawid_skene.py`. Each labeller gets two rates per finding
+category (`label_models.category`):
+
+- **sensitivity**: how often it says tp when the finding is a tp;
+- **specificity**: how often it says fp when the finding is an fp.
+
+Each finding gets a probability of being a true positive, worked out from
+those rates. The rates and probabilities are estimated together, by
+alternating between them until they settle (EM).
+
+- **Who the labellers are.** One model record holds the prosecutor's,
+  the defender's and, on a dispute, the adjudicator's votes. Each of those
+  roles counts as a labeller of its own, keyed by model, role and prompt
+  version, because each makes its own mistakes. Panel seats and sheets are
+  one labeller each. `unsure` counts as no vote.
+- **Known truth anchors it.** Two kinds of finding enter with their answer
+  fixed:
+  - ground-truth findings (OWASP, Juliet, CVE fixes);
+  - the 494 current-prompt (v3) calibration items, which are benchmark
+    findings the labellers judged blind.
+
+  These pin the labellers' rates. Calibration items never count toward a
+  rule.
+- **Most categories have no known truth.** v3 calibration covers only
+  injection (413), auth-crypto (80) and deserialization (1).
+  - In those, a labeller's category rates are its anchored overall rates,
+    adjusted by the category's own votes. The adjustment is damped so that
+    each category is worth at least 10 votes of the overall rate.
+  - Every other category uses the labeller's overall rate unchanged. That
+    includes supply-chain, where the one admitted tier rule sits. There,
+    two agreeing labellers cannot show from their votes alone whether they
+    are both right or making the same mistake.
+- **Starting assumptions.** Before any data, each labeller is assumed to
+  be better than a coin (a Beta(2, 1) prior), and each rule's tp share is
+  open (Beta(1, 1)).
+- **The result is fixed for fixed labels.** Inputs are sorted, the
+  iteration limit is 500 and the tolerance 1e-10. On the 2026-10-26 labels
+  it converged in 51 iterations.
+- **The interval.** It is Wilson's interval on the sum of the
+  probabilities, widened by how unsure those probabilities are. When every
+  probability is exactly 0 or 1, it is the unanimity interval. It does not
+  include the uncertainty in the estimated labeller rates themselves.
+- **It assumes the labellers err independently. They may not.** The
+  prosecutor and defender are one model reading one excerpt. On the 494 v3
+  calibration items the prosecutor was wrong once (0.2%) and the defender
+  never. So both were never wrong together, and calibration cannot yet
+  show whether they share mistakes (`dawid_skene.independence`). Until it
+  can, an agreeing pair may be trusted more than it deserves.
+- **The adjudicator's rates rest on very little.** It votes only on
+  disputes and has one v3 calibration item, so its rates (sensitivity
+  0.67, specificity 0.75) are mostly the starting assumption.
+
+The estimated rates, from `dawid_skene.raters`, overall per role:
+
+| role (v3) | sensitivity | specificity | votes | on known truth |
+|---|---:|---:|---:|---:|
+| prosecutor | 0.9974 | 0.9826 | 2,673 | 494 |
+| defender | 0.9974 | 0.9913 | 2,681 | 494 |
+| adjudicator | 0.6667 | 0.75 | 38 | 1 |
+
+Across all 128 rules, Dawid–Skene's verdict (tp when the probability is at
+least 0.5) differs from unanimity's on 10 findings:
+
+- 4 findings unanimity left `unsure` are now decided: 3 tp and 1 fp.
+- 6 adjudicated findings are reversed: 4 tp become fp, and 2 fp become
+  tp. Unanimity follows the adjudicator, while Dawid–Skene weighs the
+  adjudicator's single vote by its weakly estimated rates against the
+  prosecutor's and defender's.
+
+**If Nick switches admission to Dawid–Skene:**
+
+- The bar would be applied to the Dawid–Skene lower bound over all of a
+  rule's findings with a decided vote.
+- That count can be larger than unanimity's, because disputed findings
+  are weighed instead of dropped.
+- No rule within 0.05 of the bar changes status (table below).
+- The tier claim stays: Dawid–Skene's claim lower bound is 0.9926, the
+  same as unanimity's.
+
+### Repository clustering: findings from one repository are not independent
+
+The design effect says how much less a set of findings is worth because
+findings from one repository resemble each other. It is computed in
+`src/arbiter/precision.py` (`cluster_design`):
+
+- **What it is.** The design effect is the variance of the precision when
+  repositories, not findings, are the independent units (cluster-robust
+  CR0), divided by the variance if every finding were independent. The
+  sample is then worth n / design effect findings. The bound is Wilson's
+  on that smaller number.
+- **The ICC.** The intra-repository correlation reported is the one that
+  `deff = 1 + (m − 1) · ICC` implies, where m is the size-weighted mean
+  repository size. The design effect is never below 1: clustering never
+  makes the data look better than independent findings.
+- **Where it applies.** It applies per rule (all labels, like
+  `wilson_lower`), per language claim, and in `stratified_claim`. In the
+  claims, each finding is compared with its own stratum's rate, so strata
+  that differ are not read as repositories that differ.
+- **When the correlation cannot be measured.** This happens with one
+  repository, or when every finding is tp (or every one fp), because both
+  variances are then 0. The worst case is used: findings in a repository
+  are copies (ICC = 1), and the sample is worth its effective number of
+  repositories.
+- **A borrowed alternative.** Next to the worst case, the report shows
+  the bound with the ICC pooled over the rules where it can be measured.
+  That ICC was 0.0454 on 2026-10-26.
+- **What counts as a repository.** By default it is the finding's `repo`.
+  The benchmark suites are each a single `repo`, but their test cases are
+  separate programs:
+  - OWASP Java and Python: the test file is the cluster;
+  - Juliet: the functional variant is the cluster, with its flow variants
+    `_01`…`_NN` together, since they share a source and a sink.
+
+  Treating each suite as one repository would leave every benchmark rule
+  worth one finding.
+- **The bootstrap check.** ARB-112's repository bootstrap
+  (`tools/prereg_b_analysis.py`, seed 109) runs per rule as a check, with
+  2,000 resamples instead of its 10,000 to keep `build` near half a
+  minute. Where every finding has the same label, every resample does too,
+  so it reports "degenerate" instead of a bound.
+
+**If Nick switches admission and the claim to the clustered bound:**
+
+- `supply.unpinned-action` (690 tp, 0 fp, 40 repositories) is the case
+  that decides it.
+- Because every finding is tp, its correlation cannot be measured.
+  - Under the worst case its lower bound falls from 0.9945 to 0.8292, and
+    it loses admission.
+  - With the pooled ICC (design effect 2.634) it falls to 0.9855, and it
+    stays admitted.
+- The 99% tier claim (held-out, 524 tp over 30 repositories) falls from
+  0.9926 to 0.7687 under the worst case and to 0.9797 with the pooled ICC.
+  **Either way there would be no 99% claim today.**
+- `assurance.blanket-suppression` drops from 0.9805 to 0.9742 and stays
+  admitted. No other rule within 0.05 of the bar changes status.
+
+Rules within 0.05 of the admission bar (unanimity lower bound at least
+0.92), 2026-10-26:
+
+| rule | tp | fp | admitted now | unanimity lower | Dawid–Skene lower | repos | design effect | clustered lower | bootstrap lower | admitted if switched to clustered |
+|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---|
+| `assurance.blanket-suppression` | 445 | 3 | yes | 0.9805 | 0.9834 | 32 | 1.696 (estimated) | 0.9742 | 0.9810 | yes |
+| `java.weak-random-for-secret` | 218 | 1 | yes | 0.9746 | 0.9746 | 219 (test files) | 1.0 | 0.9746 | 0.9860 | yes |
+| `python.insecure-random-for-secret` | 99 | 2 | no | 0.9307 | 0.9307 | 101 (test files) | 1.0 | 0.9307 | 0.9500 | no |
+| `supply.unpinned-action` | 690 | 0 | yes | 0.9945 | 0.9944 | 40 | 37.0 worst case / 2.634 pooled ICC | 0.8292 / 0.9855 | degenerate (all tp) | no / yes |
+| `typescript.fetch-no-timeout` | 145 | 4 | no | 0.9330 | 0.9332 | 17 | 1.415 (estimated) | 0.9219 | 0.9290 | no |
+
+`report` prints this table from the current ledger, together with
+per-language rows under all three methods.
+
+The ARB-109 cohort labels (`tools/gold/labels/arb109/`) are still kept
+out of the ledger, as ARB-112 decided. Adding them would move nine Python
+rules, none of them near the bar. For example, `python.sql-injection`
+would go from 28 tp / 223 fp to 47 / 271.
+
 ## Model panel (ARB-122)
 
 `tools/panel/panel.py` asks models from **different companies** to label
@@ -575,8 +757,9 @@ labelled finding, so the ledger merges them with every other label of that
 finding. The ledger keeps `panel/v1` as current and drops other panel
 versions, as it does for the labeller's prompt versions. Today a finding's
 verdict needs every decided label to agree, the panel's included.
-**Dawid–Skene** will later replace that strict unanimity: it estimates each
-labeller's error rates from the labels and weighs votes by them. That is why
+**Dawid–Skene** estimates each labeller's error rates from the labels and
+weighs votes by them. It is reported alongside unanimity since ARB-167
+("Two more estimates" above), and it may later replace unanimity. That is why
 records stay one per model and are never merged into a panel verdict on
 disk.
 

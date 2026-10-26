@@ -1914,3 +1914,41 @@ ARB-112 (Workstream B preregistration): `docs/accuracy-prereg-b.md` freezes the 
 ARB-112 result: the preregistered ARB-109 model-labelled study ran (calibration 120/120; cohort 44 tp / 57 fp / 4 unsure of 105; cluster interval [0.031, 0.838]; sql-injection 19 tp / 48 fp, 42 fp in sqlglot). Labels in `tools/gold/labels/arb109/` are evaluation data: never tune rules on them or train on them. Record in `docs/accuracy-prereg-b-results.md`. No 99% claim.
 
 ARB-113 (Workstream C start): added `tools/triage_baseline.py` + tests, froze `tools/gold/labels/triage/dev-split-v1.json` (seed 113, repository-family disjoint), and recorded CPU baseline metrics (`dev-cpu-baseline-v1.json`, `dev-cpu-baseline-cv-v1.json`) in `docs/accuracy-triage-cpu-baseline.md`. Loader policy excludes held-out, calibration and ARB-109 labels from training inputs. No torch/model dependency change, no GPU training, no ARB-109 evaluation in this step.
+
+## 2026-10-26 — Copilot stack merged; Dawid–Skene and repository clustering alongside (ARB-111, ARB-167, ARB-168)
+
+- **Merge.** `origin/accuracy/arb-113-triage-prereg` (ARB-110 to ARB-113)
+  merged into r7-stats. Record files were combined, and the in-tree
+  snapshots were regenerated with `regression_guard.py update`.
+- **Two separate CI failures on PR #22.**
+  - Windows: the CRLF digest problem, already fixed on this side
+    (FAIL-131).
+  - slow-tier: a real defect (FAIL-160). A partial `update` that re-timed
+    only the Java targets also rewrote the shared reference time, so every
+    other target's budget shrank by the two machines' speed ratio (1.385).
+- **Java snapshots re-recorded on the merged tree.** java-netty gained 25
+  findings and java-tomcat 3, all from this side's supply rules, with none
+  lost. On Windows, java-spring-security has 87 files past the
+  260-character path limit, so it can only be checked on Linux CI.
+- **Both new estimates sit beside the ledger, not in it.** They are under
+  `dawid_skene` and `clustered` in `precision.json`. Admission and the
+  tier claim stay on unanimity and independent findings until Nick
+  decides; a test pins this.
+- **Decisions in the Dawid–Skene estimate:**
+  - each prosecutor, defender and adjudicator vote is its own labeller;
+  - it is anchored on v3 calibration only;
+  - a category with no anchored vote uses the labeller's anchored overall
+    rates, because two agreeing labellers cannot reveal shared mistakes;
+  - the interval is Wilson widened by label variance, and excludes the
+    uncertainty in the estimated labeller rates.
+- **Decisions in the clustering estimate:**
+  - the design effect is CR0 cluster-robust variance over independent
+    variance, never below 1;
+  - where the correlation cannot be measured, the worst case is used,
+    reported beside a pooled ICC;
+  - benchmark suites are clustered by test case, not by suite;
+  - ARB-112's bootstrap is loaded by path, not copied.
+- **Open question for Nick.** `supply.unpinned-action` is all tp, so the
+  clustered decision depends on an assumption the data cannot test: the
+  worst case (lower bound 0.8292) or the pooled ICC (0.9855). Under either,
+  the 99% tier claim (0.7687 or 0.9797) would not hold today.

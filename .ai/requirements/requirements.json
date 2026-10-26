@@ -3725,6 +3725,64 @@
         "changelog"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-167",
+      "category": "accuracy",
+      "title": "Dawid-Skene labeller-weighted precision alongside strict unanimity",
+      "description": "Estimate each labeller's sensitivity and specificity per category with Dawid-Skene EM over per-labeller votes (unsure as missing), Beta-smoothed and anchored on known-truth calibration records, giving each finding a posterior P(tp). Report per rule and per language the mean-posterior precision and an interval next to the unanimity result in precision_ledger.py report and precision.json; admission and the 99% claim stay on unanimity until Nick switches.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "tools/precision_ledger.py",
+        "src/arbiter/precision.py",
+        "src/arbiter/dawid_skene.py",
+        "tests/test_dawid_skene.py",
+        "docs/precision.md"
+      ],
+      "acceptance_criteria": [
+        "synthetic labellers with known error rates are recovered within tolerance",
+        "perfect labellers give the unanimity verdicts",
+        "output is deterministic",
+        "admitted and claim flags unchanged"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/test_dawid_skene.py tests/test_precision_ledger.py -q"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md",
+        "docs/precision.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": []
+    },
+    {
+      "id": "ARB-168",
+      "category": "accuracy",
+      "title": "Repository-clustered precision bounds alongside the independent-finding bound",
+      "description": "Findings in one repository are correlated. Compute a design effect from the intra-repository correlation, a clustered effective sample size and Wilson bound, and a repository-level bootstrap lower bound as a check, per rule, per language and in stratified_claim. Report next to the current bound in report and precision.json; admission keeps the current method until Nick switches, and docs/precision.md states what would change for every rule within 0.05 of a bar.",
+      "priority": "high",
+      "status": "pending",
+      "minimum_access_scope": [
+        "tools/precision_ledger.py",
+        "src/arbiter/precision.py",
+        "tests/test_cluster_precision.py",
+        "docs/precision.md"
+      ],
+      "acceptance_criteria": [
+        "all findings from few repos give n_eff near the number of repos",
+        "independent repos give n_eff near n",
+        "admitted and claim flags unchanged"
+      ],
+      "validation_required": [
+        "PYTHONPATH=src python -m pytest tests/test_cluster_precision.py tests/test_precision_ledger.py -q"
+      ],
+      "documentation_required": [
+        "CHANGELOG.md",
+        "docs/precision.md",
+        ".ai/project-context.md"
+      ],
+      "risk_notes": []
     }
   ]
 }
