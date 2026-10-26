@@ -1,0 +1,1855 @@
+{
+  "_about": "Breadth set r7, TypeScript (ARB-166), frozen before any clone or scan. TypeScript applications and services drawn from GitHub topics ['self-hosted', 'web-application', 'webapp', 'dashboard', 'cms', 'api-server', 'rest-api', 'backend', 'monitoring', 'automation', 'bot', 'discord-bot', 'telegram-bot', 'chatbot', 'scraper', 'crawler', 'cli', 'proxy', 'nestjs', 'express', 'nextjs', 'fastify', 'hono', 'trpc', 'saas', 'workflow', 'llm-app', 'rag', 'mcp-server', 'electron-app', 'home-automation'], each with >= 1000 stars, pushed since 2026-08-26, not archived/fork/template, an OSI licence, TypeScript >= 60% of bytes, size <= 400000 KB, a .github/workflows directory, no path Windows cannot check out, a description that does not name a library/SDK/tutorial/boilerplate/list, and not named anywhere in Arbiter's tools, packs, docs or fixtures (held-out sets, gold repos, ground-truth sources, every other breadth manifest). Chosen from metadata and file names only; candidates shuffled with seed 20261026, then split with seed 20261027 into 'dev' (30: rule fixes may read these) and 'heldout' (measurement only, never used for tuning). Each repo is pinned to its default-branch HEAD at freeze time.",
+  "language": "typescript",
+  "requirement": "ARB-166",
+  "frozen": "2026-10-26",
+  "seed": 20261026,
+  "split_seed": 20261027,
+  "min_stars": 1000,
+  "candidates": 791,
+  "target": 120,
+  "repos": {
+    "ts-yaos": {
+      "github": "kavinsood/yaos",
+      "url": "https://github.com/kavinsood/yaos.git",
+      "sha": "2174eb89538ce7e213e9e33a0e75ecaf1a3f1f58",
+      "branch": "main",
+      "stars": 1066,
+      "license": "0BSD",
+      "language_share": 0.964,
+      "description": "A zero-terminal, real-time sync engine powered by your own Cloudflare Worker.",
+      "slice": "dev"
+    },
+    "ts-ui": {
+      "github": "cosscom/ui",
+      "url": "https://github.com/cosscom/ui.git",
+      "sha": "3d8ca28e7d90123e9e0f44665944dc240b026ccb",
+      "branch": "main",
+      "stars": 10750,
+      "license": "AGPL-3.0",
+      "language_share": 0.928,
+      "description": "coss.com/ui is the official design system of Cal.com",
+      "slice": "heldout"
+    },
+    "ts-desktop-app": {
+      "github": "getstation/desktop-app",
+      "url": "https://github.com/getstation/desktop-app.git",
+      "sha": "e6bc1dddf82918ecf606e723e304c92f5c843c9c",
+      "branch": "main",
+      "stars": 1684,
+      "license": "Apache-2.0",
+      "language_share": 0.877,
+      "description": "One app to rule them all!",
+      "slice": "heldout"
+    },
+    "ts-karakeep": {
+      "github": "karakeep-app/karakeep",
+      "url": "https://github.com/karakeep-app/karakeep.git",
+      "sha": "ba2acc3cb9f89973df0ed74a3c6b0681c910503a",
+      "branch": "main",
+      "stars": 30023,
+      "license": "AGPL-3.0",
+      "language_share": 0.982,
+      "description": "A self-hostable bookmark-everything app (links, notes and images) with AI-based automatic tagging and full text search",
+      "slice": "heldout"
+    },
+    "ts-nestjs-pino": {
+      "github": "iamolegga/nestjs-pino",
+      "url": "https://github.com/iamolegga/nestjs-pino.git",
+      "sha": "6a1b7a4e8f86ebc9c41a76937ab9673466ca4dd0",
+      "branch": "master",
+      "stars": 1548,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Platform agnostic logger for NestJS based on Pino with REQUEST CONTEXT IN EVERY LOG",
+      "slice": "dev"
+    },
+    "ts-sharkord": {
+      "github": "Sharkord/sharkord",
+      "url": "https://github.com/Sharkord/sharkord.git",
+      "sha": "773b629c8c3faac86e07f57ab15377eae7d1a71e",
+      "branch": "development",
+      "stars": 1542,
+      "license": "MIT",
+      "language_share": 0.981,
+      "description": "Lightweight, self-hosted, open-source chat server with voice, video, text, and screen sharing. Built for small groups who want privacy, simplicity, and full control over their data.",
+      "slice": "heldout"
+    },
+    "ts-marp-cli": {
+      "github": "marp-team/marp-cli",
+      "url": "https://github.com/marp-team/marp-cli.git",
+      "sha": "ffc4128626cbc64965fe1cc805717c6d4438c384",
+      "branch": "main",
+      "stars": 3890,
+      "license": "MIT",
+      "language_share": 0.884,
+      "description": "A CLI interface for Marp and Marpit based converters",
+      "slice": "heldout"
+    },
+    "ts-ui-components": {
+      "github": "starc007/ui-components",
+      "url": "https://github.com/starc007/ui-components.git",
+      "sha": "41a330ba66684696c445d58ca5d77c0133d4059a",
+      "branch": "main",
+      "stars": 1879,
+      "license": "MIT",
+      "language_share": 0.994,
+      "description": "Motion components for React.  Copy, paste, done.",
+      "slice": "dev"
+    },
+    "ts-animata": {
+      "github": "codse/animata",
+      "url": "https://github.com/codse/animata.git",
+      "sha": "25c27e5a874c60a56dcc1609df3b2c4f5f8456f8",
+      "branch": "main",
+      "stars": 2984,
+      "license": "MIT",
+      "language_share": 0.777,
+      "description": "Bring your site to life with easy to use animation & interaction code. Copy. Paste. Animate. ",
+      "slice": "heldout"
+    },
+    "ts-longmemory": {
+      "github": "CaviraOSS/LongMemory",
+      "url": "https://github.com/CaviraOSS/LongMemory.git",
+      "sha": "8badf44d48d0d72a07e1ea3daf1ecbd76ae1a357",
+      "branch": "main",
+      "stars": 4545,
+      "license": "Apache-2.0",
+      "language_share": 0.976,
+      "description": "Local persistent memory store for LLM applications including claude desktop, github copilot, codex, antigravity, etc.",
+      "slice": "heldout"
+    },
+    "ts-pandawiki": {
+      "github": "chaitin/PandaWiki",
+      "url": "https://github.com/chaitin/PandaWiki.git",
+      "sha": "0b26db72ceb2f0f053a5c48b44546d7a342caacb",
+      "branch": "main",
+      "stars": 10340,
+      "license": "AGPL-3.0",
+      "language_share": 0.666,
+      "description": "PandaWiki 是一款 AI 大模型驱动的开源知识库搭建系统，帮助你快速构建智能化的 产品文档、技术文档、FAQ、博客系统，借助大模型的力量为你提供 AI 创作、AI 问答、AI 搜索等能力。",
+      "slice": "heldout"
+    },
+    "ts-runtipi": {
+      "github": "runtipi/runtipi",
+      "url": "https://github.com/runtipi/runtipi.git",
+      "sha": "5e4d7a5bb1d537782191fc1fbcb7e30c0423d566",
+      "branch": "develop",
+      "stars": 9701,
+      "license": "GPL-3.0",
+      "language_share": 0.963,
+      "description": "Runtipi is a homeserver for everyone! One command setup, one click installs for your favorites self-hosted apps. ✨",
+      "slice": "heldout"
+    },
+    "ts-itsaplan": {
+      "github": "croffasia/itsaplan",
+      "url": "https://github.com/croffasia/itsaplan.git",
+      "sha": "d752ff5f0cef312b91bb9889a2f66a17a49b99f5",
+      "branch": "main",
+      "stars": 1995,
+      "license": "AGPL-3.0",
+      "language_share": 0.994,
+      "description": "⭐️⭐️⭐️ Open-source, self-hosted alternative to Linear and Plane. Project management and issue tracking where teams and AI agents work side by side to plan and ship products.",
+      "slice": "heldout"
+    },
+    "ts-kaneo": {
+      "github": "usekaneo/kaneo",
+      "url": "https://github.com/usekaneo/kaneo.git",
+      "sha": "1a3a59ca5bbbf81bd7017b3ba36e0574011822e3",
+      "branch": "main",
+      "stars": 9615,
+      "license": "MIT",
+      "language_share": 0.919,
+      "description": "🎯 All you need. Nothing you don't. Open source project management that works for you, not against you.",
+      "slice": "dev"
+    },
+    "ts-dnschanger-desktop": {
+      "github": "DnsChanger/dnsChanger-desktop",
+      "url": "https://github.com/DnsChanger/dnsChanger-desktop.git",
+      "sha": "000a58491913aafa7699a191a925f0a1e617d2f0",
+      "branch": "main",
+      "stars": 1341,
+      "license": "MIT",
+      "language_share": 0.973,
+      "description": "DNS Changer for Windows, Linux, Mac operating systems",
+      "slice": "heldout"
+    },
+    "ts-examples": {
+      "github": "vercel/examples",
+      "url": "https://github.com/vercel/examples.git",
+      "sha": "de867239d0a7dd55c9130f1e3f87fcf877db96e8",
+      "branch": "main",
+      "stars": 5160,
+      "license": "MIT",
+      "language_share": 0.658,
+      "description": "Enjoy our curated collection of examples and solutions. Use these patterns to build your own robust and scalable applications.",
+      "slice": "heldout"
+    },
+    "ts-waha": {
+      "github": "devlikeapro/waha",
+      "url": "https://github.com/devlikeapro/waha.git",
+      "sha": "0858b4f0efa5d2afc085c41e3873aae29154f6c0",
+      "branch": "core",
+      "stars": 7690,
+      "license": "Apache-2.0",
+      "language_share": 0.635,
+      "description": "WAHA - WhatsApp HTTP API (REST API) that you can configure in a click! Multiple engines: WEBJS (browser based), NOWEB (websocket nodejs), GOWS (websocket go), WPP (browser)",
+      "slice": "heldout"
+    },
+    "ts-jevgrep": {
+      "github": "dzhng/jevgrep",
+      "url": "https://github.com/dzhng/jevgrep.git",
+      "sha": "28cf384d444e1f4bf5571142ec32357cb84973ae",
+      "branch": "main",
+      "stars": 2910,
+      "license": "MIT",
+      "language_share": 0.606,
+      "description": "Find code by asking what it does. A CLI for coding agents that uses Jev to discover relevant files and source context.",
+      "slice": "heldout"
+    },
+    "ts-mcp-searxng": {
+      "github": "ihor-sokoliuk/mcp-searxng",
+      "url": "https://github.com/ihor-sokoliuk/mcp-searxng.git",
+      "sha": "14872633a166762daf93d8b50bc37ae85fda4611",
+      "branch": "main",
+      "stars": 1329,
+      "license": "MIT",
+      "language_share": 0.954,
+      "description": "Private web search for AI assistants via SearXNG — supports Claude, Cursor, and any MCP client",
+      "slice": "heldout"
+    },
+    "ts-mongodb-mcp-server": {
+      "github": "mongodb-js/mongodb-mcp-server",
+      "url": "https://github.com/mongodb-js/mongodb-mcp-server.git",
+      "sha": "1b117c7c3cfdd5a6cc84b78792de23220fd03fe7",
+      "branch": "main",
+      "stars": 1151,
+      "license": "Apache-2.0",
+      "language_share": 0.99,
+      "description": "A Model Context Protocol server to connect to MongoDB databases and MongoDB Atlas Clusters.",
+      "slice": "heldout"
+    },
+    "ts-surrealist": {
+      "github": "surrealdb/surrealist",
+      "url": "https://github.com/surrealdb/surrealist.git",
+      "sha": "65b7b95109177deb486cc6254ed203fce257fddf",
+      "branch": "main",
+      "stars": 1309,
+      "license": "MIT",
+      "language_share": 0.939,
+      "description": "Surrealist is the ultimate way to visually manage your SurrealDB database",
+      "slice": "dev"
+    },
+    "ts-saleor-dashboard": {
+      "github": "saleor/saleor-dashboard",
+      "url": "https://github.com/saleor/saleor-dashboard.git",
+      "sha": "eb1118714c3924904f92a434b409afb3b80443f9",
+      "branch": "main",
+      "stars": 1046,
+      "license": "BSD-3-Clause",
+      "language_share": 0.986,
+      "description": "A GraphQL-powered, single-page dashboard application for Saleor.",
+      "slice": "heldout"
+    },
+    "ts-excalidash": {
+      "github": "ZimengXiong/ExcaliDash",
+      "url": "https://github.com/ZimengXiong/ExcaliDash.git",
+      "sha": "d83433a69a1270b8fa29fa8eec5ef8f8b2b7b1ba",
+      "branch": "main",
+      "stars": 1690,
+      "license": "LGPL-3.0",
+      "language_share": 0.924,
+      "description": "Self-hosted Excalidraw with Full Collaboration",
+      "slice": "heldout"
+    },
+    "ts-content-collections": {
+      "github": "sdorra/content-collections",
+      "url": "https://github.com/sdorra/content-collections.git",
+      "sha": "f400907abc6d6b8abf7d5ce2adcced4a3201d6d1",
+      "branch": "main",
+      "stars": 1198,
+      "license": "MIT",
+      "language_share": 0.979,
+      "description": "Transform your content into type-safe data collections",
+      "slice": "dev"
+    },
+    "ts-openvidu": {
+      "github": "OpenVidu/openvidu",
+      "url": "https://github.com/OpenVidu/openvidu.git",
+      "sha": "7650f301893b40056beae1ee5cba2d78477468cd",
+      "branch": "master",
+      "stars": 2138,
+      "license": "Apache-2.0",
+      "language_share": 0.607,
+      "description": "OpenVidu Platform: self-hosted real-time video and audio for your apps, built on LiveKit and mediasoup",
+      "slice": "heldout"
+    },
+    "ts-short-video-factory": {
+      "github": "YILS-LIN/short-video-factory",
+      "url": "https://github.com/YILS-LIN/short-video-factory.git",
+      "sha": "5ade9ecfe0feab4c022710140efb3703004691f4",
+      "branch": "main",
+      "stars": 5902,
+      "license": "AGPL-3.0",
+      "language_share": 0.714,
+      "description": "一键生成产品营销与泛内容短视频，AI批量自动剪辑，高颜值跨平台桌面端工具 One click generation of product marketing and general content short videos, AI batch automatic cliping, beautiful cross platform desktop tool",
+      "slice": "heldout"
+    },
+    "ts-ix": {
+      "github": "ix-infrastructure/Ix",
+      "url": "https://github.com/ix-infrastructure/Ix.git",
+      "sha": "e09f7aa50f670f2e383d865a657ee08ba3bd190f",
+      "branch": "main",
+      "stars": 1130,
+      "license": "Apache-2.0",
+      "language_share": 0.906,
+      "description": "Understand any codebase instantly. System intelligence for codebases, built for humans and AI.",
+      "slice": "heldout"
+    },
+    "ts-faved": {
+      "github": "denho/faved",
+      "url": "https://github.com/denho/faved.git",
+      "sha": "c21fd89270c8471c4cc02e8c2efb022663bc7d8e",
+      "branch": "main",
+      "stars": 1341,
+      "license": "MIT",
+      "language_share": 0.758,
+      "description": "Free open-source bookmark manager with customisable nested tags. Super fast and lightweight. All data is stored locally.",
+      "slice": "heldout"
+    },
+    "ts-kana-dojo": {
+      "github": "lingdojo/kana-dojo",
+      "url": "https://github.com/lingdojo/kana-dojo.git",
+      "sha": "a335d55c16cb19b5e697c4e6cf347bf591bac571",
+      "branch": "main",
+      "stars": 3723,
+      "license": "AGPL-3.0",
+      "language_share": 0.791,
+      "description": "Aesthetic, minimalist platform for learning Japanese inspired by Duolingo and Monkeytype, built with Next.js and sponsored by Vercel. Beginner-friendly with plenty of good first issues - all contributions are welcome!",
+      "slice": "dev"
+    },
+    "ts-univer-workspace": {
+      "github": "dream-num/univer-workspace",
+      "url": "https://github.com/dream-num/univer-workspace.git",
+      "sha": "870d8d05665d89dc68f020a30c75b70c1a0d8c25",
+      "branch": "main",
+      "stars": 2251,
+      "license": "Apache-2.0",
+      "language_share": 0.767,
+      "description": "An open-source Office workspace where people and AI agents create, collaborate, and review together.",
+      "slice": "heldout"
+    },
+    "ts-kubewall": {
+      "github": "kubewall/kubewall",
+      "url": "https://github.com/kubewall/kubewall.git",
+      "sha": "6fbf5dee3752799630a4df6f773e27145d6dcd7a",
+      "branch": "main",
+      "stars": 1946,
+      "license": "Apache-2.0",
+      "language_share": 0.695,
+      "description": "kubewall - Kubernetes Dashboard for Multi-Cluster Management Real-Time, Self-Hosted, Single Binary, AI-powered. Manage, monitor & debug K8s clusters in your browser, no cloud, no agents.",
+      "slice": "heldout"
+    },
+    "ts-repomix": {
+      "github": "yamadashy/repomix",
+      "url": "https://github.com/yamadashy/repomix.git",
+      "sha": "a835271f41701245ee24b3c8ba162c5abb3d6f12",
+      "branch": "main",
+      "stars": 29034,
+      "license": "MIT",
+      "language_share": 0.952,
+      "description": "📦 Repomix is a powerful tool that packs your entire repository into a single, AI-friendly file. Perfect for when you need to feed your codebase to Large Language Models (LLMs) or other AI tools like Claude, ChatGPT, DeepSeek, Perplexity, Gemini, Gemma, Llama, Grok, and more.",
+      "slice": "dev"
+    },
+    "ts-keystatic": {
+      "github": "Thinkmill/keystatic",
+      "url": "https://github.com/Thinkmill/keystatic.git",
+      "sha": "b8ec9650622c11e1d38e73fca3b64c17ec278d18",
+      "branch": "main",
+      "stars": 2478,
+      "license": "MIT",
+      "language_share": 0.927,
+      "description": "First class CMS experience, TypeScript API, Markdown & YAML/JSON based, no DB",
+      "slice": "heldout"
+    },
+    "ts-crud": {
+      "github": "nestjsx/crud",
+      "url": "https://github.com/nestjsx/crud.git",
+      "sha": "d6d3c4ebd844d543ab71b494d424660c448a9d42",
+      "branch": "master",
+      "stars": 4320,
+      "license": "MIT",
+      "language_share": 0.991,
+      "description": "NestJs CRUD for RESTful APIs",
+      "slice": "heldout"
+    },
+    "ts-kokonutui": {
+      "github": "kokonut-labs/kokonutui",
+      "url": "https://github.com/kokonut-labs/kokonutui.git",
+      "sha": "d33a196aa574553b6c49f947ed6e510bfe1c06c3",
+      "branch": "main",
+      "stars": 2205,
+      "license": "MIT",
+      "language_share": 0.926,
+      "description": "Open-source collection of stunning Components built with Tailwind CSS, shadcn/ui and Motion to use on your websites",
+      "slice": "heldout"
+    },
+    "ts-leon": {
+      "github": "leon-ai/leon",
+      "url": "https://github.com/leon-ai/leon.git",
+      "sha": "fb58c26e2138fd4c1ac9a1eb5b8844e106fcc30d",
+      "branch": "develop",
+      "stars": 17607,
+      "license": "MIT",
+      "language_share": 0.779,
+      "description": "🧠 Leon is your open-source personal assistant.",
+      "slice": "dev"
+    },
+    "ts-angular-cli": {
+      "github": "angular/angular-cli",
+      "url": "https://github.com/angular/angular-cli.git",
+      "sha": "50b12c48d25533d828794d0ec446200c9a8ac025",
+      "branch": "main",
+      "stars": 27020,
+      "license": "MIT",
+      "language_share": 0.971,
+      "description": "CLI tool for Angular",
+      "slice": "dev"
+    },
+    "ts-express-validator": {
+      "github": "express-validator/express-validator",
+      "url": "https://github.com/express-validator/express-validator.git",
+      "sha": "48d44decfddfdcbeadc9923c11ae56ab3e6150e0",
+      "branch": "master",
+      "stars": 6235,
+      "license": "MIT",
+      "language_share": 0.835,
+      "description": "An express.js middleware for validator.js.",
+      "slice": "heldout"
+    },
+    "ts-workers-sdk": {
+      "github": "cloudflare/workers-sdk",
+      "url": "https://github.com/cloudflare/workers-sdk.git",
+      "sha": "1b3bde19708ba82fbbfaeaaab8691ffa148d7d02",
+      "branch": "main",
+      "stars": 4666,
+      "license": "Apache-2.0",
+      "language_share": 0.983,
+      "description": "⛅️ Home to Wrangler, the CLI for Cloudflare Workers®",
+      "slice": "heldout"
+    },
+    "ts-subtitle-translator": {
+      "github": "rockbenben/subtitle-translator",
+      "url": "https://github.com/rockbenben/subtitle-translator.git",
+      "sha": "38c87601ce1f0dbf1fd342dd3db9afab9fa5e338",
+      "branch": "main",
+      "stars": 1180,
+      "license": "MIT",
+      "language_share": 0.976,
+      "description": "Translate a whole season of subtitles in one pass — .srt/.ass/.vtt/.lrc, 120+ languages, 27 LLM providers, timing untouched ｜ 整季字幕一次译完，时轴不动，支持 120+ 语言",
+      "slice": "heldout"
+    },
+    "ts-greentunnel": {
+      "github": "SadeghHayeri/GreenTunnel",
+      "url": "https://github.com/SadeghHayeri/GreenTunnel.git",
+      "sha": "b1cca954e944e5243d71e36a27b1eb3811ffa8cd",
+      "branch": "main",
+      "stars": 4933,
+      "license": "MIT",
+      "language_share": 0.831,
+      "description": "GreenTunnel is an anti-censorship utility designed to bypass the DPI system that is put in place by various ISPs to block access to certain websites.",
+      "slice": "heldout"
+    },
+    "ts-termcn": {
+      "github": "shadcn-labs/termcn",
+      "url": "https://github.com/shadcn-labs/termcn.git",
+      "sha": "fd28627bb340f5eaa1a5824d47db6373a739d95a",
+      "branch": "main",
+      "stars": 1219,
+      "license": "MIT",
+      "language_share": 0.722,
+      "description": "Beautiful terminal UI components, built on Ink and OpenTUI. 100% Free, Zero config, one command setup.",
+      "slice": "heldout"
+    },
+    "ts-blinko": {
+      "github": "blinkospace/blinko",
+      "url": "https://github.com/blinkospace/blinko.git",
+      "sha": "b2586d03fddb796252f050a96922879bf4a41fad",
+      "branch": "main",
+      "stars": 11120,
+      "license": "GPL-3.0",
+      "language_share": 0.922,
+      "description": "An open-source, self-hosted personal AI note tool prioritizing privacy, built using TypeScript .",
+      "slice": "dev"
+    },
+    "ts-crystal": {
+      "github": "graphile/crystal",
+      "url": "https://github.com/graphile/crystal.git",
+      "sha": "b4688cdffee028a400441f012ebd9c6d78cb8bd0",
+      "branch": "main",
+      "stars": 12934,
+      "license": "MIT",
+      "language_share": 0.931,
+      "description": "🔮 Graphile's Crystal Monorepo; home to Grafast, PostGraphile, pg-introspection, pg-sql2 and much more!",
+      "slice": "dev"
+    },
+    "ts-button-card": {
+      "github": "custom-cards/button-card",
+      "url": "https://github.com/custom-cards/button-card.git",
+      "sha": "dfa304f93ab73b41011b624960657c568672e9c9",
+      "branch": "master",
+      "stars": 2516,
+      "license": "MIT",
+      "language_share": 0.982,
+      "description": "❇️ Lovelace button-card for home assistant",
+      "slice": "dev"
+    },
+    "ts-inshellisense": {
+      "github": "microsoft/inshellisense",
+      "url": "https://github.com/microsoft/inshellisense.git",
+      "sha": "9ba441d39468a73d4e6aebe8bff9af37fad92e86",
+      "branch": "main",
+      "stars": 10749,
+      "license": "MIT",
+      "language_share": 0.908,
+      "description": "IDE style command line auto complete",
+      "slice": "heldout"
+    },
+    "ts-claude-video-vision": {
+      "github": "jordanrendric/claude-video-vision",
+      "url": "https://github.com/jordanrendric/claude-video-vision.git",
+      "sha": "4a4f99016f249a24018cd19b66531ebbcd58024b",
+      "branch": "main",
+      "stars": 1425,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Give Claude the ability to watch and understand videos — Claude Code plugin with frame extraction and multimodal audio analysis",
+      "slice": "heldout"
+    },
+    "ts-evidence": {
+      "github": "evidence-dev/evidence",
+      "url": "https://github.com/evidence-dev/evidence.git",
+      "sha": "505913ca3e03391fd4c1d06c1d2aa33653cdb27f",
+      "branch": "main",
+      "stars": 7061,
+      "license": "MIT",
+      "language_share": 0.822,
+      "description": "Business intelligence as code: build fast, interactive data visualizations in SQL and markdown",
+      "slice": "heldout"
+    },
+    "ts-silex": {
+      "github": "silexlabs/Silex",
+      "url": "https://github.com/silexlabs/Silex.git",
+      "sha": "7778acb6fc9bd241c30a290c6668fc7f56f2ab41",
+      "branch": "main",
+      "stars": 3018,
+      "license": "AGPL-3.0",
+      "language_share": 0.614,
+      "description": "Silex is an online tool for visually creating static sites with dynamic data. With the free/libre spirit of internet, together.",
+      "slice": "heldout"
+    },
+    "ts-talorys": {
+      "github": "rociiu/talorys",
+      "url": "https://github.com/rociiu/talorys.git",
+      "sha": "7fbb60ae7958e9fd0ae28b7253ae2ae35178077f",
+      "branch": "main",
+      "stars": 1389,
+      "license": "MIT",
+      "language_share": 0.95,
+      "description": "Your personal AI agent in your own Cloudflare account. Chat, memory, tasks, notes and scheduled reminders, deployed with one command: npx create-talorys@latest. Free-tier friendly, single-user, no telemetry.",
+      "slice": "heldout"
+    },
+    "ts-gitdiagram": {
+      "github": "ahmedkhaleel2004/gitdiagram",
+      "url": "https://github.com/ahmedkhaleel2004/gitdiagram.git",
+      "sha": "c609a294a166167185ded04d31116f1567dbd701",
+      "branch": "main",
+      "stars": 18499,
+      "license": "MIT",
+      "language_share": 0.91,
+      "description": "Visualize any GitHub codebase: free interactive architecture diagrams and one-minute explainer videos. Replace 'hub' with 'diagram' in any GitHub URL.",
+      "slice": "heldout"
+    },
+    "ts-opendaw": {
+      "github": "andremichelle/openDAW",
+      "url": "https://github.com/andremichelle/openDAW.git",
+      "sha": "2e5ad762f42a81aed4c8cacb59110aaeb79781bc",
+      "branch": "main",
+      "stars": 2380,
+      "license": "AGPL-3.0",
+      "language_share": 0.703,
+      "description": "openDAW is a next-generation web-based Digital Audio Workstation (DAW)",
+      "slice": "dev"
+    },
+    "ts-hydrogen": {
+      "github": "Shopify/hydrogen",
+      "url": "https://github.com/Shopify/hydrogen.git",
+      "sha": "5af8a7d342a974e76234cccf2b38276a2faca9c6",
+      "branch": "main",
+      "stars": 2158,
+      "license": "MIT",
+      "language_share": 0.99,
+      "description": "Shopify commerce primitives in your framework",
+      "slice": "heldout"
+    },
+    "ts-alova": {
+      "github": "alovajs/alova",
+      "url": "https://github.com/alovajs/alova.git",
+      "sha": "f78a45198ae8b5b99997ac9b37534a9ece834503",
+      "branch": "main",
+      "stars": 4023,
+      "license": "MIT",
+      "language_share": 0.97,
+      "description": "The request strategy layer for JavaScript. 20+ ready-made strategies cut your request code by up to 70%",
+      "slice": "heldout"
+    },
+    "ts-nuclear": {
+      "github": "nukeop/nuclear",
+      "url": "https://github.com/nukeop/nuclear.git",
+      "sha": "f5881af520aacfd08623775f17d6ce60d79c4bf0",
+      "branch": "master",
+      "stars": 18787,
+      "license": "AGPL-3.0",
+      "language_share": 0.854,
+      "description": "Streaming music player that finds free music for you",
+      "slice": "dev"
+    },
+    "ts-worklenz": {
+      "github": "Worklenz/worklenz",
+      "url": "https://github.com/Worklenz/worklenz.git",
+      "sha": "452161666af0eea72ce069ea1acbb80c40bdccba",
+      "branch": "main",
+      "stars": 3271,
+      "license": "AGPL-3.0",
+      "language_share": 0.721,
+      "description": "All in one project management tool for efficient teams",
+      "slice": "heldout"
+    },
+    "ts-razzia": {
+      "github": "Ralex91/Razzia",
+      "url": "https://github.com/Ralex91/Razzia.git",
+      "sha": "5161eb7022144ee26d46a5f94cdbc714ec8b560d",
+      "branch": "main",
+      "stars": 1070,
+      "license": "MIT",
+      "language_share": 0.989,
+      "description": "A self-hosted, open-source quiz platform for smaller events.",
+      "slice": "dev"
+    },
+    "ts-keeper.sh": {
+      "github": "ridafkih/keeper.sh",
+      "url": "https://github.com/ridafkih/keeper.sh.git",
+      "sha": "8bef31fe4eed73f13186832ad807bf29a5973de0",
+      "branch": "main",
+      "stars": 1423,
+      "license": "AGPL-3.0",
+      "language_share": 0.994,
+      "description": "Calendar sync tool & universal calendar MCP server. Aggregate, sync and control calendars on Google, Outlook, Office 365, iCloud, CalDAV or ICS.",
+      "slice": "heldout"
+    },
+    "ts-petdex": {
+      "github": "crafter-station/petdex",
+      "url": "https://github.com/crafter-station/petdex.git",
+      "sha": "31c0aee7f4fb387774b87d40e8047dc0f9cea94b",
+      "branch": "main",
+      "stars": 4285,
+      "license": "MIT",
+      "language_share": 0.671,
+      "description": "A public gallery of animated pets for Codex, Claude Code, DeepSeek Harness, Hermes, OpenCode, Gemini CLI, and more.",
+      "slice": "heldout"
+    },
+    "ts-sonicjs": {
+      "github": "SonicJs-Org/sonicjs",
+      "url": "https://github.com/SonicJs-Org/sonicjs.git",
+      "sha": "8f14f737bc2c16e61284a84d584affdff7da4da8",
+      "branch": "main",
+      "stars": 1762,
+      "license": "MIT",
+      "language_share": 0.777,
+      "description": "SonicJS - The edge-native headless CMS for Cloudflare Workers. Sub-100ms response times, zero cold starts, TypeScript-first. Built on D1, R2, and Hono.",
+      "slice": "dev"
+    },
+    "ts-cult-ui": {
+      "github": "nolly-studio/cult-ui",
+      "url": "https://github.com/nolly-studio/cult-ui.git",
+      "sha": "7f031dc812f7bda10213bab62752dd6d080297ff",
+      "branch": "main",
+      "stars": 6742,
+      "license": "MIT",
+      "language_share": 0.896,
+      "description": "Animated components for design engineers. 150+ free shadcn/ui components, built with Tailwind CSS and Motion. MIT licensed.",
+      "slice": "dev"
+    },
+    "ts-js-reverse-mcp": {
+      "github": "zhizhuodemao/js-reverse-mcp",
+      "url": "https://github.com/zhizhuodemao/js-reverse-mcp.git",
+      "sha": "bf7dc506e8743ba1ec5bd3325c91818b9192e40e",
+      "branch": "main",
+      "stars": 3000,
+      "license": "Apache-2.0",
+      "language_share": 0.99,
+      "description": "AI Agent-first JS 逆向 MCP Server：有头 Chrome 调试、断点、网络/WebSocket 分析、Patchright 反检测，可选 CloakBrowser。",
+      "slice": "heldout"
+    },
+    "ts-dcm": {
+      "github": "ajnart/dcm",
+      "url": "https://github.com/ajnart/dcm.git",
+      "sha": "78c9dcdf8f60dbe4ddd89650811333d174cf609f",
+      "branch": "main",
+      "stars": 1448,
+      "license": "AGPL-3.0",
+      "language_share": 0.973,
+      "description": "DockerComposeMaker (DCM) is a self-hostable website to help you pick and create a docker-compose.yml file for your home server. Discover new containers, discover and share a config in a couple of clicks!",
+      "slice": "heldout"
+    },
+    "ts-chanhdai.com": {
+      "github": "ncdai/chanhdai.com",
+      "url": "https://github.com/ncdai/chanhdai.com.git",
+      "sha": "38631b6a394724945312455a0feba31e8ab0d1b3",
+      "branch": "main",
+      "stars": 2404,
+      "license": "MIT",
+      "language_share": 0.913,
+      "description": "A pixel-perfect dev portfolio and shadcn registry.",
+      "slice": "heldout"
+    },
+    "ts-remult": {
+      "github": "remult/remult",
+      "url": "https://github.com/remult/remult.git",
+      "sha": "87f96bc72889345a7eed615d975920a3ebcc08bb",
+      "branch": "main",
+      "stars": 3214,
+      "license": "MIT",
+      "language_share": 0.923,
+      "description": "Full-stack CRUD, simplified, with SSOT TypeScript entities",
+      "slice": "heldout"
+    },
+    "ts-portabase": {
+      "github": "Portabase/portabase",
+      "url": "https://github.com/Portabase/portabase.git",
+      "sha": "d682dcf5ed1c9483bfb197e290b3396dd2b50a30",
+      "branch": "main",
+      "stars": 1858,
+      "license": "Apache-2.0",
+      "language_share": 0.981,
+      "description": "Portabase - Database backup & restore tool for PostgreSQL, MySQL, MsSQL, MariaDB, Firebird SQL, SQLite, MongoDB, Redis, Files and Docker Volume",
+      "slice": "heldout"
+    },
+    "ts-monitorss": {
+      "github": "synzen/MonitoRSS",
+      "url": "https://github.com/synzen/MonitoRSS.git",
+      "sha": "a8a597ae80f531fdceb3c38771c0b9333fe8b4e8",
+      "branch": "main",
+      "stars": 1292,
+      "license": "MIT",
+      "language_share": 0.984,
+      "description": "MonitoRSS RSS bot (formerly known as Discord.RSS) with customizable feeds. https://monitorss.xyz",
+      "slice": "heldout"
+    },
+    "ts-dembrandt": {
+      "github": "dembrandt/dembrandt",
+      "url": "https://github.com/dembrandt/dembrandt.git",
+      "sha": "90e2691af47176c600c09a956cddd2f2e82a0003",
+      "branch": "main",
+      "stars": 3845,
+      "license": "MIT",
+      "language_share": 0.981,
+      "description": "Extract any website’s design system into tokens in seconds: logo, colors, typography, borders & more. One command.",
+      "slice": "heldout"
+    },
+    "ts-proma": {
+      "github": "proma-ai/Proma",
+      "url": "https://github.com/proma-ai/Proma.git",
+      "sha": "86d9dfb511db4c1e3ffded3b6c3e312996f50cbf",
+      "branch": "main",
+      "stars": 2235,
+      "license": "AGPL-3.0",
+      "language_share": 0.905,
+      "description": "Proma brings a seamless general-purpose Agent experience to your workflow. Built for 100× professionals and the proactive Agent era",
+      "slice": "heldout"
+    },
+    "ts-smoothui": {
+      "github": "educlopez/smoothui",
+      "url": "https://github.com/educlopez/smoothui.git",
+      "sha": "bc49c8cf58607b94a4bb07c0cc54d613c3edacbd",
+      "branch": "main",
+      "stars": 1027,
+      "license": "MIT",
+      "language_share": 0.872,
+      "description": "SmoothUI is a collection of beautifully designed components with smooth animations built with React, Tailwind CSS, Shadcn/ui and Motion",
+      "slice": "heldout"
+    },
+    "ts-note-gen": {
+      "github": "codexu/note-gen",
+      "url": "https://github.com/codexu/note-gen.git",
+      "sha": "2ac8f8fb53a0eb2c53f3aec577e0ec377a039506",
+      "branch": "dev",
+      "stars": 12917,
+      "license": "GPL-3.0",
+      "language_share": 0.884,
+      "description": "Capture first. Organize later. A local-first Markdown app that turns scattered records into clear notes with AI.",
+      "slice": "heldout"
+    },
+    "ts-exa-mcp-server": {
+      "github": "exa-labs/exa-mcp-server",
+      "url": "https://github.com/exa-labs/exa-mcp-server.git",
+      "sha": "0b499f095c4ca145eee07b09137641c037d58449",
+      "branch": "main",
+      "stars": 5170,
+      "license": "MIT",
+      "language_share": 0.998,
+      "description": "Exa MCP for web search and web crawling!",
+      "slice": "heldout"
+    },
+    "ts-rakkasjs": {
+      "github": "rakkasjs/rakkasjs",
+      "url": "https://github.com/rakkasjs/rakkasjs.git",
+      "sha": "98c91e17adc3b4c5bd59b56bea01b275350bfbeb",
+      "branch": "main",
+      "stars": 1103,
+      "license": "MIT",
+      "language_share": 0.782,
+      "description": "Bleeding-edge React framework powered by Vite",
+      "slice": "heldout"
+    },
+    "ts-venom": {
+      "github": "vynect/venom",
+      "url": "https://github.com/vynect/venom.git",
+      "sha": "39410a459c37f44158a1026c06675d243a5e4516",
+      "branch": "master",
+      "stars": 6595,
+      "license": "Apache-2.0",
+      "language_share": 0.93,
+      "description": "Venom is a high-performance system developed with JavaScript to create a bot for WhatsApp, support for creating any interaction, such as customer service, media sending, sentence recognition based on artificial intelligence and all types of design architecture for WhatsApp.",
+      "slice": "dev"
+    },
+    "ts-onlook": {
+      "github": "onlook-dev/onlook",
+      "url": "https://github.com/onlook-dev/onlook.git",
+      "sha": "423e2e924366419e418ee049093872d535eea41a",
+      "branch": "main",
+      "stars": 27005,
+      "license": "Apache-2.0",
+      "language_share": 0.992,
+      "description": "The Developer Tool for Visual Engineers • An Open-Source AI-First Design tool • Visually build, style, and edit your code with AI • World's best, top-most agent recommended #1 Developer tool for Designers and Visual Engineers to design with Real Code.",
+      "slice": "heldout"
+    },
+    "ts-dbhub": {
+      "github": "bytebase/dbhub",
+      "url": "https://github.com/bytebase/dbhub.git",
+      "sha": "1f3fa031ed2c3f24b4f2259d3909548933fcd977",
+      "branch": "main",
+      "stars": 3728,
+      "license": "MIT",
+      "language_share": 0.986,
+      "description": "Token conscious database MCP server for Postgres, MySQL, SQL Server, Oracle, MariaDB, SQLite.",
+      "slice": "heldout"
+    },
+    "ts-codeburn": {
+      "github": "getagentseal/codeburn",
+      "url": "https://github.com/getagentseal/codeburn.git",
+      "sha": "cef7c17621583571002a817a63e4b33ee0a957d8",
+      "branch": "main",
+      "stars": 11581,
+      "license": "MIT",
+      "language_share": 0.774,
+      "description": "Free, local tool to track AI coding token usage and cost across 37 tools and agents (Claude Code, Cursor, Codex, Gemini and more), by model, project, and task. npx codeburn",
+      "slice": "heldout"
+    },
+    "ts-hermes-desktop": {
+      "github": "fathah/hermes-desktop",
+      "url": "https://github.com/fathah/hermes-desktop.git",
+      "sha": "171024862c849475634d217a5635fedff796360c",
+      "branch": "main",
+      "stars": 14455,
+      "license": "MIT",
+      "language_share": 0.922,
+      "description": "Desktop Companion for Hermes Agent",
+      "slice": "heldout"
+    },
+    "ts-openwa": {
+      "github": "rmyndharis/OpenWA",
+      "url": "https://github.com/rmyndharis/OpenWA.git",
+      "sha": "0fb74b28b2f85b6fbc013cefcc727072806c9b56",
+      "branch": "main",
+      "stars": 16262,
+      "license": "MIT",
+      "language_share": 0.881,
+      "description": "Free, Open Source, Self-Hosted WhatsApp API Gateway",
+      "slice": "heldout"
+    },
+    "ts-vanblog": {
+      "github": "Mereithhh/vanblog",
+      "url": "https://github.com/Mereithhh/vanblog.git",
+      "sha": "81b868f4d568c8accff62b9c35d0e556d1e7970d",
+      "branch": "master",
+      "stars": 3588,
+      "license": "GPL-3.0",
+      "language_share": 0.604,
+      "description": "A self-hosted blogging system with Markdown editing, a full admin dashboard, analytics, image hosting, comments, and automatic HTTPS.",
+      "slice": "heldout"
+    },
+    "ts-builder": {
+      "github": "BuilderIO/builder",
+      "url": "https://github.com/BuilderIO/builder.git",
+      "sha": "c4497e96edde49ed65aa70ebaa9933a5717f6823",
+      "branch": "main",
+      "stars": 8873,
+      "license": "MIT",
+      "language_share": 0.928,
+      "description": "Visual Development for React, Vue, Svelte, Qwik, and more",
+      "slice": "heldout"
+    },
+    "ts-claude-powerline": {
+      "github": "Owloops/claude-powerline",
+      "url": "https://github.com/Owloops/claude-powerline.git",
+      "sha": "88a5e810bdf5423f0c42cbcb765a8c00d8a6fa85",
+      "branch": "main",
+      "stars": 1174,
+      "license": "MIT",
+      "language_share": 0.967,
+      "description": "Beautiful vim-style powerline for Claude Code",
+      "slice": "heldout"
+    },
+    "ts-express-openapi-validator": {
+      "github": "cdimascio/express-openapi-validator",
+      "url": "https://github.com/cdimascio/express-openapi-validator.git",
+      "sha": "2548e53796a069b0a53062e6430ff8c07444f9a2",
+      "branch": "master",
+      "stars": 1008,
+      "license": "MIT",
+      "language_share": 0.995,
+      "description": "🦋 Auto-validates api requests, responses, and securities using ExpressJS and an OpenAPI 3.1.x or 3.0.x specification",
+      "slice": "heldout"
+    },
+    "ts-docs.nestjs.com": {
+      "github": "nestjs/docs.nestjs.com",
+      "url": "https://github.com/nestjs/docs.nestjs.com.git",
+      "sha": "2b3135e689b55210dd4cbb4eba70fde5d69d979b",
+      "branch": "master",
+      "stars": 1377,
+      "license": "MIT",
+      "language_share": 0.681,
+      "description": "The official documentation https://docs.nestjs.com 📕",
+      "slice": "dev"
+    },
+    "ts-vibe-research": {
+      "github": "simonlin1212/Vibe-Research",
+      "url": "https://github.com/simonlin1212/Vibe-Research.git",
+      "sha": "db3a7c60afcb643abdf36933294765d1cbfc2b9c",
+      "branch": "main",
+      "stars": 2987,
+      "license": "MIT",
+      "language_share": 0.703,
+      "description": "Vibe-Research：A 股、美股、港股的投研工作台 · 自选与持仓、每日复盘、产业资讯、产业研究、个股深挖、回测、研报库，168 个数据端点。支持 Claude Code、Codex、WorkBuddy 订阅或任意模型 API。 | A research workbench for China A-shares, US and HK stocks.",
+      "slice": "heldout"
+    },
+    "ts-openscience": {
+      "github": "synthetic-sciences/openscience",
+      "url": "https://github.com/synthetic-sciences/openscience.git",
+      "sha": "c971e7f215aad154f3f27087ab9904a10154d9cc",
+      "branch": "main",
+      "stars": 4255,
+      "license": "Apache-2.0",
+      "language_share": 0.701,
+      "description": "The open-source AI workbench for scientific research",
+      "slice": "heldout"
+    },
+    "ts-linkshub": {
+      "github": "rupali-codes/LinksHub",
+      "url": "https://github.com/rupali-codes/LinksHub.git",
+      "sha": "1dd8c4eeb1f38c6fd3262a3afadf5b57227efee7",
+      "branch": "main",
+      "stars": 1018,
+      "license": "MIT",
+      "language_share": 0.951,
+      "description": "LinksHub aims to provide developers with access to a wide range of free resources and tools that they can use in their work. These resources include links to free software, libraries, frameworks, and other tools that can be used to build and deploy applications and websites.",
+      "slice": "heldout"
+    },
+    "ts-markvis": {
+      "github": "geekplux/markvis",
+      "url": "https://github.com/geekplux/markvis.git",
+      "sha": "f423aa8e2192402f00acbfa8d573ce0c8124cc6d",
+      "branch": "master",
+      "stars": 1599,
+      "license": "MIT",
+      "language_share": 0.895,
+      "description": "Charts as text in Markdown. Where they cannot draw, the numbers stay as a table.",
+      "slice": "dev"
+    },
+    "ts-kan": {
+      "github": "kanbn/kan",
+      "url": "https://github.com/kanbn/kan.git",
+      "sha": "006c1e7be1756afb357b7eccf02b6818b8d67b3a",
+      "branch": "main",
+      "stars": 5842,
+      "license": "AGPL-3.0",
+      "language_share": 0.958,
+      "description": "The open source Trello alternative.",
+      "slice": "dev"
+    },
+    "ts-webcord": {
+      "github": "SpacingBat3/WebCord",
+      "url": "https://github.com/SpacingBat3/WebCord.git",
+      "sha": "c00f4bbc4dd1b0aa7185b3da5d26444e05874ac5",
+      "branch": "master",
+      "stars": 2458,
+      "license": "MIT",
+      "language_share": 0.86,
+      "description": "A Discord and SpaceBar :electron:-based client implemented without Discord API.",
+      "slice": "heldout"
+    },
+    "ts-multi-scrobbler": {
+      "github": "FoxxMD/multi-scrobbler",
+      "url": "https://github.com/FoxxMD/multi-scrobbler.git",
+      "sha": "f927314c83e413b566ba64eb81a4da885ae5cb48",
+      "branch": "master",
+      "stars": 1284,
+      "license": "MIT",
+      "language_share": 0.821,
+      "description": "Scrobble plays from multiple sources to multiple clients",
+      "slice": "heldout"
+    },
+    "ts-docs.nestjs.cn": {
+      "github": "zuohuadong/docs.nestjs.cn",
+      "url": "https://github.com/zuohuadong/docs.nestjs.cn.git",
+      "sha": "8b2fc56a75ea0dc259ae0d44e5dadadcffdab6a9",
+      "branch": "main",
+      "stars": 1042,
+      "license": "Apache-2.0",
+      "language_share": 0.725,
+      "description": "nestjs 中文文档",
+      "slice": "dev"
+    },
+    "ts-feishin": {
+      "github": "jeffvli/feishin",
+      "url": "https://github.com/jeffvli/feishin.git",
+      "sha": "8d12eae8a1551364442461bac02d99d78c185820",
+      "branch": "development",
+      "stars": 10251,
+      "license": "GPL-3.0",
+      "language_share": 0.958,
+      "description": "A modern self-hosted music player.",
+      "slice": "heldout"
+    },
+    "ts-instatic": {
+      "github": "CoreBunch/Instatic",
+      "url": "https://github.com/CoreBunch/Instatic.git",
+      "sha": "1a7ab33ff1614e80b2f618b284dd55b0e2b9d9ae",
+      "branch": "main",
+      "stars": 9018,
+      "license": "MIT",
+      "language_share": 0.956,
+      "description": "The open-source alternative to Webflow, Framer and WordPress. Agentic self-hosted visual CMS outputting clean static pages. Users, roles, plugins, content, database, it's all there. ",
+      "slice": "heldout"
+    },
+    "ts-korean-law-mcp": {
+      "github": "chrisryugj/korean-law-mcp",
+      "url": "https://github.com/chrisryugj/korean-law-mcp.git",
+      "sha": "32c294e63b5a182a0e4166ab2ee38184e0b330ed",
+      "branch": "main",
+      "stars": 2790,
+      "license": "MIT",
+      "language_share": 0.935,
+      "description": "법제처 국가법령정보를 LLM에서 바로 조회하는 MCP 서버. 법령·판례·조례 검색과 인용 검증 | MCP server for Korean law — search statutes, precedents, and ordinances, and verify citations",
+      "slice": "heldout"
+    },
+    "ts-js-lingui": {
+      "github": "lingui/js-lingui",
+      "url": "https://github.com/lingui/js-lingui.git",
+      "sha": "2527a65badfc069f3a242db1f347111487004c15",
+      "branch": "main",
+      "stars": 5926,
+      "license": "MIT",
+      "language_share": 0.933,
+      "description": "🌍 📖 A readable, automated, and optimized (2 kb) internationalization for JavaScript",
+      "slice": "heldout"
+    },
+    "ts-open-multi-agent": {
+      "github": "open-multi-agent/open-multi-agent",
+      "url": "https://github.com/open-multi-agent/open-multi-agent.git",
+      "sha": "009bdbe079a9dfa00ec1ae5819b79000a2889135",
+      "branch": "main",
+      "stars": 7024,
+      "license": "MIT",
+      "language_share": 0.986,
+      "description": "Self-hosted TypeScript agent runtime with durable approvals and verifiable run records. Own it, approve it, audit it.",
+      "slice": "dev"
+    },
+    "ts-hollama": {
+      "github": "fmaclen/hollama",
+      "url": "https://github.com/fmaclen/hollama.git",
+      "sha": "fd72c4bd2b803ea899a1325a182160eecf33ee7f",
+      "branch": "main",
+      "stars": 1190,
+      "license": "MIT",
+      "language_share": 0.708,
+      "description": "A minimal LLM chat app that runs entirely in your browser",
+      "slice": "dev"
+    },
+    "ts-lobsterai": {
+      "github": "netease-youdao/LobsterAI",
+      "url": "https://github.com/netease-youdao/LobsterAI.git",
+      "sha": "cbbe6492a02684218376102f383569affeac4b2b",
+      "branch": "main",
+      "stars": 6149,
+      "license": "MIT",
+      "language_share": 0.899,
+      "description": "Open-source, desktop-grade AI agent that gets real work done — data analysis, slides, docs, video & web research. Built on OpenClaw; runs tools on your real desktop and takes commands from your phone via WeChat, Feishu, DingTalk & Telegram.",
+      "slice": "dev"
+    },
+    "ts-ref-tools-mcp": {
+      "github": "ref-tools/ref-tools-mcp",
+      "url": "https://github.com/ref-tools/ref-tools-mcp.git",
+      "sha": "f5feb829cc7bdd18fb9b276c27e3f391b2c4132c",
+      "branch": "main",
+      "stars": 1183,
+      "license": "MIT",
+      "language_share": 0.964,
+      "description": "Helping coding agents never make mistakes working with public or private libraries without wasting the context window.",
+      "slice": "dev"
+    },
+    "ts-frontend": {
+      "github": "home-assistant/frontend",
+      "url": "https://github.com/home-assistant/frontend.git",
+      "sha": "a86e7ae955c04d5e0566f81f6a9b32b07d20b5a2",
+      "branch": "dev",
+      "stars": 5764,
+      "license": "Apache-2.0",
+      "language_share": 0.983,
+      "description": ":lollipop: Frontend for Home Assistant",
+      "slice": "dev"
+    },
+    "ts-ts-proto": {
+      "github": "stephenh/ts-proto",
+      "url": "https://github.com/stephenh/ts-proto.git",
+      "sha": "1ab71dabb4ae6296fe7537e67020f39d363a0d53",
+      "branch": "main",
+      "stars": 2595,
+      "license": "Apache-2.0",
+      "language_share": 0.946,
+      "description": "An idiomatic protobuf generator for TypeScript",
+      "slice": "heldout"
+    },
+    "ts-aitoearn": {
+      "github": "yikart/AiToEarn",
+      "url": "https://github.com/yikart/AiToEarn.git",
+      "sha": "cb894a43b2d23cc1ad67d9e7729b1d86cf9360bd",
+      "branch": "main",
+      "stars": 26920,
+      "license": "MIT",
+      "language_share": 0.839,
+      "description": "Let's use AI to Earn!",
+      "slice": "heldout"
+    },
+    "ts-swr": {
+      "github": "vercel/swr",
+      "url": "https://github.com/vercel/swr.git",
+      "sha": "8148ef012fd5b317d1e8ec2da4b2ca0673f63c0f",
+      "branch": "main",
+      "stars": 32495,
+      "license": "MIT",
+      "language_share": 0.995,
+      "description": "React Hooks for Data Fetching",
+      "slice": "heldout"
+    },
+    "ts-gt": {
+      "github": "generaltranslation/gt",
+      "url": "https://github.com/generaltranslation/gt.git",
+      "sha": "6cab50d65b27f78dd5c8e8b7cb6559424fb9b22a",
+      "branch": "main",
+      "stars": 1070,
+      "license": "MIT",
+      "language_share": 0.949,
+      "description": "Full-stack localization for every framework",
+      "slice": "heldout"
+    },
+    "ts-apitable": {
+      "github": "apitable/apitable",
+      "url": "https://github.com/apitable/apitable.git",
+      "sha": "c9255a752a85913e2e6b362ff6c306b0fc3585df",
+      "branch": "develop",
+      "stars": 15651,
+      "license": "AGPL-3.0",
+      "language_share": 0.721,
+      "description": "🚀🎉📚 APITable, an API-oriented low-code platform for building collaborative apps and better than all other Airtable open-source alternatives. ",
+      "slice": "heldout"
+    },
+    "ts-ziwei-doushu": {
+      "github": "Renhuai123/ziwei-doushu",
+      "url": "https://github.com/Renhuai123/ziwei-doushu.git",
+      "sha": "e478393ad6c865ad6270e978a3164d2f2cb5315b",
+      "branch": "main",
+      "stars": 8193,
+      "license": "MIT",
+      "language_share": 0.984,
+      "description": "紫微斗数开源排盘引擎 — 基于倪海厦《天纪》体系，含完整排盘算法、四化系统、格局知识库、古籍原文数据",
+      "slice": "heldout"
+    },
+    "ts-littlelink-server": {
+      "github": "timothystewart6/littlelink-server",
+      "url": "https://github.com/timothystewart6/littlelink-server.git",
+      "sha": "e9e860b41ac93a2c00b3aa637b1f06be3a111935",
+      "branch": "main",
+      "stars": 1155,
+      "license": "MIT",
+      "language_share": 0.737,
+      "description": "A lightweight, open source, stateless, and self-hosted alternative to linktree in a Docker container!",
+      "slice": "heldout"
+    },
+    "ts-voltagent": {
+      "github": "VoltAgent/voltagent",
+      "url": "https://github.com/VoltAgent/voltagent.git",
+      "sha": "72a46c76b4507e1f98b41d5050a92bd30587eb70",
+      "branch": "main",
+      "stars": 10873,
+      "license": "MIT",
+      "language_share": 0.954,
+      "description": "AI Agent Engineering Platform built on an Open Source TypeScript AI Agent Framework",
+      "slice": "heldout"
+    },
+    "ts-octopus": {
+      "github": "bestruirui/octopus",
+      "url": "https://github.com/bestruirui/octopus.git",
+      "sha": "8aa58b0340ba2de58ce74fbfacd32597c44842a2",
+      "branch": "master",
+      "stars": 2727,
+      "license": "AGPL-3.0",
+      "language_share": 0.615,
+      "description": "One Hub All LLMs For You | 为个人打造的 LLM API 聚合网关",
+      "slice": "heldout"
+    },
+    "ts-flashlight": {
+      "github": "bamlab/flashlight",
+      "url": "https://github.com/bamlab/flashlight.git",
+      "sha": "0ea649056c40885a44e09ab39c42a4808cccd332",
+      "branch": "main",
+      "stars": 1611,
+      "license": "MIT",
+      "language_share": 0.881,
+      "description": "📱⚡️ Lighthouse for Mobile - audits your app and gives a performance score to your Android apps (native, React Native, Flutter..). Measure performance on CLI, E2E tests, CI...",
+      "slice": "heldout"
+    },
+    "ts-m3e-canvas": {
+      "github": "lnkiai/m3e-canvas",
+      "url": "https://github.com/lnkiai/m3e-canvas.git",
+      "sha": "49378e1e35f5de6aaadfcd3f852eeb0edffdbb95",
+      "branch": "main",
+      "stars": 9779,
+      "license": "MIT",
+      "language_share": 0.992,
+      "description": "Sketch Material 3 Expressive screens in the browser and turn them into vibe-coding prompts.",
+      "slice": "heldout"
+    },
+    "ts-mimo-code": {
+      "github": "XiaomiMiMo/MiMo-Code",
+      "url": "https://github.com/XiaomiMiMo/MiMo-Code.git",
+      "sha": "d85f355317f1471bf68b5c5a96ab517585e9fdfa",
+      "branch": "main",
+      "stars": 13729,
+      "license": "MIT",
+      "language_share": 0.953,
+      "description": "MiMo Code: Where Models and Agents Co-Evolve",
+      "slice": "heldout"
+    },
+    "ts-plasmic": {
+      "github": "plasmicapp/plasmic",
+      "url": "https://github.com/plasmicapp/plasmic.git",
+      "sha": "d863b68919ea5d59ab708d6331756b78ca03505b",
+      "branch": "master",
+      "stars": 7127,
+      "license": "MIT",
+      "language_share": 0.9,
+      "description": "Visual builder for React. Build apps, websites, and content. Integrate with your codebase.",
+      "slice": "heldout"
+    },
+    "ts-tabularis": {
+      "github": "TabularisDB/tabularis",
+      "url": "https://github.com/TabularisDB/tabularis.git",
+      "sha": "90ec2f5e8cb764fb09907bbeb17d92ed110d895b",
+      "branch": "main",
+      "stars": 5294,
+      "license": "Apache-2.0",
+      "language_share": 0.672,
+      "description": "Open-source desktop SQL workspace with 3 built-in database drivers and 24 shipped driver plugins, including SQL Server, DuckDB, ClickHouse and Redis. Built-in MCP server for Claude, Cursor and Devin, SQL notebooks and visual EXPLAIN.",
+      "slice": "heldout"
+    },
+    "ts-rote": {
+      "github": "Rabithua/Rote",
+      "url": "https://github.com/Rabithua/Rote.git",
+      "sha": "f7cc56ba4c1d8632c4c4d2d12d6867fd0b4376ec",
+      "branch": "main",
+      "stars": 1045,
+      "license": "MIT",
+      "language_share": 0.983,
+      "description": "A personal note repository that looks different🤔",
+      "slice": "heldout"
+    },
+    "ts-valtio": {
+      "github": "pmndrs/valtio",
+      "url": "https://github.com/pmndrs/valtio.git",
+      "sha": "26d8ca8cb6e5bb3b9516d429e50bc5aab1f42e0d",
+      "branch": "main",
+      "stars": 10245,
+      "license": "MIT",
+      "language_share": 0.973,
+      "description": "🧙 Valtio makes proxy-state simple  for React and Vanilla",
+      "slice": "heldout"
+    },
+    "ts-libredb-studio": {
+      "github": "libredb/libredb-studio",
+      "url": "https://github.com/libredb/libredb-studio.git",
+      "sha": "6c8e7ba11298842d9c4733d7013cebbeaffe4feb",
+      "branch": "main",
+      "stars": 1285,
+      "license": "MIT",
+      "language_share": 0.979,
+      "description": "One browser tab for PostgreSQL, MySQL, Oracle, SQL Server, MongoDB, Redis, SQLite, Couchbase, ClickHouse, Druid, DuckDB, Turso and more. An open-source SQL IDE with SSO, audit trail and AI-assisted queries MIT licensed, with nothing held back behind an enterprise wall.",
+      "slice": "dev"
+    },
+    "ts-ccstatusline": {
+      "github": "sirmalloc/ccstatusline",
+      "url": "https://github.com/sirmalloc/ccstatusline.git",
+      "sha": "35ddf5255e7b28622c8b0290dce44ce42b0cef8e",
+      "branch": "main",
+      "stars": 13414,
+      "license": "MIT",
+      "language_share": 0.998,
+      "description": "🚀 Beautiful highly customizable statusline for Claude Code CLI with powerline support, themes, and more.",
+      "slice": "dev"
+    },
+    "ts-taxhacker": {
+      "github": "vas3k/TaxHacker",
+      "url": "https://github.com/vas3k/TaxHacker.git",
+      "sha": "603f40285f7a48a3638c4fd0dada3cfd4e7c4f06",
+      "branch": "main",
+      "stars": 6759,
+      "license": "MIT",
+      "language_share": 0.99,
+      "description": "Self-hosted AI accounting app. LLM analyzer for receipts, invoices, transactions with custom prompts and categories",
+      "slice": "heldout"
+    }
+  },
+  "rejected": [
+    {
+      "github": "Pouzor/homelable",
+      "stars": 4545,
+      "reason": "TypeScript 54% of bytes (< 60%)"
+    },
+    {
+      "github": "Foundry376/Mailspring",
+      "stars": 17944,
+      "reason": "TypeScript 45% of bytes (< 60%)"
+    },
+    {
+      "github": "simstudioai/sim",
+      "stars": 29921,
+      "reason": "size 727128 KB > 400000"
+    },
+    {
+      "github": "louislam/dockge",
+      "stars": 24692,
+      "reason": "TypeScript 50% of bytes (< 60%)"
+    },
+    {
+      "github": "zerodytrash/TikTok-Live-Connector",
+      "stars": 2232,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "emqx/MQTTX",
+      "stars": 5085,
+      "reason": "TypeScript 58% of bytes (< 60%)"
+    },
+    {
+      "github": "remnawave/panel",
+      "stars": 5257,
+      "reason": "TypeScript 57% of bytes (< 60%)"
+    },
+    {
+      "github": "nizos/tdd-guard",
+      "stars": 2367,
+      "reason": "TypeScript 51% of bytes (< 60%)"
+    },
+    {
+      "github": "gitcoffee-os/postbot",
+      "stars": 1581,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "agentset-ai/agentset",
+      "stars": 2115,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "BartoszJarocki/cv",
+      "stars": 9675,
+      "reason": "template repository"
+    },
+    {
+      "github": "assistant-ui/assistant-ui",
+      "stars": 12756,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "zenhosta/9drive",
+      "stars": 2677,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "brocoders/nestjs-boilerplate",
+      "stars": 4419,
+      "reason": "template repository"
+    },
+    {
+      "github": "Lifeforge-app/lifeforge",
+      "stars": 1709,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "thedotmack/claude-mem",
+      "stars": 103338,
+      "reason": "size 660327 KB > 400000"
+    },
+    {
+      "github": "Skolaczk/next-starter",
+      "stars": 1000,
+      "reason": "template repository"
+    },
+    {
+      "github": "aws-samples/bedrock-chat",
+      "stars": 1324,
+      "reason": "licence MIT-0 not in the OSI list"
+    },
+    {
+      "github": "Dokploy/dokploy",
+      "stars": 38050,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "openreplay/openreplay",
+      "stars": 13054,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "aws-amplify/amplify-cli",
+      "stars": 2875,
+      "reason": "size 724315 KB > 400000"
+    },
+    {
+      "github": "afar1/fieldtheory-cli",
+      "stars": 2046,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "rmanguinho/clean-ts-api",
+      "stars": 1914,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "iOfficeAI/AionUi",
+      "stars": 33793,
+      "reason": "size 699562 KB > 400000"
+    },
+    {
+      "github": "zenbu-labs/terminal-browser",
+      "stars": 4266,
+      "reason": "TypeScript 48% of bytes (< 60%)"
+    },
+    {
+      "github": "fatwang2/search2ai",
+      "stars": 1282,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "MacRimi/ProxMenux",
+      "stars": 3236,
+      "reason": "size 2155123 KB > 400000"
+    },
+    {
+      "github": "TanStack/ai",
+      "stars": 3255,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "tinacms/tinacms",
+      "stars": 13848,
+      "reason": "size 946328 KB > 400000"
+    },
+    {
+      "github": "Gimanh/taskview-community",
+      "stars": 1375,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "line/line-bot-sdk-nodejs",
+      "stars": 1080,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "swamimalode07/rare-ui",
+      "stars": 1836,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "fastify/fastify-vite",
+      "stars": 1126,
+      "reason": "TypeScript 45% of bytes (< 60%)"
+    },
+    {
+      "github": "koala73/worldmonitor",
+      "stars": 89586,
+      "reason": "TypeScript 50% of bytes (< 60%)"
+    },
+    {
+      "github": "nestjsx/nest-access-control",
+      "stars": 1159,
+      "reason": "TypeScript 59% of bytes (< 60%)"
+    },
+    {
+      "github": "hasura/graphql-engine",
+      "stars": 32124,
+      "reason": "size 5206059 KB > 400000"
+    },
+    {
+      "github": "appwrite/appwrite",
+      "stars": 57764,
+      "reason": "size 1156308 KB > 400000"
+    },
+    {
+      "github": "firecrawl/firecrawl",
+      "stars": 195588,
+      "reason": "used before in Arbiter's corpora, docs or another breadth manifest"
+    },
+    {
+      "github": "anl331/goey-toast",
+      "stars": 1343,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "lobehub/lobe-ui",
+      "stars": 2246,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "darkroomengineering/satus",
+      "stars": 1012,
+      "reason": "template repository"
+    },
+    {
+      "github": "wpengine/faustjs",
+      "stars": 1608,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "supabase/supabase",
+      "stars": 113990,
+      "reason": "size 2506259 KB > 400000"
+    },
+    {
+      "github": "refinedev/refine",
+      "stars": 35948,
+      "reason": "size 8285184 KB > 400000"
+    },
+    {
+      "github": "withcatai/node-llama-cpp",
+      "stars": 2193,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "AtomicBot-ai/Atomic-Chat",
+      "stars": 1851,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "lmnr-ai/lmnr",
+      "stars": 3446,
+      "reason": "size 548231 KB > 400000"
+    },
+    {
+      "github": "convex/convex-backend",
+      "stars": 12761,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "chatboxai/chatbox",
+      "stars": 42152,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "bagisto/nextjs-commerce",
+      "stars": 6433,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "sambecker/exif-photo-blog",
+      "stars": 1728,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "mishushakov/llm-scraper",
+      "stars": 6950,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "botswin/BotBrowser",
+      "stars": 2643,
+      "reason": "size 703557 KB > 400000"
+    },
+    {
+      "github": "Naresh-Khatri/3d-portfolio",
+      "stars": 1325,
+      "reason": "template repository"
+    },
+    {
+      "github": "keenthemes/reui",
+      "stars": 3794,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "getumbrel/umbrel",
+      "stars": 12458,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "alpic-ai/skybridge",
+      "stars": 2178,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "RedPlanetHQ/core",
+      "stars": 2002,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "getmaxun/maxun",
+      "stars": 18048,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "adminsyspro/proxcenter-ui",
+      "stars": 1741,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "MicrosoftDocs/mcp",
+      "stars": 1954,
+      "reason": "licence CC-BY-4.0 not in the OSI list"
+    },
+    {
+      "github": "saifyxpro/HeadlessX",
+      "stars": 2342,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "pwa-builder/PWABuilder",
+      "stars": 3809,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "prymitive/karma",
+      "stars": 2691,
+      "reason": "TypeScript 59% of bytes (< 60%)"
+    },
+    {
+      "github": "Agenta-AI/agenta",
+      "stars": 4862,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "datadrivenconstruction/OpenConstructionERP",
+      "stars": 1046,
+      "reason": "size 3649328 KB > 400000"
+    },
+    {
+      "github": "CatsMiaow/nestjs-project-structure",
+      "stars": 1359,
+      "reason": "template repository"
+    },
+    {
+      "github": "nrwl/nx",
+      "stars": 29432,
+      "reason": "size 1032920 KB > 400000"
+    },
+    {
+      "github": "fancydirty/mediary-scout",
+      "stars": 1588,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "TailAdmin/free-nextjs-admin-dashboard",
+      "stars": 2588,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "auth0/nextjs-auth0",
+      "stars": 2312,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "flyfish-dev/file-viewer",
+      "stars": 2630,
+      "reason": "TypeScript 56% of bytes (< 60%)"
+    },
+    {
+      "github": "code-yeongyu/lazycodex",
+      "stars": 3830,
+      "reason": "TypeScript 40% of bytes (< 60%)"
+    },
+    {
+      "github": "apptension/saas-boilerplate",
+      "stars": 3022,
+      "reason": "description names a tutorial/boilerplate/list, not an application"
+    },
+    {
+      "github": "nocobase/nocobase",
+      "stars": 24723,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "bulwarkmail/webmail",
+      "stars": 1345,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "cs-lazy-tools/ChatGPT-On-CS",
+      "stars": 4519,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "hunvreus/pagescms",
+      "stars": 4146,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "skillrecordings/egghead-next",
+      "stars": 1450,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "gaozhangmin/boxplayer",
+      "stars": 7352,
+      "reason": "TypeScript 54% of bytes (< 60%)"
+    },
+    {
+      "github": "SteveSuv/remix-words-funny",
+      "stars": 1634,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "CaviraOSS/PageLM",
+      "stars": 2047,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "siyuan-note/siyuan",
+      "stars": 46943,
+      "reason": "used before in Arbiter's corpora, docs or another breadth manifest"
+    },
+    {
+      "github": "SigNoz/signoz",
+      "stars": 32460,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "wppconnect-team/wppconnect",
+      "stars": 3509,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "dabit3/react-native-ai",
+      "stars": 1303,
+      "reason": "template repository"
+    },
+    {
+      "github": "feder-cr/invisible_dots",
+      "stars": 32258,
+      "reason": "TypeScript 57% of bytes (< 60%)"
+    },
+    {
+      "github": "openclaw/clawsweeper",
+      "stars": 2003,
+      "reason": "size 541284 KB > 400000"
+    },
+    {
+      "github": "drashland/drash",
+      "stars": 1064,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "TNTcraftHIM/Piik",
+      "stars": 3805,
+      "reason": "TypeScript 47% of bytes (< 60%)"
+    },
+    {
+      "github": "momozi1996/momo-code",
+      "stars": 1108,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "kriasoft/react-starter-kit",
+      "stars": 23701,
+      "reason": "template repository"
+    },
+    {
+      "github": "allinssl/allinssl",
+      "stars": 3617,
+      "reason": "TypeScript 54% of bytes (< 60%)"
+    },
+    {
+      "github": "calcom/cal.diy",
+      "stars": 49398,
+      "reason": "size 1157383 KB > 400000"
+    },
+    {
+      "github": "bitloops/ddd-hexagonal-cqrs-es-eda",
+      "stars": 1449,
+      "reason": "description names a tutorial/boilerplate/list, not an application"
+    },
+    {
+      "github": "any4ai/AnyCrawl",
+      "stars": 3484,
+      "reason": "TypeScript 59% of bytes (< 60%)"
+    },
+    {
+      "github": "playcanvas/splat-transform",
+      "stars": 1396,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "vriteio/andesine",
+      "stars": 2005,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "promptfoo/promptfoo",
+      "stars": 26454,
+      "reason": "size 797676 KB > 400000"
+    },
+    {
+      "github": "TooTallNate/proxy-agents",
+      "stars": 1168,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "TryGhost/Ghost",
+      "stars": 55611,
+      "reason": "size 620968 KB > 400000"
+    },
+    {
+      "github": "nitrocloudofficial/nitrostack",
+      "stars": 2527,
+      "reason": "paths Windows cannot check out: ['<tree truncated: cannot confirm>']"
+    },
+    {
+      "github": "openobserve/openobserve",
+      "stars": 22496,
+      "reason": "size 508610 KB > 400000"
+    },
+    {
+      "github": "shuaiplus/nodewarden",
+      "stars": 4028,
+      "reason": "licence NOASSERTION not in the OSI list"
+    }
+  ]
+}

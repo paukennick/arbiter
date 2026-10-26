@@ -1,0 +1,1935 @@
+{
+  "_about": "Breadth set r7, JavaScript (ARB-166), frozen before any clone or scan. JavaScript applications and services drawn from GitHub topics ['self-hosted', 'web-application', 'webapp', 'dashboard', 'cms', 'api-server', 'rest-api', 'backend', 'monitoring', 'automation', 'bot', 'discord-bot', 'telegram-bot', 'chatbot', 'scraper', 'crawler', 'cli', 'proxy', 'express', 'expressjs', 'nodejs', 'koa', 'fastify', 'socket-io', 'whatsapp-bot', 'electron-app', 'home-automation', 'game-server', 'chat'], each with >= 1000 stars, pushed since 2026-08-26, not archived/fork/template, an OSI licence, JavaScript >= 60% of bytes, TypeScript < 10% of bytes, size <= 400000 KB, a .github/workflows directory, no path Windows cannot check out, a description that does not name a library/SDK/tutorial/boilerplate/list, and not named anywhere in Arbiter's tools, packs, docs or fixtures (held-out sets, gold repos, ground-truth sources, every other breadth manifest). Chosen from metadata and file names only; candidates shuffled with seed 20261026, then split with seed 20261027 into 'dev' (30: rule fixes may read these) and 'heldout' (measurement only, never used for tuning). Each repo is pinned to its default-branch HEAD at freeze time.",
+  "language": "javascript",
+  "requirement": "ARB-166",
+  "frozen": "2026-10-26",
+  "seed": 20261026,
+  "split_seed": 20261027,
+  "min_stars": 1000,
+  "candidates": 325,
+  "target": 120,
+  "repos": {
+    "js-tokentracker": {
+      "github": "xiufengsun/TokenTracker",
+      "url": "https://github.com/xiufengsun/TokenTracker.git",
+      "sha": "8d32a956181bf52fae449c89b8f6520253566283",
+      "branch": "main",
+      "stars": 2133,
+      "license": "MIT",
+      "language_share": 0.76,
+      "description": "Local-first AI token usage & cost tracker for 31 coding tools incl. Claude Code, Codex, Cursor, Gemini & DeepSeek Harness—with native apps. Never reads prompts.",
+      "slice": "dev"
+    },
+    "js-mini-graph-card": {
+      "github": "kalkih/mini-graph-card",
+      "url": "https://github.com/kalkih/mini-graph-card.git",
+      "sha": "f203f4883a99cf930c86a35f2f0b3e655e444651",
+      "branch": "master",
+      "stars": 3904,
+      "license": "MIT",
+      "language_share": 0.989,
+      "description": "Minimalistic graph card for Home Assistant Lovelace UI",
+      "slice": "heldout"
+    },
+    "js-penecho": {
+      "github": "penecho/penecho",
+      "url": "https://github.com/penecho/penecho.git",
+      "sha": "341e34d6cf2965ac8f58d0d89cf33e285ace9b2d",
+      "branch": "main",
+      "stars": 2500,
+      "license": "AGPL-3.0",
+      "language_share": 0.899,
+      "description": "Think with AI beyond the chat box. A shared canvas for handwriting, equations, diagrams, and spatial reasoning.",
+      "slice": "heldout"
+    },
+    "js-gulp-rev": {
+      "github": "sindresorhus/gulp-rev",
+      "url": "https://github.com/sindresorhus/gulp-rev.git",
+      "sha": "b8cd5a93f5d4ad3493ed2755e4426547d5491fcb",
+      "branch": "main",
+      "stars": 1535,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Static asset revisioning by appending content hash to filenames: `unicorn.css` → `unicorn-d41d8cd98f.css`",
+      "slice": "heldout"
+    },
+    "js-kugoumusicapi": {
+      "github": "MakcRe/KuGouMusicApi",
+      "url": "https://github.com/MakcRe/KuGouMusicApi.git",
+      "sha": "62730f900dc9fdc51396a663b3d33a6c4c704046",
+      "branch": "main",
+      "stars": 1055,
+      "license": "MIT",
+      "language_share": 0.838,
+      "description": "酷狗音乐 Node.js API service",
+      "slice": "dev"
+    },
+    "js-auto-py-to-exe": {
+      "github": "brentvollebregt/auto-py-to-exe",
+      "url": "https://github.com/brentvollebregt/auto-py-to-exe.git",
+      "sha": "76f9c2e435683831acd844d5824464aff39aadca",
+      "branch": "master",
+      "stars": 4996,
+      "license": "MIT",
+      "language_share": 0.735,
+      "description": "Converts .py to .exe using a simple graphical interface ",
+      "slice": "heldout"
+    },
+    "js-coreui-free-react-admin-template": {
+      "github": "coreui/coreui-free-react-admin-template",
+      "url": "https://github.com/coreui/coreui-free-react-admin-template.git",
+      "sha": "2609f5995035973e00c16ec723165a5fff87cceb",
+      "branch": "main",
+      "stars": 4965,
+      "license": "MIT",
+      "language_share": 0.992,
+      "description": "Free React Admin & Dashboard Template Built for AI-Assisted Development",
+      "slice": "heldout"
+    },
+    "js-cookies": {
+      "github": "pillarjs/cookies",
+      "url": "https://github.com/pillarjs/cookies.git",
+      "sha": "6e35de1524bb55d5deac3edcf67c2ac374d658d0",
+      "branch": "master",
+      "stars": 1296,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Signed and unsigned cookies based on Keygrip",
+      "slice": "dev"
+    },
+    "js-ava": {
+      "github": "avajs/ava",
+      "url": "https://github.com/avajs/ava.git",
+      "sha": "95297b666098ced546d83cb059902a1a351b855c",
+      "branch": "main",
+      "stars": 20825,
+      "license": "MIT",
+      "language_share": 0.975,
+      "description": "Node.js test runner that lets you develop with confidence 🚀",
+      "slice": "heldout"
+    },
+    "js-portracker": {
+      "github": "mostafa-wahied/portracker",
+      "url": "https://github.com/mostafa-wahied/portracker.git",
+      "sha": "0028cfcbc43cea38d730cf0e7a5d068e99587744",
+      "branch": "main",
+      "stars": 2487,
+      "license": "MIT",
+      "language_share": 0.992,
+      "description": "An open source, self-hosted, real-time port monitoring and discovery tool.",
+      "slice": "heldout"
+    },
+    "js-webtorrent-cli": {
+      "github": "webtorrent/webtorrent-cli",
+      "url": "https://github.com/webtorrent/webtorrent-cli.git",
+      "sha": "5469216880a01a82252e2c5d2703d9078610550b",
+      "branch": "master",
+      "stars": 1384,
+      "license": "MIT",
+      "language_share": 0.985,
+      "description": "WebTorrent, the streaming torrent client. For the command line.",
+      "slice": "heldout"
+    },
+    "js-super-agent-party": {
+      "github": "heshengtao/super-agent-party",
+      "url": "https://github.com/heshengtao/super-agent-party.git",
+      "sha": "3eb32bb2f81311efc856796d83aa3c104aec521a",
+      "branch": "main",
+      "stars": 2755,
+      "license": "AGPL-3.0",
+      "language_share": 0.846,
+      "description": "⭐ All-in-one AI companion! Super Agent Party = Self hosted neuro sama + openclaw! ⭐ 全能AI伴侣！超级智能体派对 = 自托管neuro sama + openclaw!",
+      "slice": "heldout"
+    },
+    "js-lepton": {
+      "github": "hackjutsu/Lepton",
+      "url": "https://github.com/hackjutsu/Lepton.git",
+      "sha": "36fb9eb756bfb6dbf7ca428055e830a1e76e1733",
+      "branch": "master",
+      "stars": 10342,
+      "license": "MIT",
+      "language_share": 0.917,
+      "description": "💻     Democratizing Snippet Management (macOS/Win/Linux)",
+      "slice": "heldout"
+    },
+    "js-cassandra-nodejs-driver": {
+      "github": "apache/cassandra-nodejs-driver",
+      "url": "https://github.com/apache/cassandra-nodejs-driver.git",
+      "sha": "9a37061d2d8a7f10dd2d2486fac745330ed5a0d6",
+      "branch": "trunk",
+      "stars": 1269,
+      "license": "Apache-2.0",
+      "language_share": 0.991,
+      "description": "Node.js Driver for Apache Cassandra",
+      "slice": "dev"
+    },
+    "js-wallpaper": {
+      "github": "sindresorhus/wallpaper",
+      "url": "https://github.com/sindresorhus/wallpaper.git",
+      "sha": "65b0c21303ae2e37a5e07c4d21780329716d2575",
+      "branch": "main",
+      "stars": 1090,
+      "license": "MIT",
+      "language_share": 0.932,
+      "description": "Manage the desktop wallpaper",
+      "slice": "heldout"
+    },
+    "js-trash": {
+      "github": "sindresorhus/trash",
+      "url": "https://github.com/sindresorhus/trash.git",
+      "sha": "a3472ce6352aca901c3be35726e7017a3b4bd85c",
+      "branch": "main",
+      "stars": 2664,
+      "license": "MIT",
+      "language_share": 0.985,
+      "description": "Move files and directories to the trash",
+      "slice": "heldout"
+    },
+    "js-alphaclaw": {
+      "github": "chrysb/alphaclaw",
+      "url": "https://github.com/chrysb/alphaclaw.git",
+      "sha": "e6e1ed7db3e1143c45160e1c1c9e92b674d435c6",
+      "branch": "main",
+      "stars": 1475,
+      "license": "MIT",
+      "language_share": 0.968,
+      "description": "The ultimate setup harness for OpenClaw. Deploy in minutes. Stay running for months. No CLI required.",
+      "slice": "heldout"
+    },
+    "js-human-review": {
+      "github": "petergyang/human-review",
+      "url": "https://github.com/petergyang/human-review.git",
+      "sha": "f9a55812f6f37e2c53da6ec26c52ef7a489485d6",
+      "branch": "main",
+      "stars": 1437,
+      "license": "MIT",
+      "language_share": 0.838,
+      "description": "A visual tool to edit HTML and Markdown files, leave comments like a Google Doc, and send feedback to your AI agent. Works inside your favorite AI harness.",
+      "slice": "heldout"
+    },
+    "js-markdownlint": {
+      "github": "DavidAnson/markdownlint",
+      "url": "https://github.com/DavidAnson/markdownlint.git",
+      "sha": "5dd44fe44481cfbc8c6fee955719773fa17dc5d5",
+      "branch": "main",
+      "stars": 6397,
+      "license": "MIT",
+      "language_share": 0.937,
+      "description": "A Node.js style checker and lint tool for Markdown/CommonMark files.",
+      "slice": "heldout"
+    },
+    "js-token-monitor": {
+      "github": "Javis603/token-monitor",
+      "url": "https://github.com/Javis603/token-monitor.git",
+      "sha": "b0b3d8d31de58a8766308015cccf37035f629135",
+      "branch": "main",
+      "stars": 3373,
+      "license": "MIT",
+      "language_share": 0.938,
+      "description": "Local-first desktop widget for tracking token usage, costs, limits, and session activity across 47+ AI coding tools—including Claude Code, Codex, Cursor, OpenCode, OpenClaw, and more—with multi-device sync.",
+      "slice": "heldout"
+    },
+    "js-svgo": {
+      "github": "svg/svgo",
+      "url": "https://github.com/svg/svgo.git",
+      "sha": "96e756b1c5aedeb3d6b8532033060bcd17bbb76e",
+      "branch": "main",
+      "stars": 22767,
+      "license": "MIT",
+      "language_share": 0.979,
+      "description": "SVG Optimizer for Node.js and CLI. ⚙️",
+      "slice": "dev"
+    },
+    "js-bittorrent-dht": {
+      "github": "webtorrent/bittorrent-dht",
+      "url": "https://github.com/webtorrent/bittorrent-dht.git",
+      "sha": "92afa3fd375e8c8241c039710bfeec52ac28367a",
+      "branch": "master",
+      "stars": 1284,
+      "license": "MIT",
+      "language_share": 0.993,
+      "description": "🕸 Simple, robust, BitTorrent DHT implementation",
+      "slice": "heldout"
+    },
+    "js-isomorphic-git": {
+      "github": "isomorphic-git/isomorphic-git",
+      "url": "https://github.com/isomorphic-git/isomorphic-git.git",
+      "sha": "dea0848b332e60945e3b588adbb368fe7daca110",
+      "branch": "main",
+      "stars": 8378,
+      "license": "MIT",
+      "language_share": 0.998,
+      "description": "A pure JavaScript implementation of git for node and browsers!",
+      "slice": "heldout"
+    },
+    "js-bittorrent-tracker": {
+      "github": "webtorrent/bittorrent-tracker",
+      "url": "https://github.com/webtorrent/bittorrent-tracker.git",
+      "sha": "4ad7c6da7de982b6b92261cc92778d12edb078ff",
+      "branch": "master",
+      "stars": 1940,
+      "license": "MIT",
+      "language_share": 0.996,
+      "description": "🌊 Simple, robust, BitTorrent tracker (client & server) implementation",
+      "slice": "dev"
+    },
+    "js-node-rate-limiter-flexible": {
+      "github": "animir/node-rate-limiter-flexible",
+      "url": "https://github.com/animir/node-rate-limiter-flexible.git",
+      "sha": "d19a457455338b73172d47d004f402bd0b748152",
+      "branch": "master",
+      "stars": 3597,
+      "license": "ISC",
+      "language_share": 0.997,
+      "description": "Atomic and non-atomic counters and rate limiting tools. Limit resource access at any scale.",
+      "slice": "heldout"
+    },
+    "js-p-map": {
+      "github": "sindresorhus/p-map",
+      "url": "https://github.com/sindresorhus/p-map.git",
+      "sha": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe",
+      "branch": "main",
+      "stars": 1518,
+      "license": "MIT",
+      "language_share": 0.923,
+      "description": "Map over promises concurrently",
+      "slice": "heldout"
+    },
+    "js-semantic-release": {
+      "github": "semantic-release/semantic-release",
+      "url": "https://github.com/semantic-release/semantic-release.git",
+      "sha": "04c1923646eb801cf6f0f90455cf00b78b94fdb7",
+      "branch": "master",
+      "stars": 24129,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "📦🚀 Fully automated version management and package publishing",
+      "slice": "heldout"
+    },
+    "js-calendar": {
+      "github": "nextcloud/calendar",
+      "url": "https://github.com/nextcloud/calendar.git",
+      "sha": "49c78d8fd17df44de513d298432cbdaa9ca11917",
+      "branch": "main",
+      "stars": 1193,
+      "license": "AGPL-3.0",
+      "language_share": 0.722,
+      "description": "📆 Calendar app for Nextcloud",
+      "slice": "heldout"
+    },
+    "js-fastify-swagger": {
+      "github": "fastify/fastify-swagger",
+      "url": "https://github.com/fastify/fastify-swagger.git",
+      "sha": "a072a9a83a5d41ab1cfbd8b86aaddfa3c5d94d15",
+      "branch": "main",
+      "stars": 1099,
+      "license": "MIT",
+      "language_share": 0.959,
+      "description": "Swagger documentation generator for Fastify",
+      "slice": "dev"
+    },
+    "js-homepage": {
+      "github": "gethomepage/homepage",
+      "url": "https://github.com/gethomepage/homepage.git",
+      "sha": "42a26dcdc6b231062d362c109c1ef9410f0271ff",
+      "branch": "dev",
+      "stars": 33370,
+      "license": "GPL-3.0",
+      "language_share": 0.993,
+      "description": "A highly customizable homepage (or startpage / application dashboard) with Docker and service API integrations.",
+      "slice": "heldout"
+    },
+    "js-suneditor": {
+      "github": "JiHong88/suneditor",
+      "url": "https://github.com/JiHong88/suneditor.git",
+      "sha": "338ae199ae04fd2e56b60e749dfd1499c93a7d96",
+      "branch": "master",
+      "stars": 2025,
+      "license": "MIT",
+      "language_share": 0.968,
+      "description": "A modular WYSIWYG HTML editor with zero runtime dependencies. Everything included, enable only what you need.",
+      "slice": "heldout"
+    },
+    "js-dsh-im": {
+      "github": "xmanrui/dsh-im",
+      "url": "https://github.com/xmanrui/dsh-im.git",
+      "sha": "7e78d771e33ff655a91f127fdd04e90440403e71",
+      "branch": "main",
+      "stars": 2608,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "通过扫码或机器人凭据把IM机器人接入DeepSeek Harness（支持飞书、微信、钉钉、企业微信、QQ、Slack、Telegram、Discord和WhatsApp）。 Connect IM bots to DeepSeek Harness via QR code or credentials (9 channels).",
+      "slice": "dev"
+    },
+    "js-np": {
+      "github": "sindresorhus/np",
+      "url": "https://github.com/sindresorhus/np.git",
+      "sha": "5ca53e9a04158b2fa544fb9523ecb7e6b2db7ddc",
+      "branch": "main",
+      "stars": 7713,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "A better `npm publish`",
+      "slice": "heldout"
+    },
+    "js-twinkle-tray": {
+      "github": "xanderfrangos/twinkle-tray",
+      "url": "https://github.com/xanderfrangos/twinkle-tray.git",
+      "sha": "f4b36e12e2dbedd415a588b9baa2b8c65cf01f30",
+      "branch": "master",
+      "stars": 9241,
+      "license": "MIT",
+      "language_share": 0.686,
+      "description": "Easily manage the brightness of your monitors in Windows from the system tray",
+      "slice": "heldout"
+    },
+    "js-file-type": {
+      "github": "sindresorhus/file-type",
+      "url": "https://github.com/sindresorhus/file-type.git",
+      "sha": "0c14b6f7be6f82164a6e7c122c1ff5ba87cec4b3",
+      "branch": "main",
+      "stars": 4339,
+      "license": "MIT",
+      "language_share": 0.935,
+      "description": "Detect the file type of a file, stream, or data",
+      "slice": "heldout"
+    },
+    "js-browserless": {
+      "github": "microlinkhq/browserless",
+      "url": "https://github.com/microlinkhq/browserless.git",
+      "sha": "e21af051a3232e770cc0f9119e367695450e251e",
+      "branch": "master",
+      "stars": 1841,
+      "license": "MIT",
+      "language_share": 0.992,
+      "description": "The headless Chrome/Chromium driver on top of Puppeteer. Take screenshots, generate PDFs, extract text and HTML with a production-ready API.",
+      "slice": "dev"
+    },
+    "js-converse.js": {
+      "github": "conversejs/converse.js",
+      "url": "https://github.com/conversejs/converse.js.git",
+      "sha": "92d957f083888c03012526874523c3b4a98c6c3b",
+      "branch": "master",
+      "stars": 3300,
+      "license": "MPL-2.0",
+      "language_share": 0.939,
+      "description": "Web-based XMPP/Jabber chat written in JavaScript",
+      "slice": "dev"
+    },
+    "js-cla-assistant": {
+      "github": "cla-assistant/cla-assistant",
+      "url": "https://github.com/cla-assistant/cla-assistant.git",
+      "sha": "43e06e95f13f2d23542eb12cb93e04e30597dee7",
+      "branch": "main",
+      "stars": 1552,
+      "license": "Apache-2.0",
+      "language_share": 0.866,
+      "description": "Contributor License Agreement assistant (CLA assistant)",
+      "slice": "heldout"
+    },
+    "js-koa": {
+      "github": "koajs/koa",
+      "url": "https://github.com/koajs/koa.git",
+      "sha": "a82feec38a7c28e14f4db7525b8f500801214a76",
+      "branch": "master",
+      "stars": 35685,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Expressive middleware for node.js using ES2017 async functions",
+      "slice": "heldout"
+    },
+    "js-node-restify": {
+      "github": "restify/node-restify",
+      "url": "https://github.com/restify/node-restify.git",
+      "sha": "71e09da528112619ec42b600a2bbab240e3eff60",
+      "branch": "master",
+      "stars": 10689,
+      "license": "MIT",
+      "language_share": 0.984,
+      "description": "The future of Node.js REST development",
+      "slice": "heldout"
+    },
+    "js-freyr-js": {
+      "github": "miraclx/freyr-js",
+      "url": "https://github.com/miraclx/freyr-js.git",
+      "sha": "05c0591190660a735c53d5180fa90f28e4ee9a48",
+      "branch": "master",
+      "stars": 2375,
+      "license": "Apache-2.0",
+      "language_share": 0.988,
+      "description": "A tool for downloading songs from music streaming services like Spotify and Apple Music.",
+      "slice": "heldout"
+    },
+    "js-slugify": {
+      "github": "sindresorhus/slugify",
+      "url": "https://github.com/sindresorhus/slugify.git",
+      "sha": "3b17b2e84b97624a683aafaa38184bf2746fab22",
+      "branch": "main",
+      "stars": 2709,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Slugify a string",
+      "slice": "heldout"
+    },
+    "js-serve-static": {
+      "github": "expressjs/serve-static",
+      "url": "https://github.com/expressjs/serve-static.git",
+      "sha": "109a299c26d2d532027bb6e66e50e365eeb8fcdd",
+      "branch": "master",
+      "stars": 1421,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Serve static files",
+      "slice": "dev"
+    },
+    "js-webperf-snippets": {
+      "github": "nucliweb/webperf-snippets",
+      "url": "https://github.com/nucliweb/webperf-snippets.git",
+      "sha": "ff4d00886c32a3f4a25de4c18c82920335160bae",
+      "branch": "main",
+      "stars": 1454,
+      "license": "MIT",
+      "language_share": 0.7,
+      "description": "Tested JavaScript snippets that measure and debug web performance. Your AI agent runs them for you, or you run them yourself in DevTools: the same code every time.",
+      "slice": "dev"
+    },
+    "js-drawio-desktop": {
+      "github": "jgraph/drawio-desktop",
+      "url": "https://github.com/jgraph/drawio-desktop.git",
+      "sha": "e56f6f3f8689503b328456081186de0ab5594a11",
+      "branch": "dev",
+      "stars": 63661,
+      "license": "GPL-3.0",
+      "language_share": 0.984,
+      "description": "Official electron build of draw.io",
+      "slice": "dev"
+    },
+    "js-ungit": {
+      "github": "FredrikNoren/ungit",
+      "url": "https://github.com/FredrikNoren/ungit.git",
+      "sha": "b1df1a168b9208766342070ebd42782036dfd18d",
+      "branch": "master",
+      "stars": 10613,
+      "license": "MIT",
+      "language_share": 0.865,
+      "description": "The easiest way to use git. On any platform. Anywhere.",
+      "slice": "heldout"
+    },
+    "js-platformatic": {
+      "github": "platformatic/platformatic",
+      "url": "https://github.com/platformatic/platformatic.git",
+      "sha": "779bfeb7a0fc393e0c98cc73345a4d9cb0a0693e",
+      "branch": "main",
+      "stars": 2131,
+      "license": "Apache-2.0",
+      "language_share": 0.974,
+      "description": "Platformatic Open Source monorepo!",
+      "slice": "heldout"
+    },
+    "js-bytenode": {
+      "github": "bytenode/bytenode",
+      "url": "https://github.com/bytenode/bytenode.git",
+      "sha": "653862150e1eeca0d93c5f9907b75b730cbf92f5",
+      "branch": "master",
+      "stars": 2981,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "A minimalist bytecode compiler for Node.js",
+      "slice": "heldout"
+    },
+    "js-slack-github-action": {
+      "github": "slackapi/slack-github-action",
+      "url": "https://github.com/slackapi/slack-github-action.git",
+      "sha": "d6916b0cb09ba595dbb314255a708f4c8ef10c8a",
+      "branch": "main",
+      "stars": 1351,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Send data into Slack using this GitHub Action!",
+      "slice": "heldout"
+    },
+    "js-tuyapi": {
+      "github": "codetheweb/tuyapi",
+      "url": "https://github.com/codetheweb/tuyapi.git",
+      "sha": "4135c835deaa7c94ad0df9dd4c34878cb5eb2916",
+      "branch": "master",
+      "stars": 2327,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "🌧 An easy-to-use API for devices that use Tuya's cloud services. Documentation: https://codetheweb.github.io/tuyapi.",
+      "slice": "heldout"
+    },
+    "js-agentsys": {
+      "github": "agent-sh/agentsys",
+      "url": "https://github.com/agent-sh/agentsys.git",
+      "sha": "c79055488eb990ed99728b8ae53286db8e8f4827",
+      "branch": "main",
+      "stars": 1007,
+      "license": "MIT",
+      "language_share": 0.933,
+      "description": "AI writes code. This automates everything else · 24 plugins · 49 agents · 44 skills · for Claude Code, OpenCode, Codex, Cursor, Kiro.",
+      "slice": "heldout"
+    },
+    "js-node-minecraft-protocol": {
+      "github": "PrismarineJS/node-minecraft-protocol",
+      "url": "https://github.com/PrismarineJS/node-minecraft-protocol.git",
+      "sha": "dacf62ef40cc559429537a303ac246ee9cede175",
+      "branch": "master",
+      "stars": 1423,
+      "license": "BSD-3-Clause",
+      "language_share": 1.0,
+      "description": "Parse and serialize minecraft packets, plus authentication and encryption.",
+      "slice": "dev"
+    },
+    "js-haraka": {
+      "github": "haraka/Haraka",
+      "url": "https://github.com/haraka/Haraka.git",
+      "sha": "dc8d154d1b4ec96d6dfd22a67d87c22b48527651",
+      "branch": "master",
+      "stars": 5627,
+      "license": "MIT",
+      "language_share": 0.983,
+      "description": "A fast, highly extensible, and event driven SMTP server",
+      "slice": "heldout"
+    },
+    "js-session": {
+      "github": "expressjs/session",
+      "url": "https://github.com/expressjs/session.git",
+      "sha": "8947e169ae838b22cc1af198e50e370e6fc09f96",
+      "branch": "master",
+      "stars": 6357,
+      "license": "MIT",
+      "language_share": 0.998,
+      "description": "Simple session middleware for Express",
+      "slice": "heldout"
+    },
+    "js-postbird": {
+      "github": "Paxa/postbird",
+      "url": "https://github.com/Paxa/postbird.git",
+      "sha": "2e1ad3fc0d1f2bf6e5ab71ad37c697ebd6d24d92",
+      "branch": "master",
+      "stars": 1635,
+      "license": "MIT",
+      "language_share": 0.919,
+      "description": "Open source PostgreSQL GUI client for macOS, Linux and Windows",
+      "slice": "dev"
+    },
+    "js-nodebb": {
+      "github": "NodeBB/NodeBB",
+      "url": "https://github.com/NodeBB/NodeBB.git",
+      "sha": "ce62dcd5a11bcf1274fe3653622ec08cc3c1a248",
+      "branch": "master",
+      "stars": 15244,
+      "license": "GPL-3.0",
+      "language_share": 0.876,
+      "description": "Node.js based forum software built for the modern web",
+      "slice": "heldout"
+    },
+    "js-local-web-server": {
+      "github": "lwsjs/local-web-server",
+      "url": "https://github.com/lwsjs/local-web-server.git",
+      "sha": "c41f43bafc86bbf48769605597e3d7242daeb386",
+      "branch": "master",
+      "stars": 1269,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "A lean, modular web server for rapid full-stack development.",
+      "slice": "dev"
+    },
+    "js-youtube-automation-agent": {
+      "github": "darkzOGx/youtube-automation-agent",
+      "url": "https://github.com/darkzOGx/youtube-automation-agent.git",
+      "sha": "24f9cb521fcbebec70b7a193e0f6d972aeec88a6",
+      "branch": "master",
+      "stars": 4667,
+      "license": "MIT",
+      "language_share": 0.919,
+      "description": "🎬 Open-source, self-hosted AI agent that runs a YouTube channel end to end: researches topics, writes scripts, generates narration, visuals and video, optimizes SEO, and publishes after your approval, then learns from analytics. Works with Gemini, OpenAI, OpenRouter, DeepSeek and more.",
+      "slice": "heldout"
+    },
+    "js-celebrate": {
+      "github": "arb/celebrate",
+      "url": "https://github.com/arb/celebrate.git",
+      "sha": "27ccb2ab0c39f735bff6b470f4252df803feb2bf",
+      "branch": "master",
+      "stars": 1347,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "A joi validation middleware for Express.",
+      "slice": "heldout"
+    },
+    "js-stronghold-protocol": {
+      "github": "sganggs/Stronghold-Protocol",
+      "url": "https://github.com/sganggs/Stronghold-Protocol.git",
+      "sha": "f07b8965061bbc311ad7aa815879b09264a1e47d",
+      "branch": "master",
+      "stars": 1772,
+      "license": "GPL-3.0",
+      "language_share": 0.961,
+      "description": "明日方舟「卫戍协议：盟约」非官方同人复刻：浏览器自走棋塔防，单人或 1–4 人联机合作（非商业）",
+      "slice": "dev"
+    },
+    "js-client_js": {
+      "github": "prometheus/client_js",
+      "url": "https://github.com/prometheus/client_js.git",
+      "sha": "21a3b86ebbace3d39a4f5307c588b0a5fc6ae51d",
+      "branch": "main",
+      "stars": 3497,
+      "license": "Apache-2.0",
+      "language_share": 0.992,
+      "description": "Prometheus client for node.js",
+      "slice": "dev"
+    },
+    "js-antigravity-claude-proxy": {
+      "github": "badrisnarayanan/antigravity-claude-proxy",
+      "url": "https://github.com/badrisnarayanan/antigravity-claude-proxy.git",
+      "sha": "aa568767d67151809bbb1ea30c143692f819f2fa",
+      "branch": "main",
+      "stars": 4023,
+      "license": "MIT",
+      "language_share": 0.774,
+      "description": "Proxy that exposes Antigravity provided claude / gemini models, so we can use them in Claude Code and OpenClaw (Clawdbot)",
+      "slice": "heldout"
+    },
+    "js-node-notifier": {
+      "github": "mikaelbr/node-notifier",
+      "url": "https://github.com/mikaelbr/node-notifier.git",
+      "sha": "b50f93976b990d7ad63ca5c8810fb751979dbb52",
+      "branch": "master",
+      "stars": 5846,
+      "license": "MIT",
+      "language_share": 0.98,
+      "description": "A Node.js module for sending notifications on native Mac, Windows and Linux (or Growl as fallback)",
+      "slice": "heldout"
+    },
+    "js-titanbot": {
+      "github": "codebymitch/TitanBot",
+      "url": "https://github.com/codebymitch/TitanBot.git",
+      "sha": "c59378a52a662819c6daf203ebd996ccc8f23547",
+      "branch": "main",
+      "stars": 9205,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "A powerful, all-in-one Discord assistant built for every server. ",
+      "slice": "heldout"
+    },
+    "js-shuji": {
+      "github": "paazmaya/shuji",
+      "url": "https://github.com/paazmaya/shuji.git",
+      "sha": "922cfa6de06752d5a31e30c0bacf8b9fd16249b4",
+      "branch": "main",
+      "stars": 1248,
+      "license": "MIT",
+      "language_share": 0.806,
+      "description": "Reverse engineering JavaScript and CSS sources from sourcemaps",
+      "slice": "heldout"
+    },
+    "js-dockly": {
+      "github": "lirantal/dockly",
+      "url": "https://github.com/lirantal/dockly.git",
+      "sha": "04b80c58627536fed5e1b60fd4da7c4f87eb79b1",
+      "branch": "main",
+      "stars": 4035,
+      "license": "MIT",
+      "language_share": 0.993,
+      "description": "Immersive terminal interface for managing docker containers and services",
+      "slice": "heldout"
+    },
+    "js-localminidrama": {
+      "github": "xuanyustudio/LocalMiniDrama",
+      "url": "https://github.com/xuanyustudio/LocalMiniDrama.git",
+      "sha": "caea265c49b766619b57f1ae0483ce2b567ee1ce",
+      "branch": "main",
+      "stars": 2237,
+      "license": "MIT",
+      "language_share": 0.638,
+      "description": "🎬 seedance2接入  开源本地 AI 短剧 & 漫剧生成工具 —— 从故事到成片一站式完成，数据不出本机，短剧工作流管理平台，高灵活度，AI真人剧，AI漫剧本地搞定。 Open-source local AI short drama maker: story → storyboard → video, fully offline, your data stays yours. 纳米流水线",
+      "slice": "heldout"
+    },
+    "js-cloudserver": {
+      "github": "scality/cloudserver",
+      "url": "https://github.com/scality/cloudserver.git",
+      "sha": "72fc9e5c1d0f2b15679fa14e3bee830d4e3a3237",
+      "branch": "development/9.6",
+      "stars": 1954,
+      "license": "Apache-2.0",
+      "language_share": 0.988,
+      "description": "Zenko CloudServer, an open-source Node.js implementation of the Amazon S3 protocol on the front-end and backend storage capabilities to multiple clouds, including Azure and Google.",
+      "slice": "heldout"
+    },
+    "js-instant.io": {
+      "github": "webtorrent/instant.io",
+      "url": "https://github.com/webtorrent/instant.io.git",
+      "sha": "33a66c6e48c0b2ec6ac0f873f078cba094ae5d4a",
+      "branch": "master",
+      "stars": 3600,
+      "license": "MIT",
+      "language_share": 0.723,
+      "description": "🚀 Streaming file transfer over WebTorrent (torrents on the web)",
+      "slice": "heldout"
+    },
+    "js-bubble-card": {
+      "github": "Clooos/Bubble-Card",
+      "url": "https://github.com/Clooos/Bubble-Card.git",
+      "sha": "91a5c77ddbd563d2586368905ead6ded8b1c9fda",
+      "branch": "main",
+      "stars": 4667,
+      "license": "MIT",
+      "language_share": 0.944,
+      "description": "Bubble Card is a minimalist and customizable card collection for Home Assistant, featuring modern pop-ups and an integrated Module Store with over 100 community-made modules.",
+      "slice": "heldout"
+    },
+    "js-typora_plugin": {
+      "github": "obgnail/typora_plugin",
+      "url": "https://github.com/obgnail/typora_plugin.git",
+      "sha": "921d98d8ef589a56c2e0cc8059df25a63d3d314a",
+      "branch": "master",
+      "stars": 4691,
+      "license": "MIT",
+      "language_share": 0.906,
+      "description": "Typora Plugin. Feature Enhancement Tool | Typora 插件，功能增强工具",
+      "slice": "heldout"
+    },
+    "js-release-it": {
+      "github": "release-it/release-it",
+      "url": "https://github.com/release-it/release-it.git",
+      "sha": "45483990a7fef3959fbbb36ea00d719b1bc6102f",
+      "branch": "main",
+      "stars": 9079,
+      "license": "MIT",
+      "language_share": 0.991,
+      "description": "🚀 Automate versioning and package publishing",
+      "slice": "heldout"
+    },
+    "js-multiparty": {
+      "github": "pillarjs/multiparty",
+      "url": "https://github.com/pillarjs/multiparty.git",
+      "sha": "dcec0ec02ba6c2ef1961dcf8e2f25fce94eb1c2d",
+      "branch": "master",
+      "stars": 1295,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "A node.js module for parsing multipart-form data requests which supports streams2",
+      "slice": "heldout"
+    },
+    "js-33-js-concepts": {
+      "github": "leonardomso/33-js-concepts",
+      "url": "https://github.com/leonardomso/33-js-concepts.git",
+      "sha": "16d0d95c02b19df6a8c841f1a0012d7b7367a340",
+      "branch": "master",
+      "stars": 66527,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "📜 33 JavaScript concepts every developer should know.",
+      "slice": "dev"
+    },
+    "js-streamlink-twitch-gui": {
+      "github": "streamlink/streamlink-twitch-gui",
+      "url": "https://github.com/streamlink/streamlink-twitch-gui.git",
+      "sha": "f986efe14d814a4bec26809ad5587bab57bd5647",
+      "branch": "master",
+      "stars": 2867,
+      "license": "MIT",
+      "language_share": 0.884,
+      "description": "A multi platform Twitch.tv browser for Streamlink",
+      "slice": "heldout"
+    },
+    "js-middy": {
+      "github": "middyjs/middy",
+      "url": "https://github.com/middyjs/middy.git",
+      "sha": "e7c89a3df7948820cf69b2cf4348f3e44ad10255",
+      "branch": "main",
+      "stars": 3904,
+      "license": "MIT",
+      "language_share": 0.928,
+      "description": "🛵 The stylish Node.js middleware engine for AWS Lambda 🛵",
+      "slice": "heldout"
+    },
+    "js-gpu.js": {
+      "github": "gpujs/gpu.js",
+      "url": "https://github.com/gpujs/gpu.js.git",
+      "sha": "95c1d6922e8f14f1a9693193c9efe69cfd58dd48",
+      "branch": "develop",
+      "stars": 15517,
+      "license": "MIT",
+      "language_share": 0.974,
+      "description": "GPU Accelerated JavaScript",
+      "slice": "heldout"
+    },
+    "js-answer-me-with-html": {
+      "github": "QingYunA/answer-me-with-html",
+      "url": "https://github.com/QingYunA/answer-me-with-html.git",
+      "sha": "f82dd6dce3ca95b0e565f8cffaf5eba23f4c995f",
+      "branch": "main",
+      "stars": 4492,
+      "license": "MIT",
+      "language_share": 0.935,
+      "description": "Answer me with HTML — an agent skill that answers hard questions with a one-page HTML you can actually read. 让 AI Agent 用一页 HTML 回答复杂问题。",
+      "slice": "heldout"
+    },
+    "js-postgres": {
+      "github": "porsager/postgres",
+      "url": "https://github.com/porsager/postgres.git",
+      "sha": "411429e7bd7a3d61155ca9a70a97c111823702ea",
+      "branch": "master",
+      "stars": 8735,
+      "license": "Unlicense",
+      "language_share": 1.0,
+      "description": "Postgres.js - The Fastest full featured PostgreSQL client for Node.js, Deno, Bun and CloudFlare",
+      "slice": "heldout"
+    },
+    "js-openuserjs.org": {
+      "github": "OpenUserJS/OpenUserJS.org",
+      "url": "https://github.com/OpenUserJS/OpenUserJS.org.git",
+      "sha": "518c3eab51e7f0fbd56852e321d6473528da048c",
+      "branch": "master",
+      "stars": 1011,
+      "license": "GPL-3.0",
+      "language_share": 0.629,
+      "description": "The home of FOSS user scripts.",
+      "slice": "heldout"
+    },
+    "js-node-website-scraper": {
+      "github": "website-scraper/node-website-scraper",
+      "url": "https://github.com/website-scraper/node-website-scraper.git",
+      "sha": "097b6004ddf008ef706fb2cb94976edf987b0bd0",
+      "branch": "master",
+      "stars": 1765,
+      "license": "MIT",
+      "language_share": 0.939,
+      "description": "Download website to local directory (including all css, images, js, etc.)",
+      "slice": "heldout"
+    },
+    "js-eslint-plugin-unicorn": {
+      "github": "sindresorhus/eslint-plugin-unicorn",
+      "url": "https://github.com/sindresorhus/eslint-plugin-unicorn.git",
+      "sha": "a6c2fdf97bd9a37687f31fb3807d23323d877bd8",
+      "branch": "main",
+      "stars": 5283,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "More than 300 powerful ESLint rules",
+      "slice": "heldout"
+    },
+    "js-linkifyjs": {
+      "github": "nfrasser/linkifyjs",
+      "url": "https://github.com/nfrasser/linkifyjs.git",
+      "sha": "672c14607b26d62b4a3c94e922d8bbc239c667cd",
+      "branch": "main",
+      "stars": 2045,
+      "license": "MIT",
+      "language_share": 0.726,
+      "description": "JavaScript plugin for finding links in plain-text and converting them to HTML <a> tags.",
+      "slice": "heldout"
+    },
+    "js-cli": {
+      "github": "sequelize/cli",
+      "url": "https://github.com/sequelize/cli.git",
+      "sha": "679054aea251572ac7f6fa152f5d9eff9dbbbe9c",
+      "branch": "main",
+      "stars": 2557,
+      "license": "MIT",
+      "language_share": 0.998,
+      "description": "The Sequelize CLI",
+      "slice": "dev"
+    },
+    "js-morgan": {
+      "github": "expressjs/morgan",
+      "url": "https://github.com/expressjs/morgan.git",
+      "sha": "b1272e70812dbc504321eeb5a43d14b0822c150d",
+      "branch": "master",
+      "stars": 8200,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "HTTP request logger middleware for node.js",
+      "slice": "heldout"
+    },
+    "js-sockjs-node": {
+      "github": "sockjs/sockjs-node",
+      "url": "https://github.com/sockjs/sockjs-node.git",
+      "sha": "e8e38549474cef009b2327018b8bd4054fec7724",
+      "branch": "main",
+      "stars": 2100,
+      "license": "MIT",
+      "language_share": 0.986,
+      "description": "WebSocket emulation - Node.js server",
+      "slice": "heldout"
+    },
+    "js-openccu": {
+      "github": "OpenCCU/OpenCCU",
+      "url": "https://github.com/OpenCCU/OpenCCU.git",
+      "sha": "7f73edc0f28ba89e87b50caca8fab583ca159358",
+      "branch": "master",
+      "stars": 1851,
+      "license": "Apache-2.0",
+      "language_share": 0.88,
+      "description": ":house: Buildroot-based, cloud-free smart-home platform for a Homematic IP CCU (CCU3/ELV-Charly). Runs on Raspberry Pi & x86/ARM or as a virtual appliance (Proxmox VE, Home Assistant, Docker/LXC/K8s)...",
+      "slice": "heldout"
+    },
+    "js-windsurfapi": {
+      "github": "dwgx/WindsurfAPI",
+      "url": "https://github.com/dwgx/WindsurfAPI.git",
+      "sha": "272429d360cda7367c4920cd40bdba4bea59823f",
+      "branch": "master",
+      "stars": 3108,
+      "license": "MIT",
+      "language_share": 0.907,
+      "description": "Turn Windsurf / Devin Desktop's 100+ AI models (Claude, GPT, Gemini, DeepSeek, Kimi, GLM, SWE) into OpenAI-, Anthropic- & Gemini-compatible APIs. Zero-dependency self-hosted reverse proxy for Claude Code, Cline & Cursor. 把 Windsurf/Devin 云端 100+ 模型变成三套兼容 API。",
+      "slice": "dev"
+    },
+    "js-start-server-and-test": {
+      "github": "bahmutov/start-server-and-test",
+      "url": "https://github.com/bahmutov/start-server-and-test.git",
+      "sha": "7f129c354ee4a44e42c8404063bb75b675a1a220",
+      "branch": "master",
+      "stars": 1583,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Starts server, waits for URL, then runs test command; when the tests end, shuts down server",
+      "slice": "dev"
+    },
+    "js-fast-xml-parser": {
+      "github": "NaturalIntelligence/fast-xml-parser",
+      "url": "https://github.com/NaturalIntelligence/fast-xml-parser.git",
+      "sha": "80e88a848b073fd630bc181291a24922c6d1e839",
+      "branch": "master",
+      "stars": 3138,
+      "license": "MIT",
+      "language_share": 0.928,
+      "description": "Validate XML, Parse XML and Build XML rapidly without C/C++ based libraries and no callback.",
+      "slice": "heldout"
+    },
+    "js-openmtp": {
+      "github": "ganeshrvel/openmtp",
+      "url": "https://github.com/ganeshrvel/openmtp.git",
+      "sha": "5da350b69c6d0d4aed67a063498ee89c7448400a",
+      "branch": "master",
+      "stars": 7620,
+      "license": "MIT",
+      "language_share": 0.687,
+      "description": "OpenMTP  - Advanced Android File Transfer Application for macOS",
+      "slice": "heldout"
+    },
+    "js-google-play-scraper": {
+      "github": "facundoolano/google-play-scraper",
+      "url": "https://github.com/facundoolano/google-play-scraper.git",
+      "sha": "27d6af082e95e94486d46ec62cc6ec580d164475",
+      "branch": "main",
+      "stars": 2988,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Node.js scraper to get data from Google Play",
+      "slice": "dev"
+    },
+    "js-mineflayer": {
+      "github": "PrismarineJS/mineflayer",
+      "url": "https://github.com/PrismarineJS/mineflayer.git",
+      "sha": "5a252e6d258882b042e60e21c37d552cdf3b3380",
+      "branch": "master",
+      "stars": 7649,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Create Minecraft bots with a powerful, stable, and high level JavaScript API.",
+      "slice": "heldout"
+    },
+    "js-compression": {
+      "github": "expressjs/compression",
+      "url": "https://github.com/expressjs/compression.git",
+      "sha": "0f9707417bd53d41a319fce8bdb80dfa08b435c8",
+      "branch": "master",
+      "stars": 2806,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Node.js compression middleware",
+      "slice": "heldout"
+    },
+    "js-gitmoji-cli": {
+      "github": "carloscuesta/gitmoji-cli",
+      "url": "https://github.com/carloscuesta/gitmoji-cli.git",
+      "sha": "baf5b3d50574d669d36c392b2355adab87afb9ea",
+      "branch": "master",
+      "stars": 4830,
+      "license": "MIT",
+      "language_share": 0.925,
+      "description": "A gitmoji interactive cli tool for using emojis on commits. 💻",
+      "slice": "heldout"
+    },
+    "js-npq": {
+      "github": "lirantal/npq",
+      "url": "https://github.com/lirantal/npq.git",
+      "sha": "03151c50d1277b4f999645f3128b63dac4721865",
+      "branch": "main",
+      "stars": 1796,
+      "license": "Apache-2.0",
+      "language_share": 0.998,
+      "description": "safely install npm packages by auditing them pre-install stage",
+      "slice": "heldout"
+    },
+    "js-is-online": {
+      "github": "sindresorhus/is-online",
+      "url": "https://github.com/sindresorhus/is-online.git",
+      "sha": "c9407e296ac539fdeeb2b54cc9e95c9da036d026",
+      "branch": "main",
+      "stars": 1357,
+      "license": "MIT",
+      "language_share": 0.98,
+      "description": "Check if the internet connection is up",
+      "slice": "dev"
+    },
+    "js-graphql-upload": {
+      "github": "jaydenseric/graphql-upload",
+      "url": "https://github.com/jaydenseric/graphql-upload.git",
+      "sha": "4824216bf46c94516e9f36d3e88ed0d5ae412126",
+      "branch": "master",
+      "stars": 1440,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Middleware and a scalar Upload to add support for GraphQL multipart requests (file uploads via queries and mutations) to various Node.js GraphQL servers.",
+      "slice": "dev"
+    },
+    "js-gladys": {
+      "github": "GladysAssistant/Gladys",
+      "url": "https://github.com/GladysAssistant/Gladys.git",
+      "sha": "9b231e828ed2d3eb912f0abb6c945eb593da70be",
+      "branch": "master",
+      "stars": 3256,
+      "license": "Apache-2.0",
+      "language_share": 0.971,
+      "description": "A privacy-first, open-source home assistant",
+      "slice": "dev"
+    },
+    "js-dockerode": {
+      "github": "apocas/dockerode",
+      "url": "https://github.com/apocas/dockerode.git",
+      "sha": "a212e195879bd68f32cfe1316f1ea1b6cf81b3d4",
+      "branch": "master",
+      "stars": 4952,
+      "license": "Apache-2.0",
+      "language_share": 0.999,
+      "description": "Docker + Node = Dockerode (Node.js module for Docker's Remote API)",
+      "slice": "dev"
+    },
+    "js-orange-orm": {
+      "github": "alfateam/orange-orm",
+      "url": "https://github.com/alfateam/orange-orm.git",
+      "sha": "52fdb48880dee4d6bfaf3dd59e5b5150c76bcca1",
+      "branch": "master",
+      "stars": 1014,
+      "license": "ISC",
+      "language_share": 0.981,
+      "description": "The ultimate ORM for Node and Typescript",
+      "slice": "dev"
+    },
+    "js-helicalinsight": {
+      "github": "helicalinsight/helicalinsight",
+      "url": "https://github.com/helicalinsight/helicalinsight.git",
+      "sha": "34801f2fbe812cf709fb6810a3c985209a856e33",
+      "branch": "master",
+      "stars": 1104,
+      "license": "AGPL-3.0",
+      "language_share": 0.626,
+      "description": "Free, open source BI platform with AI conversational analytics (BYO-LLM), pixel-perfect paginated reports, interactive dashboards, SSO, embedding, multi-tenancy & row-level security. Every feature free in Community Edition. Self-hosted, Docker-ready",
+      "slice": "heldout"
+    },
+    "js-ds-bot": {
+      "github": "Fei2411/DS-Bot",
+      "url": "https://github.com/Fei2411/DS-Bot.git",
+      "sha": "de55888a93983fc51c94f7d22bc94b4f8293205d",
+      "branch": "main",
+      "stars": 4108,
+      "license": "Apache-2.0",
+      "language_share": 0.988,
+      "description": "A team of long-lived bots for DeepSeek Harness, with main bots, bot-to-bot messages and group chats.",
+      "slice": "heldout"
+    },
+    "js-on-change": {
+      "github": "sindresorhus/on-change",
+      "url": "https://github.com/sindresorhus/on-change.git",
+      "sha": "8cc2aec097b1da82bc3531213fbcd205ecf5aede",
+      "branch": "main",
+      "stars": 2031,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Watch an object or array for changes",
+      "slice": "heldout"
+    },
+    "js-chalk": {
+      "github": "chalk/chalk",
+      "url": "https://github.com/chalk/chalk.git",
+      "sha": "72110019e147683f60e13fa0ff5c14a0c27cd9fe",
+      "branch": "main",
+      "stars": 23334,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "🖍 Terminal string styling done right",
+      "slice": "heldout"
+    },
+    "js-evolver": {
+      "github": "EvoMap/evolver",
+      "url": "https://github.com/EvoMap/evolver.git",
+      "sha": "31b0691acd97ba18878019312e646f1f2d970d43",
+      "branch": "main",
+      "stars": 8702,
+      "license": "GPL-3.0",
+      "language_share": 0.998,
+      "description": "The GEP-powered self-evolving engine for AI agents. Auditable evolution with Genes, Capsules, and Events. | evomap.ai",
+      "slice": "heldout"
+    },
+    "js-anus": {
+      "github": "anus-dev/ANUS",
+      "url": "https://github.com/anus-dev/ANUS.git",
+      "sha": "3072a939ac00e925ebc8aba698f90206750e518c",
+      "branch": "main",
+      "stars": 6553,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "A free coding agent in your terminal. It runs on the smartest free model that is up today.",
+      "slice": "heldout"
+    },
+    "js-sveltia-cms": {
+      "github": "sveltia/sveltia-cms",
+      "url": "https://github.com/sveltia/sveltia-cms.git",
+      "sha": "87d368240b4681023fdb5a73873337be0ef7089d",
+      "branch": "main",
+      "stars": 2997,
+      "license": "MIT",
+      "language_share": 0.793,
+      "description": "Leading Git-based headless CMS. Successor to Netlify/Decap CMS. Modern UX, first-class i18n support, mobile support + numerous improvements. Framework-agnostic, open source & free.",
+      "slice": "heldout"
+    },
+    "js-hubot": {
+      "github": "hubotio/hubot",
+      "url": "https://github.com/hubotio/hubot.git",
+      "sha": "9aab11a3deeafc9025731967ca4ae1e030acd8f8",
+      "branch": "main",
+      "stars": 16798,
+      "license": "MIT",
+      "language_share": 0.991,
+      "description": "A customizable life embetterment robot.",
+      "slice": "heldout"
+    },
+    "js-plop": {
+      "github": "plopjs/plop",
+      "url": "https://github.com/plopjs/plop.git",
+      "sha": "0c90e7ef93ffa5f40b10fe8f53d3cc23adee5a8e",
+      "branch": "main",
+      "stars": 7688,
+      "license": "MIT",
+      "language_share": 0.951,
+      "description": "Consistency Made Simple",
+      "slice": "heldout"
+    },
+    "js-pino": {
+      "github": "pinojs/pino",
+      "url": "https://github.com/pinojs/pino.git",
+      "sha": "b29dbe97820630e7128e464c50263b427965ec99",
+      "branch": "main",
+      "stars": 18264,
+      "license": "MIT",
+      "language_share": 0.928,
+      "description": "🌲 super fast, all natural json logger",
+      "slice": "heldout"
+    },
+    "js-bgpalerter": {
+      "github": "nttgin/BGPalerter",
+      "url": "https://github.com/nttgin/BGPalerter.git",
+      "sha": "9a616c29483ae03eaae219b04773a4288b32db62",
+      "branch": "main",
+      "stars": 1026,
+      "license": "BSD-3-Clause",
+      "language_share": 0.997,
+      "description": "BGP and RPKI monitoring tool. Pre-configured for real-time detection of visibility loss, RPKI invalid announcements, hijacks, ROA misconfiguration, and more.",
+      "slice": "heldout"
+    },
+    "js-node-fs-extra": {
+      "github": "jprichardson/node-fs-extra",
+      "url": "https://github.com/jprichardson/node-fs-extra.git",
+      "sha": "1e223d3b1e26b7ebef7f402acf0e3b5533cc5833",
+      "branch": "master",
+      "stars": 9595,
+      "license": "MIT",
+      "language_share": 1.0,
+      "description": "Node.js: extra methods for the fs object like copy(), remove(), mkdirs()",
+      "slice": "heldout"
+    },
+    "js-xmpp.js": {
+      "github": "xmppjs/xmpp.js",
+      "url": "https://github.com/xmppjs/xmpp.js.git",
+      "sha": "9cce6c14a7f1c186c312f5c64f918ed88c69bca7",
+      "branch": "main",
+      "stars": 2279,
+      "license": "ISC",
+      "language_share": 0.989,
+      "description": "XMPP for JavaScript",
+      "slice": "heldout"
+    },
+    "js-soul": {
+      "github": "thevahidal/soul",
+      "url": "https://github.com/thevahidal/soul.git",
+      "sha": "958f2abf1cb61e1a09a5161983048ef3c7044005",
+      "branch": "main",
+      "stars": 1680,
+      "license": "MIT",
+      "language_share": 0.985,
+      "description": "🕉 Soul | Automatic SQLite RESTful  and realtime API server | Build CRUD APIs in minutes!",
+      "slice": "heldout"
+    },
+    "js-lotion": {
+      "github": "puneetsl/lotion",
+      "url": "https://github.com/puneetsl/lotion.git",
+      "sha": "a9b20162bc98b47b74c27bf913d1d6b68ec65c24",
+      "branch": "master",
+      "stars": 2284,
+      "license": "MIT",
+      "language_share": 0.774,
+      "description": "Unofficial Notion.so app for Linux",
+      "slice": "heldout"
+    },
+    "js-dotenvx": {
+      "github": "dotenvx/dotenvx",
+      "url": "https://github.com/dotenvx/dotenvx.git",
+      "sha": "509745dae480cec27aca18a2184942c81bd61d9d",
+      "branch": "main",
+      "stars": 5855,
+      "license": "BSD-3-Clause",
+      "language_share": 0.954,
+      "description": "a secure dotenv—from the creator of `dotenv`",
+      "slice": "heldout"
+    },
+    "js-ytdownloader": {
+      "github": "aandrew-me/ytDownloader",
+      "url": "https://github.com/aandrew-me/ytDownloader.git",
+      "sha": "23cf1c07e11410838146a8d2c8bd908932cc9688",
+      "branch": "main",
+      "stars": 10535,
+      "license": "GPL-3.0",
+      "language_share": 0.622,
+      "description": "Desktop app to download audio/video from hundreds of sites",
+      "slice": "dev"
+    },
+    "js-swagger-parser": {
+      "github": "APIDevTools/swagger-parser",
+      "url": "https://github.com/APIDevTools/swagger-parser.git",
+      "sha": "3ac7860717bfe41e4a438ae61b1a90ecce6108a3",
+      "branch": "main",
+      "stars": 1207,
+      "license": "MIT",
+      "language_share": 0.96,
+      "description": "Swagger 2.0 and OpenAPI 3.0 parser/validator",
+      "slice": "dev"
+    },
+    "js-fredy": {
+      "github": "orangecoding/fredy",
+      "url": "https://github.com/orangecoding/fredy.git",
+      "sha": "3c408897015aae0abdfcc203e9a06d0b72511f9c",
+      "branch": "master",
+      "stars": 1596,
+      "license": "Apache-2.0",
+      "language_share": 0.947,
+      "description": "❤️ Fredy - [F]ind [R]eal [E]state [D]amn Eas[y] - Fredy keeps searching for new apartments, houses, and flats in Europe on platforms like ImmoScout24, Immowelt, eBay Kleinanzeigen and instantly delivers the results to you via Slack, Telegram, Email, Discord or ntfy, so you can focus on the more important things in life ;)",
+      "slice": "heldout"
+    }
+  },
+  "rejected": [
+    {
+      "github": "zhiyi7/gfw-pac",
+      "stars": 1266,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "ButzYung/SystemAnimatorOnline",
+      "stars": 1972,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "Chalarangelo/30-seconds-of-code",
+      "stars": 129342,
+      "reason": "licence CC-BY-4.0 not in the OSI list"
+    },
+    {
+      "github": "wwebjs/whatsapp-web.js",
+      "stars": 22798,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "lovell/sharp",
+      "stars": 32797,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "flow-typed/flow-typed",
+      "stars": 3759,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "klsdf/GreenResourcesManager",
+      "stars": 1066,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "chuspeeism/dashi-taskboard",
+      "stars": 3403,
+      "reason": "JavaScript 53% of bytes (< 60%)"
+    },
+    {
+      "github": "avwo/whistle",
+      "stars": 15756,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "Shuffle/Shuffle",
+      "stars": 2462,
+      "reason": "JavaScript 49% of bytes (< 60%)"
+    },
+    {
+      "github": "asapach/peerflix-server",
+      "stars": 1313,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "amqp-node/amqplib",
+      "stars": 3847,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "wix/Detox",
+      "stars": 12046,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "i18next/i18next",
+      "stars": 8649,
+      "reason": "TypeScript 24% of bytes (>= 10%)"
+    },
+    {
+      "github": "HabitRPG/habitica",
+      "stars": 14253,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "jackwener/OpenCLI",
+      "stars": 30672,
+      "reason": "TypeScript 19% of bytes (>= 10%)"
+    },
+    {
+      "github": "nodejs/readable-stream",
+      "stars": 1048,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "aozorae/Edgechat",
+      "stars": 1354,
+      "reason": "JavaScript 52% of bytes (< 60%)"
+    },
+    {
+      "github": "LeCoupa/awesome-cheatsheets",
+      "stars": 46582,
+      "reason": "JavaScript 48% of bytes (< 60%)"
+    },
+    {
+      "github": "Unitech/pm2",
+      "stars": 43322,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "Timmoth/RackPeek",
+      "stars": 1825,
+      "reason": "JavaScript 50% of bytes (< 60%)"
+    },
+    {
+      "github": "a597873885/webfunny_monitor",
+      "stars": 5303,
+      "reason": "size 532130 KB > 400000"
+    },
+    {
+      "github": "afc163/fanyi",
+      "stars": 1554,
+      "reason": "TypeScript 28% of bytes (>= 10%)"
+    },
+    {
+      "github": "Kritt-ai/open-kritt",
+      "stars": 2339,
+      "reason": "JavaScript 55% of bytes (< 60%)"
+    },
+    {
+      "github": "Anil-matcha/awesome-open-source-saas-alternatives",
+      "stars": 3430,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "playcanvas/engine",
+      "stars": 17142,
+      "reason": "size 658848 KB > 400000"
+    },
+    {
+      "github": "moshang-ax/lottery",
+      "stars": 4574,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "strapi/documentation",
+      "stars": 1288,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "swagger-api/swagger-editor",
+      "stars": 9468,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "Countly/countly-server",
+      "stars": 5922,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "SpinaCMS/Spina",
+      "stars": 2256,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "chartbrew/chartbrew",
+      "stars": 4064,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "umutxyp/MusicBot",
+      "stars": 1291,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "ehmicky/modern-errors",
+      "stars": 1487,
+      "reason": "TypeScript 37% of bytes (>= 10%)"
+    },
+    {
+      "github": "mochajs/mocha",
+      "stars": 22912,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "moleculerjs/moleculer",
+      "stars": 6383,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "journiv/journiv-app",
+      "stars": 1243,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "didi/mpx",
+      "stars": 3950,
+      "reason": "JavaScript 52% of bytes (< 60%)"
+    },
+    {
+      "github": "law-chain-hot/websocket-devtools",
+      "stars": 1197,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "alam00000/bentopdf",
+      "stars": 16151,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "SocketCluster/socketcluster",
+      "stars": 6200,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "illuspas/Node-Media-Server",
+      "stars": 6241,
+      "reason": "TypeScript 27% of bytes (>= 10%)"
+    },
+    {
+      "github": "formio/formio",
+      "stars": 2326,
+      "reason": "licence OSL-3.0 not in the OSI list"
+    },
+    {
+      "github": "jsdom/jsdom",
+      "stars": 21736,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "oracle/node-oracledb",
+      "stars": 2378,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "gildas-lormeau/zip.js",
+      "stars": 3902,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "Derpyu520/qq-bridge",
+      "stars": 2778,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "webpack/webpack-cli",
+      "stars": 2620,
+      "reason": "TypeScript 26% of bytes (>= 10%)"
+    },
+    {
+      "github": "1186258278/OpenClawChineseTranslation",
+      "stars": 3788,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "sassanix/Warracker",
+      "stars": 1532,
+      "reason": "JavaScript 48% of bytes (< 60%)"
+    },
+    {
+      "github": "canove/whaticket-community",
+      "stars": 2079,
+      "reason": "TypeScript 37% of bytes (>= 10%)"
+    },
+    {
+      "github": "lioensky/VCPToolBox",
+      "stars": 2405,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "apache/cordova-ios",
+      "stars": 2227,
+      "reason": "JavaScript 57% of bytes (< 60%)"
+    },
+    {
+      "github": "hack-chat/main",
+      "stars": 1451,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "js-primer/js-primer",
+      "stars": 2421,
+      "reason": "licence CC-BY-4.0 not in the OSI list"
+    },
+    {
+      "github": "IonicaBizau/scrape-it",
+      "stars": 4069,
+      "reason": "TypeScript 12% of bytes (>= 10%)"
+    },
+    {
+      "github": "papersgpt/papersgpt-for-zotero",
+      "stars": 2684,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "citrolabs/ego-lite",
+      "stars": 19703,
+      "reason": "JavaScript 60% of bytes (< 60%)"
+    },
+    {
+      "github": "apostrophecms/apostrophe",
+      "stars": 4654,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "apache/cordova-android",
+      "stars": 3797,
+      "reason": "JavaScript 51% of bytes (< 60%)"
+    },
+    {
+      "github": "NativeScript/nativescript-cli",
+      "stars": 1052,
+      "reason": "TypeScript 32% of bytes (>= 10%)"
+    },
+    {
+      "github": "plankanban/planka",
+      "stars": 12645,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "ulsklyc/yuvomi",
+      "stars": 2036,
+      "reason": "size 1290085 KB > 400000"
+    },
+    {
+      "github": "TuiQiao/CBoard",
+      "stars": 3098,
+      "reason": "JavaScript 47% of bytes (< 60%)"
+    },
+    {
+      "github": "evolus/pencil",
+      "stars": 9886,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "collabnix/kubetools",
+      "stars": 3484,
+      "reason": "description names a tutorial/boilerplate/list, not an application"
+    },
+    {
+      "github": "Blizzard/node-rdkafka",
+      "stars": 2209,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "ikechan8370/chatgpt-plugin",
+      "stars": 1080,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "RoderickQiu/wnr",
+      "stars": 1102,
+      "reason": "JavaScript 56% of bytes (< 60%)"
+    },
+    {
+      "github": "sitespeedio/sitespeed.io",
+      "stars": 5046,
+      "reason": "size 458653 KB > 400000"
+    },
+    {
+      "github": "hapijs/hapi",
+      "stars": 14796,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "stdlib-js/stdlib",
+      "stars": 6002,
+      "reason": "size 2255896 KB > 400000"
+    },
+    {
+      "github": "evancohen/smart-mirror",
+      "stars": 2817,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "axios/axios",
+      "stars": 109306,
+      "reason": "used before in Arbiter's corpora, docs or another breadth manifest"
+    },
+    {
+      "github": "decaporg/decap-cms",
+      "stars": 19448,
+      "reason": "TypeScript 35% of bytes (>= 10%)"
+    },
+    {
+      "github": "marclou/mailcheap",
+      "stars": 1484,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "mermaid-js/mermaid-cli",
+      "stars": 5130,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "swagger-api/swagger-ui",
+      "stars": 29047,
+      "reason": "size 637950 KB > 400000"
+    },
+    {
+      "github": "mruniquehacker/Knightbot-MD",
+      "stars": 8174,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "sandstorm-io/sandstorm",
+      "stars": 7079,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "beautifier/js-beautify",
+      "stars": 9002,
+      "reason": "JavaScript 43% of bytes (< 60%)"
+    },
+    {
+      "github": "gamosoft/NoteDiscovery",
+      "stars": 2850,
+      "reason": "JavaScript 40% of bytes (< 60%)"
+    },
+    {
+      "github": "jarrodwatts/claude-hud",
+      "stars": 28897,
+      "reason": "JavaScript 56% of bytes (< 60%)"
+    },
+    {
+      "github": "everett7623/airport-recommendations-2026",
+      "stars": 1445,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "marko-js/marko",
+      "stars": 14462,
+      "reason": "TypeScript 17% of bytes (>= 10%)"
+    },
+    {
+      "github": "benc-uk/kubeview",
+      "stars": 1218,
+      "reason": "JavaScript 46% of bytes (< 60%)"
+    },
+    {
+      "github": "dynamoose/dynamoose",
+      "stars": 2250,
+      "reason": "TypeScript 31% of bytes (>= 10%)"
+    },
+    {
+      "github": "thalesgroup-cert/Watcher",
+      "stars": 1434,
+      "reason": "JavaScript 56% of bytes (< 60%)"
+    },
+    {
+      "github": "expressjs/express",
+      "stars": 69580,
+      "reason": "used before in Arbiter's corpora, docs or another breadth manifest"
+    },
+    {
+      "github": "ever-co/ever-traduora",
+      "stars": 2139,
+      "reason": "TypeScript 21% of bytes (>= 10%)"
+    },
+    {
+      "github": "upgundecha/howtheysre",
+      "stars": 9833,
+      "reason": "template repository"
+    },
+    {
+      "github": "brmodeloweb/brmodelo-app",
+      "stars": 1706,
+      "reason": "JavaScript 52% of bytes (< 60%)"
+    },
+    {
+      "github": "doramart/DoraCMS",
+      "stars": 3550,
+      "reason": "TypeScript 11% of bytes (>= 10%)"
+    },
+    {
+      "github": "cskefu/cskefu",
+      "stars": 2901,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "xemle/home-gallery",
+      "stars": 1205,
+      "reason": "JavaScript 52% of bytes (< 60%)"
+    },
+    {
+      "github": "chrisvel/tududi",
+      "stars": 3475,
+      "reason": "JavaScript 51% of bytes (< 60%)"
+    },
+    {
+      "github": "websockets/ws",
+      "stars": 22810,
+      "reason": "used before in Arbiter's corpora, docs or another breadth manifest"
+    },
+    {
+      "github": "apconw/Aix-DB",
+      "stars": 2254,
+      "reason": "licence None not in the OSI list"
+    },
+    {
+      "github": "error311/FileRise",
+      "stars": 1022,
+      "reason": "JavaScript 49% of bytes (< 60%)"
+    },
+    {
+      "github": "pmgl/microstudio",
+      "stars": 1193,
+      "reason": "JavaScript 52% of bytes (< 60%)"
+    },
+    {
+      "github": "insoxin/API",
+      "stars": 1339,
+      "reason": "template repository"
+    },
+    {
+      "github": "getgauge/taiko",
+      "stars": 3673,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "google/zx",
+      "stars": 45815,
+      "reason": "TypeScript 39% of bytes (>= 10%)"
+    },
+    {
+      "github": "meteor/meteor",
+      "stars": 44795,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "tus/tus-js-client",
+      "stars": 2632,
+      "reason": "JavaScript 60% of bytes (< 60%)"
+    },
+    {
+      "github": "hectorm/otpauth",
+      "stars": 1488,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "DialmasterOrg/Youtarr",
+      "stars": 1781,
+      "reason": "JavaScript 50% of bytes (< 60%)"
+    },
+    {
+      "github": "clusterzx/paperless-ai",
+      "stars": 5978,
+      "reason": "JavaScript 55% of bytes (< 60%)"
+    },
+    {
+      "github": "SynkraAI/aiox-core",
+      "stars": 3135,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "louislam/uptime-kuma",
+      "stars": 92949,
+      "reason": "JavaScript 54% of bytes (< 60%)"
+    },
+    {
+      "github": "node-pinus/pinus",
+      "stars": 1932,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "sindresorhus/execa",
+      "stars": 7626,
+      "reason": "TypeScript 21% of bytes (>= 10%)"
+    },
+    {
+      "github": "adaltas/node-csv",
+      "stars": 4287,
+      "reason": "JavaScript 53% of bytes (< 60%)"
+    },
+    {
+      "github": "Anil-matcha/postiz-cheap",
+      "stars": 1217,
+      "reason": "no .github/workflows directory"
+    },
+    {
+      "github": "PipedreamHQ/pipedream",
+      "stars": 11760,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "dwainscheeren/dwains-lovelace-dashboard",
+      "stars": 2077,
+      "reason": "licence NOASSERTION not in the OSI list"
+    },
+    {
+      "github": "IrosTheBeggar/mStream",
+      "stars": 2420,
+      "reason": "size 1052700 KB > 400000"
+    },
+    {
+      "github": "swagger-api/swagger-client",
+      "stars": 2696,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "ranisalt/node-argon2",
+      "stars": 2194,
+      "reason": "description names a library/SDK, not an application"
+    },
+    {
+      "github": "usebruno/bruno",
+      "stars": 47856,
+      "reason": "TypeScript 26% of bytes (>= 10%)"
+    }
+  ]
+}
