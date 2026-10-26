@@ -69,7 +69,18 @@ DEFAULT_BAR = {
     "kappa_min": 0.8,        # two labellers must agree at least this well
     "offline_lower": 0.99,   # with no model check, the rule alone must reach this
     "tier_lower": 0.99,      # the claim: the verified tier's held-out lower bound
+    # Advisory bar (ARB-174): a rule measured on enough labels must reach
+    # this lower bound to be shown by default. The labels counted are every
+    # decided label, held-out and development alike (unsure ones do not count).
+    "advisory_lower": 0.85,
+    "advisory_min_n": 30,
+    # ... and a rule right less than half the time on at least this many
+    # labels is off by default whatever its lower bound.
+    "off_precision": 0.5,
+    "off_min_n": 10,
 }
+LOWER_IS_STRICTER = ("advisory_min_n", "off_min_n")
+
 DETERMINISTIC_PROFILES = ("offline", "ci")
 
 # The TypeScript pack also scans JavaScript, so a finding's recorded language
@@ -216,8 +227,11 @@ def effective_bar(declared: dict | None) -> dict:
     out = dict(DEFAULT_BAR)
     for key, value in (declared or {}).items():
         if key in DEFAULT_BAR:
+            # A label minimum for switching a rule off is stricter when lower:
+            # a higher one would leave more noisy rules on (ARB-174).
+            pick = min if key in LOWER_IS_STRICTER else max
             try:
-                raised = max(float(DEFAULT_BAR[key]), float(value))
+                raised = pick(float(DEFAULT_BAR[key]), float(value))
             except (TypeError, ValueError):
                 continue
             out[key] = type(DEFAULT_BAR[key])(raised)
@@ -249,6 +263,202 @@ def rule_lower(entry: dict | None) -> float:
         return 0.0
     n = int(entry.get("tp", 0)) + int(entry.get("fp", 0))
     return wilson(int(entry.get("tp", 0)), n)[0] if n else 0.0
+
+
+# ---------------------------------------------------------------------------
+# Default on / off (ARB-174)
+# ---------------------------------------------------------------------------
+
+ENABLE_KEY = "enable_rules"
+ENABLE_ALL = "*"
+ENABLE_HINT = "add the rule to `enable_rules` in arbiter.yaml, or run with --all-rules"
+DEFAULT_OFF_TAG = "default-off"
+
+
+def _decided(entry: dict | None) -> tuple[int, int]:
+    if not entry:
+        return 0, 0
+    tp, fp = int(entry.get("tp", 0)), int(entry.get("fp", 0))
+    return tp, tp + fp
+
+
+def default_state(entry: dict | None, bar: dict) -> tuple[str, str]:
+    """("on" | "off", reason) for one ledger entry: whether its rule's
+    findings are reported when the user has not asked for it. Computed from
+    the counts, never read from the entry's own `default`.
+
+    Off: at least `advisory_min_n` decided labels (held-out and development
+    alike; unsure ones do not count) and a Wilson lower bound under
+    `advisory_lower`, or at least `off_min_n` labels and an observed
+    precision under `off_precision`. On, as advisory: everything else,
+    including a rule with too few labels to say, which keeps today's
+    behaviour."""
+    tp, n = _decided(entry)
+    if not n:
+        return "on", "no labels: unmeasured, shown as advisory"
+    p = tp / n
+    lo = wilson(tp, n)[0]
+    if n >= int(bar["off_min_n"]) and p < float(bar["off_precision"]):
+        return "off", f"precision {p:.3f} ({tp}/{n}) below {bar['off_precision']}"
+    if n >= int(bar["advisory_min_n"]) and lo < float(bar["advisory_lower"]):
+        return "off", f"lower bound {lo:.3f} on {n} labels, below {bar['advisory_lower']}"
+    if n >= int(bar["advisory_min_n"]):
+        return "on", f"lower bound {lo:.3f} on {n} labels meets {bar['advisory_lower']}"
+    return "on", f"{n} label(s), {bar['advisory_min_n']} needed to measure: shown as advisory"
+
+
+def default_off_rules(ledger: dict) -> dict[str, str]:
+    """Ledger key -> reason, for every rule off by default."""
+    bar = ledger.get("bar") or DEFAULT_BAR
+    out = {}
+    for rule, entry in (ledger.get("rules") or {}).items():
+        state, why = default_state(entry, bar)
+        if state == "off":
+            out[rule] = why
+    return out
+
+
+def enabled_by_user(rule_id: str, config: dict | None) -> bool:
+    """Whether the run asked for a default-off rule: `enable_rules` in
+    arbiter.yaml (rule ids or globs; `"*"` for every rule), or `--all-rules`."""
+    wanted = (config or {}).get(ENABLE_KEY) or []
+    if isinstance(wanted, str):
+        wanted = [wanted]
+    return any(g == ENABLE_ALL or rule_id == g or fnmatch.fnmatch(rule_id, g) for g in wanted)
+
+
+def apply_default_off(findings: list, config: dict | None) -> tuple[list, dict]:
+    """(kept findings, the report's `default_off` block).
+
+    A finding whose rule is off by default is dropped unless the run enabled
+    the rule; an enabled one is kept and tagged `default-off`, which the gate
+    never reads (policy.evaluate_gate). Rules the ledger has no entry for
+    (external analyzers, unlabelled rules) are untouched."""
+    from .rule_meta import ledger_key
+    ledger = load_ledger(_settings(config).get("ledger"))
+    off = default_off_rules(ledger)
+    kept, dropped, enabled = [], {}, {}
+    for f in findings:
+        if ledger_key(f.rule_id) not in off:
+            kept.append(f)
+        elif enabled_by_user(f.rule_id, config):
+            if DEFAULT_OFF_TAG not in f.tags:
+                f.tags.append(DEFAULT_OFF_TAG)
+            enabled[f.rule_id] = enabled.get(f.rule_id, 0) + 1
+            kept.append(f)
+        else:
+            dropped[f.rule_id] = dropped.get(f.rule_id, 0) + 1
+    block = {
+        "findings": sum(dropped.values()),
+        "rules": dict(sorted(dropped.items())),
+        "enabled": dict(sorted(enabled.items())),
+        "rules_off": len(off),
+        "how_to_enable": ENABLE_HINT,
+    }
+    return kept, block
+
+
+def default_off_line(block: dict | None) -> str:
+    """One line for the renderings: what default-off left out, and how to
+    see it. Empty when it left nothing out."""
+    if not block or not block.get("findings"):
+        return ""
+    n, k = int(block["findings"]), len(block.get("rules") or {})
+    return (f"{n} finding{'s' if n != 1 else ''} from {k} noisy rule{'s' if k != 1 else ''} "
+            f"not reported (off by default: measured below the advisory bar); to see them, "
+            f"{ENABLE_HINT}.")
+
+
+# ---------------------------------------------------------------------------
+# The public precision sentence (ARB-175)
+# ---------------------------------------------------------------------------
+
+# Categories where the labeller itself is calibrated to a 0.99 lower bound
+# (docs/precision.md, "Labeller calibration"): the v3 labeller on injection,
+# weak random / weak hash and deserialisation, 382/382, lower bound 0.99004.
+# A model-labelled 0.99 counts as calibrated only for a rule in one of these.
+# Timeouts are pending calibration (r7-calib).
+CALIBRATED_CWES = frozenset({
+    "CWE-78", "CWE-79", "CWE-89", "CWE-94", "CWE-95",      # injection
+    "CWE-327", "CWE-328", "CWE-330", "CWE-338", "CWE-916",  # weak random / hash
+    "CWE-502",                                              # deserialisation
+})
+# Measured labeller lower bounds outside those, for the plain caveat.
+LABELLER_CALIBRATION = {"CWE-1357": ("supply chain", 0.824), "CWE-494": ("supply chain", 0.824)}
+
+
+def held_out_lower(entry: dict | None) -> float:
+    ho = (entry or {}).get("held_out") or {}
+    tp, fp = int(ho.get("tp", 0)), int(ho.get("fp", 0))
+    return wilson(tp, tp + fp)[0] if tp + fp else 0.0
+
+
+def qualifying_rules(ledger: dict, config: dict | None = None,
+                     rules: Iterable[str] | None = None) -> list[str]:
+    """Rules behind the public sentence's X: declared verified, admitted by
+    the ledger, and with their own held-out lower bound at least
+    `tier_lower`. Admission alone (0.97) is not enough."""
+    from .rule_meta import ledger_key, shipped_rules
+    bar = ledger.get("bar") or DEFAULT_BAR
+    names = list(rules) if rules is not None else list(shipped_rules())
+    out = []
+    for rule in names:
+        if not declared_verified(rule, config):
+            continue
+        entry = (ledger.get("rules") or {}).get(ledger_key(rule))
+        if admission(entry, bar)[0] and held_out_lower(entry) >= float(bar["tier_lower"]):
+            out.append(rule)
+    return sorted(out)
+
+
+def calibration_caveat(rule: str, entry: dict | None) -> str:
+    """'' when the rule's category has a labeller calibrated to 0.99; else
+    a plain sentence saying its figure is model-labelled, not calibrated."""
+    cwes = set((entry or {}).get("cwe") or [])
+    if cwes & CALIBRATED_CWES:
+        return ""
+    short = rule.removeprefix("arbiter/")
+    known = [LABELLER_CALIBRATION[c] for c in sorted(cwes) if c in LABELLER_CALIBRATION]
+    if known:
+        cat, lo = known[0]
+        return (f"{short}: its 99% is model-labelled and not calibrated -- the labeller is "
+                f"calibrated only to {lo} on its category ({cat}).")
+    return (f"{short}: its 99% is model-labelled and not calibrated -- the labeller has no "
+            f"0.99 calibration on its category.")
+
+
+def public_claim(ledger: dict | None = None, config: dict | None = None,
+                 rules: Iterable[str] | None = None) -> dict:
+    """The public precision sentence, with X (rules that qualify), N (rules
+    shipped) and the coverage behind the advisory half, all from the ledger."""
+    from .rule_meta import ledger_key, shipped_rules
+    ledger = ledger if ledger is not None else load_ledger(_settings(config).get("ledger"))
+    bar = ledger.get("bar") or DEFAULT_BAR
+    names = sorted(rules) if rules is not None else sorted(shipped_rules())
+    q = qualifying_rules(ledger, config, names)
+    entries = {r: (ledger.get("rules") or {}).get(ledger_key(r)) for r in names}
+    measured = [r for r, e in entries.items() if _decided(e)[1] >= int(bar["advisory_min_n"])]
+    off = [r for r, e in entries.items() if e and default_state(e, bar)[0] == "off"]
+    x, n = len(q), len(names)
+    sentence = (
+        f"Findings that can fail your build come only from verified rules, measured at "
+        f"≥ 99% precision (95% lower bound, per rule, on held-out repositories, "
+        f"model-labelled); {x} of {n} rules qualify. Other findings are advisory: rules "
+        f"shown by default measure ≥ {round(float(bar['advisory_lower']) * 100)}%; "
+        f"noisier rules are off unless enabled.")
+    coverage = (f"{len(measured)} of {n} rules have enough labels ({bar['advisory_min_n']} or "
+                f"more) to be measured against the advisory bar; {len(off)} are off by default; "
+                f"every other rule is shown as advisory.")
+    caveats = [c for c in (calibration_caveat(r, entries[r]) for r in q) if c]
+    return {"sentence": sentence, "coverage": coverage, "caveats": caveats,
+            "qualifying": q, "rules_total": n, "measured": len(measured),
+            "default_off": sorted(off), "ledger_generated": ledger.get("generated", "")}
+
+
+def public_claim_lines(ledger: dict | None = None, config: dict | None = None) -> list[str]:
+    """The sentence, its coverage line and any calibration caveat."""
+    c = public_claim(ledger, config)
+    return [c["sentence"], c["coverage"], *c["caveats"]]
 
 
 # ---------------------------------------------------------------------------
@@ -398,7 +608,7 @@ def tier_line(counts: dict, gating: Iterable[str]) -> str:
 
 
 TIER_MEANING = {
-    "verified": "measured at least 99% precise",
+    "verified": "from a rule measured at 99% precision or better (95% lower bound, model-labelled)",
     "advisory": "not confirmed",
     "inferred": "found by a model, not confirmed",
 }

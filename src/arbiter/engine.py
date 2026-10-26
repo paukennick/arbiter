@@ -728,6 +728,12 @@ def run_scan(
     apply_severity_overrides(findings, config)
     apply_baseline(findings, baseline)
     apply_suppressions(findings, config)
+    # Rules the ledger measured below the advisory bar are off by default
+    # (ARB-174): their findings leave the report here, before the verify
+    # pass spends a call on them and before the score or the gate reads
+    # them, unless the run enabled the rule (`enable_rules`, --all-rules).
+    from .precision import apply_default_off
+    findings, scan_scope["default_off"] = apply_default_off(findings, config)
     apply_scope_notes(findings, inv)
     from .cwe import apply as apply_cwe
     apply_cwe(findings)

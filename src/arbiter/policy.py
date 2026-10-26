@@ -88,6 +88,11 @@ DEFAULTS: dict[str, Any] = {
     "score": {"weights": DEFAULT_WEIGHTS, "coverage_threshold": 0.6},
     "quality": {"max_file_lines": 800, "max_function_lines": 120, "max_complexity": 20},
     "suppress": [],
+    # Rules off by default because the ledger measured them below the
+    # advisory bar (precision.py, ARB-174) that this run reports anyway:
+    # rule ids or globs, "*" for all; `--all-rules` is "*" for one run.
+    # Their findings are tagged `default-off` and never fail the gate.
+    "enable_rules": [],
     "rules": [],
     "ignore": [],
     # The persistent per-file result cache (cache.py). `--no-cache` on the
@@ -582,9 +587,12 @@ def evaluate_gate(report: Report, config: dict) -> dict:
     tier_mode = gate_cfg.get("tier_mode", DEFAULT_TIER_MODE)
     gate_tiers = list(gate_cfg.get("tiers") or ["verified"])
 
+    # A rule off by default (ARB-174) is noise by measurement: enabling it
+    # shows its findings, never lets them fail the build, in any tier mode.
     considered = [
         f for f in report.findings
         if not f.suppressed and (gate_inferred or f.provenance != "inferred")
+        and DEFAULT_OFF_TAG not in (f.tags or [])
     ]
     # Active findings the tier mode kept away from the thresholds, by tier,
     # so a passing tiered gate over a report full of advisory criticals says
