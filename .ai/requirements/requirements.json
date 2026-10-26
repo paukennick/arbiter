@@ -3725,6 +3725,24 @@
         "docs/precision.md"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-176",
+      "category": "accuracy",
+      "title": "Fact-check supply.unpinned-action labels against the SHA-pin fact",
+      "description": "Every v3 label of supply.unpinned-action is checked against whether the uses: line names a full commit SHA, at the pinned commit; result recorded in docs/precision.md and tools/gold/results.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [],
+      "acceptance_criteria": [],
+      "validation_required": [
+        "doctor",
+        "validate"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
     }
   ]
 }
