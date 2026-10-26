@@ -440,8 +440,17 @@ version.
 | resilience | v1 | planted twins | 59 | 25/27 | 0.766 | no |
 | concurrency | v1 | planted twins | 43 | 16/18 | 0.672 | no |
 | supply chain (`unpinned-action`) | v1 | SHA-pin fact | 18 | 18/18 | 0.824 | no |
+| **supply chain (`unpinned-action`), 2026-10-26** | **v3** | SHA-pin fact, every label | 700 | 700/700 | **0.9945** | **yes, for this rule** |
 | secrets in test/example paths, npm ranges with a lockfile | v1 | path / lockfile fact | 108 | `fp` side only (107/107 decided) | - | no |
 | docs drift, info exposure, error handling, suppression, IaC, numeric | - | none | - | - | - | no (uncalibrated) |
+
+**`supply.unpinned-action` checked mechanically (2026-10-26, ARB-176).** Whether a
+workflow's `uses:` line names a full 40-character commit SHA is a fact a script
+reads directly (`label_models.fact_truth`). All 700 `v3` labels of this rule (169
+development, 531 held-out; repositories fetched at their pinned commits) agree with
+that fact: 700 `tp` calls, 700 right, none undecided (Wilson 95% lower bound 0.9945).
+So the rule's 690/0 in the ledger rests on labels checked against a model-free fact,
+not only on the labeller's word. Held-out results are totals only.
 
 **Trusted at a 0.99 lower bound: the `v3` labeller, on injection, weak
 random / weak hash and deserialisation, on benchmark code.** It made no
