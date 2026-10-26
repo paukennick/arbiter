@@ -3574,6 +3574,37 @@
         "changelog"
       ],
       "risk_notes": []
+    },
+    {
+      "id": "ARB-164",
+      "category": "defect",
+      "title": "Python sql-injection: stop flagging SQL built only from the program's own constants",
+      "description": "On real Python applications about 9 of every 10 python.sql-injection findings were SQL assembled from module constants, literal loop tables, placeholder lists and quoting helpers. The rule now proves those splices constant (module-level literal bindings including _PRIVATE and UPPER names; loop variables over constant collections; same-file helpers whose result is constant when their arguments are; placeholder joins; len/int; lists filled only with safe values) and keeps reporting parameters, request values, attributes and call results it cannot prove constant.",
+      "priority": "high",
+      "status": "completed",
+      "minimum_access_scope": [
+        "src/arbiter/lang_rules.py",
+        "src/arbiter/packs/rules/ast/python.yaml",
+        "tests/test_lang_python.py",
+        "fixtures/planted/python"
+      ],
+      "acceptance_criteria": [
+        "sql-injection finding count on the 45-repo r7 dev slice falls with the dropped set read by hand",
+        "every planted Python SQL-injection case still fires and every planted lookalike stays silent",
+        "OWASP Benchmark Python CWE-89 catch rate does not drop",
+        "each fixed false-positive pattern has a planted twin: one injection that fires and one constant lookalike that stays silent"
+      ],
+      "validation_required": [
+        "python -m pytest -q",
+        "python tools/mutate_tests.py",
+        "python omni gate",
+        "python tools/planted_score.py python",
+        "tools/gold_benchmark.py --recall owasp-benchmark-python"
+      ],
+      "documentation_required": [
+        "changelog"
+      ],
+      "risk_notes": []
     }
   ]
 }

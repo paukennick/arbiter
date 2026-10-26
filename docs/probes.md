@@ -201,8 +201,17 @@ restricts a rule to paths matching an fnmatch glob, or any glob of a list
 because the same line is Rails' generated default in `test.rb`. A Python rule
 may also give `safe_splice_calls` and `safe_splice_names` (regexes): a hit that
 builds a string is skipped when every value spliced into it is a literal, a
-call or name those match, or a local whose every assignment in the enclosing
-function is (`python.sql-injection`; one function, no data flow). A Ruby
+call or name those match, or a name whose every binding in the file is
+(`python.sql-injection`). Since ARB-164 a name is looked up the way Python
+does -- comprehension, enclosing functions, module -- so a module constant
+(`_TABLE = "jobs"`), a loop over a literal collection, a list filled only
+with literal fragments, a `"?"` placeholder join and an allowlisted value
+(`if col not in COLUMNS: col = "id"`) are constant. A call to a function in
+the same file is followed up to two calls deep and is constant when every
+value it returns is, given its arguments; a parameter of a module-private or
+nested function is constant when every call in the file passes a constant.
+A public function's parameter, an attribute (`self.name`), an import and any
+call it cannot see into stay unsafe. Nothing crosses files. A Ruby
 rule may give the same two keys plus `safe_splice_text` (searched in each
 `#{...}`) and `safe_splice_values` (full-matched against a value or a local's
 assigned value): a call whose first argument is an interpolated string is

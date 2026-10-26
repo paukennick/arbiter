@@ -2489,6 +2489,33 @@
       "prevention_rules": [],
       "prevention_notes": "Planted twin: a variable-named file still reports; tests cover another handle and a sibling eval in the same block",
       "recurrence_of": ""
+    },
+    {
+      "id": "FAIL-143",
+      "date": "2026-10-26",
+      "title": "python.sql-injection reported SQL built only from the program's own constants",
+      "status": "fixed",
+      "severity": "high",
+      "symptom": "On the 45 development repositories of the r7 Python breadth set python.sql-injection reported 367 statements; a read of 40 sampled findings found none that a caller could steer: table names in module constants (_TABLE), loops over literal table lists, helpers like policy_name('scope'), WHERE clauses grown from literal fragments, '?' placeholder joins, allowlisted sort columns.",
+      "how_detected": "Breadth measurement of r7 Python dev slice (ARB-163) and hand reading of the findings",
+      "root_cause": "The safe-splice check (ARB-065 round 2) only looked inside the enclosing function. A module-level constant whose name was not ALL_CAPS, a loop variable, a value returned by a same-file helper, a parameter of a private function only ever called with constants, and a list filled with literal fragments were all treated as unknown, so the rule reported them.",
+      "requirement": "ARB-164",
+      "affected": [
+        "src/arbiter/lang_rules.py",
+        "src/arbiter/packs/rules/ast/python.yaml"
+      ],
+      "fix_summary": "A whole-file constant prover (_PyConst) resolves each spliced name through comprehension, enclosing functions and module; follows loops over constant collections, container fills, same-file helpers (two calls deep), private functions' call sites and allowlist guards; judges the whole + chain a hit belongs to. Parameters of public functions, attributes, imports and unseen calls stay unsafe.",
+      "fix_commits": [],
+      "regression_tests": [
+        "tests/test_lang_python.py::test_sql_built_from_the_programs_own_constants_is_fine",
+        "tests/test_lang_python.py::test_private_helper_with_an_outside_caller_is_still_reported",
+        "fixtures/planted/python/bad/sql_constants.py",
+        "fixtures/planted/python/good/sql_constants.py"
+      ],
+      "no_test_reason": "",
+      "prevention_rules": [],
+      "prevention_notes": "Measure a Python rule on real application code (the breadth dev slice), not only on Django-style gold repos, before declaring its precision; each constant shape that is fixed gets a planted twin that lets a caller's value in.",
+      "recurrence_of": ""
     }
   ]
 }

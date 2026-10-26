@@ -657,8 +657,8 @@ def _taint_hits(rule: dict, lang: str, parsed, kept: list[dict], caps: list[dict
 # elements, a conditional or string-format of safe values, or a local
 # variable every assignment of which in the enclosing function is safe.
 # A parameter, a loop variable, anything assigned from elsewhere, and any
-# expression not listed are not. This is not data flow: nothing crosses a
-# function boundary (that is Milestone 3).
+# expression not listed are not. Round 3 (ARB-164, below) widens what
+# counts as bound safely; it is still not data flow across files.
 
 _LITERALS = {"integer", "float", "true", "false", "none"}
 
@@ -722,124 +722,689 @@ def _splices(node) -> list | None:
     return None
 
 
-def _scope_of(node):
-    cur = node.parent
-    while cur is not None and cur.type != "function_definition":
-        cur = cur.parent
-    return cur
+# Round 3 (ARB-164): the values a statement splices are followed to where
+# they are bound, in the whole file. On 45 real applications nine in ten
+# findings spliced only the program's own constants: a table named in a
+# module-level `_TABLE = "x"`, a loop over a literal list of tables, a
+# `policy_name("scope")` helper that formats its argument, a WHERE clause
+# grown from literal fragments with `+=`, a `"?"` placeholder list. A name
+# is resolved the way Python does -- comprehension, enclosing functions,
+# module -- and is safe when every binding of it is: an assignment or `+=`
+# of a safe value, a `for` over a constant collection, a container filled
+# (`append`, `extend`, `x[k] = v`) only with safe values. A call to a
+# function defined in the same file is followed one or two hops: it is safe
+# when every value it returns is, given which of its arguments are. A
+# parameter of the function holding the statement, an attribute (`self.x`),
+# an import, a `with`/`except` binding and any call this cannot see into
+# stay unsafe, so whatever arrives from a caller is still reported.
+
+_SCOPES = ("function_definition", "lambda")
+_COMPREHENSIONS = ("generator_expression", "list_comprehension", "set_comprehension",
+                   "dictionary_comprehension")
+# Calls whose result carries no text of the caller's choosing.
+_INT_CALLS = {"len", "int", "float", "bool", "round", "abs", "hash", "ord", "id"}
+# Calls whose result is safe when every argument is.
+_PURE_CALLS = {"str", "repr", "min", "max", "sorted", "reversed", "list", "tuple", "set",
+               "frozenset", "enumerate", "zip", "sum", "dict", "range", "chr", "format"}
+# String methods whose result is safe when the receiver and arguments are.
+_PURE_METHODS = {"join", "format", "replace", "lower", "upper", "strip", "lstrip", "rstrip",
+                 "title", "capitalize", "casefold", "removeprefix", "removesuffix", "ljust",
+                 "rjust", "center", "zfill", "split", "rsplit", "splitlines", "encode",
+                 "decode", "items", "keys", "values", "get", "copy", "format_map", "partition"}
+# Methods that put a value into a container; anything else done with a
+# container-bound name (passing it to a call, a slice assignment) makes it unsafe.
+_FILL_METHODS = {"append", "extend", "insert", "add", "update", "setdefault", "appendleft"}
+_READ_METHODS = {"copy", "count", "index", "get", "items", "keys", "values", "pop",
+                 "popleft", "remove", "discard", "clear", "sort", "reverse"}
+_PASS_OK = {"len", "join", "list", "tuple", "sorted", "reversed", "set", "frozenset",
+            "enumerate", "zip", "any", "all", "bool", "str", "repr", "isinstance", "print",
+            "min", "max", "sum", "iter", "next"}
+_STEP_BUDGET = 4000
+_MAX_HOPS = 2
 
 
-def _assignments(scope, name: str) -> list | None:
-    """Right-hand sides assigned to `name` in this function; None when it is a
-    parameter or is bound some other way (a loop, `with ... as`, `global`)."""
-    params = scope.child_by_field_name("parameters")
-    if params is not None and re.search(rf"(?<![\w.]){re.escape(name)}\b", _txt(params)):
-        return None
-    out: list = []
-    stack = [scope.child_by_field_name("body")]
-    while stack:
-        n = stack.pop()
-        if n is None:
-            continue
-        if n.type in ("function_definition", "lambda", "class_definition"):
-            continue
-        if n.type in ("assignment", "augmented_assignment"):
-            left, right = n.child_by_field_name("left"), n.child_by_field_name("right")
-            if left is not None and _txt(left) == name:
-                if right is None:
-                    return None
-                out.append(right)
-            elif left is not None and re.search(rf"(?<![\w.]){re.escape(name)}\b", _txt(left)):
-                return None     # tuple unpacking or a subscript
-        if n.type in ("for_statement", "for_in_clause", "with_item", "as_pattern",
-                      "global_statement", "nonlocal_statement", "named_expression"):
-            target = n.child_by_field_name("left") or n.child_by_field_name("alias") or n
-            if re.search(rf"(?<![\w.]){re.escape(name)}\b", _txt(target)) and n.type != "with_item":
-                return None
-            if n.type == "with_item" and re.search(rf"\bas\s+{re.escape(name)}\b", _txt(n)):
-                return None
-        stack.extend(n.children)
+def _target_names(node) -> set[str]:
+    """Identifiers bound by an assignment or loop target (`a`, `a, (b, c)`)."""
+    if node is None:
+        return set()
+    if node.type == "identifier":
+        return {_txt(node)}
+    if node.type in ("pattern_list", "tuple_pattern", "list_pattern", "tuple", "list",
+                     "parenthesized_expression", "list_splat_pattern"):
+        out: set[str] = set()
+        for c in node.named_children:
+            out |= _target_names(c)
+        return out
+    return set()
+
+
+def _param_names(fn) -> dict:
+    """Parameter name -> its default value node; None when it has none,
+    "splat" for `*args` / `**kw`."""
+    out: dict = {}
+    params = fn.child_by_field_name("parameters")
+    for p in (params.named_children if params is not None else []):
+        if p.type == "identifier":
+            out[_txt(p)] = None
+        elif p.type in ("default_parameter", "typed_default_parameter"):
+            n = p.child_by_field_name("name")
+            if n is not None:
+                out[_txt(n)] = p.child_by_field_name("value")
+        elif p.type == "typed_parameter":
+            for c in p.named_children:
+                if c.type == "identifier":
+                    out[_txt(c)] = None
+                    break
+                if c.type in ("list_splat_pattern", "dictionary_splat_pattern"):
+                    for n in c.named_children:
+                        out[_txt(n)] = "splat"
+                    break
+        elif p.type in ("list_splat_pattern", "dictionary_splat_pattern"):
+            for n in p.named_children:
+                out[_txt(n)] = "splat"
     return out
 
 
-def _value_safe(node, rule: dict, scope, depth: int = 0) -> bool:
-    if node is None or depth > 4:
+_CONTAINER_CALLS = {"list", "dict", "set", "deque", "collections.deque", "defaultdict",
+                    "collections.defaultdict", "OrderedDict", "collections.OrderedDict"}
+
+
+class _PyConst:
+    """Whether a spliced Python value is provably the program's own constant.
+    One instance per hit, over the hit's whole file."""
+
+    def __init__(self, rule: dict, root):
+        self.calls = rule.get("safe_splice_calls")
+        self.names = rule.get("safe_splice_names")
+        self.root = root
+        self.steps = 0
+        self.visiting: set = set()
+        self.memo: dict = {}
+        self.assumed = 0
+        self._all_defs: list | None = None
+
+    # -- where a name is bound ---------------------------------------------
+
+    def _bindings(self, scope, name: str) -> list | None:
+        """(kind, node) for every binding of `name` directly in `scope` (a
+        function or the module; nested functions, classes, lambdas and
+        comprehensions are their own scopes). None when it is bound in a way
+        that is never safe: import, `with ... as`, `except ... as`, a def."""
+        body = scope.child_by_field_name("body") if scope.type in _SCOPES else scope
+        out: list = []
+        stack = [body] if body is not None else []
+        while stack:
+            n = stack.pop()
+            t = n.type
+            if t in ("function_definition", "class_definition"):
+                if _txt(n.child_by_field_name("name")) == name:
+                    return None
+                continue
+            if t == "lambda" or t in _COMPREHENSIONS:
+                continue
+            if t == "assignment":
+                left, right = n.child_by_field_name("left"), n.child_by_field_name("right")
+                if left is not None and left.type == "identifier" and _txt(left) == name:
+                    if right is not None:          # not a bare annotation
+                        out.append(("value", right.child_by_field_name("right")
+                                    if right.type == "assignment" else right))
+                elif left is not None and name in _target_names(left):
+                    kids = [c for c in left.named_children] \
+                            if left.type in ("pattern_list", "tuple_pattern", "list_pattern") else []
+                    at = next((i for i, c in enumerate(kids)
+                               if c.type == "identifier" and _txt(c) == name), None)
+                    out.append(("unpack", (right, at, len(kids))))
+            elif t == "augmented_assignment":
+                left = n.child_by_field_name("left")
+                if left is not None and left.type == "identifier" and _txt(left) == name:
+                    out.append(("value", n.child_by_field_name("right")))
+            elif t == "named_expression":
+                nm = n.child_by_field_name("name")
+                if nm is not None and _txt(nm) == name:
+                    out.append(("value", n.child_by_field_name("value")))
+            elif t == "for_statement":
+                if name in _target_names(n.child_by_field_name("left")):
+                    out.append(("loop", n.child_by_field_name("right")))
+            elif t in ("with_item", "except_clause"):
+                if re.search(rf"\bas\s+\(?\s*{re.escape(name)}\b", _txt(n).split("\n")[0]):
+                    return None
+            elif t in ("import_statement", "import_from_statement"):
+                for c in n.named_children:
+                    alias = c.child_by_field_name("alias") if c.type == "aliased_import" else c
+                    if alias is not None and _txt(alias).split(".")[0] == name:
+                        return None
+            stack.extend(n.children)
+        return out
+
+    @staticmethod
+    def _declares(fn, kind: str, name: str) -> bool:
+        stack = [fn.child_by_field_name("body")]
+        while stack:
+            n = stack.pop()
+            if n is None or n.type in ("function_definition", "class_definition", "lambda"):
+                continue
+            if n.type == kind and any(_txt(c) == name for c in n.named_children):
+                return True
+            stack.extend(n.children)
         return False
-    t = node.type
-    calls = rule.get("safe_splice_calls")
-    names = rule.get("safe_splice_names")
-    if t in _LITERALS:
+
+    def _defs(self) -> list:
+        if self._all_defs is None:
+            out, stack = [], [self.root]
+            while stack:
+                n = stack.pop()
+                if n.type == "function_definition":
+                    out.append(n)
+                stack.extend(n.children)
+            self._all_defs = out
+        return self._all_defs
+
+    def _def_named(self, name: str):
+        hits = [n for n in self._defs() if _txt(n.child_by_field_name("name")) == name]
+        return hits[0] if len(hits) == 1 else None
+
+    def resolve(self, ident):
+        """Where `ident` gets its value, the way Python looks it up:
+        ('comp', iterable) | ('param', fn) | ('bindings', scope, [...]) |
+        ('function', def) | None (unknown, never safe)."""
+        name = _txt(ident)
+        child, cur = ident, ident.parent
+        while cur is not None:
+            t = cur.type
+            if t in _COMPREHENSIONS:
+                for c in cur.named_children:
+                    if c.type == "for_in_clause" \
+                            and name in _target_names(c.child_by_field_name("left")):
+                        return ("comp", c.child_by_field_name("right"))
+            elif t in _SCOPES and child.type != "parameters":
+                if name in _param_names(cur):
+                    return ("param", cur)
+                if t == "function_definition":
+                    if self._declares(cur, "global_statement", name):
+                        break
+                    if not self._declares(cur, "nonlocal_statement", name):
+                        b = self._bindings(cur, name)
+                        if b is None:
+                            return None
+                        if b:
+                            return ("bindings", cur, b)
+            child, cur = cur, cur.parent
+        # a module binding any function may rebind with `global` is not constant
+        if re.search(rf"\bglobal\s+(?:\w+\s*,\s*)*{re.escape(name)}\b", _txt(self.root)):
+            return None
+        b = self._bindings(self.root, name)
+        if b is None:
+            fn = self._def_named(name)
+            return ("function", fn) if fn is not None else None
+        if b:
+            return ("bindings", self.root, b)
+        return None
+
+    # -- containers ---------------------------------------------------------
+
+    def _fills_safe(self, scope, name: str, env) -> bool:
+        """Every use of the container bound to `name` only reads it or puts a
+        safe value in it. Handing it to a call this cannot see is unsafe."""
+        stack = [scope]
+        while stack:
+            n = stack.pop()
+            stack.extend(n.children)
+            if n.type != "identifier" or _txt(n) != name:
+                continue
+            p = n.parent
+            if p is None:
+                continue
+            if p.type == "attribute" and p.child_by_field_name("object") == n:
+                call = p.parent
+                if call is None or call.type != "call" or call.child_by_field_name("function") != p:
+                    continue
+                attr = _txt(p.child_by_field_name("attribute"))
+                if attr in _FILL_METHODS:
+                    args = call.child_by_field_name("arguments")
+                    vals = [a for a in (args.named_children if args is not None else [])
+                            if a.type != "comment"]
+                    if attr == "insert":
+                        vals = vals[1:]
+                    if not all((self.collection_safe(v, env) if attr in ("extend", "update")
+                                else self.safe(v, env)) for v in vals):
+                        return False
+                elif attr not in _READ_METHODS and attr not in _PURE_METHODS:
+                    return False
+            elif p.type == "subscript" and p.child_by_field_name("value") == n:
+                a = p.parent
+                if a is not None and a.type in ("assignment", "augmented_assignment") \
+                        and a.child_by_field_name("left") == p \
+                        and not self.safe(a.child_by_field_name("right"), env):
+                    return False
+            elif p.type == "argument_list":
+                fn = p.parent.child_by_field_name("function") if p.parent is not None else None
+                if fn is None or _txt(fn).rsplit(".", 1)[-1] not in _PASS_OK:
+                    return False
+            elif p.type == "keyword_argument":
+                return False
         return True
-    if t in ("string", "concatenated_string", "binary_operator"):
-        parts = _splices(node)
-        if t == "binary_operator" and parts is None:
-            # arithmetic on safe values (`a * 2`) stays safe
-            left, right = node.child_by_field_name("left"), node.child_by_field_name("right")
-            return _value_safe(left, rule, scope, depth + 1) and _value_safe(right, rule, scope, depth + 1)
-        return parts is not None and all(_value_safe(p, rule, scope, depth + 1) for p in parts)
-    if t == "parenthesized_expression":
-        return bool(node.named_children) and _value_safe(node.named_children[0], rule, scope, depth + 1)
-    if t == "conditional_expression":
-        kids = node.named_children
-        return len(kids) == 3 and _value_safe(kids[0], rule, scope, depth + 1) \
-            and _value_safe(kids[2], rule, scope, depth + 1)
-    if t in ("list", "tuple"):
-        return all(_value_safe(k, rule, scope, depth + 1) for k in node.named_children)
-    if t in ("generator_expression", "list_comprehension"):
-        body = node.child_by_field_name("body")
-        return body is not None and body.type == "call" and _value_safe(body, rule, scope, depth + 1)
-    if t in ("identifier", "attribute"):
-        if names and re.fullmatch(names, _txt(node)):
+
+    # -- values -------------------------------------------------------------
+
+    def _name_safe(self, ident, env) -> bool:
+        name = _txt(ident)
+        r = self.resolve(ident)
+        if r is None or r[0] == "function":
+            return False
+        if r[0] == "comp":
+            return self.collection_safe(r[1], env)
+        if r[0] == "param":
+            key = (r[1].start_byte, name)
+            if env and key in env:
+                return env[key]
+            return self._allowlisted(r[1], name, ident) or self._callers_safe(r[1], name)
+        scope, binds = r[1], r[2]
+        key = (scope.start_byte, name, tuple(sorted(env.items())) if env else ())
+        if key in self.memo:
+            return self.memo[key]
+        if key in self.visiting:
+            # `where = where + " AND x"`: safe if every other binding is
+            self.assumed += 1
             return True
-        if t == "identifier" and scope is not None:
-            name = _txt(node)
-            rhs = _assignments(scope, name)
-            if not rhs:
+        self.visiting.add(key)
+        before = self.assumed
+        try:
+            ok, container = True, False
+            for kind, node in binds:
+                if node is None:
+                    ok = False
+                elif kind == "loop":
+                    ok = self.collection_safe(node, env)
+                elif kind == "unpack":
+                    ok = self._unpacked_safe(*node, env)
+                else:
+                    if node.type in ("list", "dictionary", "set") or node.type in _COMPREHENSIONS \
+                            or (node.type == "call"
+                                and _txt(node.child_by_field_name("function")) in _CONTAINER_CALLS):
+                        container = True
+                    ok = self.safe(node, env)
+                if not ok:
+                    break
+            if ok and container:
+                ok = self._fills_safe(scope, name, env)
+        finally:
+            self.visiting.discard(key)
+        if not ok or self.assumed == before:
+            self.memo[key] = ok
+        return ok
+
+    def _unpacked_safe(self, right, at, width: int, env) -> bool:
+        """`a, b = right`: the value `a` takes. A tuple literal, or a same-file
+        helper whose every return is a tuple, is checked position by
+        position; anything else must be safe as a whole."""
+        if right is None:
+            return False
+        if at is not None and right.type in ("expression_list", "tuple", "list") \
+                and len(right.named_children) == width:
+            return self.safe(right.named_children[at], env)
+        if at is not None and right.type == "call":
+            fn = right.child_by_field_name("function")
+            target = None
+            if fn is not None and fn.type == "identifier":
+                r = self.resolve(fn)
+                target = r[1] if r is not None and r[0] == "function" else None
+            elif fn is not None and fn.type == "attribute":
+                obj = fn.child_by_field_name("object")
+                if obj is not None and _txt(obj) in ("self", "cls"):
+                    target = self._method_named(right, _txt(fn.child_by_field_name("attribute")))
+            if target is not None:
+                args = right.child_by_field_name("arguments")
+                argv = [a for a in (args.named_children if args is not None else [])
+                        if a.type != "comment"]
+                return self._helper_safe(target, argv, env, 0,
+                                         method=fn.type == "attribute", pick=(at, width))
+        return self.collection_safe(right, env)
+
+    def _allowlisted(self, fn, name: str, use) -> bool:
+        """`if sort_by not in self.SORTABLE_COLUMNS: sort_by = "id"` (or
+        `raise` / `return`) at the top level of the function, before the
+        use, and no other rebinding: whatever reaches the use is one of the
+        allowlist's constants. The check may lower/upper/strip the value."""
+        body = fn.child_by_field_name("body")
+        guarded = False
+        for st in (body.named_children if body is not None else []):
+            if st.start_byte >= use.start_byte:
+                break
+            if st.type != "if_statement":
+                continue
+            cond = st.child_by_field_name("condition")
+            if cond is None or cond.type != "comparison_operator" or len(cond.named_children) != 2 \
+                    or not re.search(r"\bnot\s+in\b", _txt(cond)):
+                continue
+            left, right = cond.named_children
+            if not re.fullmatch(rf"{re.escape(name)}(?:\.(?:lower|upper|strip|casefold)\(\))?",
+                                _txt(left)):
+                continue
+            if not self.collection_safe(right, None):
+                continue
+            cons = st.child_by_field_name("consequence")
+            stmts = [c for c in (cons.named_children if cons is not None else []) if c.type != "comment"]
+            if stmts and all(self._fixes(c, name) for c in stmts) \
+                    and any(c.type in ("raise_statement", "return_statement", "assignment")
+                            for c in stmts):
+                guarded = True
+        if not guarded:
+            return False
+        binds = self._bindings(fn, name)
+        return binds is not None and all(k == "value" and self.safe(v, None, 1) for k, v in binds)
+
+    def _fixes(self, stmt, name: str) -> bool:
+        """A statement in an allowlist guard's body: leave, log, or set the
+        value to a constant."""
+        if stmt.type in ("raise_statement", "return_statement", "pass_statement"):
+            return True
+        e = stmt     # the grammar has no expression_statement wrapper
+        if e.type == "assignment":
+            return _txt(e.child_by_field_name("left")) == name \
+                    and self.safe(e.child_by_field_name("right"), None, 1)
+        return e.type == "call"
+
+    def _callers_safe(self, fn, name: str) -> bool:
+        """A parameter of a module-private function (`_create_policy`) or of
+        one nested in another is safe when the function is only ever called
+        in this file, at least once, and every call passes a safe value.
+        A public function can be called from anywhere, so its parameters
+        stay unsafe."""
+        fname = _txt(fn.child_by_field_name("name")) if fn.type == "function_definition" else ""
+        nested = fn.parent is not None and fn.parent.type == "block" \
+                and fn.parent.parent is not None and fn.parent.parent.type == "function_definition"
+        if not fname or not (fname.startswith("_") and not fname.startswith("__") or nested):
+            return False
+        params = list(_param_names(fn).items())
+        idx = next((i for i, (p, _) in enumerate(params) if p == name), None)
+        if idx is None or params[idx][1] == "splat":
+            return False
+        method = fn.parent is not None and fn.parent.parent is not None \
+                and fn.parent.parent.type == "class_definition"
+        if method:
+            return False        # `self._helper(x)` callers are not resolved by name
+        key = ("callers", fn.start_byte, name)
+        if key in self.memo:
+            return self.memo[key]
+        if key in self.visiting:
+            return False
+        self.visiting.add(key)
+        try:
+            ok = self._each_call_passes_safe(fn, fname, name, idx, params[idx][1])
+        finally:
+            self.visiting.discard(key)
+        self.memo[key] = ok
+        return ok
+
+    def _each_call_passes_safe(self, fn, fname: str, name: str, idx: int, default) -> bool:
+        calls = 0
+        stack = [self.root]
+        while stack:
+            n = stack.pop()
+            stack.extend(n.children)
+            if n.type != "identifier" or _txt(n) != fname or n == fn.child_by_field_name("name"):
+                continue
+            p = n.parent
+            if p is None or p.type != "call" or p.child_by_field_name("function") != n:
+                return False        # handed on as a callback: callers unknown
+            if self.resolve(n) != ("function", fn):
+                continue            # a different binding of the same name
+            calls += 1
+            args = p.child_by_field_name("arguments")
+            argv = [a for a in (args.named_children if args is not None else [])
+                    if a.type != "comment"]
+            if any(a.type in ("list_splat", "dictionary_splat") for a in argv):
                 return False
-            # A container filled later (`query = []`, then `query.append(...)`)
-            # is only as safe as what goes in, which this does not follow.
-            if any(r.type in ("list", "dictionary", "set") for r in rhs) and re.search(
-                    rf"(?<![\w.]){re.escape(name)}\s*(?:\.\w+\s*\(|\[)", _txt(scope)):
+            positional = [a for a in argv if a.type != "keyword_argument"]
+            kw = {_txt(a.child_by_field_name("name")): a.child_by_field_name("value")
+                  for a in argv if a.type == "keyword_argument"}
+            if idx < len(positional):
+                val = positional[idx]
+            elif name in kw:
+                val = kw[name]
+            elif default is not None:
+                val = default
+            else:
                 return False
-            return all(_value_safe(r, rule, scope, depth + 1) for r in rhs)
+            if not self.safe(val, None, 1):
+                return False
+        return calls > 0
+
+    def collection_safe(self, node, env) -> bool:
+        """Every element a loop over `node` can yield is safe."""
+        if node is None:
+            return False
+        if node.type == "call":
+            fn = node.child_by_field_name("function")
+            args = node.child_by_field_name("arguments")
+            argv = [a for a in (args.named_children if args is not None else [])
+                    if a.type not in ("comment", "keyword_argument")]
+            fname = _txt(fn) if fn is not None else ""
+            if fname == "range":
+                return True
+            if fname in ("reversed", "sorted", "enumerate", "zip", "list", "tuple", "set",
+                         "frozenset", "iter") and argv:
+                return all(self.collection_safe(a, env) for a in argv)
+            if fn is not None and fn.type == "attribute" and not argv \
+                    and _txt(fn.child_by_field_name("attribute")) in ("items", "keys", "values", "copy"):
+                return self.collection_safe(fn.child_by_field_name("object"), env)
+        return self.safe(node, env)
+
+    def safe(self, node, env=None, hops: int = 0) -> bool:
+        if node is None:
+            return False
+        self.steps += 1
+        if self.steps > _STEP_BUDGET:
+            return False
+        t = node.type
+        if t in _LITERALS:
+            return True
+        if t in ("string", "concatenated_string"):
+            parts = _splices(node)
+            return parts is not None and all(self.safe(p, env, hops) for p in parts)
+        if t == "binary_operator":
+            parts = _splices(node)
+            if parts is None:
+                # arithmetic on safe values (`a * 2`) stays safe
+                return self.safe(node.child_by_field_name("left"), env, hops) \
+                    and self.safe(node.child_by_field_name("right"), env, hops)
+            return all(self.safe(p, env, hops) for p in parts)
+        if t in ("comparison_operator", "not_operator"):
+            return True         # a bool
+        if t in ("unary_operator", "boolean_operator"):
+            return all(self.safe(c, env, hops) for c in node.named_children)
+        if t == "parenthesized_expression":
+            return bool(node.named_children) and self.safe(node.named_children[0], env, hops)
+        if t == "conditional_expression":
+            kids = node.named_children
+            return len(kids) == 3 and self.safe(kids[0], env, hops) and self.safe(kids[2], env, hops)
+        if t in ("list", "tuple", "set", "expression_list"):
+            return all(self.safe(k, env, hops) for k in node.named_children if k.type != "comment")
+        if t == "dictionary":
+            for p in node.named_children:
+                if p.type == "pair":
+                    if not (self.safe(p.child_by_field_name("key"), env, hops)
+                            and self.safe(p.child_by_field_name("value"), env, hops)):
+                        return False
+                elif p.type == "dictionary_splat":
+                    if not self.safe(p, env, hops):
+                        return False
+                elif p.type != "comment":
+                    return False
+            return True
+        if t in ("list_splat", "dictionary_splat"):
+            return bool(node.named_children) and self.collection_safe(node.named_children[0], env)
+        if t in _COMPREHENSIONS:
+            body = node.child_by_field_name("body")
+            if body is not None and body.type == "pair":
+                return self.safe(body.child_by_field_name("key"), env, hops) \
+                    and self.safe(body.child_by_field_name("value"), env, hops)
+            return self.safe(body, env, hops)
+        if t == "subscript":
+            # an element of a constant container is constant, whatever the key
+            return self.collection_safe(node.child_by_field_name("value"), env)
+        if t in ("identifier", "attribute"):
+            if self.names and re.fullmatch(self.names, _txt(node)):
+                # an ALL_CAPS name is trusted by convention (it may be
+                # imported), unless this file shows it changing: a
+                # `global` rebinding, or a container handed to a call
+                return t == "attribute" or self._convention_holds(node, env)
+            return t == "identifier" and self._name_safe(node, env)
+        if t == "call":
+            return self._call_safe(node, env, hops)
+        if t == "keyword_argument":
+            return self.safe(node.child_by_field_name("value"), env, hops)
         return False
-    if t == "call":
+
+    def _convention_holds(self, ident, env) -> bool:
+        name = _txt(ident)
+        if re.search(rf"\bglobal\s+(?:\w+\s*,\s*)*{re.escape(name)}\b", _txt(self.root)):
+            return False
+        r = self.resolve(ident)
+        if r is None or r[0] != "bindings":
+            return True
+        scope, binds = r[1], r[2]
+        if any(n is not None and (n.type in ("list", "dictionary", "set") or n.type in _COMPREHENSIONS
+                                  or n.type == "call"
+                                  and _txt(n.child_by_field_name("function")) in _CONTAINER_CALLS)
+               for k, n in binds if k == "value"):
+            return self._fills_safe(self.root, name, env)
+        return True
+
+    def _call_safe(self, node, env, hops: int) -> bool:
         fn, args = node.child_by_field_name("function"), node.child_by_field_name("arguments")
         if fn is None:
             return False
         callee = _txt(fn)
-        if calls and re.fullmatch(calls, callee):
+        if self.calls and re.fullmatch(self.calls, callee):
+            return True
+        if callee in _INT_CALLS:
             return True
         if args is not None and args.type == "generator_expression":
             argv = [args]       # `", ".join(q(c) for c in cols)`: no argument list
         else:
             argv = [a for a in (args.named_children if args is not None else [])
                     if a.type != "comment"]
-        if callee == "str" and len(argv) == 1:
-            return _value_safe(argv[0], rule, scope, depth + 1)
+        if callee in _PURE_CALLS:
+            return all(self.safe(a, env, hops) for a in argv)
         if fn.type == "attribute":
             obj, attr = fn.child_by_field_name("object"), fn.child_by_field_name("attribute")
-            if attr is not None and _txt(attr) == "join" and obj is not None \
-                    and obj.type == "string" and len(argv) == 1:
+            a = _txt(attr) if attr is not None else ""
+            if a == "join" and len(argv) == 1:
                 arg = argv[0]
                 if arg.type == "binary_operator" and _txt(arg.child_by_field_name("operator")) == "*":
                     # `", ".join(["%s"] * len(keys))`: a placeholder list
-                    return _value_safe(arg.child_by_field_name("left"), rule, scope, depth + 1)
-                return _value_safe(arg, rule, scope, depth + 1)
-            if attr is not None and _txt(attr) == "format" and obj is not None \
-                    and obj.type == "string":
-                return all(_value_safe(p, rule, scope, depth + 1)
-                           for p in (_splices(node) or [None]))
+                    return self.safe(obj, env, hops) \
+                        and self.safe(arg.child_by_field_name("left"), env, hops)
+                return self.safe(obj, env, hops) and self.collection_safe(arg, env)
+            if a == "get" and argv and obj is not None:
+                # `{"read": "read_at"}.get(event)`: one of the mapping's own
+                # values or the default, whatever the key
+                return self.collection_safe(obj, env) and all(self.safe(x, env, hops) for x in argv[1:])
+            if a in _PURE_METHODS:
+                return self.safe(obj, env, hops) and all(self.safe(x, env, hops) for x in argv)
+            if obj is not None and obj.type == "identifier" and _txt(obj) in ("self", "cls"):
+                target = self._method_named(node, a)
+                if target is not None:
+                    return self._helper_safe(target, argv, env, hops, method=True)
+            return False
+        if fn.type == "identifier":
+            r = self.resolve(fn)
+            if r is not None and r[0] == "function":
+                return self._helper_safe(r[1], argv, env, hops)
         return False
-    return False
+
+    @staticmethod
+    def _method_named(node, name: str):
+        cur = node.parent
+        while cur is not None and cur.type != "class_definition":
+            cur = cur.parent
+        body = cur.child_by_field_name("body") if cur is not None else None
+        found = []
+        for c in (body.named_children if body is not None else []):
+            d = c.child_by_field_name("definition") if c.type == "decorated_definition" else c
+            if d is not None and d.type == "function_definition" \
+                    and _txt(d.child_by_field_name("name")) == name:
+                found.append(d)
+        return found[0] if len(found) == 1 else None
+
+    def _helper_safe(self, fn, argv, env, hops: int, method: bool = False,
+                     pick: tuple | None = None) -> bool:
+        """A same-file function's result, given which arguments are safe:
+        safe when every value it returns is."""
+        if hops >= _MAX_HOPS or any(a.type in ("list_splat", "dictionary_splat") for a in argv):
+            return False
+        params = list(_param_names(fn).items())
+        if method and params and params[0][0] in ("self", "cls"):
+            params = params[1:]
+        positional = [a for a in argv if a.type != "keyword_argument"]
+        keywords = {_txt(a.child_by_field_name("name")): a.child_by_field_name("value")
+                    for a in argv if a.type == "keyword_argument"}
+        bound: dict = {}
+        for i, (pname, default) in enumerate(params):
+            if default == "splat":
+                ok = False
+            elif i < len(positional):
+                ok = self.safe(positional[i], env, hops)
+            elif pname in keywords:
+                ok = self.safe(keywords[pname], env, hops)
+            else:
+                ok = default is not None and self.safe(default, None, hops)
+            bound[(fn.start_byte, pname)] = ok
+        returns, stack = [], [fn.child_by_field_name("body")]
+        while stack:
+            n = stack.pop()
+            if n is None or n.type in ("function_definition", "class_definition", "lambda"):
+                continue
+            if n.type == "yield":
+                return False
+            if n.type == "return_statement":
+                returns.append(n.named_children[0] if n.named_children else None)
+                continue
+            stack.extend(n.children)
+        if not returns:
+            return False
+        if pick is not None:
+            at, width = pick
+            vals = []
+            for r in returns:
+                if r is None or r.type not in ("expression_list", "tuple") \
+                        or len(r.named_children) != width:
+                    return False
+                vals.append(r.named_children[at])
+            returns = vals
+        return all(r is None or self.safe(r, bound, hops + 1) for r in returns)
+
+
+def _whole_build(node):
+    """The whole string-building expression a hit belongs to. The query
+    anchors on the SQL-shaped literal, so in `"ALTER TABLE " + str(a) + " TO "
+    + str(b)` the hit is only the innermost `"ALTER TABLE " + str(a)`; the
+    values spliced further out must be judged too."""
+    cur = node
+    while cur.parent is not None:
+        p = cur.parent
+        if p.type == "parenthesized_expression":
+            cur = p
+            continue
+        if p.type == "binary_operator" and p.child_by_field_name("operator") is not None \
+                and _txt(p.child_by_field_name("operator")) in ("+", "%") \
+                and p.child_by_field_name("left") == cur:
+            cur = p
+            continue
+        break
+    return cur
 
 
 def _splices_safe(hit, rule: dict) -> bool:
-    parts = _splices(hit)
+    parts = _splices(_whole_build(hit))
     if not parts:
         return False
-    scope = _scope_of(hit)
-    return all(_value_safe(p, rule, scope) for p in parts)
+    root = hit
+    while root.parent is not None:
+        root = root.parent
+    pc = _PyConst(rule, root)
+    return all(pc.safe(p) for p in parts)
 
 
 def register_lang_rules() -> None:

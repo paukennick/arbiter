@@ -750,3 +750,78 @@ def test_optional_root_confinement_is_reported_only_when_the_root_is_from_the_en
 def test_resolve_then_connect_is_reported_unless_the_checked_address_is_used(tmp_path):
     # `first` and `plain` are the same shape; only create_connection exempts.
     assert _lines(tmp_path, _SSRF_PY, "ssrf-check-then-connect") == [9, 14]
+
+
+def test_sql_built_from_the_programs_own_constants_is_fine(tmp_path):
+    """ARB-164: on 45 real applications nine in ten findings spliced only
+    the program's own constants. A module constant (`_TABLE`), a loop over a
+    literal collection, a same-file helper fed constants, a private function
+    every caller of which passes constants, a WHERE clause grown from literal
+    fragments, a `"?"` placeholder list and an allowlisted sort column are
+    all constant; each mirror below that lets a caller's value in reports."""
+    code = (
+        "_TABLE = 'jobs'\n"
+        "_PAIRS = [('a', 'b'), ('c', 'd')]\n"
+        "ALLOWED = {'id', 'name'}\n"
+        "def policy(t):\n"
+        "    return f'rls_{t}'\n"
+        "def _rename(conn, old, new):\n"
+        "    conn.execute(f'ALTER TABLE {old} RENAME TO {new}')\n"
+        "def migrate(conn, ids, sort_by):\n"
+        "    for old, new in _PAIRS:\n"
+        "        _rename(conn, old, new)\n"
+        "    for t in ('x', 'y'):\n"
+        "        conn.execute(f'DELETE FROM {t}')\n"
+        "    conn.execute(f'DROP POLICY {policy(\"jobs\")} ON {_TABLE}')\n"
+        "    where = 'deleted = 0'\n"
+        "    if ids:\n"
+        "        where += f\" AND id IN ({','.join('?' for _ in ids)})\"\n"
+        "    conn.execute(f'SELECT * FROM {_TABLE} WHERE {where}', ids)\n"
+        "    if sort_by not in ALLOWED:\n"
+        "        sort_by = 'id'\n"
+        "    conn.execute(f'SELECT * FROM {_TABLE} ORDER BY {sort_by}')\n"
+        # still reported (lines 21-32): a public parameter, a loop over a
+        # parameter, a helper fed a parameter, a module name some function
+        # rebinds with `global`, a constant list a caller can append to, a
+        # closure over the enclosing function's parameter, a guard that
+        # only logs
+        "def bad(conn, name, names, sort_by):\n"
+        "    conn.execute(f'DELETE FROM {name}')\n"
+        "    for t in names:\n"
+        "        conn.execute(f'DELETE FROM {t}')\n"
+        "    conn.execute(f'DROP POLICY {policy(name)} ON {_TABLE}')\n"
+        "    conn.execute(f'SELECT * FROM {_MODE}')\n"
+        "    conn.execute(f'SELECT {\", \".join(_COLS)} FROM t')\n"
+        "    def inner():\n"
+        "        conn.execute(f'SELECT * FROM {name}')\n"
+        "    if sort_by not in ALLOWED:\n"
+        "        print(sort_by)\n"
+        "    conn.execute(f'SELECT * FROM t ORDER BY {sort_by}')\n"
+        "_MODE = 'a'\n"
+        "_COLS = ['id']\n"
+        "def set_mode(m):\n"
+        "    global _MODE\n"
+        "    _MODE = m\n"
+        "def add_col(c):\n"
+        "    register(_COLS)\n")
+    assert _lines(tmp_path, code, "sql-injection") == [22, 24, 25, 26, 27, 29, 32]
+
+
+def test_private_helper_with_an_outside_caller_is_still_reported(tmp_path):
+    """A private function is only as constant as its callers: one call with
+    a request value, or a reference handed on as a callback, keeps it."""
+    code = (
+        "def _drop(conn, t):\n"
+        "    conn.execute(f'DROP TABLE {t}')\n"
+        "def ok(conn):\n"
+        "    _drop(conn, 'jobs')\n"
+        "def view(conn, request):\n"
+        "    _drop(conn, request.args['t'])\n"
+        "def _drop2(conn, t):\n"
+        "    conn.execute(f'DROP TABLE {t}')\n"
+        "HANDLERS = {'drop': _drop2}\n"
+        "def _drop3(conn, t):\n"
+        "    conn.execute(f'DROP TABLE {t}')\n"
+        "def ok3(conn):\n"
+        "    _drop3(conn, 'jobs')\n")
+    assert _lines(tmp_path, code, "sql-injection") == [2, 8]

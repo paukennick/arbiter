@@ -7,6 +7,18 @@ under `[Unreleased]` (there are no release tags yet) and reference the
 ## [Unreleased]
 ### 2026-10-26
 
+- ARB-164 | `python.sql-injection` stops reporting SQL built only from the
+  program's own constants. On the 45 development repositories of the r7
+  Python breadth set it reported 367 statements, about nine in ten of them
+  table names from module constants, loops over literal table lists, helpers
+  that format constant arguments, WHERE clauses grown from literal fragments
+  and `"?"` placeholder lists; it now reports 113. A value is followed to
+  every place it is bound in the file, into same-file helpers and back from
+  private functions' callers; a public function's parameter, an attribute, an
+  import or an unseen call is still reported. Planted Python 82/82 -> 88/88
+  (six new injection cases, six constant twins silent), OWASP Benchmark
+  Python CWE-89 5/5 caught and 0/11 false alarms before and after
+  (FAIL-143).
 - ARB-160 | Python rules drop two false positives from the development gold
   labels. `python.unsafe-deserialization` no longer reports a pickle round
   trip, `pickle.loads(pickle.dumps(v))` (FAIL-140); `python.code-injection` no

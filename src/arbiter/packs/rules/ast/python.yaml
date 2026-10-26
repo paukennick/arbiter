@@ -223,7 +223,7 @@ rules:
   # Injection
   # --------------------------------------------------------------------------
   - id: sql-injection
-    requirements: [ARB-065]
+    requirements: [ARB-065, ARB-164]
     title: "SQL built by string formatting: `{text}`"
     severity: high
     confidence: high
@@ -310,8 +310,8 @@ rules:
     # literals, psycopg's `sql.Identifier`/`sql.Literal`, and SQLAlchemy's
     # `type.compile(dialect)`. A parameter or loop variable is never safe:
     # nothing here follows a value across a call.
-    safe_splice_calls: "(?:\\w+\\.)*(?:quote_?\\w*|qn2?|escape_\\w+|format_table|Identifier|Literal|Placeholder)|(?:\\w+\\.)+compile"
-    safe_splice_names: "(?:\\w+\\.)*[A-Z][A-Z0-9_]+|\\w*sql"
+    safe_splice_calls: "(?:\\w+\\.)*_*(?:quote_?\\w*|qn2?|escape_\\w+|format_table|Identifier|Literal|Placeholder)|(?:\\w+\\.)+compile|op\\.f"
+    safe_splice_names: "(?:\\w+\\.)*_*[A-Z][A-Z0-9_]+|\\w*sql"
     description: >-
       The value is spliced into the statement text, so whoever controls it
       controls the query. This is the shape every SQL-injection exploit
