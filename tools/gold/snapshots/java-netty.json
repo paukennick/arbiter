@@ -1,9 +1,9 @@
 {
  "target": "java-netty",
  "pinned_sha": "154e87c6b8fdacd7510fbe01d45bbce7018bc604",
- "arbiter_commit": "98833010b8070f0e387910ab7c7de01ad1928a25",
- "recorded": "2026-10-25",
- "count": 498,
+ "arbiter_commit": "3ac66c40120de4d55669f0c5470c2b3158e11baa",
+ "recorded": "2026-10-26",
+ "count": 523,
  "by_rule": {
   "arbiter/assurance.permanently-skipped-test": 46,
   "arbiter/assurance.suppression-census": 1,
@@ -25,7 +25,9 @@
   "arbiter/secrets.assigned-credential": 1,
   "arbiter/secrets.private-key": 13,
   "arbiter/supply.pull-request-target": 3,
-  "arbiter/supply.unpinned-action": 22
+  "arbiter/supply.remote-script-piped": 14,
+  "arbiter/supply.unpinned-action": 22,
+  "arbiter/supply.unpinned-container-image": 11
  },
  "findings": [
   "arbiter/assurance.permanently-skipped-test\tcodec-compression/src/test/java/io/netty/handler/codec/compression/SnappyIntegrationTest.java\t113",
@@ -504,6 +506,20 @@
   "arbiter/supply.pull-request-target\t.github/workflows/autoport-41.yml\t3",
   "arbiter/supply.pull-request-target\t.github/workflows/autoport-42.yml\t3",
   "arbiter/supply.pull-request-target\t.github/workflows/autoport-50.yml\t3",
+  "arbiter/supply.remote-script-piped\t.devcontainer/centos7/Dockerfile\t76",
+  "arbiter/supply.remote-script-piped\t.devcontainer/centos7/Dockerfile\t91",
+  "arbiter/supply.remote-script-piped\t.devcontainer/ubi9/Dockerfile\t26",
+  "arbiter/supply.remote-script-piped\t.devcontainer/ubi9/Dockerfile\t41",
+  "arbiter/supply.remote-script-piped\t.devcontainer/ubuntu/Dockerfile\t22",
+  "arbiter/supply.remote-script-piped\t.devcontainer/ubuntu/Dockerfile\t32",
+  "arbiter/supply.remote-script-piped\t.github/scripts/check_java_ea_version.sh\t22",
+  "arbiter/supply.remote-script-piped\tdocker/Dockerfile.al2023\t42",
+  "arbiter/supply.remote-script-piped\tdocker/Dockerfile.al2023\t58",
+  "arbiter/supply.remote-script-piped\tdocker/Dockerfile.centos6\t47",
+  "arbiter/supply.remote-script-piped\tdocker/Dockerfile.centos7\t103",
+  "arbiter/supply.remote-script-piped\tdocker/Dockerfile.centos7\t88",
+  "arbiter/supply.remote-script-piped\tdocker/Dockerfile.cross_compile_aarch64\t66",
+  "arbiter/supply.remote-script-piped\tdocker/Dockerfile.cross_compile_aarch64\t75",
   "arbiter/supply.unpinned-action\t.github/workflows/autoport-41.yml\t102",
   "arbiter/supply.unpinned-action\t.github/workflows/autoport-41.yml\t115",
   "arbiter/supply.unpinned-action\t.github/workflows/autoport-41.yml\t21",
@@ -525,6 +541,17 @@
   "arbiter/supply.unpinned-action\t.github/workflows/ci-pr.yml\t211",
   "arbiter/supply.unpinned-action\t.github/workflows/ci-verify-load.yml\t109",
   "arbiter/supply.unpinned-action\t.github/workflows/codeql-analysis.yml\t54",
-  "arbiter/supply.unpinned-action\t.github/workflows/codeql-analysis.yml\t68"
+  "arbiter/supply.unpinned-action\t.github/workflows/codeql-analysis.yml\t68",
+  "arbiter/supply.unpinned-container-image\t.devcontainer/alpine/Dockerfile\t3",
+  "arbiter/supply.unpinned-container-image\t.devcontainer/centos7/Dockerfile\t1",
+  "arbiter/supply.unpinned-container-image\t.devcontainer/ubi9/Dockerfile\t1",
+  "arbiter/supply.unpinned-container-image\t.devcontainer/ubuntu/Dockerfile\t1",
+  "arbiter/supply.unpinned-container-image\tdocker/Dockerfile.al2023\t1",
+  "arbiter/supply.unpinned-container-image\tdocker/Dockerfile.centos6\t1",
+  "arbiter/supply.unpinned-container-image\tdocker/Dockerfile.centos7\t1",
+  "arbiter/supply.unpinned-container-image\tdocker/Dockerfile.cross_compile_aarch64\t1",
+  "arbiter/supply.unpinned-container-image\tdocker/Dockerfile.cross_compile_riscv64\t1",
+  "arbiter/supply.unpinned-container-image\tdocker/docker-compose.centos-7.117.yaml\t35",
+  "arbiter/supply.unpinned-container-image\tdocker/docker-compose.centos-7.117.yaml\t38"
  ]
 }
