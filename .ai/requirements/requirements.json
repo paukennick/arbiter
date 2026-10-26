@@ -3732,7 +3732,7 @@
       "title": "Dawid-Skene labeller-weighted precision alongside strict unanimity",
       "description": "Estimate each labeller's sensitivity and specificity per category with Dawid-Skene EM over per-labeller votes (unsure as missing), Beta-smoothed and anchored on known-truth calibration records, giving each finding a posterior P(tp). Report per rule and per language the mean-posterior precision and an interval next to the unanimity result in precision_ledger.py report and precision.json; admission and the 99% claim stay on unanimity until Nick switches.",
       "priority": "high",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "tools/precision_ledger.py",
         "src/arbiter/precision.py",
@@ -3762,7 +3762,7 @@
       "title": "Repository-clustered precision bounds alongside the independent-finding bound",
       "description": "Findings in one repository are correlated. Compute a design effect from the intra-repository correlation, a clustered effective sample size and Wilson bound, and a repository-level bootstrap lower bound as a check, per rule, per language and in stratified_claim. Report next to the current bound in report and precision.json; admission keeps the current method until Nick switches, and docs/precision.md states what would change for every rule within 0.05 of a bar.",
       "priority": "high",
-      "status": "pending",
+      "status": "completed",
       "minimum_access_scope": [
         "tools/precision_ledger.py",
         "src/arbiter/precision.py",
