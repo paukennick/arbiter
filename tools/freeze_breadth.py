@@ -367,7 +367,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 PY=""
 for c in python3 python; do "$c" -c '' 2>/dev/null && PY="$c" && break; done
 mkdir -p "$DEST"
-"$PY" - "$HERE/gold/breadth-r7-{key}-repos.json" "$SLICE" "$SHARD" "$SHARDS" <<'PYEOF' |
+"$PY" - "$HERE/gold/breadth-r7-{key}-repos.json" "$SLICE" "$SHARD" "$SHARDS" <<'PYEOF' | tr -d '\r' |
 import json, sys
 m = json.load(open(sys.argv[1], encoding="utf-8"))
 sl, i, n = sys.argv[2], int(sys.argv[3]), int(sys.argv[4])
