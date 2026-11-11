@@ -1,6 +1,6 @@
 # What to work on next
 
-Generated 2026-11-10T16:13:54+00:00 by `tools/worklist.py` from the last training cycle.
+Generated 2026-11-11T15:57:14+00:00 by `tools/worklist.py` from the last training cycle.
 
 Nothing here is a decision. Each entry says what the measurement shows and what question it raises.
 
